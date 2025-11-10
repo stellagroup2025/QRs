@@ -18,6 +18,7 @@ import { BrandingModule } from './config/branding.module';
 import { PromocionesModule } from './promociones/promociones.module';
 import { CampanasModule } from './campanas/campanas.module';
 import { EmailModule } from './email/email.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -41,6 +42,9 @@ import { EmailModule } from './email/email.module';
 
     // Módulo de Email (Resend)
     EmailModule,
+
+    // Módulo de IA (Google Gemini)
+    AiModule,
 
     // Módulos de dominio
     ClientesModule,

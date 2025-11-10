@@ -1,391 +1,290 @@
-# Roadmap de Desarrollo - Qronnect
+# 🗺️ ROADMAP - Tareas Pendientes
 
-## Estado Actual
-✅ Sistema de autenticación multitenant (SuperAdmin, Admin, Cliente)
-✅ Registro de clientes con OTP
-✅ Generación de QR personalizados
-✅ Panel SuperAdmin básico
-✅ Panel Admin con vista de estadísticas básicas
-✅ Sesiones permanentes para clientes
+> Fecha: 11 de Noviembre, 2025
+> Proyecto: Qronnect - Sistema de Fidelización
 
 ---
 
-## 🎯 Tareas Pendientes
+## 🎯 PRIORIDAD 1: IA (Google Gemini)
 
-### 1. Personalización de Marca por Tienda desde SuperAdmin
-**Objetivo**: Permitir que cada tienda tenga su propia identidad visual (colores, logo, nombre)
+### Problema Actual
+- El código está **correcto** ✅
+- SDK moderno instalado: `@google/generative-ai` v0.24.1 ✅
+- Configuración correcta: modelo `gemini-pro` sin prefijos ✅
+- **PROBLEMA**: API key sin acceso a modelos Gemini en endpoint v1beta
 
-#### Backend
-- [ ] Crear migración para añadir campos de personalización a tabla `tiendas`:
-  - `logo_url` (TEXT) - URL del logo almacenado en Supabase Storage
-  - `color_primario` (TEXT) - Color principal en formato hex (#RRGGBB)
-  - `color_secundario` (TEXT) - Color secundario en formato hex
-  - `color_acento` (TEXT) - Color de acento en formato hex
-  - `nombre_comercial` (TEXT) - Nombre visible del comercio
+### Tareas
+- [ ] **Verificar API key en Google AI Studio**
+  - URL: https://aistudio.google.com/app/apikey
+  - Verificar que tenga acceso a Gemini API
+  - Revisar restricciones y cuotas
 
-- [ ] Crear endpoint en SuperAdmin para actualizar configuración de marca:
-  - `PUT /api/superadmin/tiendas/:id/branding`
-  - DTOs para validar colores (formato hex válido)
-  - Servicio para subir logo a Supabase Storage
+- [ ] **Opción alternativa: Crear nueva API key**
+  - Crear en Google AI Studio
+  - Seleccionar proyecto correcto
+  - Actualizar `.env` con nueva key:
+    ```
+    GEMINI_API_KEY=nueva_key_aqui
+    ```
+  - Reiniciar backend
 
-- [ ] Crear endpoint público para obtener configuración de marca:
-  - `GET /api/config/branding` (usa X-Tenant-Domain)
-  - Retorna: logo_url, colores, nombre_comercial
-
-#### Frontend - SuperAdmin
-- [ ] Crear sección "Personalización de Marca" en formulario de tienda
-- [ ] Componente para subir logo (drag & drop)
-- [ ] Color pickers para seleccionar colores (primario, secundario, acento)
-- [ ] Preview en tiempo real de la marca
-- [ ] Input para nombre comercial
-
-#### Frontend - Cliente
-- [ ] Crear hook `useBranding()` que cargue configuración desde API
-- [ ] Actualizar `appBrand.ts` para usar configuración dinámica de la API
-- [ ] Aplicar colores dinámicos usando CSS variables:
-  ```css
-  :root {
-    --color-primary: <color_primario>;
-    --color-secondary: <color_secundario>;
-    --color-accent: <color_acento>;
-  }
+- [ ] **Probar endpoints de IA**
+  ```bash
+  POST /api/admin/ai/kpi-summary
+  POST /api/admin/ai/promo-ideas
+  POST /api/admin/ai/email-campaigns
   ```
-- [ ] Reemplazar "Mi comercio" con `nombre_comercial` de la tienda
-- [ ] Mostrar logo dinámico en header/navbar
+
+### Archivos Involucrados
+- `backend/src/ai/gemini.service.ts` (línea 28) - Configuración modelo
+- `backend/.env` - API key
+- `QRs/components/admin/ia/PanelIA.tsx` - UI componente IA
 
 ---
 
-### 2. Dashboard Completo para Admin de Comercio
-**Objetivo**: Vista detallada de clientes y ventas con tablas interactivas
+## 🎫 PRIORIDAD 2: Canjear Cupones en Nueva Venta
 
-#### Backend
-- [ ] Endpoint para listado paginado de clientes:
-  - `GET /api/admin/clientes?page=1&limit=20&search=email`
-  - Incluir: nombre, email, puntos_totales, ultima_visita, total_compras
-  - Filtros: búsqueda por texto, ordenar por puntos/visitas
+### Descripción
+Permitir al staff/admin canjear cupones/promociones del cliente al momento de registrar una nueva compra.
 
-- [ ] Endpoint para detalle de cliente:
-  - `GET /api/admin/clientes/:id`
-  - Incluir: datos personales, historial completo de compras, puntos acumulados/canjeados
+### Tareas Backend
+- [ ] **Modificar endpoint `POST /api/admin/compras`**
+  - Archivo: `backend/src/admin/admin.service.ts`
+  - Añadir parámetro opcional: `cupon_id?: string`
+  - Validar que el cupón pertenezca al cliente
+  - Validar que el cupón esté disponible (no canjeado)
+  - Marcar cupón como canjeado al registrar compra
+  - Aplicar descuento/beneficio del cupón al importe
 
-- [ ] Endpoint para listado de ventas:
-  - `GET /api/admin/compras?page=1&limit=20&fecha_desde=&fecha_hasta=`
-  - Incluir: cliente (nombre, email), fecha, total, puntos_otorgados
-  - Filtros: rango de fechas, cliente específico
+- [ ] **Endpoint de consulta de cupones disponibles**
+  - Crear: `GET /api/admin/clientes/:id/cupones-disponibles`
+  - Devolver solo cupones no canjeados y activos
+  - Incluir información de la promoción asociada
 
-#### Frontend - Admin Dashboard
-- [ ] **Tab "Clientes"**:
-  - Tabla con DataTable de shadcn/ui
-  - Columnas: Nombre, Email, Teléfono, Puntos, Última Visita, Total Compras
-  - Búsqueda en tiempo real
-  - Paginación
-  - Click en fila → modal con detalle del cliente
-  - Botón "Exportar a CSV"
+### Tareas Frontend
+- [ ] **Modificar formulario de nueva venta**
+  - Archivo: `QRs/app/[slug]/admin/page.tsx` (o componente de ventas)
+  - Añadir selector de cupones disponibles del cliente
+  - Mostrar descuento/beneficio al seleccionar cupón
+  - Actualizar vista previa del importe final
+  - Enviar `cupon_id` en el POST
 
-- [ ] **Tab "Ventas"**:
-  - Tabla con DataTable de shadcn/ui
-  - Columnas: Fecha, Cliente, Total €, Puntos Otorgados
-  - Filtros: rango de fechas, búsqueda por cliente
-  - Paginación
-  - Totales: suma de facturación y puntos del periodo
-  - Botón "Exportar a CSV"
+- [ ] **UI para mostrar cupones**
+  - Componente dropdown o modal con cupones disponibles
+  - Mostrar: nombre promoción, descuento, fecha expiración
+  - Indicador visual de cupón seleccionado
 
-- [ ] **Modal de Detalle de Cliente**:
-  - Información personal (editable)
-  - Historial de compras (tabla)
-  - Gráfico de puntos acumulados en el tiempo
-  - Botón "Ajustar puntos manualmente" (con motivo)
+### Archivos Involucrados
+- `backend/src/admin/admin.service.ts` - Lógica canje
+- `backend/src/admin/admin.controller.ts` - Endpoints
+- `QRs/app/[slug]/admin/page.tsx` - Formulario ventas
+- Base de datos: tabla `canjes_promociones`
 
 ---
 
-### 3. KPIs y Gráficos en Dashboard Admin
-**Objetivo**: Visualización de métricas clave con diagramas interactivos
+## 👥 PRIORIDAD 3: CRUD Completo de Clientes (Admin)
 
-#### Backend
-- [ ] Endpoint de analytics:
-  - `GET /api/admin/dashboard/analytics?periodo=30d`
-  - Retornar:
-    - Evolución de clientes nuevos (por día/semana/mes)
-    - Evolución de facturación (por día/semana/mes)
-    - Distribución de clientes por rango de puntos
-    - Top 10 clientes por facturación
-    - Tasa de retención (% clientes que vuelven)
-    - Ticket promedio
-    - Frecuencia de visita promedio
+### Estado Actual
+- ✅ Listar clientes: `GET /api/admin/clientes`
+- ✅ Ver detalle cliente: `GET /api/admin/clientes/:id`
+- ❌ Editar cliente
+- ❌ Eliminar cliente
 
-#### Frontend - Admin Dashboard
-- [ ] Instalar librería de gráficos (recharts o chart.js)
+### Tareas Backend
 
-- [ ] **Sección de KPIs** (cards con iconos):
-  - Total Clientes (con % cambio vs mes anterior)
-  - Facturación Mensual (con % cambio vs mes anterior)
-  - Ticket Promedio (con % cambio)
-  - Tasa de Retención (con % cambio)
+#### 3.1 Editar Cliente
+- [ ] **Crear endpoint `PUT /api/admin/clientes/:id`**
+  - Archivo: `backend/src/admin/admin.controller.ts`
+  - Permitir editar: nombre, email, telefono, fecha_nacimiento, genero
+  - Validar email único (si se cambia)
+  - Validar teléfono único (si se cambia)
+  - Solo admin de la tienda puede editar sus clientes (multi-tenant)
 
-- [ ] **Gráficos**:
-  - Gráfico de línea: Evolución de facturación (últimos 30/90 días)
-  - Gráfico de barras: Nuevos clientes por semana
-  - Gráfico de pastel: Distribución de clientes por rango de puntos
-  - Tabla: Top 10 clientes VIP
+- [ ] **DTO para actualización**
+  - Archivo: `backend/src/admin/dto/update-cliente.dto.ts`
+  - Campos opcionales
+  - Validaciones con class-validator
 
-- [ ] Selector de periodo: "7 días", "30 días", "90 días", "Este año"
+#### 3.2 Eliminar Cliente
+- [ ] **Crear endpoint `DELETE /api/admin/clientes/:id`**
+  - Archivo: `backend/src/admin/admin.controller.ts`
+  - **IMPORTANTE**: Evaluar si debe ser eliminación lógica (soft delete) o física
+  - Si tiene compras/cupones, considerar soft delete
+  - Añadir campo `eliminado_en` a tabla clientes si es soft delete
 
----
+- [ ] **RLS en Supabase**
+  - Actualizar políticas de seguridad
+  - Solo admin de la tienda puede eliminar sus clientes
 
-### 4. Sistema de Promociones y Canje de Puntos
-**Objetivo**: Crear, gestionar y canjear promociones usando puntos
+### Tareas Frontend
 
-#### Database
-- [ ] Crear tabla `promociones`:
-  - `id` (UUID, PK)
-  - `id_tienda` (UUID, FK a tiendas)
-  - `titulo` (TEXT) - "10€ de descuento"
-  - `descripcion` (TEXT)
-  - `tipo` (ENUM: 'descuento_fijo', 'descuento_porcentaje', 'producto_gratis')
-  - `valor` (NUMERIC) - Valor del descuento o precio del producto
-  - `puntos_requeridos` (INTEGER) - Puntos necesarios para canjear
-  - `imagen_url` (TEXT) - Imagen de la promoción
-  - `activo` (BOOLEAN)
-  - `fecha_inicio` (TIMESTAMPTZ)
-  - `fecha_fin` (TIMESTAMPTZ)
-  - `cantidad_disponible` (INTEGER, nullable) - Límite de canjes
-  - `cantidad_canjeada` (INTEGER, default 0)
-  - `creado_en`, `actualizado_en`
+#### 3.3 UI de Edición
+- [ ] **Modal/Formulario de edición**
+  - Archivo: `QRs/components/admin/clientes/EditarClienteDialog.tsx` (nuevo)
+  - Cargar datos actuales del cliente
+  - Formulario con campos editables
+  - Validación frontend
+  - Botón "Guardar cambios"
 
-- [ ] Crear tabla `canjes`:
-  - `id` (UUID, PK)
-  - `id_cliente` (UUID, FK a clientes)
-  - `id_promocion` (UUID, FK a promociones)
-  - `id_tienda` (UUID, FK a tiendas)
-  - `puntos_usados` (INTEGER)
-  - `estado` (ENUM: 'pendiente', 'usado', 'expirado')
-  - `codigo_canje` (TEXT, unique) - Código QR/barras para validar
-  - `fecha_canje` (TIMESTAMPTZ)
-  - `fecha_uso` (TIMESTAMPTZ, nullable)
-  - `usado_por` (UUID, nullable, FK a administradores)
+- [ ] **Integrar en tabla de clientes**
+  - Archivo: `QRs/components/staff/clientes-tabla.tsx`
+  - Añadir botón "Editar" en cada fila
+  - Abrir modal de edición
+  - Refrescar tabla después de editar
 
-#### Backend
-- [ ] **CRUD de Promociones** (Admin):
-  - `GET /api/admin/promociones` - Listar promociones
-  - `POST /api/admin/promociones` - Crear promoción
-  - `PUT /api/admin/promociones/:id` - Editar promoción
-  - `DELETE /api/admin/promociones/:id` - Eliminar promoción
-  - `POST /api/admin/promociones/:id/upload-image` - Subir imagen
+#### 3.4 UI de Eliminación
+- [ ] **Confirmar eliminación**
+  - AlertDialog de confirmación
+  - Advertencia si tiene compras/cupones activos
+  - Botón "Eliminar" en tabla de clientes
+  - Refrescar tabla después de eliminar
 
-- [ ] **Endpoints para Clientes**:
-  - `GET /api/clientes/promociones` - Ver promociones disponibles
-  - `POST /api/clientes/promociones/:id/canjear` - Canjear promoción
-    - Validar puntos suficientes
-    - Descontar puntos del cliente
-    - Generar código de canje único
-    - Registrar en tabla `canjes`
-  - `GET /api/clientes/mis-canjes` - Ver canjes activos del cliente
-
-- [ ] **Endpoints para validar canjes** (Admin):
-  - `POST /api/admin/canjes/:codigo/validar` - Marcar como usado
-  - `GET /api/admin/canjes` - Historial de canjes
-
-#### Frontend - Admin Panel
-- [ ] **Pantalla "Promociones"** (`/admin/promociones`):
-  - Lista de promociones activas/inactivas (cards o tabla)
-  - Botón "Crear Promoción"
-  - Cada promoción muestra: imagen, título, puntos requeridos, canjes disponibles/usados
-  - Botones: Editar, Activar/Desactivar, Eliminar
-
-- [ ] **Formulario de Creación/Edición**:
-  - Input: Título, Descripción
-  - Select: Tipo de promoción
-  - Input numérico: Valor del descuento
-  - Input numérico: Puntos requeridos
-  - Upload de imagen
-  - DatePicker: Fecha inicio/fin
-  - Input: Cantidad disponible (opcional, null = ilimitado)
-  - Toggle: Activo/Inactivo
-
-- [ ] **Pantalla "Canjes"** (`/admin/canjes`):
-  - Lista de canjes pendientes/usados
-  - Buscador por código o cliente
-  - Botón "Validar Canje" → escanear QR o introducir código
-
-#### Frontend - Cliente
-- [ ] **Pantalla "Promociones"** (`/promociones`):
-  - Grid de promociones disponibles (cards con imagen)
-  - Badge: "X puntos" necesarios
-  - Indicador: "Te faltan X puntos" o "¡Puedes canjearlo!"
-  - Botón "Canjear" (deshabilitado si no tiene puntos)
-
-- [ ] **Modal de Confirmación de Canje**:
-  - Resumen de la promoción
-  - Puntos a descontar
-  - Puntos restantes tras canje
-  - Botón "Confirmar Canje"
-
-- [ ] **Pantalla "Mis Canjes"** (`/mis-canjes`):
-  - Lista de cupones canjeados
-  - Cada cupón muestra: QR/código de barras, título, fecha canje, estado
-  - Badge: "Pendiente de usar" o "Usado"
-  - Botón "Mostrar QR" → modal fullscreen con QR grande
+### Archivos Involucrados
+- `backend/src/admin/admin.controller.ts`
+- `backend/src/admin/admin.service.ts`
+- `backend/src/admin/dto/update-cliente.dto.ts` (nuevo)
+- `QRs/components/admin/clientes/EditarClienteDialog.tsx` (nuevo)
+- `QRs/components/staff/clientes-tabla.tsx`
+- Base de datos: tabla `clientes`
 
 ---
 
-### 5. Sistema de Email Marketing
-**Objetivo**: Enviar campañas segmentadas a clientes usando filtros
+## 🛒 PRIORIDAD 4: CRUD Completo de Ventas/Compras (Admin)
 
-#### Database
-- [ ] Crear tabla `campanas_email`:
-  - `id` (UUID, PK)
-  - `id_tienda` (UUID, FK a tiendas)
-  - `nombre` (TEXT) - Nombre interno de la campaña
-  - `asunto` (TEXT) - Asunto del email
-  - `cuerpo_html` (TEXT) - HTML del email
-  - `filtros` (JSONB) - Filtros aplicados (edad, visitas, etc.)
-  - `total_destinatarios` (INTEGER)
-  - `enviados` (INTEGER, default 0)
-  - `abiertos` (INTEGER, default 0)
-  - `clicks` (INTEGER, default 0)
-  - `estado` (ENUM: 'borrador', 'programada', 'enviando', 'enviada')
-  - `fecha_programada` (TIMESTAMPTZ, nullable)
-  - `fecha_envio` (TIMESTAMPTZ, nullable)
-  - `creado_por` (UUID, FK a administradores)
-  - `creado_en`, `actualizado_en`
+### Estado Actual
+- ✅ Listar compras: `GET /api/admin/compras`
+- ✅ Crear compra: `POST /api/admin/compras`
+- ❌ Editar compra
+- ❌ Eliminar compra
 
-- [ ] Crear tabla `envios_email`:
-  - `id` (UUID, PK)
-  - `id_campana` (UUID, FK a campanas_email)
-  - `id_cliente` (UUID, FK a clientes)
-  - `email` (TEXT)
-  - `estado` (ENUM: 'pendiente', 'enviado', 'fallido', 'abierto', 'click')
-  - `fecha_envio` (TIMESTAMPTZ)
-  - `fecha_apertura` (TIMESTAMPTZ, nullable)
-  - `error` (TEXT, nullable)
+### Tareas Backend
 
-#### Backend
-- [ ] Configurar servicio de email (SendGrid, Resend, o AWS SES)
-  - Añadir credenciales en `.env`
-  - Crear módulo `EmailService`
+#### 4.1 Editar Compra
+- [ ] **Crear endpoint `PUT /api/admin/compras/:id`**
+  - Archivo: `backend/src/admin/admin.controller.ts`
+  - Permitir editar: importe, fecha, notas
+  - **IMPORTANTE**: Recalcular puntos si cambia importe
+  - Actualizar historial de puntos
+  - Validar que la compra pertenezca a la tienda (multi-tenant)
 
-- [ ] **Endpoints de Campañas** (Admin):
-  - `GET /api/admin/campanas` - Listar campañas
-  - `POST /api/admin/campanas` - Crear campaña (borrador)
-  - `PUT /api/admin/campanas/:id` - Editar campaña
-  - `DELETE /api/admin/campanas/:id` - Eliminar campaña
-  - `POST /api/admin/campanas/:id/preview` - Vista previa del email
-  - `POST /api/admin/campanas/:id/enviar` - Enviar o programar envío
+- [ ] **DTO para actualización**
+  - Archivo: `backend/src/admin/dto/update-compra.dto.ts`
+  - Validaciones
 
-- [ ] **Endpoint de Filtros**:
-  - `POST /api/admin/clientes/filtrar` - Retorna conteo de clientes que cumplen filtros
-  - Filtros soportados:
-    - Edad: rango (ej: 18-35 años)
-    - Última visita: rango de fechas (ej: últimos 30 días, más de 90 días)
-    - Número de visitas: rango (ej: más de 5 compras)
-    - Puntos totales: rango (ej: más de 100 puntos)
-    - Código postal: lista de CPs
-    - Género (si se añade al schema)
+#### 4.2 Eliminar Compra
+- [ ] **Crear endpoint `DELETE /api/admin/compras/:id`**
+  - Archivo: `backend/src/admin/admin.controller.ts`
+  - **IMPORTANTE**: Restar puntos otorgados al cliente
+  - Actualizar historial de puntos
+  - Verificar si hay cupones generados por esa compra
+  - Si hay cupones no canjeados, invalidarlos
+  - Considerar soft delete vs hard delete
 
-- [ ] **Sistema de envío en background**:
-  - Job queue (Bull, BullMQ) para enviar emails de forma asíncrona
-  - Procesamiento en lotes (100 emails por lote)
-  - Actualizar estado de `envios_email` tras cada envío
-  - Tracking de aperturas (pixel tracking)
-  - Tracking de clicks (URLs con tracking)
+- [ ] **Lógica de puntos**
+  - Calcular puntos a restar
+  - Actualizar saldo de puntos del cliente
+  - Registrar movimiento en historial_puntos
 
-#### Frontend - Admin Panel
-- [ ] **Pantalla "Campañas de Email"** (`/admin/campanas`):
-  - Lista de campañas (tabla)
-  - Columnas: Nombre, Asunto, Destinatarios, Enviados, Tasa Apertura, Estado, Fecha
-  - Botón "Nueva Campaña"
-  - Filtros: por estado, por fecha
+### Tareas Frontend
 
-- [ ] **Wizard de Creación de Campaña** (multi-step):
+#### 4.3 UI de Edición de Compra
+- [ ] **Modal/Formulario de edición**
+  - Archivo: `QRs/components/admin/compras/EditarCompraDialog.tsx` (nuevo)
+  - Campos: importe, fecha, notas
+  - Advertencia sobre recálculo de puntos
+  - Guardar cambios
 
-  **Paso 1: Configuración Básica**
-  - Input: Nombre de campaña (interno)
-  - Input: Asunto del email
-  - Input: Remitente (nombre y email)
+- [ ] **Integrar en lista de compras**
+  - Añadir botón "Editar"
+  - Abrir modal
+  - Refrescar lista después de editar
 
-  **Paso 2: Audiencia (Filtros)**
-  - Select: Edad (rango con slider)
-  - Select: Última visita
-    - Opciones: "Últimos 7 días", "Últimos 30 días", "Más de 90 días sin visitar"
-  - Select: Número de compras
-    - Opciones: "Primera compra", "2-5 compras", "Más de 5 compras"
-  - Select: Puntos acumulados
-    - Opciones: "0-50", "50-100", "Más de 100"
-  - Input: Códigos postales (multi-select)
-  - Preview: "X clientes cumplen estos criterios"
+#### 4.4 UI de Eliminación de Compra
+- [ ] **Confirmar eliminación**
+  - AlertDialog con advertencia
+  - Mostrar puntos que se restarán
+  - Advertir si hay cupones asociados
+  - Botón "Eliminar"
+  - Refrescar lista después de eliminar
 
-  **Paso 3: Diseño del Email**
-  - Editor WYSIWYG (TipTap o Quill)
-  - Variables dinámicas: `{nombre}`, `{puntos}`, `{tienda}`
-  - Templates predefinidos:
-    - Bienvenida
-    - Promoción
-    - Recordatorio
-    - Newsletter
-  - Botón "Vista previa" → modal con preview del email
-
-  **Paso 4: Programación**
-  - Radio: "Enviar ahora" o "Programar"
-  - DateTimePicker: Fecha y hora de envío
-  - Botón "Enviar Campaña" o "Programar Campaña"
-
-- [ ] **Pantalla de Detalle de Campaña**:
-  - KPIs: Total enviados, Tasa de apertura, Tasa de clicks
-  - Gráfico de envíos en el tiempo
-  - Tabla de destinatarios con estado de cada email
-  - Botón "Reenviar a no abiertos"
-
-#### Frontend - Cliente
-- [ ] Endpoint para rastrear aperturas:
-  - `GET /api/track/email/:id/open` (pixel transparente 1x1)
-
-- [ ] Endpoint para rastrear clicks:
-  - `GET /api/track/email/:id/click?url=...` (redirect con tracking)
+### Archivos Involucrados
+- `backend/src/admin/admin.controller.ts`
+- `backend/src/admin/admin.service.ts`
+- `backend/src/admin/dto/update-compra.dto.ts` (nuevo)
+- `QRs/components/admin/compras/EditarCompraDialog.tsx` (nuevo)
+- Base de datos: tablas `compras`, `historial_puntos`, `canjes_promociones`
 
 ---
 
-## 📊 Priorización Sugerida
+## 📋 Resumen de Prioridades
 
-### Sprint 1 (Semana 1)
-1. ✅ Personalización de Marca por Tienda (Backend + SuperAdmin)
-2. ✅ Actualización dinámica de `appBrand.ts`
+```
+┌─────────────────────────────────────────────────────┐
+│  MAÑANA - Orden de Ejecución Recomendado           │
+├─────────────────────────────────────────────────────┤
+│  1️⃣  IA - Resolver API key (30 min)                │
+│  2️⃣  Canjear cupones en venta (2-3 horas)          │
+│  3️⃣  CRUD Clientes - Editar (1-2 horas)            │
+│  4️⃣  CRUD Clientes - Eliminar (1 hora)             │
+│  5️⃣  CRUD Compras - Editar (2 horas)               │
+│  6️⃣  CRUD Compras - Eliminar (2 horas)             │
+└─────────────────────────────────────────────────────┘
 
-### Sprint 2 (Semana 2)
-3. ✅ Dashboard Admin - Tab Clientes (listado y detalle)
-4. ✅ Dashboard Admin - Tab Ventas (listado y filtros)
-
-### Sprint 3 (Semana 3)
-5. ✅ KPIs y Gráficos en Dashboard
-6. ✅ Analytics endpoint
-
-### Sprint 4 (Semana 4)
-7. ✅ Sistema de Promociones (Backend + Admin Panel)
-8. ✅ Canje de Promociones (Cliente App)
-
-### Sprint 5 (Semana 5)
-9. ✅ Email Marketing (Backend + Servicio de envío)
-10. ✅ Campañas y Filtros (Admin Panel)
+Tiempo estimado total: 8-11 horas
+```
 
 ---
 
-## 🛠️ Tecnologías a Integrar
+## 🔧 Consideraciones Técnicas
 
-- **Gráficos**: `recharts` o `chart.js`
-- **Tablas**: `@tanstack/react-table` (ya incluido en shadcn DataTable)
-- **Editor WYSIWYG**: `tiptap` o `quill`
-- **Email Service**: `SendGrid`, `Resend`, o `AWS SES`
-- **Job Queue**: `BullMQ` (para envíos en background)
-- **QR Generator**: Ya instalado (`qrcode`)
-- **Upload de imágenes**: Supabase Storage
-- **Date Pickers**: `react-day-picker` (ya incluido en shadcn)
+### Multi-tenant
+- **TODOS** los endpoints deben validar `tienda_id`
+- RLS debe estar activo en todas las tablas
+- Usar el `TenantGuard` en los controllers
+
+### Puntos y Cupones
+- Cualquier cambio en compras debe actualizar puntos
+- Eliminar compra debe invalidar cupones no canjeados
+- Considerar transacciones para operaciones críticas
+
+### Soft Delete vs Hard Delete
+**Recomendación**: Usar soft delete para:
+- ✅ Clientes (para mantener historial)
+- ✅ Compras (para auditoría)
+
+Añadir columnas:
+```sql
+eliminado BOOLEAN DEFAULT FALSE
+eliminado_en TIMESTAMP
+eliminado_por UUID (referencia a admin)
+```
+
+### Testing
+- Probar cada endpoint con curl/Postman
+- Verificar permisos multi-tenant
+- Probar casos edge (eliminar cliente con compras, etc.)
 
 ---
 
-## 📝 Notas
+## 📝 Notas Finales
 
-- Todos los endpoints de Admin requieren `AdminAuthGuard`
-- Todos los endpoints de Cliente requieren `ClientAuthGuard`
-- Todos los endpoints usan el decorator `@Tenant()` para multitenancy
-- Los emails deben cumplir con CAN-SPAM Act (botón de unsuscribe)
-- Implementar rate limiting en endpoints de envío de emails
-- Considerar GDPR: opción de "exportar mis datos" y "eliminar mi cuenta"
+### Estado Actual del Proyecto
+- ✅ Sistema de autenticación funcionando
+- ✅ Registro de compras y puntos
+- ✅ Sistema de promociones y cupones
+- ✅ Sistema de campañas de email
+- ✅ Dashboard con KPIs
+- ⚠️  IA pendiente de API key
+- ❌ CRUDs incompletos
+
+### Próximos Pasos (Después de esto)
+1. Sistema de notificaciones push
+2. Integración con WhatsApp Business
+3. Reportes avanzados y exportación
+4. App móvil nativa (React Native)
+5. Sistema de referidos
+
+---
+
+**Última actualización**: 11 de Noviembre, 2025 - 00:25 AM
+**Creado por**: Claude Code
