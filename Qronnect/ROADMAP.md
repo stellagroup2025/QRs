@@ -5,40 +5,63 @@
 
 ---
 
-## 🎯 PRIORIDAD 1: IA (Google Gemini)
+## 🎯 PRIORIDAD 1: IA (Google Gemini) - DEBUG KPIs en 0
 
-### Problema Actual
-- El código está **correcto** ✅
-- SDK moderno instalado: `@google/generative-ai` v0.24.1 ✅
-- Configuración correcta: modelo `gemini-pro` sin prefijos ✅
-- **PROBLEMA**: API key sin acceso a modelos Gemini en endpoint v1beta
+### Estado Actual
+- ✅ **Gemini AI funcionando**: modelo `gemini-2.0-flash` responde correctamente
+- ✅ **Fix de fechas aplicado**: `setUTCHours(23, 59, 59, 999)` en `ai.service.ts:45`
+- ✅ **Rango de fechas correcto**: `2025-11-10T00:00:00.000Z` a `2025-11-10T23:59:59.999Z`
+- ❌ **PROBLEMA**: KPIs devuelven 0 a pesar de que existen 2 compras (37€) en la fecha consultada
 
-### Tareas
-- [ ] **Verificar API key en Google AI Studio**
-  - URL: https://aistudio.google.com/app/apikey
-  - Verificar que tenga acceso a Gemini API
-  - Revisar restricciones y cuotas
+### Problema a Investigar
+Los KPIs del endpoint `/api/admin/ai/kpi-summary` devuelven todo en 0:
+```json
+{
+  "ventasTotales": 0,
+  "numeroTickets": 0,
+  "ticketMedio": 0,
+  "clientesNuevos": 0,
+  "clientesRecurrentes": 0,
+  "clientesActivos": 0
+}
+```
 
-- [ ] **Opción alternativa: Crear nueva API key**
-  - Crear en Google AI Studio
-  - Seleccionar proyecto correcto
-  - Actualizar `.env` con nueva key:
-    ```
-    GEMINI_API_KEY=nueva_key_aqui
-    ```
-  - Reiniciar backend
+**Pero las compras SÍ existen**:
+- Endpoint `/api/admin/compras` devuelve 2 compras el 2025-11-10
+- Total: 12€ + 25€ = 37€
+- Cliente: Omar (omarsomoza93@gmail.com)
 
-- [ ] **Probar endpoints de IA**
-  ```bash
-  POST /api/admin/ai/kpi-summary
-  POST /api/admin/ai/promo-ideas
-  POST /api/admin/ai/email-campaigns
-  ```
+### Tareas Pendientes
+- [ ] **Investigar query de Supabase en `ai.service.ts:70-75`**
+  - Verificar si la query está llegando a Supabase
+  - Revisar logs de Supabase
+  - Probar query directamente con service role key
+
+- [ ] **Revisar RLS (Row Level Security)**
+  - Archivo: `backend/supabase/migrations/*compras*`
+  - Verificar políticas de lectura para tabla `compras`
+  - Asegurar que admin puede leer compras de su tienda
+
+- [ ] **Debug con logs adicionales**
+  - Añadir `console.log` del resultado de la query
+  - Ver qué datos devuelve Supabase exactamente
+  - Verificar `tienda_id` que se está usando
+
+- [ ] **Probar con superadmin token** (elimina RLS)
+  - Crear endpoint de prueba sin RLS
+  - Verificar si es problema de permisos
+
+### Posibles Causas
+1. **RLS bloqueando la consulta**: Políticas de Supabase impidiendo lectura
+2. **Timezone mismatch**: Aunque el rango parece correcto, puede haber inconsistencia
+3. **Supabase client mal configurado**: Service role key no aplicándose
+4. **Cache de Supabase**: Datos no sincronizados
 
 ### Archivos Involucrados
-- `backend/src/ai/gemini.service.ts` (línea 28) - Configuración modelo
-- `backend/.env` - API key
-- `QRs/components/admin/ia/PanelIA.tsx` - UI componente IA
+- `backend/src/ai/ai.service.ts` (líneas 70-75) - Query de compras
+- `backend/src/supabase/supabase.service.ts` - Cliente Supabase
+- `backend/supabase/migrations/*compras*.sql` - RLS policies
+- `backend/.env` - SUPABASE_SERVICE_ROLE_KEY
 
 ---
 
@@ -222,7 +245,7 @@ Permitir al staff/admin canjear cupones/promociones del cliente al momento de re
 ┌─────────────────────────────────────────────────────┐
 │  MAÑANA - Orden de Ejecución Recomendado           │
 ├─────────────────────────────────────────────────────┤
-│  1️⃣  IA - Resolver API key (30 min)                │
+│  1️⃣  IA - Debug KPIs en 0 (1-2 horas) 🔴 CRÍTICO  │
 │  2️⃣  Canjear cupones en venta (2-3 horas)          │
 │  3️⃣  CRUD Clientes - Editar (1-2 horas)            │
 │  4️⃣  CRUD Clientes - Eliminar (1 hora)             │
@@ -230,7 +253,7 @@ Permitir al staff/admin canjear cupones/promociones del cliente al momento de re
 │  6️⃣  CRUD Compras - Eliminar (2 horas)             │
 └─────────────────────────────────────────────────────┘
 
-Tiempo estimado total: 8-11 horas
+Tiempo estimado total: 9-13 horas
 ```
 
 ---
@@ -286,5 +309,26 @@ eliminado_por UUID (referencia a admin)
 
 ---
 
-**Última actualización**: 11 de Noviembre, 2025 - 00:25 AM
+**Última actualización**: 11 de Noviembre, 2025 - 00:46 AM
 **Creado por**: Claude Code
+
+---
+
+## 📊 Resumen de Trabajo de Hoy (11 Nov 2025)
+
+### ✅ Completado
+1. **Google Gemini AI funcionando**
+   - Configurado modelo `gemini-2.0-flash`
+   - API key verificada y funcionando
+   - Endpoints de IA respondiendo correctamente
+   - Generación de análisis, promociones y campañas OK
+
+2. **Fix de fechas en KPIs**
+   - Corrección en `ai.service.ts:45`: `setUTCHours(23, 59, 59, 999)`
+   - Rango de fechas ahora incluye todo el día correctamente
+
+### ⚠️ Pendiente / Bloqueado
+1. **KPIs devolviendo 0** (CRÍTICO)
+   - Query de Supabase no devuelve datos
+   - Posible problema con RLS o configuración del cliente
+   - Requiere investigación mañana como PRIORIDAD 1

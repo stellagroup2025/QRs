@@ -40,7 +40,11 @@ export class AiService {
       ? new Date(requestDto.toDate)
       : now;
 
-    this.logger.log(`[AI KPI ANALYSIS] Calculando KPIs para tienda ${tiendaId} del ${fromDate.toISOString()} al ${toDate.toISOString()}`);
+    // Ajustar toDate al final del día (23:59:59.999 UTC) para incluir todas las compras del día
+    const toDateEndOfDay = new Date(toDate);
+    toDateEndOfDay.setUTCHours(23, 59, 59, 999);
+
+    this.logger.log(`[AI KPI ANALYSIS] Calculando KPIs para tienda ${tiendaId} del ${fromDate.toISOString()} al ${toDateEndOfDay.toISOString()}`);
 
     // 1. Obtener datos de la tienda (solo nombre por ahora, sector y configuracion son opcionales)
     const { data: tienda, error: tiendaError } = await client
@@ -62,13 +66,13 @@ export class AiService {
     const nombreTienda = tienda.nombre || 'tu negocio';
 
     // 2. Calcular KPIs del período
-    // COMPRAS del período
+    // COMPRAS del período (usando toDateEndOfDay para incluir todo el día)
     const { data: compras, error: comprasError } = await client
       .from('compras')
       .select('importe, id_cliente')
       .eq('id_tienda', tiendaId)
       .gte('fecha', fromDate.toISOString())
-      .lte('fecha', toDate.toISOString());
+      .lte('fecha', toDateEndOfDay.toISOString());
 
     if (comprasError) {
       this.logger.error('[AI KPI ANALYSIS] Error obteniendo compras:', comprasError);
@@ -85,13 +89,13 @@ export class AiService {
     const clientesActivos = clientesUnicos.size;
 
     // 3. Clientes nuevos vs recurrentes en el período
-    // Clientes nuevos: primera compra en este período
+    // Clientes nuevos: primera compra en este período (usando toDateEndOfDay)
     const { data: clientesNuevosData } = await client
       .from('clientes')
       .select('id')
       .eq('id_tienda', tiendaId)
       .gte('creado_en', fromDate.toISOString())
-      .lte('creado_en', toDate.toISOString());
+      .lte('creado_en', toDateEndOfDay.toISOString());
 
     const clientesNuevos = clientesNuevosData?.length || 0;
     const clientesRecurrentes = clientesActivos - clientesNuevos;
