@@ -1,0 +1,88 @@
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { SupabaseService } from '../../supabase/supabase.service';
+import { TenantContext } from '../../tenant/entities/tenant-context.entity';
+
+/**
+ * Guard para proteger rutas de administración de tiendas
+ * Verifica el token JWT personalizado (base64) generado durante el login de admin
+ *
+ * IMPORTANTE: Este guard debe usarse DESPUÉS de TenantResolverMiddleware
+ *
+ * Uso:
+ * @UseGuards(AdminAuthGuard)
+ * @Get('admin/dashboard/resumen')
+ * async getDashboard(@Tenant() tenant: TenantContext) { ... }
+ */
+@Injectable()
+export class AdminAuthGuard implements CanActivate {
+  constructor(private supabaseService: SupabaseService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const tenant: TenantContext = request.tenant;
+
+    // Extraer el token del header Authorization
+    const authHeader = request.headers.authorization;
+    if (!authHeader) {
+      throw new UnauthorizedException('No se proporcionó token de autenticación');
+    }
+
+    // El formato esperado es: "Bearer <token>"
+    const [bearer, token] = authHeader.split(' ');
+    if (bearer !== 'Bearer' || !token) {
+      throw new UnauthorizedException('Formato de token inválido. Use: Bearer <token>');
+    }
+
+    try {
+      // Decodificar el token base64
+      const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf-8'));
+
+      // Verificar que el token no haya expirado
+      if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
+        throw new UnauthorizedException('Token expirado');
+      }
+
+      // Verificar que el token es para un admin
+      if (decoded.role !== 'admin') {
+        throw new UnauthorizedException('Token no válido para administradores');
+      }
+
+      // Verificar que el token pertenece a la tienda correcta
+      if (!tenant || decoded.tienda_id !== tenant.id) {
+        throw new UnauthorizedException('Token no válido para esta tienda');
+      }
+
+      // Verificar que el admin existe y está activo
+      const supabase = this.supabaseService.getAdminClient();
+      const { data: admin, error } = await supabase
+        .from('admin_users')
+        .select('id, email, nombre, activo')
+        .eq('id', decoded.sub)
+        .eq('id_tienda', tenant.id)
+        .eq('activo', true)
+        .single();
+
+      if (error || !admin) {
+        throw new UnauthorizedException('Usuario administrador no encontrado o inactivo');
+      }
+
+      // Añadir los datos del admin a la request
+      request.user = {
+        id: admin.id,
+        email: admin.email,
+        nombre: admin.nombre,
+        role: 'admin',
+        tienda_id: tenant.id,
+      };
+
+      request.accessToken = token;
+
+      return true;
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('Token inválido');
+    }
+  }
+}
