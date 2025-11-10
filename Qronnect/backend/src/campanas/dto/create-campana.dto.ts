@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDateString, ValidateNested, IsUUID } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDateString, ValidateNested, IsUUID, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { FiltrosSegmentacionDto } from './filtros-segmentacion.dto';
@@ -50,14 +50,14 @@ export class CreateCampanaDto {
   filtros_segmentacion?: FiltrosSegmentacionDto;
 
   @ApiProperty({
-    description: 'Estado inicial de la campaña',
-    enum: ['borrador', 'programada'],
+    description: 'Estado de la campaña',
+    enum: ['borrador', 'programada', 'enviando', 'enviada', 'cancelada'],
     default: 'borrador',
     required: false,
   })
-  @IsEnum(['borrador', 'programada'])
+  @IsEnum(['borrador', 'programada', 'enviando', 'enviada', 'cancelada'])
   @IsOptional()
-  estado?: 'borrador' | 'programada';
+  estado?: 'borrador' | 'programada' | 'enviando' | 'enviada' | 'cancelada';
 
   @ApiProperty({
     description: 'Fecha y hora programada para el envío (ISO 8601)',
@@ -76,4 +76,14 @@ export class CreateCampanaDto {
   @IsUUID()
   @IsOptional()
   id_template?: string;
+
+  @ApiProperty({
+    description: 'Array de IDs de clientes seleccionados manualmente (opcional, tiene prioridad sobre filtros)',
+    example: ['123e4567-e89b-12d3-a456-426614174000', '223e4567-e89b-12d3-a456-426614174001'],
+    required: false,
+  })
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @IsOptional()
+  destinatarios_ids?: string[];
 }

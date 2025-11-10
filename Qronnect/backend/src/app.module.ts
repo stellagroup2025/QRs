@@ -17,6 +17,7 @@ import { SuperAdminModule } from './superadmin/superadmin.module';
 import { BrandingModule } from './config/branding.module';
 import { PromocionesModule } from './promociones/promociones.module';
 import { CampanasModule } from './campanas/campanas.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -37,6 +38,9 @@ import { CampanasModule } from './campanas/campanas.module';
 
     // Módulo de SuperAdmin (acceso global, bypasea multitenancy)
     SuperAdminModule,
+
+    // Módulo de Email (Resend)
+    EmailModule,
 
     // Módulos de dominio
     ClientesModule,
