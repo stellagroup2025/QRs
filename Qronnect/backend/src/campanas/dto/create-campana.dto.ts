@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDateString, ValidateNested, IsUUID, IsArray } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDateString, ValidateNested, IsUUID, IsArray, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { FiltrosSegmentacionDto } from './filtros-segmentacion.dto';
@@ -86,4 +86,23 @@ export class CreateCampanaDto {
   @IsUUID('4', { each: true })
   @IsOptional()
   destinatarios_ids?: string[];
+
+  @ApiProperty({
+    description: 'Tipo de campaña',
+    enum: ['promocional', 'bienvenida', 'cumpleanos', 'reactivacion', 'abandono', 'fidelizacion', 'informativa'],
+    default: 'promocional',
+    required: false,
+  })
+  @IsEnum(['promocional', 'bienvenida', 'cumpleanos', 'reactivacion', 'abandono', 'fidelizacion', 'informativa'])
+  @IsOptional()
+  tipo?: 'promocional' | 'bienvenida' | 'cumpleanos' | 'reactivacion' | 'abandono' | 'fidelizacion' | 'informativa';
+
+  @ApiProperty({
+    description: 'Si es true, cada cliente solo puede recibir esta campaña una vez',
+    default: false,
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  envio_unico?: boolean;
 }

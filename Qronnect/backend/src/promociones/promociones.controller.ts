@@ -20,6 +20,7 @@ import { UpdatePromocionDto } from './dto/update-promocion.dto';
 import { PromocionResponseDto, ListPromocionesDto } from './dto/promocion-response.dto';
 import { CanjearPromocionDto, CanjeResponseDto } from './dto/canjear-promocion.dto';
 import { ValidarCanjeDto, ValidarCanjeResponseDto } from './dto/validar-canje.dto';
+import { CreateFromAiSuggestionDto } from './dto/create-from-ai-suggestion.dto';
 
 /**
  * Controlador para gestión de promociones
@@ -75,6 +76,27 @@ export class PromocionesController {
     @Param('id') id: string,
   ): Promise<PromocionResponseDto> {
     return this.promocionesService.findOne(tiendaId, id);
+  }
+
+  /**
+   * POST /api/admin/promociones/from-ai-suggestion
+   * Crear promoción desde sugerencia de IA (con 1 click)
+   * DEBE IR ANTES de POST /api/admin/promociones para evitar conflictos de routing
+   */
+  @Post('admin/promociones/from-ai-suggestion')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({
+    summary: 'Crear promoción desde sugerencia de IA (Admin)',
+    description: 'Convierte automáticamente una sugerencia de IA en una promoción borrador lista para editar o activar',
+  })
+  @ApiResponse({ status: 201, description: 'Promoción creada desde IA', type: PromocionResponseDto })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  async createFromAiSuggestion(
+    @CurrentTienda() tiendaId: string,
+    @Body() suggestionDto: CreateFromAiSuggestionDto,
+  ): Promise<PromocionResponseDto> {
+    return this.promocionesService.createFromAiSuggestion(tiendaId, suggestionDto);
   }
 
   /**

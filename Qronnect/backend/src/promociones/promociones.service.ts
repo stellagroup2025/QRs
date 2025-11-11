@@ -1,10 +1,11 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
-import { CreatePromocionDto } from './dto/create-promocion.dto';
+import { CreatePromocionDto, TipoPromocion } from './dto/create-promocion.dto';
 import { UpdatePromocionDto } from './dto/update-promocion.dto';
 import { PromocionResponseDto, ListPromocionesDto } from './dto/promocion-response.dto';
 import { CanjearPromocionDto, CanjeResponseDto } from './dto/canjear-promocion.dto';
 import { ValidarCanjeDto, ValidarCanjeResponseDto } from './dto/validar-canje.dto';
+import { CreateFromAiSuggestionDto } from './dto/create-from-ai-suggestion.dto';
 
 @Injectable()
 export class PromocionesService {
@@ -465,5 +466,143 @@ export class PromocionesService {
       creado_en: data.creado_en,
       actualizado_en: data.actualizado_en,
     };
+  }
+
+  /**
+   * Crear promoción desde sugerencia de IA
+   * Convierte automáticamente una sugerencia de IA en una promoción borrador
+   */
+  async createFromAiSuggestion(
+    tiendaId: string,
+    suggestionDto: CreateFromAiSuggestionDto,
+  ): Promise<PromocionResponseDto> {
+    // Inferir tipo de promoción si no se especificó
+    const tipo = suggestionDto.tipo || this.inferirTipoPromocion(suggestionDto.titulo, suggestionDto.descripcion);
+
+    // Calcular valor por defecto según el tipo
+    const valor = suggestionDto.valor !== undefined
+      ? suggestionDto.valor
+      : this.calcularValorPorDefecto(tipo, suggestionDto.titulo, suggestionDto.descripcion);
+
+    // Calcular puntos requeridos (por defecto, valor * 10 o 100 si no hay valor)
+    const puntosRequeridos = suggestionDto.puntos_requeridos !== undefined
+      ? suggestionDto.puntos_requeridos
+      : Math.max(Math.round(valor * 10), 50);
+
+    // Construir descripción completa combinando datos de la IA
+    const descripcionCompleta = this.construirDescripcionCompleta(suggestionDto);
+
+    // Calcular fechas por defecto
+    const fechaInicio = suggestionDto.fecha_inicio || new Date().toISOString();
+    const fechaFin = suggestionDto.fecha_fin || this.calcularFechaFinPorDefecto();
+
+    // Crear DTO de promoción estándar
+    const createDto: CreatePromocionDto = {
+      titulo: suggestionDto.titulo,
+      descripcion: descripcionCompleta,
+      tipo,
+      valor,
+      puntos_requeridos: puntosRequeridos,
+      imagen_url: suggestionDto.imagen_url,
+      activo: suggestionDto.activo !== undefined ? suggestionDto.activo : false, // Borrador por defecto
+      fecha_inicio: fechaInicio,
+      fecha_fin: fechaFin,
+      cantidad_disponible: suggestionDto.cantidad_disponible,
+    };
+
+    // Usar el método create estándar
+    return this.create(tiendaId, createDto);
+  }
+
+  /**
+   * Infiere el tipo de promoción basándose en el título y descripción
+   */
+  private inferirTipoPromocion(titulo: string, descripcion: string): TipoPromocion {
+    const texto = `${titulo} ${descripcion}`.toLowerCase();
+
+    // Buscar patrones comunes
+    if (texto.match(/\d+\s*%|porcentaje|descuento del/)) {
+      return TipoPromocion.DESCUENTO_PORCENTAJE;
+    }
+    if (texto.match(/\d+\s*€|euros de descuento|descuento de \d+/)) {
+      return TipoPromocion.DESCUENTO_FIJO;
+    }
+    if (texto.match(/gratis|gratuito|2x1|3x2|regalo/)) {
+      return TipoPromocion.PRODUCTO_GRATIS;
+    }
+
+    // Por defecto, descuento porcentaje
+    return TipoPromocion.DESCUENTO_PORCENTAJE;
+  }
+
+  /**
+   * Calcula un valor por defecto según el tipo de promoción y el texto
+   */
+  private calcularValorPorDefecto(tipo: TipoPromocion, titulo: string, descripcion: string): number {
+    const texto = `${titulo} ${descripcion}`.toLowerCase();
+
+    // Intentar extraer números del texto
+    if (tipo === TipoPromocion.DESCUENTO_PORCENTAJE) {
+      const porcentajeMatch = texto.match(/(\d+)\s*%/);
+      if (porcentajeMatch) {
+        return parseInt(porcentajeMatch[1]);
+      }
+      return 20; // 20% por defecto
+    }
+
+    if (tipo === TipoPromocion.DESCUENTO_FIJO) {
+      const eurosMatch = texto.match(/(\d+)\s*€/);
+      if (eurosMatch) {
+        return parseInt(eurosMatch[1]);
+      }
+      return 10; // 10€ por defecto
+    }
+
+    // Para producto gratis
+    return 0;
+  }
+
+  /**
+   * Construye una descripción completa combinando todos los campos de la sugerencia
+   */
+  private construirDescripcionCompleta(suggestion: CreateFromAiSuggestionDto): string {
+    let partes: string[] = [];
+
+    // Descripción principal
+    if (suggestion.descripcion) {
+      partes.push(suggestion.descripcion);
+    }
+
+    // Condiciones
+    if (suggestion.condiciones) {
+      partes.push(`\n\n**Condiciones:** ${suggestion.condiciones}`);
+    }
+
+    // Mensaje WhatsApp
+    if (suggestion.mensajeWhatsApp) {
+      partes.push(`\n\n**Mensaje WhatsApp:** ${suggestion.mensajeWhatsApp}`);
+    }
+
+    // Texto cartel
+    if (suggestion.textoCartel) {
+      partes.push(`\n\n**Texto para cartel:** ${suggestion.textoCartel}`);
+    }
+
+    // Estimado de impacto
+    if (suggestion.estimadoImpacto) {
+      partes.push(`\n\n**Impacto esperado:** ${suggestion.estimadoImpacto}`);
+    }
+
+    return partes.join('');
+  }
+
+  /**
+   * Calcula la fecha de fin por defecto (30 días desde ahora)
+   */
+  private calcularFechaFinPorDefecto(): string {
+    const fecha = new Date();
+    fecha.setDate(fecha.getDate() + 30); // 30 días
+    fecha.setHours(23, 59, 59, 999); // Final del día
+    return fecha.toISOString();
   }
 }

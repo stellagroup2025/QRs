@@ -17,6 +17,7 @@ import { CreateCampanaDto } from './dto/create-campana.dto';
 import { UpdateCampanaDto } from './dto/update-campana.dto';
 import { FiltrosSegmentacionDto } from './dto/filtros-segmentacion.dto';
 import { PreviewDestinatariosDto } from './dto/preview-destinatarios.dto';
+import { SugerenciasFiltrosDto } from './dto/sugerencias-filtros.dto';
 
 /**
  * Controlador para gestión de campañas de email marketing
@@ -62,6 +63,42 @@ export class CampanasController {
   @ApiResponse({ status: 200, description: 'Lista de campañas' })
   async findAll(@CurrentTienda() tiendaId: string) {
     return this.campanasService.findAll(tiendaId);
+  }
+
+  /**
+   * GET /api/admin/campanas/sugerencias-filtros
+   * Obtiene sugerencias predefinidas de filtros
+   * NOTA: DEBE ir ANTES de @Get(':id') para evitar que NestJS lo trate como un parámetro
+   */
+  @Get('sugerencias-filtros')
+  @ApiOperation({
+    summary: 'Obtener sugerencias de filtros',
+    description: 'Devuelve sugerencias predefinidas para ayudar a crear filtros de segmentación',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Sugerencias obtenidas exitosamente',
+    type: SugerenciasFiltrosDto,
+  })
+  async getSugerenciasFiltros(): Promise<SugerenciasFiltrosDto> {
+    return this.campanasService.getSugerenciasFiltros();
+  }
+
+  /**
+   * GET /api/admin/campanas/analisis-segmentos
+   * Analiza la base de datos de clientes y sugiere segmentos con porcentajes
+   */
+  @Get('analisis-segmentos')
+  @ApiOperation({
+    summary: 'Analizar segmentos de clientes',
+    description: 'Analiza la base de datos y devuelve sugerencias de segmentos con porcentajes',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Análisis de segmentos obtenido exitosamente',
+  })
+  async getAnalisisSegmentos(@CurrentTienda() tiendaId: string) {
+    return this.campanasService.getAnalisisSegmentos(tiendaId);
   }
 
   /**
