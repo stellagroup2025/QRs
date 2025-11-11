@@ -5,6 +5,7 @@ import { CreateCampanaDto } from './dto/create-campana.dto';
 import { UpdateCampanaDto } from './dto/update-campana.dto';
 import { FiltrosSegmentacionDto } from './dto/filtros-segmentacion.dto';
 import { PreviewDestinatariosDto } from './dto/preview-destinatarios.dto';
+import { SugerenciasFiltrosDto } from './dto/sugerencias-filtros.dto';
 
 @Injectable()
 export class CampanasService {

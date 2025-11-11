@@ -28,7 +28,7 @@ export class AiService {
    * IMPORTANTE: Multi-tenant - solo datos de la tienda especificada
    */
   async analyzeKpis(tiendaId: string, requestDto: KpiAnalysisRequestDto) {
-    const client = this.supabase.getClient();
+    const client = this.supabase.getAdminClient();
 
     // Calcular fechas del período
     const now = new Date();
@@ -151,7 +151,7 @@ export class AiService {
    * Usa datos agregados de la tienda para proponer promociones relevantes
    */
   async generatePromoIdeas(tiendaId: string, requestDto: PromoIdeasRequestDto) {
-    const client = this.supabase.getClient();
+    const client = this.supabase.getAdminClient();
 
     this.logger.log(`[AI PROMO IDEAS] Generando ideas para tienda ${tiendaId}`);
 
@@ -229,7 +229,7 @@ export class AiService {
    * la descripción del segmento calculada previamente
    */
   async generateEmailCampaignIdeas(tiendaId: string, requestDto: EmailCampaignRequestDto) {
-    const client = this.supabase.getClient();
+    const client = this.supabase.getAdminClient();
 
     this.logger.log(`[AI EMAIL CAMPAIGN] Generando campaña para tienda ${tiendaId}`);
 

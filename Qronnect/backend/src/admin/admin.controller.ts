@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Query, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, UseGuards, Query, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { ComprasService } from '../compras/compras.service';
@@ -14,6 +14,8 @@ import { DashboardResumenDto } from './dto/dashboard-resumen.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
 import { ListClientesDto } from './dto/list-clientes.dto';
 import { ListComprasDto } from './dto/list-compras.dto';
+import { UpdateClienteDto } from './dto/update-cliente.dto';
+import { UpdateCompraDto } from '../compras/dto/update-compra.dto';
 
 /**
  * Controlador de endpoints para el panel de administración de tiendas
@@ -235,7 +237,7 @@ export class AdminController {
     summary: 'Obtener cupones de un cliente',
     description: 'Devuelve los cupones del cliente filtrados por estado',
   })
-  @ApiQuery({ name: 'estado', required: false, enum: ['activo', 'usado', 'expirado'], description: 'Filtrar por estado' })
+  @ApiQuery({ name: 'estado', required: false, enum: ['pendiente', 'usado', 'expirado', 'cancelado'], description: 'Filtrar por estado' })
   @ApiResponse({ status: 200, description: 'Cupones del cliente' })
   @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
   async getClienteCupones(
@@ -244,6 +246,26 @@ export class AdminController {
     @Query('estado') estado?: string,
   ) {
     return this.adminService.getClienteCupones(tiendaId, clienteId, estado);
+  }
+
+  /**
+   * GET /api/admin/clientes/:id/cupones-disponibles
+   * Obtiene solo los cupones disponibles (no usados, no expirados) de un cliente
+   */
+  @Get('clientes/:id/cupones-disponibles')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({
+    summary: 'Obtener cupones disponibles de un cliente',
+    description: 'Devuelve solo los cupones que pueden ser canjeados (estado pendiente y no expirados)',
+  })
+  @ApiResponse({ status: 200, description: 'Cupones disponibles del cliente' })
+  @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
+  async getClienteCuponesDisponibles(
+    @CurrentTienda() tiendaId: string,
+    @Param('id') clienteId: string,
+  ) {
+    return this.adminService.getClienteCuponesDisponibles(tiendaId, clienteId);
   }
 
   /**
@@ -287,6 +309,49 @@ export class AdminController {
   }
 
   /**
+   * PUT /api/admin/clientes/:id
+   * Actualiza los datos de un cliente
+   */
+  @Put('clientes/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({
+    summary: 'Actualizar cliente',
+    description: 'Actualiza los datos de un cliente existente. Todos los campos son opcionales.',
+  })
+  @ApiResponse({ status: 200, description: 'Cliente actualizado exitosamente' })
+  @ApiResponse({ status: 400, description: 'Email o teléfono ya en uso' })
+  @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
+  async updateCliente(
+    @CurrentTienda() tiendaId: string,
+    @Param('id') clienteId: string,
+    @Body() updateDto: UpdateClienteDto,
+  ) {
+    return this.adminService.updateCliente(tiendaId, clienteId, updateDto);
+  }
+
+  /**
+   * DELETE /api/admin/clientes/:id
+   * Elimina un cliente (soft delete - lo marca como inactivo)
+   */
+  @Delete('clientes/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({
+    summary: 'Eliminar cliente',
+    description: 'Desactiva un cliente (soft delete). Los datos históricos se mantienen.',
+  })
+  @ApiResponse({ status: 200, description: 'Cliente eliminado exitosamente' })
+  @ApiResponse({ status: 400, description: 'Cliente ya está inactivo' })
+  @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
+  async deleteCliente(
+    @CurrentTienda() tiendaId: string,
+    @Param('id') clienteId: string,
+  ) {
+    return this.adminService.deleteCliente(tiendaId, clienteId);
+  }
+
+  /**
    * POST /api/admin/compras
    * Alias de /api/admin/compras/registrar para compatibilidad
    */
@@ -303,5 +368,50 @@ export class AdminController {
     @Body() registrarDto: RegistrarCompraDto,
   ): Promise<CompraResponseDto> {
     return this.comprasService.registrarCompra(tenant, registrarDto);
+  }
+
+  /**
+   * PUT /api/admin/compras/:id
+   * Actualiza una compra existente (importe y/o notas)
+   * Si se modifica el importe, recalcula automáticamente los puntos
+   */
+  @Put('compras/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({
+    summary: 'Actualizar compra',
+    description: 'Actualiza el importe y/o notas de una compra. Si se modifica el importe, los puntos se recalculan automáticamente.',
+  })
+  @ApiResponse({ status: 200, description: 'Compra actualizada exitosamente' })
+  @ApiResponse({ status: 400, description: 'No se proporcionaron cambios' })
+  @ApiResponse({ status: 404, description: 'Compra no encontrada' })
+  async updateCompra(
+    @Tenant() tenant: TenantContext,
+    @CurrentTienda() tiendaId: string,
+    @Param('id') compraId: string,
+    @Body() updateDto: UpdateCompraDto,
+  ) {
+    const puntosPorEuro = tenant.configuracion.puntos_por_euro || 1;
+    return this.comprasService.updateCompra(tiendaId, compraId, updateDto, puntosPorEuro);
+  }
+
+  /**
+   * DELETE /api/admin/compras/:id
+   * Elimina una compra y resta los puntos del cliente
+   */
+  @Delete('compras/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({
+    summary: 'Eliminar compra',
+    description: 'Elimina una compra y resta los puntos otorgados del cliente. Si había un cupón usado, se marca como cancelado.',
+  })
+  @ApiResponse({ status: 200, description: 'Compra eliminada exitosamente' })
+  @ApiResponse({ status: 404, description: 'Compra no encontrada' })
+  async deleteCompra(
+    @CurrentTienda() tiendaId: string,
+    @Param('id') compraId: string,
+  ) {
+    return this.comprasService.deleteCompra(tiendaId, compraId);
   }
 }

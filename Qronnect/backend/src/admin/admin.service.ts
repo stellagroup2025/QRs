@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { DashboardResumenDto } from './dto/dashboard-resumen.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
 import { ListClientesDto } from './dto/list-clientes.dto';
+import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { AnalyticsDto, AnalyticsQueryDto, DataPoint, TopCliente, RangoPuntos } from './dto/analytics.dto';
 import * as bcrypt from 'bcrypt';
 
@@ -630,20 +631,22 @@ export class AdminService {
     const supabase = this.supabaseService.getAdminClient();
 
     let query = supabase
-      .from('cupones')
+      .from('canjes')
       .select(`
         id,
-        codigo,
+        codigo_canje,
         estado,
         fecha_canje,
         fecha_uso,
         fecha_expiracion,
-        promocion:promociones(
+        puntos_usados,
+        promociones (
           id,
           titulo,
           descripcion,
           tipo,
-          valor
+          valor,
+          imagen_url
         )
       `)
       .eq('id_cliente', clienteId)
@@ -663,19 +666,64 @@ export class AdminService {
   }
 
   /**
+   * Obtiene solo los cupones DISPONIBLES de un cliente (no usados, no expirados)
+   * Este endpoint es útil para mostrar cupones canjeables en el formulario de venta
+   */
+  async getClienteCuponesDisponibles(tiendaId: string, clienteId: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const ahora = new Date().toISOString();
+
+    const { data: cupones, error } = await supabase
+      .from('canjes')
+      .select(`
+        id,
+        codigo_canje,
+        estado,
+        fecha_canje,
+        fecha_expiracion,
+        puntos_usados,
+        promociones (
+          id,
+          titulo,
+          descripcion,
+          tipo,
+          valor,
+          imagen_url
+        )
+      `)
+      .eq('id_cliente', clienteId)
+      .eq('id_tienda', tiendaId)
+      .eq('estado', 'pendiente')
+      .or(`fecha_expiracion.is.null,fecha_expiracion.gt.${ahora}`)
+      .order('fecha_canje', { ascending: false });
+
+    if (error) {
+      throw new BadRequestException('Error al obtener cupones disponibles');
+    }
+
+    return cupones || [];
+  }
+
+  /**
    * Obtiene todas las promociones disponibles de la tienda
    */
   async getPromocionesDisponibles(tiendaId: string) {
     const supabase = this.supabaseService.getAdminClient();
 
+    const ahora = new Date().toISOString();
+
     const { data: promociones, error } = await supabase
       .from('promociones')
       .select('*')
       .eq('id_tienda', tiendaId)
-      .eq('disponible', true)
+      .eq('activo', true)
+      .lte('fecha_inicio', ahora)
+      .or(`fecha_fin.is.null,fecha_fin.gt.${ahora}`)
       .order('puntos_requeridos', { ascending: true });
 
     if (error) {
+      console.error('Error obteniendo promociones:', error);
       throw new BadRequestException('Error al obtener promociones');
     }
 
@@ -712,8 +760,18 @@ export class AdminService {
       throw new BadRequestException('Promoción no encontrada');
     }
 
-    if (!promocion.disponible) {
-      throw new BadRequestException('Promoción no disponible');
+    // Verificar que la promoción está activa
+    if (!promocion.activo) {
+      throw new BadRequestException('Promoción no activa');
+    }
+
+    // Verificar fechas de vigencia
+    const ahora = new Date();
+    if (promocion.fecha_inicio && new Date(promocion.fecha_inicio) > ahora) {
+      throw new BadRequestException('Promoción aún no está disponible');
+    }
+    if (promocion.fecha_fin && new Date(promocion.fecha_fin) < ahora) {
+      throw new BadRequestException('Promoción expirada');
     }
 
     // Verificar que el cliente tiene suficientes puntos
@@ -730,18 +788,21 @@ export class AdminService {
       }
     }
 
-    // Generar código único para el cupón
-    const codigo = `${promocion.titulo.substring(0, 3).toUpperCase()}-${Date.now().toString().slice(-6)}`;
+    // Generar código único para el cupón usando la función de la BD
+    // El código se generará automáticamente por el trigger si existe,
+    // o lo generamos manualmente
+    const codigoBase = Math.random().toString(36).substring(2, 14).toUpperCase();
 
-    // Crear el cupón
+    // Crear el cupón (tabla: canjes)
     const { data: cupon, error: cuponError } = await supabase
-      .from('cupones')
+      .from('canjes')
       .insert({
         id_cliente: clienteId,
         id_promocion: promocionId,
         id_tienda: tiendaId,
-        codigo,
-        estado: 'activo',
+        puntos_usados: promocion.puntos_requeridos,
+        estado: 'pendiente',
+        codigo_canje: codigoBase,
         fecha_canje: new Date().toISOString(),
         fecha_expiracion: promocion.fecha_fin || null,
       })
@@ -782,6 +843,136 @@ export class AdminService {
         titulo: promocion.titulo,
         tipo: promocion.tipo,
         valor: promocion.valor,
+      },
+    };
+  }
+
+  /**
+   * Actualiza los datos de un cliente
+   */
+  async updateCliente(tiendaId: string, clienteId: string, updateDto: UpdateClienteDto) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Verificar que el cliente existe y pertenece a esta tienda
+    const { data: clienteExistente, error: clienteError } = await supabase
+      .from('clientes')
+      .select('id, email, telefono')
+      .eq('id', clienteId)
+      .eq('id_tienda', tiendaId)
+      .single();
+
+    if (clienteError || !clienteExistente) {
+      throw new NotFoundException('Cliente no encontrado');
+    }
+
+    // Si se está cambiando el email, verificar que no esté en uso
+    if (updateDto.email && updateDto.email !== clienteExistente.email) {
+      const { data: emailDuplicado } = await supabase
+        .from('clientes')
+        .select('id')
+        .eq('email', updateDto.email)
+        .eq('id_tienda', tiendaId)
+        .neq('id', clienteId)
+        .single();
+
+      if (emailDuplicado) {
+        throw new BadRequestException('El email ya está en uso por otro cliente');
+      }
+    }
+
+    // Si se está cambiando el teléfono, verificar que no esté en uso
+    if (updateDto.telefono && updateDto.telefono !== clienteExistente.telefono) {
+      const { data: telefonoDuplicado } = await supabase
+        .from('clientes')
+        .select('id')
+        .eq('telefono', updateDto.telefono)
+        .eq('id_tienda', tiendaId)
+        .neq('id', clienteId)
+        .single();
+
+      if (telefonoDuplicado) {
+        throw new BadRequestException('El teléfono ya está en uso por otro cliente');
+      }
+    }
+
+    // Actualizar cliente
+    const { data: clienteActualizado, error: updateError } = await supabase
+      .from('clientes')
+      .update({
+        ...updateDto,
+        actualizado_en: new Date().toISOString(),
+      })
+      .eq('id', clienteId)
+      .eq('id_tienda', tiendaId)
+      .select()
+      .single();
+
+    if (updateError || !clienteActualizado) {
+      console.error('Error actualizando cliente:', updateError);
+      throw new BadRequestException('Error al actualizar el cliente');
+    }
+
+    return {
+      message: 'Cliente actualizado exitosamente',
+      cliente: clienteActualizado,
+    };
+  }
+
+  /**
+   * Elimina un cliente (soft delete)
+   * IMPORTANTE: No elimina físicamente, solo marca como inactivo
+   */
+  async deleteCliente(tiendaId: string, clienteId: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Verificar que el cliente existe y pertenece a esta tienda
+    const { data: cliente, error: clienteError } = await supabase
+      .from('clientes')
+      .select(`
+        id,
+        nombre,
+        activo,
+        compras:compras(count),
+        canjes:canjes(count)
+      `)
+      .eq('id', clienteId)
+      .eq('id_tienda', tiendaId)
+      .single();
+
+    if (clienteError || !cliente) {
+      throw new NotFoundException('Cliente no encontrado');
+    }
+
+    if (!cliente.activo) {
+      throw new BadRequestException('El cliente ya está inactivo');
+    }
+
+    // Información sobre compras y cupones
+    const comprasCount = cliente.compras?.[0]?.count || 0;
+    const canjesCount = cliente.canjes?.[0]?.count || 0;
+
+    // Marcar como inactivo (soft delete)
+    const { error: deleteError } = await supabase
+      .from('clientes')
+      .update({
+        activo: false,
+        actualizado_en: new Date().toISOString(),
+      })
+      .eq('id', clienteId)
+      .eq('id_tienda', tiendaId);
+
+    if (deleteError) {
+      console.error('Error eliminando cliente:', deleteError);
+      throw new BadRequestException('Error al eliminar el cliente');
+    }
+
+    return {
+      message: 'Cliente eliminado exitosamente',
+      info: {
+        nombre: cliente.nombre,
+        compras: comprasCount,
+        cupones: canjesCount,
+        nota: 'El cliente ha sido desactivado. Sus datos históricos se mantienen.',
       },
     };
   }

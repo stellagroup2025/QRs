@@ -40,4 +40,13 @@ export class RegistrarCompraDto {
   @IsOptional()
   @IsString()
   notas?: string;
+
+  @ApiPropertyOptional({
+    description: 'ID del cupón a canjear en esta compra (opcional)',
+    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  cuponId?: string;
 }

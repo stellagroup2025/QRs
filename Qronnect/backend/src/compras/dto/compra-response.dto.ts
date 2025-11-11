@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
  * DTO de respuesta al registrar una compra
@@ -29,6 +29,24 @@ export class CompraResponseDto {
     example: 25.5,
   })
   importe: number;
+
+  @ApiPropertyOptional({
+    description: 'Descuento aplicado (si se usó un cupón)',
+    example: 5.0,
+  })
+  descuento_aplicado?: number;
+
+  @ApiPropertyOptional({
+    description: 'Cupón usado en esta compra',
+    example: {
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      titulo: '5€ de descuento',
+    },
+  })
+  cupon_usado?: {
+    id: string;
+    titulo: string;
+  };
 
   @ApiProperty({
     description: 'Puntos otorgados por esta compra',

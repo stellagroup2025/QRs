@@ -116,9 +116,47 @@ export class FiltrosSegmentacionDto {
     description: 'Género del cliente',
     example: 'mujer',
     required: false,
-    enum: ['hombre', 'mujer', 'otro', 'no_especificado'],
+    enum: ['masculino', 'femenino', 'otro', 'prefiero_no_decir'],
   })
   @IsOptional()
-  @IsEnum(['hombre', 'mujer', 'otro', 'no_especificado'])
+  @IsEnum(['masculino', 'femenino', 'otro', 'prefiero_no_decir'])
   genero?: string;
+
+  // Filtros por historial de campañas
+  @ApiProperty({
+    description: 'Excluir clientes que ya recibieron esta campaña específica',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  excluir_campana_id?: string;
+
+  @ApiProperty({
+    description: 'Excluir clientes que recibieron cualquier campaña en los últimos N días',
+    example: 30,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  excluir_campanas_ultimos_dias?: number;
+
+  @ApiProperty({
+    description: 'Solo incluir clientes que NO han recibido campañas (nuevos para campañas)',
+    example: true,
+    required: false,
+  })
+  @IsOptional()
+  solo_sin_campanas?: boolean;
+
+  @ApiProperty({
+    description: 'Días mínimos desde la última campaña recibida',
+    example: 30,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  dias_desde_ultima_campana_min?: number;
 }
