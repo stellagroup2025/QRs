@@ -20,6 +20,7 @@ import { CampanasModule } from './campanas/campanas.module';
 import { EmailModule } from './email/email.module';
 import { AiModule } from './ai/ai.module';
 import { ReferidosModule } from './referidos/referidos.module';
+import { UsuariosTiendaModule } from './usuarios-tienda/usuarios-tienda.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { ReferidosModule } from './referidos/referidos.module';
     PromocionesModule,
     CampanasModule,
     ReferidosModule,
+    UsuariosTiendaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,12 +1,16 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BrandingService } from './branding.service';
+import { LandingService } from './landing.service';
 import { Tenant } from '../tenant/decorators/tenant.decorator';
 
 @ApiTags('Config')
 @Controller('config')
 export class BrandingController {
-  constructor(private readonly brandingService: BrandingService) {}
+  constructor(
+    private readonly brandingService: BrandingService,
+    private readonly landingService: LandingService,
+  ) {}
 
   @Get('branding')
   @ApiOperation({
@@ -33,5 +37,35 @@ export class BrandingController {
   })
   async getBranding(@Tenant('id') idTienda: string) {
     return this.brandingService.getBranding(idTienda);
+  }
+
+  @Get('landing')
+  @ApiOperation({
+    summary: 'Obtener configuración de textos de landing page',
+    description:
+      'Endpoint público que retorna todos los textos configurables de la landing page (hero, servicios, beneficios, testimonios, CTA) basado en el tenant del request',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Configuración de landing retornada exitosamente',
+    schema: {
+      example: {
+        hero_titulo_principal: 'Impulsa tu negocio',
+        hero_titulo_destacado: 'al siguiente nivel',
+        hero_subtitulo: 'Sistema integral de fidelización y gestión de clientes para negocios modernos.',
+        hero_cta_principal: 'Solicitar Información',
+        hero_cta_secundario: 'Acceder',
+        servicios_titulo: 'Soluciones completas',
+        servicio_1_titulo: 'Gestión de Clientes',
+        servicio_1_descripcion: 'Sistema completo para gestionar tu base de clientes...',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Configuración de landing no encontrada',
+  })
+  async getLanding(@Tenant('id') idTienda: string) {
+    return this.landingService.getLandingConfig(idTienda);
   }
 }
