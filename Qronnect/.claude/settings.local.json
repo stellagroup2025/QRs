@@ -58,7 +58,10 @@
       "Bash(git config user.name)",
       "Bash(git config user.email)",
       "Bash(git stash pop)",
-      "Bash(git add Qronnect/.claude/settings.local.json)"
+      "Bash(git add Qronnect/.claude/settings.local.json)",
+      "Bash(GIT_AUTHOR_NAME=\"Omar Somoza\" GIT_AUTHOR_EMAIL=\"osomoza@example.com\" GIT_COMMITTER_NAME=\"Omar Somoza\" GIT_COMMITTER_EMAIL=\"osomoza@example.com\" git commit -m \"$(cat <<''EOF''\nImplementación completa del sistema de información de tiendas y mejoras\n\nNuevas funcionalidades:\n- Sistema de información de tienda (horarios, contacto, redes sociales)\n- Sistema de referidos completo\n- Sistema de regalos de bienvenida\n- Sistema SMS híbrido (modo global y propio)\n- Configuración de IA extendida\n- Sender ID alfanumérico para SMS\n- Análisis de segmentos de clientes con IA\n- Generación de SMS con IA\n\nBackend:\n- Nuevos endpoints para configurar información de tienda\n- Endpoint público para clientes ver info de tienda\n- Cálculo automático de estado abierto/cerrado\n- Sistema de campañas SMS completo\n- Integración con Twilio para envío de SMS\n- Sistema de referidos con códigos únicos\n- Sistema de regalos de bienvenida automático\n- Migraciones de base de datos aplicadas\n\nFrontend:\n- Panel de configuración de información de tienda\n- Tarjeta de información de tienda para clientes\n- Botones de contacto (teléfono, WhatsApp, email)\n- Visualización de horarios y redes sociales\n- Badge de estado abierto/cerrado\n\nMigraciones:\n- add_genero_to_clientes\n- create_sms_system\n- extend_campanas_sms\n- sistema_regalos_bienvenida\n- sistema_referidos\n- config_ia_extensa\n- limites_api_keys_ia\n- add_store_info_fields\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git stash drop)",
+      "Bash(git push --force-with-lease origin main)"
     ],
     "deny": [],
     "ask": []
