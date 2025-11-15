@@ -1,4 +1,14 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDateString, ValidateNested, IsUUID, IsArray, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsDateString,
+  ValidateNested,
+  IsUUID,
+  IsArray,
+  IsBoolean,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { FiltrosSegmentacionDto } from './filtros-segmentacion.dto';
@@ -25,7 +35,8 @@ export class CreateCampanaDto {
 
   @ApiProperty({
     description: 'Contenido HTML del email',
-    example: '<html><body><h1>Hola {{nombre}}</h1><p>Tenemos una oferta especial para ti...</p></body></html>',
+    example:
+      '<html><body><h1>Hola {{nombre}}</h1><p>Tenemos una oferta especial para ti...</p></body></html>',
   })
   @IsString()
   @IsNotEmpty()
@@ -78,7 +89,8 @@ export class CreateCampanaDto {
   id_template?: string;
 
   @ApiProperty({
-    description: 'Array de IDs de clientes seleccionados manualmente (opcional, tiene prioridad sobre filtros)',
+    description:
+      'Array de IDs de clientes seleccionados manualmente (opcional, tiene prioridad sobre filtros)',
     example: ['123e4567-e89b-12d3-a456-426614174000', '223e4567-e89b-12d3-a456-426614174001'],
     required: false,
   })
@@ -89,13 +101,36 @@ export class CreateCampanaDto {
 
   @ApiProperty({
     description: 'Tipo de campaña',
-    enum: ['promocional', 'bienvenida', 'cumpleanos', 'reactivacion', 'abandono', 'fidelizacion', 'informativa'],
+    enum: [
+      'promocional',
+      'bienvenida',
+      'cumpleanos',
+      'reactivacion',
+      'abandono',
+      'fidelizacion',
+      'informativa',
+    ],
     default: 'promocional',
     required: false,
   })
-  @IsEnum(['promocional', 'bienvenida', 'cumpleanos', 'reactivacion', 'abandono', 'fidelizacion', 'informativa'])
+  @IsEnum([
+    'promocional',
+    'bienvenida',
+    'cumpleanos',
+    'reactivacion',
+    'abandono',
+    'fidelizacion',
+    'informativa',
+  ])
   @IsOptional()
-  tipo?: 'promocional' | 'bienvenida' | 'cumpleanos' | 'reactivacion' | 'abandono' | 'fidelizacion' | 'informativa';
+  tipo?:
+    | 'promocional'
+    | 'bienvenida'
+    | 'cumpleanos'
+    | 'reactivacion'
+    | 'abandono'
+    | 'fidelizacion'
+    | 'informativa';
 
   @ApiProperty({
     description: 'Si es true, cada cliente solo puede recibir esta campaña una vez',

@@ -23,7 +23,7 @@ async function bootstrap() {
       }
 
       // Verificar si el origin está en la lista permitida
-      const isAllowed = allowedOrigins.some(allowed => {
+      const isAllowed = allowedOrigins.some((allowed) => {
         if (typeof allowed === 'string') {
           return allowed === origin;
         } else if (allowed instanceof RegExp) {

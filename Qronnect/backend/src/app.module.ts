@@ -19,6 +19,7 @@ import { PromocionesModule } from './promociones/promociones.module';
 import { CampanasModule } from './campanas/campanas.module';
 import { EmailModule } from './email/email.module';
 import { AiModule } from './ai/ai.module';
+import { ReferidosModule } from './referidos/referidos.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { AiModule } from './ai/ai.module';
     BrandingModule,
     PromocionesModule,
     CampanasModule,
+    ReferidosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -70,7 +72,7 @@ export class AppModule implements NestModule {
     consumer
       .apply(TenantResolverMiddleware)
       .exclude(
-        'superadmin/(.*)',  // Excluir todas las rutas de superadmin
+        'superadmin/(.*)', // Excluir todas las rutas de superadmin
         'api/superadmin/(.*)',
       )
       .forRoutes('*'); // Aplicar a todas las demás rutas

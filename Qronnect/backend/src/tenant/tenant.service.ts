@@ -154,7 +154,10 @@ export class TenantService {
       .eq('activo', true)
       .single();
 
-    console.log('  - Resultado búsqueda por dominio_personalizado:', tienda ? 'ENCONTRADO' : 'NO ENCONTRADO');
+    console.log(
+      '  - Resultado búsqueda por dominio_personalizado:',
+      tienda ? 'ENCONTRADO' : 'NO ENCONTRADO',
+    );
     if (error2) console.log('  - Error:', error2);
 
     if (tienda) {

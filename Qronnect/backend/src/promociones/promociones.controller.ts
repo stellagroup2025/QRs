@@ -1,15 +1,12 @@
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiResponse,
+  ApiQuery,
+  ApiParam,
+} from '@nestjs/swagger';
 import { PromocionesService } from './promociones.service';
 import { AdminAuthGuard } from '../auth/guards/admin-auth.guard';
 import { ClientAuthGuard } from '../auth/guards/client-auth.guard';
@@ -88,9 +85,14 @@ export class PromocionesController {
   @ApiBearerAuth('JWT')
   @ApiOperation({
     summary: 'Crear promoción desde sugerencia de IA (Admin)',
-    description: 'Convierte automáticamente una sugerencia de IA en una promoción borrador lista para editar o activar',
+    description:
+      'Convierte automáticamente una sugerencia de IA en una promoción borrador lista para editar o activar',
   })
-  @ApiResponse({ status: 201, description: 'Promoción creada desde IA', type: PromocionResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Promoción creada desde IA',
+    type: PromocionResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   async createFromAiSuggestion(
     @CurrentTienda() tiendaId: string,
@@ -174,7 +176,11 @@ export class PromocionesController {
     summary: 'Validar canje (Admin)',
     description: 'Valida un cupón canjeado por un cliente usando el código del canje',
   })
-  @ApiResponse({ status: 200, description: 'Canje validado exitosamente', type: ValidarCanjeResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Canje validado exitosamente',
+    type: ValidarCanjeResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Cupón ya usado, expirado o cancelado' })
   @ApiResponse({ status: 404, description: 'Código de canje no encontrado' })
   async validarCanje(
@@ -200,7 +206,11 @@ export class PromocionesController {
     summary: 'Listar promociones disponibles (Cliente)',
     description: 'Obtiene las promociones activas y disponibles para canjear',
   })
-  @ApiResponse({ status: 200, description: 'Promociones disponibles', type: [PromocionResponseDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Promociones disponibles',
+    type: [PromocionResponseDto],
+  })
   async getPromocionesDisponibles(
     @CurrentTienda() tiendaId: string,
   ): Promise<PromocionResponseDto[]> {
@@ -218,7 +228,11 @@ export class PromocionesController {
     summary: 'Canjear promoción (Cliente)',
     description: 'Canjea una promoción usando los puntos acumulados del cliente',
   })
-  @ApiResponse({ status: 201, description: 'Promoción canjeada exitosamente', type: CanjeResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Promoción canjeada exitosamente',
+    type: CanjeResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Puntos insuficientes o promoción no disponible' })
   @ApiResponse({ status: 404, description: 'Promoción no encontrada' })
   async canjearPromocion(

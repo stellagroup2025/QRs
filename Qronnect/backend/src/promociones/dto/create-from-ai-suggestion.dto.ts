@@ -75,7 +75,8 @@ export class CreateFromAiSuggestionDto {
   tipo?: TipoPromocion;
 
   @ApiPropertyOptional({
-    description: 'Valor del descuento. Si no se especifica, se usa un valor por defecto según el tipo',
+    description:
+      'Valor del descuento. Si no se especifica, se usa un valor por defecto según el tipo',
     example: 50,
     minimum: 0,
   })
@@ -112,7 +113,8 @@ export class CreateFromAiSuggestionDto {
   activo?: boolean;
 
   @ApiPropertyOptional({
-    description: 'Fecha de inicio de la promoción (ISO 8601). Si no se especifica, se usa la fecha actual',
+    description:
+      'Fecha de inicio de la promoción (ISO 8601). Si no se especifica, se usa la fecha actual',
     example: '2025-11-12T00:00:00Z',
   })
   @IsOptional()
@@ -120,7 +122,8 @@ export class CreateFromAiSuggestionDto {
   fecha_inicio?: string;
 
   @ApiPropertyOptional({
-    description: 'Fecha de fin de la promoción (ISO 8601). Si no se especifica, se calcula 30 días después',
+    description:
+      'Fecha de fin de la promoción (ISO 8601). Si no se especifica, se calcula 30 días después',
     example: '2025-12-12T23:59:59Z',
   })
   @IsOptional()

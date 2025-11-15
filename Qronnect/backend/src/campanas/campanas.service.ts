@@ -60,7 +60,7 @@ export class CampanasService {
         throw new BadRequestException('Error al aplicar filtros de segmentación');
       }
 
-      destinatariosIds = clientes?.map(c => c.id) || [];
+      destinatariosIds = clientes?.map((c) => c.id) || [];
       console.log('[CREATE CAMPAÑA] Destinatarios por filtros:', destinatariosIds.length);
     }
 
@@ -95,7 +95,7 @@ export class CampanasService {
 
     // Crear registros de destinatarios
     if (destinatariosIds.length > 0) {
-      const destinatariosData = destinatariosIds.map(clienteId => ({
+      const destinatariosData = destinatariosIds.map((clienteId) => ({
         id_campana: campana.id,
         id_cliente: clienteId,
         estado: 'pendiente',
@@ -191,7 +191,7 @@ export class CampanasService {
     if (updateDto.estado === 'enviada' && campanaAnterior.estado !== 'enviada') {
       console.log('[UPDATE CAMPAÑA] Estado cambió a enviada, iniciando envío de emails');
       // Ejecutar el envío de forma asíncrona sin bloquear la respuesta
-      this.enviarCampana(tiendaId, campanaId).catch(err => {
+      this.enviarCampana(tiendaId, campanaId).catch((err) => {
         console.error('[UPDATE CAMPAÑA] Error enviando emails:', err);
       });
     }
@@ -431,7 +431,8 @@ export class CampanasService {
     // Obtener destinatarios de la campaña
     const { data: destinatarios, error: destError } = await client
       .from('campanas_destinatarios')
-      .select(`
+      .select(
+        `
         id,
         id_cliente,
         clientes (
@@ -439,7 +440,8 @@ export class CampanasService {
           nombre,
           email
         )
-      `)
+      `,
+      )
       .eq('id_campana', campanaId)
       .eq('estado', 'pendiente');
 
@@ -456,10 +458,7 @@ export class CampanasService {
     console.log(`[ENVIAR CAMPAÑA] Enviando a ${destinatarios.length} destinatarios`);
 
     // Cambiar estado a 'enviando'
-    await client
-      .from('campanas_email')
-      .update({ estado: 'enviando' })
-      .eq('id', campanaId);
+    await client.from('campanas_email').update({ estado: 'enviando' }).eq('id', campanaId);
 
     // Enviar emails
     let enviados = 0;
@@ -498,16 +497,14 @@ export class CampanasService {
           .eq('id', dest.id);
 
         // Registrar en tabla de envíos de campañas
-        await client
-          .from('envios_campanas')
-          .insert({
-            id_campana: campanaId,
-            id_cliente: cliente.id,
-            id_tienda: tiendaId,
-            fecha_envio: new Date().toISOString(),
-            estado: 'enviado',
-            email_destinatario: cliente.email,
-          });
+        await client.from('envios_campanas').insert({
+          id_campana: campanaId,
+          id_cliente: cliente.id,
+          id_tienda: tiendaId,
+          fecha_envio: new Date().toISOString(),
+          estado: 'enviado',
+          email_destinatario: cliente.email,
+        });
       } else {
         fallidos++;
         await client
@@ -519,21 +516,19 @@ export class CampanasService {
           .eq('id', dest.id);
 
         // Registrar envío fallido
-        await client
-          .from('envios_campanas')
-          .insert({
-            id_campana: campanaId,
-            id_cliente: cliente.id,
-            id_tienda: tiendaId,
-            fecha_envio: new Date().toISOString(),
-            estado: 'error',
-            email_destinatario: cliente.email,
-            metadata: { error: result.error },
-          });
+        await client.from('envios_campanas').insert({
+          id_campana: campanaId,
+          id_cliente: cliente.id,
+          id_tienda: tiendaId,
+          fecha_envio: new Date().toISOString(),
+          estado: 'error',
+          email_destinatario: cliente.email,
+          metadata: { error: result.error },
+        });
       }
 
       // Pequeña pausa entre emails
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     // Actualizar estadísticas de la campaña
@@ -561,34 +556,93 @@ export class CampanasService {
         { label: 'Todas las edades', min: 18, max: 100, descripcion: 'Sin filtro de edad' },
       ],
       ticket_medio: [
-        { label: 'Compras pequeñas (<30€)', min: 0, max: 30, descripcion: 'Clientes con ticket medio bajo' },
-        { label: 'Compras medianas (30-100€)', min: 30, max: 100, descripcion: 'Clientes con ticket medio moderado' },
-        { label: 'Compras grandes (>100€)', min: 100, descripcion: 'Clientes con ticket medio alto' },
+        {
+          label: 'Compras pequeñas (<30€)',
+          min: 0,
+          max: 30,
+          descripcion: 'Clientes con ticket medio bajo',
+        },
+        {
+          label: 'Compras medianas (30-100€)',
+          min: 30,
+          max: 100,
+          descripcion: 'Clientes con ticket medio moderado',
+        },
+        {
+          label: 'Compras grandes (>100€)',
+          min: 100,
+          descripcion: 'Clientes con ticket medio alto',
+        },
         { label: 'VIP (>200€)', min: 200, descripcion: 'Clientes premium con compras grandes' },
       ],
       num_visitas: [
         { label: 'Nuevos (1-3 visitas)', min: 1, max: 3, descripcion: 'Clientes nuevos' },
-        { label: 'Ocasionales (4-10 visitas)', min: 4, max: 10, descripcion: 'Clientes ocasionales' },
+        {
+          label: 'Ocasionales (4-10 visitas)',
+          min: 4,
+          max: 10,
+          descripcion: 'Clientes ocasionales',
+        },
         { label: 'Regulares (11-25 visitas)', min: 11, max: 25, descripcion: 'Clientes regulares' },
         { label: 'Frecuentes (>25 visitas)', min: 25, descripcion: 'Clientes muy frecuentes' },
       ],
       dias_ultima_visita: [
-        { label: 'Muy recientes (0-7 días)', min: 0, max: 7, descripcion: 'Visitaron en la última semana' },
-        { label: 'Recientes (8-30 días)', min: 8, max: 30, descripcion: 'Visitaron en el último mes' },
-        { label: 'Inactivos (31-90 días)', min: 31, max: 90, descripcion: 'No visitan desde hace 1-3 meses' },
-        { label: 'Muy inactivos (>90 días)', min: 90, descripcion: 'No visitan desde hace más de 3 meses' },
+        {
+          label: 'Muy recientes (0-7 días)',
+          min: 0,
+          max: 7,
+          descripcion: 'Visitaron en la última semana',
+        },
+        {
+          label: 'Recientes (8-30 días)',
+          min: 8,
+          max: 30,
+          descripcion: 'Visitaron en el último mes',
+        },
+        {
+          label: 'Inactivos (31-90 días)',
+          min: 31,
+          max: 90,
+          descripcion: 'No visitan desde hace 1-3 meses',
+        },
+        {
+          label: 'Muy inactivos (>90 días)',
+          min: 90,
+          descripcion: 'No visitan desde hace más de 3 meses',
+        },
       ],
       puntos: [
-        { label: 'Pocos puntos (<100)', min: 0, max: 100, descripcion: 'Clientes con pocos puntos acumulados' },
-        { label: 'Puntos medios (100-500)', min: 100, max: 500, descripcion: 'Clientes con puntos moderados' },
+        {
+          label: 'Pocos puntos (<100)',
+          min: 0,
+          max: 100,
+          descripcion: 'Clientes con pocos puntos acumulados',
+        },
+        {
+          label: 'Puntos medios (100-500)',
+          min: 100,
+          max: 500,
+          descripcion: 'Clientes con puntos moderados',
+        },
         { label: 'Muchos puntos (>500)', min: 500, descripcion: 'Clientes con muchos puntos' },
-        { label: 'A punto de canjear (cerca del objetivo)', descripcion: 'Clientes que pueden canjear pronto' },
+        {
+          label: 'A punto de canjear (cerca del objetivo)',
+          descripcion: 'Clientes que pueden canjear pronto',
+        },
       ],
       historial_campanas: [
         { label: 'Sin campañas previas', descripcion: 'Clientes que nunca recibieron campañas' },
         { label: 'Hace más de 1 mes', min: 30, descripcion: 'No recibieron campañas en 30+ días' },
-        { label: 'Hace más de 3 meses', min: 90, descripcion: 'No recibieron campañas en 90+ días' },
-        { label: 'Hace más de 6 meses', min: 180, descripcion: 'No recibieron campañas en 180+ días' },
+        {
+          label: 'Hace más de 3 meses',
+          min: 90,
+          descripcion: 'No recibieron campañas en 90+ días',
+        },
+        {
+          label: 'Hace más de 6 meses',
+          min: 180,
+          descripcion: 'No recibieron campañas en 180+ días',
+        },
       ],
     };
   }
@@ -602,7 +656,8 @@ export class CampanasService {
 
     const { data, error } = await client
       .from('envios_campanas')
-      .select(`
+      .select(
+        `
         id_campana,
         fecha_envio,
         estado,
@@ -610,7 +665,8 @@ export class CampanasService {
           nombre,
           tipo
         )
-      `)
+      `,
+      )
       .eq('id_cliente', clienteId)
       .order('fecha_envio', { ascending: false })
       .limit(5);
@@ -642,7 +698,7 @@ export class CampanasService {
     const totalClientes = clientes.length;
 
     // Calcular edad de cada cliente
-    const clientesConEdad = clientes.map(c => {
+    const clientesConEdad = clientes.map((c) => {
       let edad = null;
       if (c.fecha_nacimiento) {
         const hoy = new Date();
@@ -660,98 +716,142 @@ export class CampanasService {
     const segmentos = [];
 
     // Segmentos por edad
-    const menores30 = clientesConEdad.filter(c => c.edad && c.edad < 30).length;
-    const entre30y45 = clientesConEdad.filter(c => c.edad && c.edad >= 30 && c.edad <= 45).length;
-    const mayores45 = clientesConEdad.filter(c => c.edad && c.edad > 45).length;
+    const menores30 = clientesConEdad.filter((c) => c.edad && c.edad < 30).length;
+    const entre30y45 = clientesConEdad.filter((c) => c.edad && c.edad >= 30 && c.edad <= 45).length;
+    const mayores45 = clientesConEdad.filter((c) => c.edad && c.edad > 45).length;
 
     if (menores30 > 0) {
       segmentos.push({
-        descripcion: `Menores de 30 años (${menores30} clientes - ${Math.round(menores30/totalClientes*100)}%)`,
-        porcentaje: Math.round(menores30/totalClientes*100),
+        descripcion: `Menores de 30 años (${menores30} clientes - ${Math.round((menores30 / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((menores30 / totalClientes) * 100),
         cantidad: menores30,
       });
     }
 
     if (entre30y45 > 0) {
       segmentos.push({
-        descripcion: `Entre 30 y 45 años (${entre30y45} clientes - ${Math.round(entre30y45/totalClientes*100)}%)`,
-        porcentaje: Math.round(entre30y45/totalClientes*100),
+        descripcion: `Entre 30 y 45 años (${entre30y45} clientes - ${Math.round((entre30y45 / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((entre30y45 / totalClientes) * 100),
         cantidad: entre30y45,
       });
     }
 
     if (mayores45 > 0) {
       segmentos.push({
-        descripcion: `Mayores de 45 años (${mayores45} clientes - ${Math.round(mayores45/totalClientes*100)}%)`,
-        porcentaje: Math.round(mayores45/totalClientes*100),
+        descripcion: `Mayores de 45 años (${mayores45} clientes - ${Math.round((mayores45 / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((mayores45 / totalClientes) * 100),
         cantidad: mayores45,
       });
     }
 
+    // Segmentos por género
+    const masculino = clientes.filter((c) => c.genero === 'masculino').length;
+    const femenino = clientes.filter((c) => c.genero === 'femenino').length;
+    const otro = clientes.filter((c) => c.genero === 'otro').length;
+    const noEspecificado = clientes.filter(
+      (c) => !c.genero || c.genero === 'prefiero_no_decir',
+    ).length;
+
+    if (masculino > 0) {
+      segmentos.push({
+        descripcion: `Hombres (${masculino} clientes - ${Math.round((masculino / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((masculino / totalClientes) * 100),
+        cantidad: masculino,
+      });
+    }
+
+    if (femenino > 0) {
+      segmentos.push({
+        descripcion: `Mujeres (${femenino} clientes - ${Math.round((femenino / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((femenino / totalClientes) * 100),
+        cantidad: femenino,
+      });
+    }
+
+    if (otro > 0) {
+      segmentos.push({
+        descripcion: `Otro género (${otro} clientes - ${Math.round((otro / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((otro / totalClientes) * 100),
+        cantidad: otro,
+      });
+    }
+
+    if (noEspecificado > 0) {
+      segmentos.push({
+        descripcion: `Género no especificado (${noEspecificado} clientes - ${Math.round((noEspecificado / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((noEspecificado / totalClientes) * 100),
+        cantidad: noEspecificado,
+      });
+    }
+
     // Segmentos por comportamiento de compra
-    const ticketBajo = clientes.filter(c => (c.ticket_medio || 0) < 30).length;
-    const ticketMedio = clientes.filter(c => (c.ticket_medio || 0) >= 30 && (c.ticket_medio || 0) < 100).length;
-    const ticketAlto = clientes.filter(c => (c.ticket_medio || 0) >= 100).length;
+    const ticketBajo = clientes.filter((c) => (c.ticket_medio || 0) < 30).length;
+    const ticketMedio = clientes.filter(
+      (c) => (c.ticket_medio || 0) >= 30 && (c.ticket_medio || 0) < 100,
+    ).length;
+    const ticketAlto = clientes.filter((c) => (c.ticket_medio || 0) >= 100).length;
 
     if (ticketBajo > 0) {
       segmentos.push({
-        descripcion: `Ticket medio bajo (<30€) - ${ticketBajo} clientes (${Math.round(ticketBajo/totalClientes*100)}%)`,
-        porcentaje: Math.round(ticketBajo/totalClientes*100),
+        descripcion: `Ticket medio bajo (<30€) - ${ticketBajo} clientes (${Math.round((ticketBajo / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((ticketBajo / totalClientes) * 100),
         cantidad: ticketBajo,
       });
     }
 
     if (ticketMedio > 0) {
       segmentos.push({
-        descripcion: `Ticket medio (30-100€) - ${ticketMedio} clientes (${Math.round(ticketMedio/totalClientes*100)}%)`,
-        porcentaje: Math.round(ticketMedio/totalClientes*100),
+        descripcion: `Ticket medio (30-100€) - ${ticketMedio} clientes (${Math.round((ticketMedio / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((ticketMedio / totalClientes) * 100),
         cantidad: ticketMedio,
       });
     }
 
     if (ticketAlto > 0) {
       segmentos.push({
-        descripcion: `Ticket alto (>100€) - ${ticketAlto} clientes (${Math.round(ticketAlto/totalClientes*100)}%)`,
-        porcentaje: Math.round(ticketAlto/totalClientes*100),
+        descripcion: `Ticket alto (>100€) - ${ticketAlto} clientes (${Math.round((ticketAlto / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((ticketAlto / totalClientes) * 100),
         cantidad: ticketAlto,
       });
     }
 
     // Segmentos por frecuencia
-    const nuevos = clientes.filter(c => (c.num_compras || 0) <= 3).length;
-    const regulares = clientes.filter(c => (c.num_compras || 0) > 3 && (c.num_compras || 0) <= 10).length;
-    const frecuentes = clientes.filter(c => (c.num_compras || 0) > 10).length;
+    const nuevos = clientes.filter((c) => (c.num_compras || 0) <= 3).length;
+    const regulares = clientes.filter(
+      (c) => (c.num_compras || 0) > 3 && (c.num_compras || 0) <= 10,
+    ).length;
+    const frecuentes = clientes.filter((c) => (c.num_compras || 0) > 10).length;
 
     if (nuevos > 0) {
       segmentos.push({
-        descripcion: `Clientes nuevos (1-3 visitas) - ${nuevos} clientes (${Math.round(nuevos/totalClientes*100)}%)`,
-        porcentaje: Math.round(nuevos/totalClientes*100),
+        descripcion: `Clientes nuevos (1-3 visitas) - ${nuevos} clientes (${Math.round((nuevos / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((nuevos / totalClientes) * 100),
         cantidad: nuevos,
       });
     }
 
     if (regulares > 0) {
       segmentos.push({
-        descripcion: `Clientes regulares (4-10 visitas) - ${regulares} clientes (${Math.round(regulares/totalClientes*100)}%)`,
-        porcentaje: Math.round(regulares/totalClientes*100),
+        descripcion: `Clientes regulares (4-10 visitas) - ${regulares} clientes (${Math.round((regulares / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((regulares / totalClientes) * 100),
         cantidad: regulares,
       });
     }
 
     if (frecuentes > 0) {
       segmentos.push({
-        descripcion: `Clientes frecuentes (>10 visitas) - ${frecuentes} clientes (${Math.round(frecuentes/totalClientes*100)}%)`,
-        porcentaje: Math.round(frecuentes/totalClientes*100),
+        descripcion: `Clientes frecuentes (>10 visitas) - ${frecuentes} clientes (${Math.round((frecuentes / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((frecuentes / totalClientes) * 100),
         cantidad: frecuentes,
       });
     }
 
     // Segmentos por inactividad
-    const inactivos = clientes.filter(c => (c.dias_desde_ultima_visita || 0) > 60).length;
+    const inactivos = clientes.filter((c) => (c.dias_desde_ultima_visita || 0) > 60).length;
     if (inactivos > 0) {
       segmentos.push({
-        descripcion: `Inactivos (>60 días sin venir) - ${inactivos} clientes (${Math.round(inactivos/totalClientes*100)}%)`,
-        porcentaje: Math.round(inactivos/totalClientes*100),
+        descripcion: `Inactivos (>60 días sin venir) - ${inactivos} clientes (${Math.round((inactivos / totalClientes) * 100)}%)`,
+        porcentaje: Math.round((inactivos / totalClientes) * 100),
         cantidad: inactivos,
       });
     }

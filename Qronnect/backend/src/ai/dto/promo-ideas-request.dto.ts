@@ -16,7 +16,7 @@ export class PromoIdeasRequestDto {
 
   @ApiProperty({
     description: 'Ticket medio actual del negocio',
-    example: 35.50,
+    example: 35.5,
     required: false,
   })
   @IsNumber()

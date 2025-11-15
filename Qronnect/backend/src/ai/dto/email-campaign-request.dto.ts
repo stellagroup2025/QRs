@@ -7,7 +7,8 @@ import { ApiProperty } from '@nestjs/swagger';
 export class EmailCampaignRequestDto {
   @ApiProperty({
     description: 'Descripción del segmento de clientes objetivo',
-    example: 'Mujeres 30-45 años, 2-4 visitas en el último año, ticket medio 35€, llevan entre 60 y 120 días sin venir. Tamaño del segmento: 124 personas.',
+    example:
+      'Mujeres 30-45 años, 2-4 visitas en el último año, ticket medio 35€, llevan entre 60 y 120 días sin venir. Tamaño del segmento: 124 personas.',
   })
   @IsString()
   segmentoDescripcion: string;

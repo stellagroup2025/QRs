@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsEnum, IsBoolean, IsOptional, IsDateString, Min, MinLength } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsBoolean,
+  IsOptional,
+  IsDateString,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export enum TipoPromocion {
   DESCUENTO_FIJO = 'descuento_fijo',
@@ -33,7 +42,8 @@ export class CreatePromocionDto {
   tipo: TipoPromocion;
 
   @ApiProperty({
-    description: 'Valor del descuento (euros para descuento_fijo, porcentaje para descuento_porcentaje)',
+    description:
+      'Valor del descuento (euros para descuento_fijo, porcentaje para descuento_porcentaje)',
     example: 10,
     minimum: 0,
   })
@@ -76,7 +86,8 @@ export class CreatePromocionDto {
   fecha_inicio?: string;
 
   @ApiPropertyOptional({
-    description: 'Fecha de fin de la promoción (ISO 8601). Si no se especifica, la promoción no expira',
+    description:
+      'Fecha de fin de la promoción (ISO 8601). Si no se especifica, la promoción no expira',
     example: '2025-12-31T23:59:59Z',
   })
   @IsOptional()

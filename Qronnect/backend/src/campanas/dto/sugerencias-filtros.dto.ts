@@ -25,8 +25,18 @@ export class SugerenciasFiltrosDto {
   @ApiProperty({
     description: 'Sugerencias de rangos de ticket medio',
     example: [
-      { label: 'Compras pequeñas (<30€)', min: 0, max: 30, descripcion: 'Clientes con compras pequeñas' },
-      { label: 'Compras medianas (30-100€)', min: 30, max: 100, descripcion: 'Clientes con compras medianas' },
+      {
+        label: 'Compras pequeñas (<30€)',
+        min: 0,
+        max: 30,
+        descripcion: 'Clientes con compras pequeñas',
+      },
+      {
+        label: 'Compras medianas (30-100€)',
+        min: 30,
+        max: 100,
+        descripcion: 'Clientes con compras medianas',
+      },
     ],
   })
   ticket_medio: RangoSugerencia[];

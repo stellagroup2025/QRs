@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(npm run lint)",
+      "Bash(npm install twilio)",
+      "Read(//tmp/**)",
+      "Bash(curl -X GET http://localhost:3001/api/admin/dashboard -H \"Content-Type: application/json\")",
+      "Bash(curl -X GET http://localhost:3001/api/admin/dashboard/resumen -H \"Content-Type: application/json\" -H \"X-Tenant-Domain: test\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

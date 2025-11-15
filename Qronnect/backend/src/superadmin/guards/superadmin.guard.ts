@@ -1,4 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { SupabaseService } from '../../supabase/supabase.service';
 
 /**
@@ -52,7 +58,10 @@ export class SuperAdminGuard implements CanActivate {
       }
     } catch (decodeError) {
       // Si no es un token de desarrollo, intentar con Supabase Auth
-      const { data: { user }, error: authError } = await this.supabaseService.getClient().auth.getUser(token);
+      const {
+        data: { user },
+        error: authError,
+      } = await this.supabaseService.getClient().auth.getUser(token);
 
       if (authError || !user) {
         throw new UnauthorizedException('Token inválido o expirado');

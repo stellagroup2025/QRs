@@ -48,7 +48,11 @@ export class PromocionesService {
   /**
    * Listar todas las promociones de una tienda (Admin)
    */
-  async findAll(tiendaId: string, page: number = 1, limit: number = 20): Promise<ListPromocionesDto> {
+  async findAll(
+    tiendaId: string,
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<ListPromocionesDto> {
     const supabase = this.supabaseService.getAdminClient();
     const offset = (page - 1) * limit;
 
@@ -64,7 +68,7 @@ export class PromocionesService {
     }
 
     return {
-      data: data.map(p => this.mapToResponseDto(p)),
+      data: data.map((p) => this.mapToResponseDto(p)),
       total: count || 0,
       page,
       limit,
@@ -87,7 +91,7 @@ export class PromocionesService {
       throw new BadRequestException(`Error al listar promociones disponibles: ${error.message}`);
     }
 
-    return data.map(p => this.mapToResponseDto(p));
+    return data.map((p) => this.mapToResponseDto(p));
   }
 
   /**
@@ -113,7 +117,11 @@ export class PromocionesService {
   /**
    * Actualizar una promoción (Admin)
    */
-  async update(tiendaId: string, id: string, updateDto: UpdatePromocionDto): Promise<PromocionResponseDto> {
+  async update(
+    tiendaId: string,
+    id: string,
+    updateDto: UpdatePromocionDto,
+  ): Promise<PromocionResponseDto> {
     const supabase = this.supabaseService.getAdminClient();
 
     // Verificar que la promoción existe y pertenece a la tienda
@@ -156,7 +164,7 @@ export class PromocionesService {
 
     if (canjesPendientes && canjesPendientes.length > 0) {
       throw new BadRequestException(
-        `No se puede eliminar la promoción porque tiene ${canjesPendientes.length} canjes pendientes de usar`
+        `No se puede eliminar la promoción porque tiene ${canjesPendientes.length} canjes pendientes de usar`,
       );
     }
 
@@ -179,7 +187,7 @@ export class PromocionesService {
   async canjear(
     tiendaId: string,
     clienteId: string,
-    canjearDto: CanjearPromocionDto
+    canjearDto: CanjearPromocionDto,
   ): Promise<CanjeResponseDto> {
     const supabase = this.supabaseService.getAdminClient();
 
@@ -236,7 +244,7 @@ export class PromocionesService {
     // 6. Validar que el cliente tiene suficientes puntos
     if (cliente.puntos_totales < promocion.puntos_requeridos) {
       throw new BadRequestException(
-        `No tienes suficientes puntos. Necesitas ${promocion.puntos_requeridos} pero solo tienes ${cliente.puntos_totales}`
+        `No tienes suficientes puntos. Necesitas ${promocion.puntos_requeridos} pero solo tienes ${cliente.puntos_totales}`,
       );
     }
 
@@ -304,18 +312,20 @@ export class PromocionesService {
   async validarCanje(
     tiendaId: string,
     adminId: string,
-    validarDto: ValidarCanjeDto
+    validarDto: ValidarCanjeDto,
   ): Promise<ValidarCanjeResponseDto> {
     const supabase = this.supabaseService.getAdminClient();
 
     // 1. Buscar el canje por código
     const { data: canje, error } = await supabase
       .from('canjes')
-      .select(`
+      .select(
+        `
         *,
         cliente:clientes(id, nombre, email),
         promocion:promociones(id, titulo, descripcion, tipo, valor)
-      `)
+      `,
+      )
       .eq('codigo_canje', validarDto.codigo_canje.toUpperCase())
       .eq('id_tienda', tiendaId)
       .single();
@@ -326,7 +336,9 @@ export class PromocionesService {
 
     // 2. Validar el estado
     if (canje.estado === 'usado') {
-      throw new BadRequestException(`Este cupón ya fue usado el ${new Date(canje.fecha_uso).toLocaleString('es-ES')}`);
+      throw new BadRequestException(
+        `Este cupón ya fue usado el ${new Date(canje.fecha_uso).toLocaleString('es-ES')}`,
+      );
     }
 
     if (canje.estado === 'expirado') {
@@ -342,10 +354,7 @@ export class PromocionesService {
       const fechaExp = new Date(canje.fecha_expiracion);
       if (new Date() > fechaExp) {
         // Marcar como expirado
-        await supabase
-          .from('canjes')
-          .update({ estado: 'expirado' })
-          .eq('id', canje.id);
+        await supabase.from('canjes').update({ estado: 'expirado' }).eq('id', canje.id);
 
         throw new BadRequestException('Este cupón ha expirado');
       }
@@ -397,10 +406,12 @@ export class PromocionesService {
 
     const { data, error } = await supabase
       .from('canjes')
-      .select(`
+      .select(
+        `
         *,
         promocion:promociones(id, titulo, descripcion, tipo, valor, imagen_url)
-      `)
+      `,
+      )
       .eq('id_cliente', clienteId)
       .eq('id_tienda', tiendaId)
       .order('fecha_canje', { ascending: false });
@@ -428,11 +439,7 @@ export class PromocionesService {
 
     // Verificar que no exista (muy improbable, pero por seguridad)
     const supabase = this.supabaseService.getAdminClient();
-    const { data } = await supabase
-      .from('canjes')
-      .select('id')
-      .eq('codigo_canje', codigo)
-      .single();
+    const { data } = await supabase.from('canjes').select('id').eq('codigo_canje', codigo).single();
 
     if (data) {
       // Si existe, generar uno nuevo (recursivo)
@@ -460,9 +467,10 @@ export class PromocionesService {
       fecha_fin: data.fecha_fin,
       cantidad_disponible: data.cantidad_disponible,
       cantidad_canjeada: data.cantidad_canjeada,
-      disponible: data.disponible !== undefined
-        ? data.disponible
-        : data.cantidad_disponible === null || data.cantidad_canjeada < data.cantidad_disponible,
+      disponible:
+        data.disponible !== undefined
+          ? data.disponible
+          : data.cantidad_disponible === null || data.cantidad_canjeada < data.cantidad_disponible,
       creado_en: data.creado_en,
       actualizado_en: data.actualizado_en,
     };
@@ -477,17 +485,21 @@ export class PromocionesService {
     suggestionDto: CreateFromAiSuggestionDto,
   ): Promise<PromocionResponseDto> {
     // Inferir tipo de promoción si no se especificó
-    const tipo = suggestionDto.tipo || this.inferirTipoPromocion(suggestionDto.titulo, suggestionDto.descripcion);
+    const tipo =
+      suggestionDto.tipo ||
+      this.inferirTipoPromocion(suggestionDto.titulo, suggestionDto.descripcion);
 
     // Calcular valor por defecto según el tipo
-    const valor = suggestionDto.valor !== undefined
-      ? suggestionDto.valor
-      : this.calcularValorPorDefecto(tipo, suggestionDto.titulo, suggestionDto.descripcion);
+    const valor =
+      suggestionDto.valor !== undefined
+        ? suggestionDto.valor
+        : this.calcularValorPorDefecto(tipo, suggestionDto.titulo, suggestionDto.descripcion);
 
     // Calcular puntos requeridos (por defecto, valor * 10 o 100 si no hay valor)
-    const puntosRequeridos = suggestionDto.puntos_requeridos !== undefined
-      ? suggestionDto.puntos_requeridos
-      : Math.max(Math.round(valor * 10), 50);
+    const puntosRequeridos =
+      suggestionDto.puntos_requeridos !== undefined
+        ? suggestionDto.puntos_requeridos
+        : Math.max(Math.round(valor * 10), 50);
 
     // Construir descripción completa combinando datos de la IA
     const descripcionCompleta = this.construirDescripcionCompleta(suggestionDto);
@@ -538,7 +550,11 @@ export class PromocionesService {
   /**
    * Calcula un valor por defecto según el tipo de promoción y el texto
    */
-  private calcularValorPorDefecto(tipo: TipoPromocion, titulo: string, descripcion: string): number {
+  private calcularValorPorDefecto(
+    tipo: TipoPromocion,
+    titulo: string,
+    descripcion: string,
+  ): number {
     const texto = `${titulo} ${descripcion}`.toLowerCase();
 
     // Intentar extraer números del texto
@@ -566,7 +582,7 @@ export class PromocionesService {
    * Construye una descripción completa combinando todos los campos de la sugerencia
    */
   private construirDescripcionCompleta(suggestion: CreateFromAiSuggestionDto): string {
-    let partes: string[] = [];
+    const partes: string[] = [];
 
     // Descripción principal
     if (suggestion.descripcion) {

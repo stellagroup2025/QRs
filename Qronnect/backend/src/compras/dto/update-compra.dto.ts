@@ -7,8 +7,9 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
  */
 export class UpdateCompraDto {
   @ApiPropertyOptional({
-    description: 'Nuevo importe de la compra. Al modificar el importe, los puntos se recalcularán automáticamente.',
-    example: 75.50,
+    description:
+      'Nuevo importe de la compra. Al modificar el importe, los puntos se recalcularán automáticamente.',
+    example: 75.5,
   })
   @IsOptional()
   @IsNumber({}, { message: 'El importe debe ser un número válido' })

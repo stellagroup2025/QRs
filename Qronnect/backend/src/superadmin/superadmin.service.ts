@@ -1,11 +1,23 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
+import { SmsService } from '../sms/sms.service';
 import { CreateTiendaDto } from './dto/create-tienda.dto';
 import { UpdateTiendaDto } from './dto/update-tienda.dto';
+import { ConfigureSmsDto } from './dto/configure-sms.dto';
+import { UpdateSenderIdDto } from './dto/update-sender-id.dto';
+import { ConfigureIaDto } from './dto/configure-ia.dto';
 
 @Injectable()
 export class SuperAdminService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(
+    private readonly supabaseService: SupabaseService,
+    private readonly smsService: SmsService,
+  ) {}
 
   /**
    * Enviar código OTP por email para autenticación (DESARROLLO)
@@ -34,13 +46,11 @@ export class SuperAdminService {
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Guardar código en la base de datos
-    const { error: insertError } = await supabase
-      .from('dev_otp_codes')
-      .insert({
-        email,
-        codigo,
-        expira_en: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutos
-      });
+    const { error: insertError } = await supabase.from('dev_otp_codes').insert({
+      email,
+      codigo,
+      expira_en: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutos
+    });
 
     if (insertError) {
       console.error('Error al guardar código OTP:', insertError);
@@ -66,7 +76,10 @@ export class SuperAdminService {
   /**
    * Verificar código OTP de email y obtener token de sesión (DESARROLLO)
    */
-  async verificarCodigoEmail(email: string, codigo: string): Promise<{
+  async verificarCodigoEmail(
+    email: string,
+    codigo: string,
+  ): Promise<{
     access_token: string;
     refresh_token: string;
     superadmin: any;
@@ -90,10 +103,7 @@ export class SuperAdminService {
     }
 
     // Marcar código como usado
-    await supabase
-      .from('dev_otp_codes')
-      .update({ usado: true })
-      .eq('id', otpRecord.id);
+    await supabase.from('dev_otp_codes').update({ usado: true }).eq('id', otpRecord.id);
 
     // Obtener datos del superadmin
     const { data: superadmin, error: superadminError } = await supabase
@@ -126,18 +136,22 @@ export class SuperAdminService {
 
     // Para desarrollo, generamos tokens simples
     // En producción, estos serían JWT firmados con secret
-    const access_token = Buffer.from(JSON.stringify({
-      sub: superadmin.supabase_user_id,
-      email: superadmin.email,
-      role: 'superadmin',
-      exp: Math.floor(Date.now() / 1000) + (60 * 60), // 1 hora
-    })).toString('base64');
+    const access_token = Buffer.from(
+      JSON.stringify({
+        sub: superadmin.supabase_user_id,
+        email: superadmin.email,
+        role: 'superadmin',
+        exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hora
+      }),
+    ).toString('base64');
 
-    const refresh_token = Buffer.from(JSON.stringify({
-      sub: superadmin.supabase_user_id,
-      email: superadmin.email,
-      type: 'refresh',
-    })).toString('base64');
+    const refresh_token = Buffer.from(
+      JSON.stringify({
+        sub: superadmin.supabase_user_id,
+        email: superadmin.email,
+        type: 'refresh',
+      }),
+    ).toString('base64');
 
     return {
       access_token,
@@ -156,10 +170,7 @@ export class SuperAdminService {
   async getDashboard(): Promise<any> {
     const supabase = this.supabaseService.getAdminClient();
 
-    const { data, error } = await supabase
-      .from('vista_superadmin_dashboard')
-      .select('*')
-      .single();
+    const { data, error } = await supabase.from('vista_superadmin_dashboard').select('*').single();
 
     if (error) {
       throw new BadRequestException(`Error al obtener dashboard: ${error.message}`);
@@ -330,10 +341,7 @@ export class SuperAdminService {
     }
 
     // Desactivar la tienda (soft delete)
-    const { error } = await supabase
-      .from('tiendas')
-      .update({ activo: false })
-      .eq('id', tiendaId);
+    const { error } = await supabase.from('tiendas').update({ activo: false }).eq('id', tiendaId);
 
     if (error) {
       throw new BadRequestException(`Error al eliminar tienda: ${error.message}`);
@@ -413,10 +421,12 @@ export class SuperAdminService {
 
     const { data, error } = await supabase
       .from('audit_log_superadmin')
-      .select(`
+      .select(
+        `
         *,
         superadmin:superadmin_users(nombre, telefono)
-      `)
+      `,
+      )
       .order('fecha', { ascending: false })
       .limit(limit);
 
@@ -425,5 +435,575 @@ export class SuperAdminService {
     }
 
     return data || [];
+  }
+
+  // ========================================
+  // SMS CONFIGURATION
+  // ========================================
+
+  /**
+   * Configurar SMS para una tienda (modo global o propio)
+   */
+  async configurarSms(superadminId: string, tiendaId: string, config: ConfigureSmsDto) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Verificar que la tienda existe
+    const { data: tienda, error: tiendaError } = await supabase
+      .from('tiendas')
+      .select('id, configuracion')
+      .eq('id', tiendaId)
+      .single();
+
+    if (tiendaError || !tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    // Si modo = "propio", validar credenciales
+    if (config.modo === 'propio') {
+      if (!config.credenciales) {
+        throw new BadRequestException(
+          'Las credenciales de Twilio son requeridas para modo "propio"',
+        );
+      }
+
+      // Validar credenciales
+      const validacion = await this.smsService.validarCredenciales(config.credenciales);
+      if (!validacion.valid) {
+        throw new BadRequestException(`Credenciales inválidas: ${validacion.error}`);
+      }
+    }
+
+    // Actualizar configuración
+    const configuracionActual = tienda.configuracion || {};
+    const nuevaConfiguracion = {
+      ...configuracionActual,
+      sms: {
+        activo: config.activo,
+        modo: config.modo,
+        credenciales: config.credenciales || null,
+        limites: config.limites || null,
+        creditos_disponibles: config.creditos_disponibles || null,
+      },
+    };
+
+    const { data: tiendaActualizada, error: updateError } = await supabase
+      .from('tiendas')
+      .update({
+        configuracion: nuevaConfiguracion,
+        actualizado_en: new Date().toISOString(),
+      })
+      .eq('id', tiendaId)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw new BadRequestException(`Error al actualizar configuración: ${updateError.message}`);
+    }
+
+    // Registrar en audit log
+    // TODO: Implementar registrarAccion si existe el sistema de audit log
+    // await this.registrarAccion(superadminId, 'configurar_sms', {
+    //   tienda_id: tiendaId,
+    //   modo: config.modo,
+    // });
+
+    return {
+      message: 'Configuración SMS actualizada correctamente',
+      configuracion: tiendaActualizada.configuracion.sms,
+    };
+  }
+
+  /**
+   * Obtener configuración SMS de una tienda (sin exponer credenciales completas)
+   */
+  async getConfiguracionSms(tiendaId: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const { data: tienda, error } = await supabase
+      .from('tiendas')
+      .select('configuracion')
+      .eq('id', tiendaId)
+      .single();
+
+    if (error || !tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    const smsConfig = tienda.configuracion?.sms;
+
+    if (!smsConfig) {
+      return {
+        activo: false,
+        modo: null,
+        configurado: false,
+      };
+    }
+
+    // Ofuscar credenciales para seguridad
+    const configSegura = {
+      activo: smsConfig.activo,
+      modo: smsConfig.modo,
+      configurado: true,
+      limites: smsConfig.limites || null,
+      creditos_disponibles: smsConfig.creditos_disponibles || null,
+    };
+
+    if (smsConfig.modo === 'propio' && smsConfig.credenciales) {
+      configSegura['credenciales_configuradas'] = {
+        account_sid: smsConfig.credenciales.account_sid,
+        auth_token: '***' + smsConfig.credenciales.auth_token.slice(-4), // Solo últimos 4 chars
+        phone_number: smsConfig.credenciales.phone_number,
+      };
+    }
+
+    return configSegura;
+  }
+
+  /**
+   * Probar configuración SMS de una tienda
+   */
+  async probarSms(tiendaId: string, telefonoTest: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const { data: tienda, error } = await supabase
+      .from('tiendas')
+      .select('configuracion, nombre')
+      .eq('id', tiendaId)
+      .single();
+
+    if (error || !tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    const smsConfig = tienda.configuracion?.sms;
+
+    if (!smsConfig || !smsConfig.activo) {
+      throw new BadRequestException('SMS no está configurado para esta tienda');
+    }
+
+    // Enviar SMS de prueba
+    const resultado = await this.smsService.sendSms({
+      tiendaId: tiendaId,
+      to: telefonoTest,
+      message: 'Este es un SMS de prueba desde Qronnect. Tu configuración funciona correctamente!',
+      tiendaNombre: tienda.nombre,
+    });
+
+    if (!resultado.success) {
+      throw new BadRequestException(`Error al enviar SMS: ${resultado.error}`);
+    }
+
+    return {
+      success: true,
+      message: 'SMS de prueba enviado correctamente',
+      modo: resultado.modo,
+      coste: resultado.coste,
+      message_sid: resultado.messageSid,
+    };
+  }
+
+  /**
+   * Obtener estadísticas globales de SMS (solo modo global)
+   */
+  async getEstadisticasGlobalesSms() {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const hoy = new Date().toISOString().split('T')[0];
+    const primerDiaMes = new Date();
+    primerDiaMes.setDate(1);
+
+    // Estadísticas del día
+    const { data: datosHoy } = await supabase
+      .from('sms_enviados')
+      .select('cantidad, coste, id_tienda')
+      .eq('modo', 'global')
+      .gte('enviado_en', hoy);
+
+    // Estadísticas del mes
+    const { data: datosMes } = await supabase
+      .from('sms_enviados')
+      .select('cantidad, coste, id_tienda')
+      .eq('modo', 'global')
+      .gte('enviado_en', primerDiaMes.toISOString());
+
+    // Calcular totales
+    const totalHoy = datosHoy?.reduce((sum, r) => sum + (r.cantidad || 0), 0) || 0;
+    const costeHoy = datosHoy?.reduce((sum, r) => sum + (r.coste || 0), 0) || 0;
+    const totalMes = datosMes?.reduce((sum, r) => sum + (r.cantidad || 0), 0) || 0;
+    const costeMes = datosMes?.reduce((sum, r) => sum + (r.coste || 0), 0) || 0;
+
+    // Agrupar por tienda para el mes
+    const porTienda = {};
+    datosMes?.forEach((registro) => {
+      if (!porTienda[registro.id_tienda]) {
+        porTienda[registro.id_tienda] = { cantidad: 0, coste: 0 };
+      }
+      porTienda[registro.id_tienda].cantidad += registro.cantidad || 0;
+      porTienda[registro.id_tienda].coste += registro.coste || 0;
+    });
+
+    // Obtener nombres de tiendas
+    const tiendaIds = Object.keys(porTienda);
+    const { data: tiendas } = await supabase
+      .from('tiendas')
+      .select('id, nombre')
+      .in('id', tiendaIds);
+
+    const estadisticasPorTienda = tiendaIds.map((id) => {
+      const tienda = tiendas?.find((t) => t.id === id);
+      return {
+        tienda_id: id,
+        tienda_nombre: tienda?.nombre || 'Desconocida',
+        sms_enviados: porTienda[id].cantidad,
+        coste: `${porTienda[id].coste.toFixed(2)}€`,
+      };
+    });
+
+    return {
+      global: {
+        hoy: {
+          sms_enviados: totalHoy,
+          coste_total: `${costeHoy.toFixed(2)}€`,
+        },
+        mes_actual: {
+          sms_enviados: totalMes,
+          coste_total: `${costeMes.toFixed(2)}€`,
+          coste_promedio: totalMes > 0 ? `${(costeMes / totalMes).toFixed(3)}€` : '0€',
+        },
+      },
+      por_tienda: estadisticasPorTienda.sort((a, b) => b.sms_enviados - a.sms_enviados),
+    };
+  }
+
+  /**
+   * Actualizar solo el Sender ID de una tienda
+   */
+  async actualizarSenderId(
+    superadminId: string,
+    tiendaId: string,
+    updateDto: UpdateSenderIdDto,
+  ) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Obtener tienda actual
+    const { data: tienda, error: tiendaError } = await supabase
+      .from('tiendas')
+      .select('id, nombre, configuracion')
+      .eq('id', tiendaId)
+      .single();
+
+    if (tiendaError || !tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    // Convertir a mayúsculas automáticamente
+    const senderIdFinal = updateDto.sender_id?.toUpperCase();
+
+    // Validación adicional: debe tener al menos 1 letra
+    if (senderIdFinal && !/[A-Z]/.test(senderIdFinal)) {
+      throw new BadRequestException('El Sender ID debe contener al menos una letra');
+    }
+
+    // Actualizar configuración SMS
+    const configuracionActual = tienda.configuracion || {};
+    const smsConfigActual = configuracionActual.sms || {};
+
+    const nuevaConfiguracion = {
+      ...configuracionActual,
+      sms: {
+        ...smsConfigActual,
+        sender_id: senderIdFinal || null,
+      },
+    };
+
+    const { data: tiendaActualizada, error: updateError } = await supabase
+      .from('tiendas')
+      .update({
+        configuracion: nuevaConfiguracion,
+        actualizado_en: new Date().toISOString(),
+      })
+      .eq('id', tiendaId)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw new BadRequestException(`Error al actualizar Sender ID: ${updateError.message}`);
+    }
+
+    return {
+      message: 'Sender ID actualizado correctamente',
+      tienda: {
+        id: tiendaActualizada.id,
+        nombre: tiendaActualizada.nombre,
+        sender_id: senderIdFinal,
+      },
+    };
+  }
+
+  /**
+   * Eliminar el Sender ID de una tienda
+   */
+  async eliminarSenderId(superadminId: string, tiendaId: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Obtener tienda actual
+    const { data: tienda, error: tiendaError } = await supabase
+      .from('tiendas')
+      .select('id, nombre, configuracion')
+      .eq('id', tiendaId)
+      .single();
+
+    if (tiendaError || !tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    // Eliminar sender_id de la configuración
+    const configuracionActual = tienda.configuracion || {};
+    const smsConfigActual = configuracionActual.sms || {};
+
+    const nuevaConfiguracion = {
+      ...configuracionActual,
+      sms: {
+        ...smsConfigActual,
+        sender_id: null,
+      },
+    };
+
+    const { data: tiendaActualizada, error: updateError } = await supabase
+      .from('tiendas')
+      .update({
+        configuracion: nuevaConfiguracion,
+        actualizado_en: new Date().toISOString(),
+      })
+      .eq('id', tiendaId)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw new BadRequestException(`Error al eliminar Sender ID: ${updateError.message}`);
+    }
+
+    return {
+      message: 'Sender ID eliminado correctamente. La tienda usará número de teléfono.',
+      tienda: {
+        id: tiendaActualizada.id,
+        nombre: tiendaActualizada.nombre,
+      },
+    };
+  }
+
+  // ========================================
+  // IA CONFIGURATION
+  // ========================================
+
+  /**
+   * Configurar IA para una tienda (modo global o propio)
+   */
+  async configurarIa(superadminId: string, tiendaId: string, config: ConfigureIaDto) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Verificar que la tienda existe
+    const { data: tienda, error: tiendaError } = await supabase
+      .from('tiendas')
+      .select('id, nombre, ia_modo, ia_api_key_propia')
+      .eq('id', tiendaId)
+      .single();
+
+    if (tiendaError || !tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    // Si modo = "propio", validar que se proporciona API key
+    if (config.ia_modo === 'propio') {
+      if (!config.ia_api_key_propia) {
+        throw new BadRequestException(
+          'La API key de Gemini es requerida para modo "propio"',
+        );
+      }
+
+      // Validar formato básico de API key de Gemini
+      if (!config.ia_api_key_propia.startsWith('AIzaSy')) {
+        throw new BadRequestException(
+          'La API key de Gemini debe comenzar con "AIzaSy"',
+        );
+      }
+    }
+
+    // Preparar datos de actualización
+    const updateData: any = {
+      ia_modo: config.ia_modo,
+      actualizado_en: new Date().toISOString(),
+    };
+
+    if (config.ia_modo === 'propio') {
+      updateData.ia_api_key_propia = config.ia_api_key_propia;
+      // En modo propio no hay límite
+      updateData.ia_limite_mensual = null;
+    } else {
+      // Modo global
+      updateData.ia_api_key_propia = null;
+      updateData.ia_limite_mensual = config.ia_limite_mensual || 50; // Default según plan
+    }
+
+    // Actualizar configuración
+    const { data: tiendaActualizada, error: updateError } = await supabase
+      .from('tiendas')
+      .update(updateData)
+      .eq('id', tiendaId)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw new BadRequestException(`Error al actualizar configuración: ${updateError.message}`);
+    }
+
+    // Registrar en audit log
+    await this.registrarAuditLog(superadminId, 'configurar_ia', 'tienda', tiendaId, {
+      tienda_nombre: tienda.nombre,
+      modo: config.ia_modo,
+    });
+
+    return {
+      message: 'Configuración de IA actualizada correctamente',
+      configuracion: {
+        ia_modo: tiendaActualizada.ia_modo,
+        ia_limite_mensual: tiendaActualizada.ia_limite_mensual,
+        ia_api_key_configurada: config.ia_modo === 'propio',
+      },
+    };
+  }
+
+  /**
+   * Obtener configuración IA de una tienda (sin exponer API keys completas)
+   */
+  async getConfiguracionIa(tiendaId: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const { data: tienda, error } = await supabase
+      .from('tiendas')
+      .select('ia_modo, ia_api_key_propia, ia_limite_mensual, ia_consumo_actual, ia_ultimo_reset')
+      .eq('id', tiendaId)
+      .single();
+
+    if (error || !tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    const configSegura: any = {
+      ia_modo: tienda.ia_modo || 'global',
+      ia_limite_mensual: tienda.ia_limite_mensual,
+      ia_consumo_actual: tienda.ia_consumo_actual || 0,
+      ia_ultimo_reset: tienda.ia_ultimo_reset,
+      ia_api_key_configurada: !!tienda.ia_api_key_propia,
+    };
+
+    // Si tiene API key propia, ofuscar
+    if (tienda.ia_modo === 'propio' && tienda.ia_api_key_propia) {
+      configSegura.ia_api_key_preview =
+        tienda.ia_api_key_propia.substring(0, 10) + '...' + tienda.ia_api_key_propia.slice(-4);
+    }
+
+    return configSegura;
+  }
+
+  /**
+   * Obtener estadísticas de uso de IA de una tienda
+   */
+  async getEstadisticasIa(tiendaId: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Verificar que la tienda existe
+    const { data: tienda, error: tiendaError } = await supabase
+      .from('tiendas')
+      .select('id, nombre')
+      .eq('id', tiendaId)
+      .single();
+
+    if (tiendaError || !tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    // Obtener estadísticas usando la función SQL
+    const { data: stats, error: statsError } = await supabase.rpc('estadisticas_uso_ia', {
+      p_tienda_id: tiendaId,
+    });
+
+    if (statsError) {
+      throw new BadRequestException(`Error al obtener estadísticas: ${statsError.message}`);
+    }
+
+    // Obtener límites y consumo actual
+    const { data: limites } = await supabase
+      .from('tiendas')
+      .select('ia_modo, ia_limite_mensual, ia_consumo_actual, ia_ultimo_reset')
+      .eq('id', tiendaId)
+      .single();
+
+    return {
+      tienda: {
+        id: tienda.id,
+        nombre: tienda.nombre,
+      },
+      modo: limites?.ia_modo || 'global',
+      limites: limites?.ia_modo === 'global'
+        ? {
+            limite_mensual: limites?.ia_limite_mensual || 50,
+            consumo_actual: limites?.ia_consumo_actual || 0,
+            restantes:
+              (limites?.ia_limite_mensual || 50) - (limites?.ia_consumo_actual || 0),
+            ultimo_reset: limites?.ia_ultimo_reset,
+          }
+        : null,
+      estadisticas: stats || {},
+    };
+  }
+
+  /**
+   * Eliminar la API key propia de IA de una tienda
+   */
+  async eliminarApiKeyIa(superadminId: string, tiendaId: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Obtener tienda actual
+    const { data: tienda, error: tiendaError } = await supabase
+      .from('tiendas')
+      .select('id, nombre')
+      .eq('id', tiendaId)
+      .single();
+
+    if (tiendaError || !tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    // Volver a modo global
+    const { data: tiendaActualizada, error: updateError } = await supabase
+      .from('tiendas')
+      .update({
+        ia_modo: 'global',
+        ia_api_key_propia: null,
+        ia_limite_mensual: 50, // Default
+        actualizado_en: new Date().toISOString(),
+      })
+      .eq('id', tiendaId)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw new BadRequestException(`Error al eliminar API key: ${updateError.message}`);
+    }
+
+    // Registrar en audit log
+    await this.registrarAuditLog(superadminId, 'eliminar_api_key_ia', 'tienda', tiendaId, {
+      tienda_nombre: tienda.nombre,
+    });
+
+    return {
+      message: 'API key eliminada correctamente. La tienda usará modo global.',
+      tienda: {
+        id: tiendaActualizada.id,
+        nombre: tiendaActualizada.nombre,
+        ia_modo: tiendaActualizada.ia_modo,
+      },
+    };
   }
 }

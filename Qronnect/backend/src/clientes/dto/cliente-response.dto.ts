@@ -45,4 +45,11 @@ export class ClienteResponseDto {
     example: '2024-03-20T14:45:00Z',
   })
   ultima_visita?: string;
+
+  @ApiPropertyOptional({
+    description: 'Género del cliente',
+    example: 'masculino',
+    enum: ['masculino', 'femenino', 'otro', 'prefiero_no_decir'],
+  })
+  genero?: string;
 }

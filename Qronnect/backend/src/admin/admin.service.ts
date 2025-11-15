@@ -1,10 +1,21 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { DashboardResumenDto } from './dto/dashboard-resumen.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
 import { ListClientesDto } from './dto/list-clientes.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
-import { AnalyticsDto, AnalyticsQueryDto, DataPoint, TopCliente, RangoPuntos } from './dto/analytics.dto';
+import {
+  AnalyticsDto,
+  AnalyticsQueryDto,
+  DataPoint,
+  TopCliente,
+  RangoPuntos,
+} from './dto/analytics.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -15,7 +26,10 @@ export class AdminService {
    * Login de administrador de tienda
    * Valida email + PIN de 4 dígitos
    */
-  async login(tenantId: string, loginDto: LoginAdminDto): Promise<{
+  async login(
+    tenantId: string,
+    loginDto: LoginAdminDto,
+  ): Promise<{
     access_token: string;
     tienda: any;
     admin: any;
@@ -30,10 +44,12 @@ export class AdminService {
     // Buscar admin por email y tienda
     const { data: admin, error: adminError } = await supabase
       .from('admin_users')
-      .select(`
+      .select(
+        `
         *,
         tienda:tiendas(*)
-      `)
+      `,
+      )
       .eq('email', loginDto.email)
       .eq('id_tienda', tenantId)
       .eq('activo', true)
@@ -68,13 +84,15 @@ export class AdminService {
       .eq('id', admin.id);
 
     // Generar token (desarrollo)
-    const access_token = Buffer.from(JSON.stringify({
-      sub: admin.id,
-      tienda_id: admin.id_tienda,
-      email: admin.email,
-      role: 'admin',
-      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 8), // 8 horas
-    })).toString('base64');
+    const access_token = Buffer.from(
+      JSON.stringify({
+        sub: admin.id,
+        tienda_id: admin.id_tienda,
+        email: admin.email,
+        role: 'admin',
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 8, // 8 horas
+      }),
+    ).toString('base64');
 
     return {
       access_token,
@@ -115,14 +133,16 @@ export class AdminService {
         ultima_visita,
         qr_clientes(codigo, activo)
       `,
-        { count: 'exact' }
+        { count: 'exact' },
       )
       .eq('id_tienda', tiendaId)
       .eq('activo', true);
 
     // Aplicar búsqueda si existe
     if (search) {
-      query = query.or(`nombre.ilike.%${search}%,email.ilike.%${search}%,telefono.ilike.%${search}%`);
+      query = query.or(
+        `nombre.ilike.%${search}%,email.ilike.%${search}%,telefono.ilike.%${search}%`,
+      );
     }
 
     // Aplicar ordenamiento
@@ -149,9 +169,10 @@ export class AdminService {
           .order('fecha', { ascending: false });
 
         const numCompras = compras?.length || 0;
-        const ticketMedio = numCompras > 0
-          ? compras.reduce((sum, c) => sum + parseFloat(c.importe), 0) / numCompras
-          : 0;
+        const ticketMedio =
+          numCompras > 0
+            ? compras.reduce((sum, c) => sum + parseFloat(c.importe), 0) / numCompras
+            : 0;
 
         // Calcular días desde última visita
         let diasDesdeUltimaVisita = null;
@@ -213,7 +234,11 @@ export class AdminService {
     }
 
     // Obtener historial de compras con paginación
-    const { data: compras, error: comprasError, count: totalCompras } = await supabase
+    const {
+      data: compras,
+      error: comprasError,
+      count: totalCompras,
+    } = await supabase
       .from('compras')
       .select('*', { count: 'exact' })
       .eq('id_cliente', clienteId)
@@ -287,10 +312,8 @@ export class AdminService {
       .eq('id_tienda', tiendaId);
 
     const totalCompras = compras?.length || 0;
-    const ventasTotales =
-      compras?.reduce((sum, c) => sum + parseFloat(c.importe), 0) || 0;
-    const puntosOtorgados =
-      compras?.reduce((sum, c) => sum + c.puntos_otorgados, 0) || 0;
+    const ventasTotales = compras?.reduce((sum, c) => sum + parseFloat(c.importe), 0) || 0;
+    const puntosOtorgados = compras?.reduce((sum, c) => sum + c.puntos_otorgados, 0) || 0;
     const ticketMedio = totalCompras > 0 ? ventasTotales / totalCompras : 0;
 
     return {
@@ -316,7 +339,7 @@ export class AdminService {
     fechaInicio.setDate(fechaInicio.getDate() - dias);
 
     const fechaInicioPeriodoAnterior = new Date();
-    fechaInicioPeriodoAnterior.setDate(fechaInicioPeriodoAnterior.getDate() - (dias * 2));
+    fechaInicioPeriodoAnterior.setDate(fechaInicioPeriodoAnterior.getDate() - dias * 2);
 
     // 1. Evolución de clientes nuevos por día
     const { data: clientesData } = await supabase
@@ -365,9 +388,8 @@ export class AdminService {
       .eq('id_tienda', tiendaId)
       .eq('activo', true);
 
-    const tasaRetencion = clientesConCompras > 0
-      ? ((clientesConMasDeUnaCompra || 0) / clientesConCompras) * 100
-      : 0;
+    const tasaRetencion =
+      clientesConCompras > 0 ? ((clientesConMasDeUnaCompra || 0) / clientesConCompras) * 100 : 0;
 
     // 6. Frecuencia de visita promedio
     const frecuenciaVisita = await this.calcularFrecuenciaVisita(tiendaId);
@@ -390,7 +412,7 @@ export class AdminService {
 
     const cambioClientesPct = this.calcularCambioPorcentual(
       clientesPeriodoActual?.length || 0,
-      clientesPeriodoAnterior?.length || 0
+      clientesPeriodoAnterior?.length || 0,
     );
 
     const { data: comprasPeriodoActual } = await supabase
@@ -406,15 +428,25 @@ export class AdminService {
       .gte('fecha', fechaInicioPeriodoAnterior.toISOString())
       .lt('fecha', fechaInicio.toISOString());
 
-    const facturacionActual = comprasPeriodoActual?.reduce((sum, c) => sum + parseFloat(c.importe), 0) || 0;
-    const facturacionAnterior = comprasPeriodoAnterior?.reduce((sum, c) => sum + parseFloat(c.importe), 0) || 0;
+    const facturacionActual =
+      comprasPeriodoActual?.reduce((sum, c) => sum + parseFloat(c.importe), 0) || 0;
+    const facturacionAnterior =
+      comprasPeriodoAnterior?.reduce((sum, c) => sum + parseFloat(c.importe), 0) || 0;
 
-    const cambioFacturacionPct = this.calcularCambioPorcentual(facturacionActual, facturacionAnterior);
+    const cambioFacturacionPct = this.calcularCambioPorcentual(
+      facturacionActual,
+      facturacionAnterior,
+    );
 
-    const ticketMedioActual = comprasPeriodoActual?.length > 0 ? facturacionActual / comprasPeriodoActual.length : 0;
-    const ticketMedioAnterior = comprasPeriodoAnterior?.length > 0 ? facturacionAnterior / comprasPeriodoAnterior.length : 0;
+    const ticketMedioActual =
+      comprasPeriodoActual?.length > 0 ? facturacionActual / comprasPeriodoActual.length : 0;
+    const ticketMedioAnterior =
+      comprasPeriodoAnterior?.length > 0 ? facturacionAnterior / comprasPeriodoAnterior.length : 0;
 
-    const cambioTicketMedioPct = this.calcularCambioPorcentual(ticketMedioActual, ticketMedioAnterior);
+    const cambioTicketMedioPct = this.calcularCambioPorcentual(
+      ticketMedioActual,
+      ticketMedioAnterior,
+    );
 
     return {
       evolucion_clientes: evolucionClientes,
@@ -444,7 +476,7 @@ export class AdminService {
     }
 
     // Contar registros por día
-    data.forEach(item => {
+    data.forEach((item) => {
       const fecha = new Date(item[campoFecha]).toISOString().split('T')[0];
       if (resultado.hasOwnProperty(fecha)) {
         resultado[fecha]++;
@@ -472,7 +504,7 @@ export class AdminService {
     }
 
     // Sumar facturación por día
-    compras.forEach(compra => {
+    compras.forEach((compra) => {
       const fecha = new Date(compra.fecha).toISOString().split('T')[0];
       if (resultado.hasOwnProperty(fecha)) {
         resultado[fecha] += parseFloat(compra.importe);
@@ -497,10 +529,10 @@ export class AdminService {
       { min: 501, max: 999999, label: '500+ puntos', color: '#f87171' },
     ];
 
-    return rangos.map(rango => ({
+    return rangos.map((rango) => ({
       rango: rango.label,
-      clientes: clientes.filter(c =>
-        c.puntos_totales >= rango.min && c.puntos_totales <= rango.max
+      clientes: clientes.filter(
+        (c) => c.puntos_totales >= rango.min && c.puntos_totales <= rango.max,
       ).length,
       color: rango.color,
     }));
@@ -541,13 +573,11 @@ export class AdminService {
           num_compras: numCompras,
           puntos_totales: cliente.puntos_totales,
         };
-      })
+      }),
     );
 
     // Ordenar por total gastado y tomar los primeros 10
-    return clientesConGasto
-      .sort((a, b) => b.total_gastado - a.total_gastado)
-      .slice(0, 10);
+    return clientesConGasto.sort((a, b) => b.total_gastado - a.total_gastado).slice(0, 10);
   }
 
   /**
@@ -589,9 +619,7 @@ export class AdminService {
       }
     }
 
-    return clientesConMasDeUnaCompra > 0
-      ? totalDiasAcumulados / clientesConMasDeUnaCompra
-      : 0;
+    return clientesConMasDeUnaCompra > 0 ? totalDiasAcumulados / clientesConMasDeUnaCompra : 0;
   }
 
   /**
@@ -632,7 +660,8 @@ export class AdminService {
 
     let query = supabase
       .from('canjes')
-      .select(`
+      .select(
+        `
         id,
         codigo_canje,
         estado,
@@ -648,7 +677,8 @@ export class AdminService {
           valor,
           imagen_url
         )
-      `)
+      `,
+      )
       .eq('id_cliente', clienteId)
       .eq('id_tienda', tiendaId);
 
@@ -676,7 +706,8 @@ export class AdminService {
 
     const { data: cupones, error } = await supabase
       .from('canjes')
-      .select(`
+      .select(
+        `
         id,
         codigo_canje,
         estado,
@@ -691,7 +722,8 @@ export class AdminService {
           valor,
           imagen_url
         )
-      `)
+      `,
+      )
       .eq('id_cliente', clienteId)
       .eq('id_tienda', tiendaId)
       .eq('estado', 'pendiente')
@@ -777,7 +809,7 @@ export class AdminService {
     // Verificar que el cliente tiene suficientes puntos
     if (cliente.puntos_totales < promocion.puntos_requeridos) {
       throw new BadRequestException(
-        `Puntos insuficientes. Necesita ${promocion.puntos_requeridos} puntos, tiene ${cliente.puntos_totales}`
+        `Puntos insuficientes. Necesita ${promocion.puntos_requeridos} puntos, tiene ${cliente.puntos_totales}`,
       );
     }
 
@@ -928,13 +960,15 @@ export class AdminService {
     // Verificar que el cliente existe y pertenece a esta tienda
     const { data: cliente, error: clienteError } = await supabase
       .from('clientes')
-      .select(`
+      .select(
+        `
         id,
         nombre,
         activo,
         compras:compras(count),
         canjes:canjes(count)
-      `)
+      `,
+      )
       .eq('id', clienteId)
       .eq('id_tienda', tiendaId)
       .single();

@@ -30,4 +30,13 @@ export class UpdateClienteDto {
   @IsOptional()
   @IsEmail()
   email?: string;
+
+  @ApiPropertyOptional({
+    description: 'Género del cliente',
+    example: 'masculino',
+    enum: ['masculino', 'femenino', 'otro', 'prefiero_no_decir'],
+  })
+  @IsOptional()
+  @IsString()
+  genero?: string;
 }

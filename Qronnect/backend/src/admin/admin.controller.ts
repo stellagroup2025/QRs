@@ -44,10 +44,7 @@ export class AdminController {
     description: 'Login exitoso, devuelve token de acceso y datos de la tienda',
   })
   @ApiResponse({ status: 401, description: 'Email o PIN incorrecto' })
-  async login(
-    @Tenant() tenant: TenantContext,
-    @Body() loginDto: LoginAdminDto,
-  ) {
+  async login(@Tenant() tenant: TenantContext, @Body() loginDto: LoginAdminDto) {
     return this.adminService.login(tenant.id, loginDto);
   }
 
@@ -90,20 +87,47 @@ export class AdminController {
   @ApiBearerAuth('JWT')
   @ApiOperation({
     summary: 'Listar clientes de la tienda',
-    description: 'Obtiene la lista de clientes registrados con paginación, búsqueda por nombre/email/teléfono y ordenamiento.',
+    description:
+      'Obtiene la lista de clientes registrados con paginación, búsqueda por nombre/email/teléfono y ordenamiento.',
   })
-  @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Número de página (empieza en 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20, description: 'Resultados por página' })
-  @ApiQuery({ name: 'search', required: false, type: String, description: 'Buscar por nombre, email o teléfono' })
-  @ApiQuery({ name: 'orderBy', required: false, enum: ['puntos_totales', 'ultima_visita', 'fecha_registro'], example: 'fecha_registro', description: 'Campo para ordenar' })
-  @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], example: 'desc', description: 'Dirección del ordenamiento' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    example: 1,
+    description: 'Número de página (empieza en 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    example: 20,
+    description: 'Resultados por página',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Buscar por nombre, email o teléfono',
+  })
+  @ApiQuery({
+    name: 'orderBy',
+    required: false,
+    enum: ['puntos_totales', 'ultima_visita', 'fecha_registro'],
+    example: 'fecha_registro',
+    description: 'Campo para ordenar',
+  })
+  @ApiQuery({
+    name: 'order',
+    required: false,
+    enum: ['asc', 'desc'],
+    example: 'desc',
+    description: 'Dirección del ordenamiento',
+  })
   @ApiResponse({ status: 200, description: 'Lista de clientes paginada' })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 403, description: 'Sin permisos de administrador' })
-  async getClientes(
-    @CurrentTienda() tiendaId: string,
-    @Query() queryDto: ListClientesDto,
-  ) {
+  async getClientes(@CurrentTienda() tiendaId: string, @Query() queryDto: ListClientesDto) {
     return this.adminService.getClientes(tiendaId, queryDto);
   }
 
@@ -116,16 +140,14 @@ export class AdminController {
   @ApiBearerAuth('JWT')
   @ApiOperation({
     summary: 'Obtener detalle de cliente',
-    description: 'Obtiene la información completa de un cliente incluyendo estadísticas y su historial de compras.',
+    description:
+      'Obtiene la información completa de un cliente incluyendo estadísticas y su historial de compras.',
   })
   @ApiResponse({ status: 200, description: 'Detalle del cliente' })
   @ApiResponse({ status: 400, description: 'Cliente no encontrado' })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 403, description: 'Sin permisos de administrador' })
-  async getClienteDetalle(
-    @CurrentTienda() tiendaId: string,
-    @Param('id') clienteId: string,
-  ) {
+  async getClienteDetalle(@CurrentTienda() tiendaId: string, @Param('id') clienteId: string) {
     return this.adminService.getClienteDetalle(tiendaId, clienteId);
   }
 
@@ -138,22 +160,59 @@ export class AdminController {
   @ApiBearerAuth('JWT')
   @ApiOperation({
     summary: 'Listar compras de la tienda',
-    description: 'Obtiene el historial de compras con filtros por cliente, rango de fechas, paginación y ordenamiento.',
+    description:
+      'Obtiene el historial de compras con filtros por cliente, rango de fechas, paginación y ordenamiento.',
   })
-  @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Número de página (empieza en 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20, description: 'Resultados por página' })
-  @ApiQuery({ name: 'clienteId', required: false, type: String, description: 'Filtrar por ID de cliente' })
-  @ApiQuery({ name: 'fechaDesde', required: false, type: String, description: 'Fecha desde (ISO 8601)' })
-  @ApiQuery({ name: 'fechaHasta', required: false, type: String, description: 'Fecha hasta (ISO 8601)' })
-  @ApiQuery({ name: 'orderBy', required: false, enum: ['fecha', 'importe', 'puntos_otorgados'], example: 'fecha', description: 'Campo para ordenar' })
-  @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], example: 'desc', description: 'Dirección del ordenamiento' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    example: 1,
+    description: 'Número de página (empieza en 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    example: 20,
+    description: 'Resultados por página',
+  })
+  @ApiQuery({
+    name: 'clienteId',
+    required: false,
+    type: String,
+    description: 'Filtrar por ID de cliente',
+  })
+  @ApiQuery({
+    name: 'fechaDesde',
+    required: false,
+    type: String,
+    description: 'Fecha desde (ISO 8601)',
+  })
+  @ApiQuery({
+    name: 'fechaHasta',
+    required: false,
+    type: String,
+    description: 'Fecha hasta (ISO 8601)',
+  })
+  @ApiQuery({
+    name: 'orderBy',
+    required: false,
+    enum: ['fecha', 'importe', 'puntos_otorgados'],
+    example: 'fecha',
+    description: 'Campo para ordenar',
+  })
+  @ApiQuery({
+    name: 'order',
+    required: false,
+    enum: ['asc', 'desc'],
+    example: 'desc',
+    description: 'Dirección del ordenamiento',
+  })
   @ApiResponse({ status: 200, description: 'Lista de compras paginada' })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 403, description: 'Sin permisos de administrador' })
-  async getCompras(
-    @CurrentTienda() tiendaId: string,
-    @Query() queryDto: ListComprasDto,
-  ) {
+  async getCompras(@CurrentTienda() tiendaId: string, @Query() queryDto: ListComprasDto) {
     return this.comprasService.getComprasByTienda(tiendaId, queryDto);
   }
 
@@ -192,7 +251,13 @@ export class AdminController {
     description:
       'Devuelve datos para gráficos: evolución de facturación, nuevos clientes, distribución de puntos, top clientes, etc.',
   })
-  @ApiQuery({ name: 'periodo', required: false, enum: ['7d', '30d', '90d'], example: '30d', description: 'Periodo de análisis' })
+  @ApiQuery({
+    name: 'periodo',
+    required: false,
+    enum: ['7d', '30d', '90d'],
+    example: '30d',
+    description: 'Periodo de análisis',
+  })
   @ApiResponse({
     status: 200,
     description: 'Analytics del dashboard',
@@ -219,10 +284,7 @@ export class AdminController {
   })
   @ApiResponse({ status: 200, description: 'Puntos del cliente' })
   @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
-  async getClientePuntos(
-    @CurrentTienda() tiendaId: string,
-    @Param('id') clienteId: string,
-  ) {
+  async getClientePuntos(@CurrentTienda() tiendaId: string, @Param('id') clienteId: string) {
     return this.adminService.getClientePuntos(tiendaId, clienteId);
   }
 
@@ -237,7 +299,12 @@ export class AdminController {
     summary: 'Obtener cupones de un cliente',
     description: 'Devuelve los cupones del cliente filtrados por estado',
   })
-  @ApiQuery({ name: 'estado', required: false, enum: ['pendiente', 'usado', 'expirado', 'cancelado'], description: 'Filtrar por estado' })
+  @ApiQuery({
+    name: 'estado',
+    required: false,
+    enum: ['pendiente', 'usado', 'expirado', 'cancelado'],
+    description: 'Filtrar por estado',
+  })
   @ApiResponse({ status: 200, description: 'Cupones del cliente' })
   @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
   async getClienteCupones(
@@ -257,7 +324,8 @@ export class AdminController {
   @ApiBearerAuth('JWT')
   @ApiOperation({
     summary: 'Obtener cupones disponibles de un cliente',
-    description: 'Devuelve solo los cupones que pueden ser canjeados (estado pendiente y no expirados)',
+    description:
+      'Devuelve solo los cupones que pueden ser canjeados (estado pendiente y no expirados)',
   })
   @ApiResponse({ status: 200, description: 'Cupones disponibles del cliente' })
   @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
@@ -280,9 +348,7 @@ export class AdminController {
     description: 'Devuelve todas las promociones activas y disponibles de la tienda',
   })
   @ApiResponse({ status: 200, description: 'Lista de promociones disponibles' })
-  async getPromocionesDisponibles(
-    @CurrentTienda() tiendaId: string,
-  ) {
+  async getPromocionesDisponibles(@CurrentTienda() tiendaId: string) {
     return this.adminService.getPromocionesDisponibles(tiendaId);
   }
 
@@ -344,10 +410,7 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Cliente eliminado exitosamente' })
   @ApiResponse({ status: 400, description: 'Cliente ya está inactivo' })
   @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
-  async deleteCliente(
-    @CurrentTienda() tiendaId: string,
-    @Param('id') clienteId: string,
-  ) {
+  async deleteCliente(@CurrentTienda() tiendaId: string, @Param('id') clienteId: string) {
     return this.adminService.deleteCliente(tiendaId, clienteId);
   }
 
@@ -362,7 +425,11 @@ export class AdminController {
     summary: 'Registrar una compra',
     description: 'Registra una nueva compra para un cliente',
   })
-  @ApiResponse({ status: 201, description: 'Compra registrada exitosamente', type: CompraResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Compra registrada exitosamente',
+    type: CompraResponseDto,
+  })
   async registrarCompraAlias(
     @Tenant() tenant: TenantContext,
     @Body() registrarDto: RegistrarCompraDto,
@@ -380,7 +447,8 @@ export class AdminController {
   @ApiBearerAuth('JWT')
   @ApiOperation({
     summary: 'Actualizar compra',
-    description: 'Actualiza el importe y/o notas de una compra. Si se modifica el importe, los puntos se recalculan automáticamente.',
+    description:
+      'Actualiza el importe y/o notas de una compra. Si se modifica el importe, los puntos se recalculan automáticamente.',
   })
   @ApiResponse({ status: 200, description: 'Compra actualizada exitosamente' })
   @ApiResponse({ status: 400, description: 'No se proporcionaron cambios' })
@@ -404,14 +472,12 @@ export class AdminController {
   @ApiBearerAuth('JWT')
   @ApiOperation({
     summary: 'Eliminar compra',
-    description: 'Elimina una compra y resta los puntos otorgados del cliente. Si había un cupón usado, se marca como cancelado.',
+    description:
+      'Elimina una compra y resta los puntos otorgados del cliente. Si había un cupón usado, se marca como cancelado.',
   })
   @ApiResponse({ status: 200, description: 'Compra eliminada exitosamente' })
   @ApiResponse({ status: 404, description: 'Compra no encontrada' })
-  async deleteCompra(
-    @CurrentTienda() tiendaId: string,
-    @Param('id') compraId: string,
-  ) {
+  async deleteCompra(@CurrentTienda() tiendaId: string, @Param('id') compraId: string) {
     return this.comprasService.deleteCompra(tiendaId, compraId);
   }
 }

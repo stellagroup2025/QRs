@@ -36,9 +36,7 @@ export class ComprasService {
 
     // Validar que se proporcione al menos uno de los dos métodos de identificación
     if (!registrarDto.codigoQr && !registrarDto.clienteId) {
-      throw new BadRequestException(
-        'Debes proporcionar codigoQr o clienteId',
-      );
+      throw new BadRequestException('Debes proporcionar codigoQr o clienteId');
     }
 
     let cliente: any;
@@ -56,9 +54,7 @@ export class ComprasService {
         .single();
 
       if (clienteError || !clienteData) {
-        throw new BadRequestException(
-          'Cliente no encontrado o no pertenece a esta tienda',
-        );
+        throw new BadRequestException('Cliente no encontrado o no pertenece a esta tienda');
       }
 
       cliente = clienteData;
@@ -104,7 +100,8 @@ export class ComprasService {
       // Buscar el cupón
       const { data: cupon, error: cuponError } = await supabase
         .from('canjes')
-        .select(`
+        .select(
+          `
           id,
           id_cliente,
           id_promocion,
@@ -118,7 +115,8 @@ export class ComprasService {
             valor,
             id_tienda
           )
-        `)
+        `,
+        )
         .eq('id', registrarDto.cuponId)
         .single();
 
@@ -141,7 +139,9 @@ export class ComprasService {
 
       // Validar que el cupón está pendiente
       if (cupon.estado !== 'pendiente') {
-        throw new BadRequestException(`Este cupón ya fue ${cupon.estado === 'usado' ? 'utilizado' : cupon.estado}`);
+        throw new BadRequestException(
+          `Este cupón ya fue ${cupon.estado === 'usado' ? 'utilizado' : cupon.estado}`,
+        );
       }
 
       // Validar que no ha expirado
@@ -167,7 +167,7 @@ export class ComprasService {
 
     // 4. Insertar la compra
     const notasConDescuento = registrarDto.notas || '';
-    const promoUsada = cuponUsado ? cuponUsado.promociones as any : null;
+    const promoUsada = cuponUsado ? (cuponUsado.promociones as any) : null;
     const notasFinales = cuponUsado
       ? `${notasConDescuento}${notasConDescuento ? ' | ' : ''}Cupón aplicado: ${promoUsada.titulo} (-${descuentoAplicado.toFixed(2)}€)`
       : notasConDescuento;
@@ -232,10 +232,12 @@ export class ComprasService {
       },
       importe: parseFloat(compra.importe),
       descuento_aplicado: cuponUsado ? descuentoAplicado : undefined,
-      cupon_usado: cuponUsado ? {
-        id: cuponUsado.id,
-        titulo: promoUsada.titulo,
-      } : undefined,
+      cupon_usado: cuponUsado
+        ? {
+            id: cuponUsado.id,
+            titulo: promoUsada.titulo,
+          }
+        : undefined,
       puntos_otorgados: puntosOtorgados,
       puntos_totales_cliente: nuevosPuntosTotales,
       fecha: compra.fecha,
@@ -271,7 +273,7 @@ export class ComprasService {
           telefono
         )
       `,
-        { count: 'exact' }
+        { count: 'exact' },
       )
       .eq('id_tienda', tiendaId);
 
@@ -332,7 +334,8 @@ export class ComprasService {
     // 1. Verificar que la compra existe y pertenece a la tienda
     const { data: compraExistente, error: compraError } = await supabase
       .from('compras')
-      .select(`
+      .select(
+        `
         id,
         id_cliente,
         id_tienda,
@@ -343,7 +346,8 @@ export class ComprasService {
           id,
           puntos_totales
         )
-      `)
+      `,
+      )
       .eq('id', compraId)
       .eq('id_tienda', tiendaId)
       .single();
@@ -357,7 +361,10 @@ export class ComprasService {
     let diferenciaPuntos = 0;
 
     // Si se actualiza el importe, recalcular puntos
-    if (updateDto.importe !== undefined && updateDto.importe !== parseFloat(compraExistente.importe)) {
+    if (
+      updateDto.importe !== undefined &&
+      updateDto.importe !== parseFloat(compraExistente.importe)
+    ) {
       const nuevosPuntosOtorgados = Math.floor(updateDto.importe * puntosPorEuro);
       const puntosAnteriores = compraExistente.puntos_otorgados;
 
@@ -429,7 +436,8 @@ export class ComprasService {
     // 1. Verificar que la compra existe y pertenece a la tienda
     const { data: compra, error: compraError } = await supabase
       .from('compras')
-      .select(`
+      .select(
+        `
         id,
         id_cliente,
         id_tienda,
@@ -442,7 +450,8 @@ export class ComprasService {
           nombre,
           puntos_totales
         )
-      `)
+      `,
+      )
       .eq('id', compraId)
       .eq('id_tienda', tiendaId)
       .single();
@@ -455,10 +464,7 @@ export class ComprasService {
     const puntosARestar = compra.puntos_otorgados;
 
     // 2. Eliminar la compra (hard delete - puedes cambiarlo a soft delete si prefieres)
-    const { error: deleteError } = await supabase
-      .from('compras')
-      .delete()
-      .eq('id', compraId);
+    const { error: deleteError } = await supabase.from('compras').delete().eq('id', compraId);
 
     if (deleteError) {
       console.error('Error al eliminar compra:', deleteError);
@@ -491,10 +497,7 @@ export class ComprasService {
 
       if (canjes && canjes.length > 0) {
         // Marcar el primer cupón encontrado como cancelado
-        await supabase
-          .from('canjes')
-          .update({ estado: 'cancelado' })
-          .eq('id', canjes[0].id);
+        await supabase.from('canjes').update({ estado: 'cancelado' }).eq('id', canjes[0].id);
       }
     }
 

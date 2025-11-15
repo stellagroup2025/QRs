@@ -21,7 +21,7 @@ export class PreviewDestinatariosDto {
         email: 'juan@example.com',
         puntos_totales: 250,
         num_compras: 5,
-        ticket_medio: 45.50,
+        ticket_medio: 45.5,
         ultima_visita: '2025-10-15',
       },
     ],

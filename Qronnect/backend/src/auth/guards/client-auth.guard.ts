@@ -52,6 +52,9 @@ export class ClientAuthGuard implements CanActivate {
 
     // Verificar que el cliente existe y está activo
     const supabase = this.supabaseService.getAdminClient();
+
+    console.log('🔐 Verificando cliente:', { clienteId: decoded.sub, tiendaId: tenant.id, tenantDominio: tenant.dominio });
+
     const { data: cliente, error } = await supabase
       .from('clientes')
       .select('*')
@@ -59,6 +62,8 @@ export class ClientAuthGuard implements CanActivate {
       .eq('id_tienda', tenant.id)
       .eq('activo', true)
       .single();
+
+    console.log('📊 Resultado búsqueda cliente:', { cliente: cliente ? { id: cliente.id, nombre: cliente.nombre } : null, error });
 
     if (error || !cliente) {
       throw new UnauthorizedException('Cliente no encontrado o inactivo');

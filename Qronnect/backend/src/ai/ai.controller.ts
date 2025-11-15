@@ -7,6 +7,7 @@ import { TenantContext } from '../tenant/entities/tenant-context.entity';
 import { KpiAnalysisRequestDto } from './dto/kpi-analysis-request.dto';
 import { PromoIdeasRequestDto } from './dto/promo-ideas-request.dto';
 import { EmailCampaignRequestDto } from './dto/email-campaign-request.dto';
+import { PlanAccionRequestDto } from './dto/plan-accion-request.dto';
 
 /**
  * Controlador de IA para funcionalidades con Google Gemini
@@ -38,45 +39,47 @@ export class AiController {
   @Post('kpi-summary')
   @ApiOperation({
     summary: 'Análisis de KPIs con IA',
-    description: 'Genera un resumen ejecutivo y recomendaciones basadas en los KPIs de la tienda usando Google Gemini',
+    description:
+      'Genera un resumen ejecutivo y recomendaciones basadas en los KPIs de la tienda usando Google Gemini',
   })
   @ApiResponse({
     status: 200,
     description: 'Análisis generado exitosamente',
     schema: {
       example: {
-        summary: 'Las ventas han subido un 12% respecto al mes pasado. El ticket medio se mantiene estable en 45€.',
+        summary:
+          'Las ventas han subido un 12% respecto al mes pasado. El ticket medio se mantiene estable en 45€.',
         highlights: [
           'Incremento del 15% en clientes recurrentes',
           'Los martes y jueves son los días de mayor afluencia',
-          'El ticket medio es 10% superior a la media del sector'
+          'El ticket medio es 10% superior a la media del sector',
         ],
         recommendations: [
           'Lanza una campaña de reactivación para clientes inactivos de más de 60 días',
           'Aprovecha los días de baja afluencia con promociones especiales',
-          'Considera implementar un programa de referidos para los clientes recurrentes'
+          'Considera implementar un programa de referidos para los clientes recurrentes',
         ],
         kpis: {
-          ventasTotales: 4521.50,
+          ventasTotales: 4521.5,
           numeroTickets: 98,
           ticketMedio: 46.13,
           clientesNuevos: 12,
           clientesRecurrentes: 35,
-          clientesActivos: 47
+          clientesActivos: 47,
         },
         periodo: {
           inicio: '2025-10-01T00:00:00Z',
-          fin: '2025-10-31T23:59:59Z'
-        }
-      }
-    }
+          fin: '2025-10-31T23:59:59Z',
+        },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'No autorizado - requiere autenticación de admin' })
-  @ApiResponse({ status: 500, description: 'Error al generar análisis (ej: GEMINI_API_KEY no configurada)' })
-  async analyzeKpis(
-    @Tenant() tenant: TenantContext,
-    @Body() requestDto: KpiAnalysisRequestDto,
-  ) {
+  @ApiResponse({
+    status: 500,
+    description: 'Error al generar análisis (ej: GEMINI_API_KEY no configurada)',
+  })
+  async analyzeKpis(@Tenant() tenant: TenantContext, @Body() requestDto: KpiAnalysisRequestDto) {
     // MULTI-TENANT: tenant.id asegura que solo se analicen datos de esta tienda
     return this.aiService.analyzeKpis(tenant.id, requestDto);
   }
@@ -97,7 +100,8 @@ export class AiController {
   @Post('promo-ideas')
   @ApiOperation({
     summary: 'Generación de ideas de promociones con IA',
-    description: 'Genera ideas creativas de promociones adaptadas al sector del negocio y objetivos específicos',
+    description:
+      'Genera ideas creativas de promociones adaptadas al sector del negocio y objetivos específicos',
   })
   @ApiResponse({
     status: 200,
@@ -107,15 +111,19 @@ export class AiController {
         ideas: [
           {
             titulo: '2x1 en cortes de cabello los martes',
-            descripcion: 'Ofrece un corte gratis por cada corte pagado los martes entre 10:00 y 14:00',
-            condiciones: 'Válido solo los martes de 10:00 a 14:00. Ambos servicios deben ser del mismo valor o menor.',
-            mensajeWhatsApp: '🎉 ¡2x1 en cortes todos los martes! Trae a un amigo y ambos se cortan al precio de uno. Reserva ya',
+            descripcion:
+              'Ofrece un corte gratis por cada corte pagado los martes entre 10:00 y 14:00',
+            condiciones:
+              'Válido solo los martes de 10:00 a 14:00. Ambos servicios deben ser del mismo valor o menor.',
+            mensajeWhatsApp:
+              '🎉 ¡2x1 en cortes todos los martes! Trae a un amigo y ambos se cortan al precio de uno. Reserva ya',
             textoCartel: '¡MARTES 2X1!\nDos cortes al precio de uno\n10:00 - 14:00',
-            estimadoImpacto: 'Puede incrementar visitas los martes en 40-60% y atraer nuevos clientes por referidos'
-          }
-        ]
-      }
-    }
+            estimadoImpacto:
+              'Puede incrementar visitas los martes en 40-60% y atraer nuevos clientes por referidos',
+          },
+        ],
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   async generatePromoIdeas(
@@ -144,7 +152,8 @@ export class AiController {
   @Post('email-campaigns')
   @ApiOperation({
     summary: 'Generación de campañas de email con IA',
-    description: 'Genera contenido de email marketing (asuntos, cuerpos, CTAs) basado en segmento de clientes',
+    description:
+      'Genera contenido de email marketing (asuntos, cuerpos, CTAs) basado en segmento de clientes',
   })
   @ApiResponse({
     status: 200,
@@ -154,27 +163,29 @@ export class AiController {
         asuntos: [
           '{{nombre}}, te echamos de menos en [Nombre Tienda]',
           '¡Tenemos algo especial para ti, {{nombre}}!',
-          'Vuelve y disfruta de un 20% de descuento'
+          'Vuelve y disfruta de un 20% de descuento',
         ],
         cuerpos: [
           {
             variante: 'A',
-            contenido: 'Hola {{nombre}},\n\nHa pasado un tiempo desde tu última visita y te echamos de menos...',
-            cta: '¡Reserva tu cita ahora y obtén 20% de descuento!'
+            contenido:
+              'Hola {{nombre}},\n\nHa pasado un tiempo desde tu última visita y te echamos de menos...',
+            cta: '¡Reserva tu cita ahora y obtén 20% de descuento!',
           },
           {
             variante: 'B',
-            contenido: 'Hola {{nombre}},\n\n¿Sabías que tenemos nuevos servicios que te encantarán?...',
-            cta: 'Descubre lo nuevo - 20% OFF en tu próxima visita'
-          }
+            contenido:
+              'Hola {{nombre}},\n\n¿Sabías que tenemos nuevos servicios que te encantarán?...',
+            cta: 'Descubre lo nuevo - 20% OFF en tu próxima visita',
+          },
         ],
         consejos: [
           'Envía el email un martes o miércoles a media mañana para mejor tasa de apertura',
           'Prueba ambas variantes con el 50% del segmento cada una para ver cuál funciona mejor',
-          'Personaliza el descuento según el ticket medio del segmento'
-        ]
-      }
-    }
+          'Personaliza el descuento según el ticket medio del segmento',
+        ],
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   async generateEmailCampaign(
@@ -182,5 +193,56 @@ export class AiController {
     @Body() requestDto: EmailCampaignRequestDto,
   ) {
     return this.aiService.generateEmailCampaignIdeas(tenant.id, requestDto);
+  }
+
+  /**
+   * POST /api/admin/ai/plan-accion
+   *
+   * Genera un plan de acción detallado para ejecutar una recomendación
+   *
+   * Funcionalidad:
+   * 1. Recibe una recomendación del análisis de KPIs
+   * 2. Evalúa qué acciones concretas se pueden tomar desde el sistema
+   * 3. Devuelve 1-2 acciones (crear campaña/promoción) con datos prellenados
+   * 4. Incluye explicación del plan e impacto estimado
+   *
+   * MULTI-TENANT: Usa datos de la tienda autenticada para contextualizar
+   */
+  @Post('plan-accion')
+  @ApiOperation({
+    summary: 'Plan de acción para una recomendación',
+    description:
+      'Genera acciones concretas ejecutables desde el sistema para implementar una recomendación de IA',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Plan de acción generado',
+    schema: {
+      example: {
+        acciones: [
+          {
+            tipo: 'crear_campana',
+            titulo: 'Campaña de Reactivación',
+            descripcion: 'Enviar email a clientes inactivos de 60+ días',
+            datos_prellenados: {
+              segmentoDescripcion: 'clientes sin visitar en 60+ días',
+              objetivo: 'reactivacion',
+              tono: 'cercano',
+              sector: 'comercio local',
+            },
+            prioridad: 'alta',
+          },
+        ],
+        explicacion: 'Esta campaña te ayudará a recuperar clientes que han dejado de venir...',
+        impacto_estimado: 'Puede recuperar el 10-20% de clientes inactivos',
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  async generatePlanAccion(
+    @Tenant() tenant: TenantContext,
+    @Body() requestDto: PlanAccionRequestDto,
+  ) {
+    return this.aiService.generatePlanAccion(tenant.id, requestDto);
   }
 }

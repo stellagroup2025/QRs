@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../supabase/supabase.service';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
@@ -21,10 +26,7 @@ export class ClientesService {
    *
    * MULTITENANCY: Ahora requiere el tenantId (determinado por el dominio)
    */
-  async getOrCreateCliente(
-    supabaseUserId: string,
-    tenantId: string,
-  ): Promise<ClienteResponseDto> {
+  async getOrCreateCliente(supabaseUserId: string, tenantId: string): Promise<ClienteResponseDto> {
     const supabase = this.supabaseService.getAdminClient();
 
     // Intentar obtener el cliente existente para ESTA TIENDA
@@ -90,6 +92,7 @@ export class ClientesService {
         ...(updateDto.telefono && { telefono: updateDto.telefono }),
         ...(updateDto.email && { email: updateDto.email }),
         ...(updateDto.nombre && { nombre: updateDto.nombre }),
+        ...(updateDto.genero && { genero: updateDto.genero }),
       })
       .eq('supabase_user_id', supabaseUserId)
       .eq('id_tienda', tenantId) // ← Importante: actualizar solo en este tenant
@@ -109,10 +112,7 @@ export class ClientesService {
    *
    * MULTITENANCY: Solo devuelve compras de la tienda actual
    */
-  async getPuntosYCompras(
-    supabaseUserId: string,
-    tenantId: string,
-  ): Promise<PuntosResponseDto> {
+  async getPuntosYCompras(supabaseUserId: string, tenantId: string): Promise<PuntosResponseDto> {
     const supabase = this.supabaseService.getAdminClient();
 
     // Obtener el cliente EN ESTA TIENDA
@@ -156,7 +156,10 @@ export class ClientesService {
    * Registra un nuevo cliente en una tienda específica
    * Genera automáticamente el QR del cliente
    */
-  async registerCliente(tenantId: string, registerDto: RegisterClienteDto): Promise<{
+  async registerCliente(
+    tenantId: string,
+    registerDto: RegisterClienteDto,
+  ): Promise<{
     cliente: ClienteResponseDto;
     qr_code: string;
   }> {
@@ -188,6 +191,7 @@ export class ClientesService {
         telefono: registerDto.telefono,
         codigo_postal: registerDto.codigo_postal,
         fecha_nacimiento: registerDto.fecha_nacimiento,
+        genero: registerDto.genero,
         puntos_totales: 0,
         activo: true,
       })
@@ -213,7 +217,10 @@ export class ClientesService {
   /**
    * Envía un código OTP por email al cliente
    */
-  async sendLoginCode(tenantId: string, sendCodeDto: SendCodeClienteDto): Promise<{
+  async sendLoginCode(
+    tenantId: string,
+    sendCodeDto: SendCodeClienteDto,
+  ): Promise<{
     message: string;
     codigo_enviado: string; // Solo para desarrollo
   }> {
@@ -240,13 +247,11 @@ export class ClientesService {
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Guardar código en la tabla email_otps (reutilizamos la misma tabla)
-    const { error: otpError } = await supabase
-      .from('email_otps')
-      .insert({
-        email: sendCodeDto.email,
-        codigo,
-        expira_en: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutos
-      });
+    const { error: otpError } = await supabase.from('email_otps').insert({
+      email: sendCodeDto.email,
+      codigo,
+      expira_en: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutos
+    });
 
     if (otpError) {
       console.error('Error al guardar OTP:', otpError);
@@ -267,7 +272,10 @@ export class ClientesService {
   /**
    * Verifica el código OTP y devuelve un token de acceso
    */
-  async verifyLoginCode(tenantId: string, verifyDto: VerifyCodeClienteDto): Promise<{
+  async verifyLoginCode(
+    tenantId: string,
+    verifyDto: VerifyCodeClienteDto,
+  ): Promise<{
     access_token: string;
     cliente: ClienteResponseDto;
   }> {
@@ -307,10 +315,7 @@ export class ClientesService {
     }
 
     // Marcar el código como usado
-    await supabase
-      .from('email_otps')
-      .delete()
-      .eq('id', otp.id);
+    await supabase.from('email_otps').delete().eq('id', otp.id);
 
     // Actualizar última visita
     await supabase
@@ -320,13 +325,15 @@ export class ClientesService {
 
     // Generar token sin expiración
     // El token solo se invalida si el cliente es desactivado en BD
-    const access_token = Buffer.from(JSON.stringify({
-      sub: cliente.id,
-      tienda_id: cliente.id_tienda,
-      email: cliente.email,
-      role: 'cliente',
-      // Sin campo 'exp' - sesión permanente
-    })).toString('base64');
+    const access_token = Buffer.from(
+      JSON.stringify({
+        sub: cliente.id,
+        tienda_id: cliente.id_tienda,
+        email: cliente.email,
+        role: 'cliente',
+        // Sin campo 'exp' - sesión permanente
+      }),
+    ).toString('base64');
 
     console.log('  - Login exitoso');
 
@@ -374,6 +381,7 @@ export class ClientesService {
         ...(updateDto.telefono && { telefono: updateDto.telefono }),
         ...(updateDto.email && { email: updateDto.email }),
         ...(updateDto.nombre && { nombre: updateDto.nombre }),
+        ...(updateDto.genero && { genero: updateDto.genero }),
       })
       .eq('id', clienteId)
       .eq('id_tienda', tenantId)
@@ -448,6 +456,7 @@ export class ClientesService {
       puntos_totales: cliente.puntos_totales,
       fecha_registro: cliente.fecha_registro,
       ultima_visita: cliente.ultima_visita,
+      genero: cliente.genero,
     };
   }
 }

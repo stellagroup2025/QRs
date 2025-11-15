@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -10,13 +11,23 @@ import {
   Request,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { SuperAdminService } from './superadmin.service';
 import { SuperAdminGuard } from './guards/superadmin.guard';
 import { SendEmailCodeDto } from './dto/send-email-code.dto';
 import { VerifyEmailCodeDto } from './dto/verify-email-code.dto';
 import { CreateTiendaDto } from './dto/create-tienda.dto';
 import { UpdateTiendaDto } from './dto/update-tienda.dto';
+import { ConfigureSmsDto } from './dto/configure-sms.dto';
+import { UpdateSenderIdDto } from './dto/update-sender-id.dto';
+import { ConfigureIaDto } from './dto/configure-ia.dto';
 
 @ApiTags('SuperAdmin')
 @Controller('superadmin')
@@ -30,7 +41,8 @@ export class SuperAdminController {
   @Post('auth/send-email')
   @ApiOperation({
     summary: 'Enviar código de verificación por email (GRATIS)',
-    description: 'Envía un código de 6 dígitos al email del superadmin para autenticación. No requiere configuración externa.',
+    description:
+      'Envía un código de 6 dígitos al email del superadmin para autenticación. No requiere configuración externa.',
   })
   @ApiResponse({ status: 200, description: 'Código enviado correctamente' })
   @ApiResponse({ status: 404, description: 'Email no autorizado' })
@@ -86,7 +98,12 @@ export class SuperAdminController {
     summary: 'Obtener logs de auditoría',
     description: 'Retorna el registro de acciones realizadas por superadmins',
   })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Número máximo de registros' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Número máximo de registros',
+  })
   @ApiResponse({ status: 200, description: 'Logs obtenidos correctamente' })
   async getAuditLogs(@Query('limit') limit?: number) {
     return this.superAdminService.getAuditLogs(limit ? Number(limit) : 100);
@@ -182,10 +199,166 @@ export class SuperAdminController {
   @ApiParam({ name: 'clienteId', description: 'ID del cliente' })
   @ApiResponse({ status: 200, description: 'QR obtenido correctamente' })
   @ApiResponse({ status: 404, description: 'Cliente o QR no encontrado' })
-  async getClienteQR(
-    @Param('tiendaId') tiendaId: string,
-    @Param('clienteId') clienteId: string,
-  ) {
+  async getClienteQR(@Param('tiendaId') tiendaId: string, @Param('clienteId') clienteId: string) {
     return this.superAdminService.getClienteQR(tiendaId, clienteId);
+  }
+
+  // ========================================
+  // CONFIGURACIÓN DE SMS
+  // ========================================
+
+  @Put('tiendas/:id/sms')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Configurar SMS para una tienda',
+    description:
+      'Configura el modo SMS (global o propio) y las credenciales de Twilio para una tienda específica',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Configuración SMS actualizada' })
+  @ApiResponse({ status: 400, description: 'Configuración inválida' })
+  @ApiResponse({ status: 404, description: 'Tienda no encontrada' })
+  async configurarSms(@Request() req, @Param('id') id: string, @Body() configDto: ConfigureSmsDto) {
+    return this.superAdminService.configurarSms(req.superadmin.id, id, configDto);
+  }
+
+  @Get('tiendas/:id/sms')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Obtener configuración SMS de una tienda',
+    description: 'Retorna la configuración actual de SMS (sin exponer credenciales completas)',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Configuración SMS obtenida' })
+  @ApiResponse({ status: 404, description: 'Tienda no encontrada' })
+  async getConfiguracionSms(@Param('id') id: string) {
+    return this.superAdminService.getConfiguracionSms(id);
+  }
+
+  @Post('tiendas/:id/sms/test')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Probar configuración SMS de una tienda',
+    description: 'Valida las credenciales de Twilio y envía un SMS de prueba',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Test exitoso' })
+  @ApiResponse({ status: 400, description: 'Credenciales inválidas' })
+  async probarSms(@Param('id') id: string, @Body() body: { telefono_test: string }) {
+    return this.superAdminService.probarSms(id, body.telefono_test);
+  }
+
+  @Get('sms/estadisticas-globales')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Obtener estadísticas globales de SMS',
+    description: 'Retorna el uso total de SMS por todas las tiendas (solo modo global)',
+  })
+  @ApiResponse({ status: 200, description: 'Estadísticas globales obtenidas' })
+  async getEstadisticasGlobalesSms() {
+    return this.superAdminService.getEstadisticasGlobalesSms();
+  }
+
+  @Patch('tiendas/:id/sms/sender-id')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Actualizar solo el Sender ID de una tienda',
+    description:
+      'Actualiza únicamente el Sender ID alfanumérico sin modificar el resto de la configuración SMS',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Sender ID actualizado correctamente' })
+  @ApiResponse({
+    status: 400,
+    description: 'Sender ID inválido (máx 11 caracteres alfanuméricos)',
+  })
+  @ApiResponse({ status: 404, description: 'Tienda no encontrada' })
+  async actualizarSenderId(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() updateDto: UpdateSenderIdDto,
+  ) {
+    return this.superAdminService.actualizarSenderId(req.superadmin.id, id, updateDto);
+  }
+
+  @Delete('tiendas/:id/sms/sender-id')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Eliminar el Sender ID de una tienda',
+    description: 'Elimina el Sender ID configurado, la tienda volverá a usar número de teléfono',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Sender ID eliminado correctamente' })
+  @ApiResponse({ status: 404, description: 'Tienda no encontrada' })
+  async eliminarSenderId(@Request() req, @Param('id') id: string) {
+    return this.superAdminService.eliminarSenderId(req.superadmin.id, id);
+  }
+
+  // ========================================
+  // CONFIGURACIÓN DE IA
+  // ========================================
+
+  @Put('tiendas/:id/ia')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Configurar IA para una tienda',
+    description:
+      'Configura el modo IA (global o propio) y las API keys de Gemini para una tienda específica',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Configuración IA actualizada' })
+  @ApiResponse({ status: 400, description: 'Configuración inválida' })
+  @ApiResponse({ status: 404, description: 'Tienda no encontrada' })
+  async configurarIa(@Request() req, @Param('id') id: string, @Body() configDto: ConfigureIaDto) {
+    return this.superAdminService.configurarIa(req.superadmin.id, id, configDto);
+  }
+
+  @Get('tiendas/:id/ia')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Obtener configuración IA de una tienda',
+    description: 'Retorna la configuración actual de IA (sin exponer API keys completas)',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Configuración IA obtenida' })
+  @ApiResponse({ status: 404, description: 'Tienda no encontrada' })
+  async getConfiguracionIa(@Param('id') id: string) {
+    return this.superAdminService.getConfiguracionIa(id);
+  }
+
+  @Get('tiendas/:id/ia/estadisticas')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Obtener estadísticas de uso de IA de una tienda',
+    description: 'Retorna el uso mensual, límites y consumo de IA',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Estadísticas obtenidas' })
+  @ApiResponse({ status: 404, description: 'Tienda no encontrada' })
+  async getEstadisticasIa(@Param('id') id: string) {
+    return this.superAdminService.getEstadisticasIa(id);
+  }
+
+  @Delete('tiendas/:id/ia/api-key')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Eliminar la API key propia de IA de una tienda',
+    description: 'Elimina la API key configurada, la tienda volverá a usar modo global',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'API key eliminada correctamente' })
+  @ApiResponse({ status: 404, description: 'Tienda no encontrada' })
+  async eliminarApiKeyIa(@Request() req, @Param('id') id: string) {
+    return this.superAdminService.eliminarApiKeyIa(req.superadmin.id, id);
   }
 }

@@ -22,8 +22,22 @@ export class RegisterClienteDto {
   @Matches(/^\d{5}$/, { message: 'El código postal debe tener 5 dígitos' })
   codigo_postal?: string;
 
-  @ApiProperty({ example: '1990-01-15', description: 'Fecha de nacimiento (YYYY-MM-DD)', required: false })
+  @ApiProperty({
+    example: '1990-01-15',
+    description: 'Fecha de nacimiento (YYYY-MM-DD)',
+    required: false,
+  })
   @IsOptional()
   @IsDateString({}, { message: 'La fecha debe tener formato YYYY-MM-DD' })
   fecha_nacimiento?: string;
+
+  @ApiProperty({
+    example: 'masculino',
+    description: 'Género del cliente',
+    enum: ['masculino', 'femenino', 'otro', 'prefiero_no_decir'],
+    required: false,
+  })
+  @IsOptional()
+  @IsString({ message: 'El género debe ser un texto' })
+  genero?: string;
 }

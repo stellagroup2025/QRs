@@ -93,7 +93,7 @@ export class EmailService {
         success: false,
         sent: 0,
         failed: params.recipients.length,
-        errors: params.recipients.map(r => ({
+        errors: params.recipients.map((r) => ({
           email: r.email,
           error: 'Email service not configured',
         })),
@@ -131,7 +131,7 @@ export class EmailService {
         }
 
         // Pequeña pausa entre emails para no saturar la API
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
 
