@@ -361,4 +361,37 @@ export class SuperAdminController {
   async eliminarApiKeyIa(@Request() req, @Param('id') id: string) {
     return this.superAdminService.eliminarApiKeyIa(req.superadmin.id, id);
   }
+
+  // ========================================
+  // ACCESO A TIENDAS COMO ADMIN
+  // ========================================
+
+  @Post('tiendas/:id/generar-token-admin')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Generar token de admin para acceder a una tienda',
+    description:
+      'Genera un token de autenticación que permite al superadmin acceder al panel de admin de la tienda seleccionada',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({
+    status: 200,
+    description: 'Token generado correctamente',
+    schema: {
+      example: {
+        access_token: 'eyJzdWIiOiJ1dWlkIiwidGllbmRhX2lkIjoidXVpZCIsInJvbGUiOiJhZG1pbiJ9',
+        tienda: {
+          id: 'uuid',
+          nombre: 'Mi Tienda',
+          slug: 'mitienda',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Tienda no encontrada' })
+  @ApiResponse({ status: 400, description: 'Tienda inactiva' })
+  async generarTokenAdminParaTienda(@Request() req, @Param('id') id: string) {
+    return this.superAdminService.generarTokenAdminParaTienda(req.superadmin.id, id);
+  }
 }

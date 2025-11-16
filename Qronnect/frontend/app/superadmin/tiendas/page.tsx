@@ -130,6 +130,50 @@ export default function SuperAdminTiendasPage() {
     }
   }
 
+  const handleViewTienda = async (tienda: Tienda) => {
+    const token = localStorage.getItem('superadmin_token')
+    if (!token) {
+      alert('Sesión expirada, por favor inicia sesión nuevamente')
+      router.push('/superadmin/login')
+      return
+    }
+
+    try {
+      // Llamar al endpoint para generar el token de admin
+      const response = await fetch(`${API_URL}/api/superadmin/tiendas/${tienda.id}/generar-token-admin`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (response.status === 401) {
+        localStorage.removeItem('superadmin_token')
+        alert('Sesión expirada, por favor inicia sesión nuevamente')
+        router.push('/superadmin/login')
+        return
+      }
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Error al generar token de acceso')
+      }
+
+      const data = await response.json()
+
+      // Construir la URL del tenant con el token como parámetro
+      // El panel de admin detectará este parámetro y lo usará para autenticar
+      const tenantUrl = `http://${data.tienda.dominio}.localhost:3000/admin/dashboard?superadmin_token=${data.access_token}`
+
+      // Abrir en nueva pestaña
+      window.open(tenantUrl, '_blank')
+
+    } catch (error: any) {
+      console.error('Error al acceder a la tienda:', error)
+      alert(error.message || 'Error al acceder a la tienda')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -316,7 +360,8 @@ export default function SuperAdminTiendasPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => router.push(`/superadmin/tiendas/${tienda.id}`)}
+                              onClick={() => handleViewTienda(tienda)}
+                              title="Ver panel de admin de la tienda"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>

@@ -162,6 +162,7 @@ export class ClientesService {
   ): Promise<{
     cliente: ClienteResponseDto;
     qr_code: string;
+    access_token: string;
   }> {
     const supabase = this.supabaseService.getAdminClient();
 
@@ -208,9 +209,23 @@ export class ClientesService {
     // El QR del cliente es su ID
     const qr_code = newCliente.id;
 
+    // Generar token de acceso automáticamente (auto-login después del registro)
+    const access_token = Buffer.from(
+      JSON.stringify({
+        sub: newCliente.id,
+        tienda_id: tenantId,
+        email: newCliente.email,
+        role: 'cliente',
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // 30 días
+      }),
+    ).toString('base64');
+
+    console.log('  - Token generado para auto-login');
+
     return {
       cliente: this.mapToResponseDto(newCliente),
       qr_code,
+      access_token,
     };
   }
 

@@ -52,7 +52,36 @@ export class AdminAuthGuard implements CanActivate {
         throw new UnauthorizedException('Token no válido para esta tienda');
       }
 
-      // Verificar que el admin existe y está activo
+      // Si es acceso de superadmin, permitir sin verificar admin_users
+      if (decoded.superadmin_access === true) {
+        // Verificar que el superadmin existe y está activo
+        const supabase = this.supabaseService.getAdminClient();
+        const { data: superadmin, error: superadminError } = await supabase
+          .from('superadmin_users')
+          .select('id, email, nombre, activo')
+          .eq('id', decoded.sub)
+          .eq('activo', true)
+          .single();
+
+        if (superadminError || !superadmin) {
+          throw new UnauthorizedException('Superadmin no encontrado o inactivo');
+        }
+
+        // Añadir los datos del superadmin a la request
+        request.user = {
+          id: superadmin.id,
+          email: superadmin.email,
+          nombre: superadmin.nombre,
+          role: 'admin',
+          tienda_id: tenant.id,
+          superadmin_access: true,
+        };
+
+        request.accessToken = token;
+        return true;
+      }
+
+      // Verificar que el admin existe y está activo (acceso normal)
       const supabase = this.supabaseService.getAdminClient();
       const { data: admin, error } = await supabase
         .from('admin_users')

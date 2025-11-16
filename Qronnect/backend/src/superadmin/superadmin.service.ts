@@ -1006,4 +1006,54 @@ export class SuperAdminService {
       },
     };
   }
+
+  /**
+   * Generar token de admin para que el superadmin acceda a una tienda
+   * Permite al superadmin autenticarse como admin en cualquier tienda
+   */
+  async generarTokenAdminParaTienda(superadminId: string, tiendaId: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Verificar que la tienda existe
+    const { data: tienda, error: tiendaError } = await supabase
+      .from('tiendas')
+      .select('id, nombre, dominio, activo')
+      .eq('id', tiendaId)
+      .single();
+
+    if (tiendaError || !tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    if (!tienda.activo) {
+      throw new BadRequestException('La tienda está inactiva');
+    }
+
+    // Generar token de admin (similar a admin.service.ts login)
+    const access_token = Buffer.from(
+      JSON.stringify({
+        sub: superadminId, // Usamos el ID del superadmin
+        tienda_id: tienda.id,
+        email: 'superadmin@access',
+        role: 'admin',
+        superadmin_access: true, // Flag para identificar que es acceso de superadmin
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 2, // 2 horas
+      }),
+    ).toString('base64');
+
+    // Registrar en audit log
+    await this.registrarAuditLog(superadminId, 'acceso_tienda_como_admin', 'tienda', tiendaId, {
+      tienda_nombre: tienda.nombre,
+      dominio: tienda.dominio,
+    });
+
+    return {
+      access_token,
+      tienda: {
+        id: tienda.id,
+        nombre: tienda.nombre,
+        dominio: tienda.dominio,
+      },
+    };
+  }
 }

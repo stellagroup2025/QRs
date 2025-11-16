@@ -35,7 +35,7 @@ export class ClientesController {
     summary: 'Registrar nuevo cliente',
     description:
       'Registra un nuevo cliente en la tienda del dominio actual. ' +
-      'Devuelve los datos del cliente y su QR único (ID del cliente).',
+      'Devuelve los datos del cliente, su QR único (ID del cliente) y un token de acceso para auto-login.',
   })
   @ApiResponse({
     status: 201,
@@ -45,6 +45,7 @@ export class ClientesController {
       properties: {
         cliente: { type: 'object' },
         qr_code: { type: 'string', description: 'ID del cliente para generar QR' },
+        access_token: { type: 'string', description: 'Token de autenticación (válido 30 días)' },
       },
     },
   })
@@ -52,7 +53,7 @@ export class ClientesController {
   async register(
     @Tenant('id') tenantId: string,
     @Body() registerDto: RegisterClienteDto,
-  ): Promise<{ cliente: ClienteResponseDto; qr_code: string }> {
+  ): Promise<{ cliente: ClienteResponseDto; qr_code: string; access_token: string }> {
     return this.clientesService.registerCliente(tenantId, registerDto);
   }
 

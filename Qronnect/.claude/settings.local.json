@@ -87,7 +87,8 @@
       "Bash(curl -X POST http://localhost:3001/api/superadmin/auth/verify-email -H \"Content-Type: application/json\" -d '{\"\"\"\"email\"\"\"\": \"\"\"\"stellagroupapps@gmail.com\"\"\"\", \"\"\"\"codigo\"\"\"\": \"\"\"\"402685\"\"\"\"}' -s)",
       "Bash(curl -s \"http://localhost:3001/api/superadmin/tiendas/11bf2433-4232-4c58-a446-a805e1b78f9b/usuarios\" -H \"Authorization: Bearer eyJzdWIiOiJjODRmY2Q1ZC1jMDU3LTQzZWItOTE2Ny1jMWY3NjBiNzg2ZWQiLCJlbWFpbCI6InN0ZWxsYWdyb3VwYXBwc0BnbWFpbC5jb20iLCJleHAiOjE3NjMwMjgwMjZ9\")",
       "Bash(curl -s http://localhost:3001/api/superadmin/tiendas/11bf2433-4232-4c58-a446-a805e1b78f9b/usuarios -H \"Authorization: Bearer eyJzdWIiOiJjODRmY2Q1ZC1jMDU3LTQzZWItOTE2Ny1jMWY3NjBiNzg2ZWQiLCJlbWFpbCI6InN0ZWxsYWdyb3VwYXBwc0BnbWFpbC5jb20iLCJleHAiOjE3NjMwMjgwMjZ9\")",
-      "Bash(kill 16338)"
+      "Bash(kill 16338)",
+      "Read(//mnt/c/Users/Omar/Documents/Qrs/**)"
     ],
     "deny": [],
     "ask": []

@@ -163,6 +163,22 @@ export default function AdminDashboardPage() {
   const [refreshCampanas, setRefreshCampanas] = useState<(() => void) | null>(null)
 
   useEffect(() => {
+    // Verificar si hay un token de superadmin en la URL
+    const urlParams = new URLSearchParams(window.location.search)
+    const superadminToken = urlParams.get('superadmin_token')
+
+    if (superadminToken) {
+      // El superadmin está accediendo, guardar el token y limpiar la URL
+      localStorage.setItem('admin_token', superadminToken)
+
+      // Limpiar el token de la URL por seguridad
+      window.history.replaceState({}, '', window.location.pathname)
+
+      // Obtener info de la tienda desde el backend
+      fetchTiendaInfo(superadminToken)
+      return
+    }
+
     const adminToken = localStorage.getItem('admin_token')
     const tiendaData = localStorage.getItem('admin_tienda')
 
@@ -198,6 +214,35 @@ export default function AdminDashboardPage() {
       fetchAnalytics(analyticsPeriodo)
     }
   }, [analyticsPeriodo])
+
+  const fetchTiendaInfo = async (token: string) => {
+    try {
+      // Decodificar el token para obtener el tienda_id
+      const payload = JSON.parse(atob(token))
+      const domain = window.location.hostname.split('.')[0] // Extraer el subdominio
+
+      // Simular data de tienda basado en el dominio (en producción esto vendría del backend)
+      const tiendaData = {
+        id: payload.tienda_id,
+        dominio: domain,
+        nombre: domain.charAt(0).toUpperCase() + domain.slice(1), // Capitalizar
+      }
+
+      localStorage.setItem('admin_tienda', JSON.stringify(tiendaData))
+      setToken(token)
+      setTienda(tiendaData)
+
+      // Generar URL del QR
+      const registroUrl = `http://${domain}.localhost:3000/get-qr`
+      setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(registroUrl)}`)
+
+      // Cargar dashboard
+      fetchDashboard(token)
+    } catch (error) {
+      console.error('Error al obtener info de tienda:', error)
+      router.push('/admin/login')
+    }
+  }
 
   const fetchDashboard = async (token: string) => {
     try {

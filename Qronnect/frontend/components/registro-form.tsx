@@ -80,13 +80,23 @@ export function RegistroForm() {
 
       const result = await response.json()
 
+      // Guardar token de autenticación automática
+      if (result.access_token) {
+        localStorage.setItem('client_token', result.access_token)
+      }
+
+      // Guardar datos del cliente
+      if (result.cliente) {
+        localStorage.setItem('client_data', JSON.stringify(result.cliente))
+      }
+
       toast({
         title: "¡Cuenta creada!",
-        description: "Ahora puedes iniciar sesión con tu email",
+        description: "Bienvenido, tu cuenta ha sido activada automáticamente",
       })
 
-      // Redirigir al login para que inicie sesión con código OTP
-      router.push(`/login`)
+      // Redirigir directamente al perfil (auto-login)
+      router.push(`/mi-perfil`)
     } catch (error: any) {
       toast({
         title: "Error",
