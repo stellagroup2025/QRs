@@ -176,13 +176,21 @@ export class SmsService {
     let from: string;
     let mensajeFinal: string;
 
-    if (smsConfig.sender_id) {
+    // IMPORTANTE: Las cuentas trial de Twilio no soportan Sender IDs alfanuméricos
+    // Por eso, siempre usamos el número de teléfono en cuentas trial
+    // En producción, se puede usar el sender_id si está configurado
+
+    // Por ahora, forzar uso de número de teléfono para evitar errores en cuentas trial
+    // TODO: Cuando la cuenta sea de producción, cambiar esta lógica para permitir sender_id
+    const usarSenderId = false; // Cambiar a true cuando la cuenta Twilio sea de producción
+
+    if (smsConfig.sender_id && usarSenderId) {
       // Usar Sender ID alfanumérico configurado por tienda (ej: "GYMFITZONE")
       from = smsConfig.sender_id;
       mensajeFinal = message;
     } else {
       // Usar número de teléfono global
-      // Añadir prefijo con nombre de tienda
+      // Añadir prefijo con nombre de tienda para identificación
       from = this.globalFromNumber;
       mensajeFinal = `${tiendaNombre}: ${message}`;
     }

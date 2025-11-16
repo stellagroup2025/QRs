@@ -284,7 +284,8 @@ export class CampanasSmsService {
    * Envía la campaña SMS a todos los destinatarios
    */
   private async enviarCampana(tiendaId: string, campanaId: string) {
-    const client = this.supabase.getClient();
+    // Usar admin client para bypass RLS y poder acceder a telefono
+    const adminClient = this.supabase.getAdminClient();
 
     console.log('[ENVIAR CAMPAÑA SMS] Iniciando envío para campaña:', campanaId);
 
@@ -292,7 +293,7 @@ export class CampanasSmsService {
     const campana = await this.findOne(tiendaId, campanaId);
 
     // Obtener destinatarios de la campaña
-    const { data: destinatarios, error: destError } = await client
+    const { data: destinatarios, error: destError } = await adminClient
       .from('campanas_sms_destinatarios')
       .select(
         `
@@ -321,7 +322,7 @@ export class CampanasSmsService {
     console.log(`[ENVIAR CAMPAÑA SMS] Enviando a ${destinatarios.length} destinatarios`);
 
     // Cambiar estado a 'enviando'
-    await client.from('campanas_sms').update({ estado: 'enviando' }).eq('id', campanaId);
+    await adminClient.from('campanas_sms').update({ estado: 'enviando' }).eq('id', campanaId);
 
     // Enviar SMS
     let enviados = 0;
@@ -330,6 +331,14 @@ export class CampanasSmsService {
 
     for (const dest of destinatarios) {
       const cliente = dest.clientes as any;
+
+      console.log(`[ENVIAR CAMPAÑA SMS] Procesando destinatario ${dest.id}:`, {
+        cliente_id: dest.id_cliente,
+        cliente_data: cliente,
+        tiene_cliente: !!cliente,
+        tiene_telefono: !!cliente?.telefono,
+        telefono: cliente?.telefono,
+      });
 
       if (!cliente || !cliente.telefono) {
         console.warn(`[ENVIAR CAMPAÑA SMS] Cliente sin teléfono, saltando destinatario ${dest.id}`);
@@ -359,7 +368,7 @@ export class CampanasSmsService {
         enviados++;
         costeTotal += result.coste || 0;
 
-        await client
+        await adminClient
           .from('campanas_sms_destinatarios')
           .update({
             estado: 'enviado',
@@ -374,7 +383,7 @@ export class CampanasSmsService {
           .eq('id', dest.id);
 
         // Registrar en tabla de envíos globales
-        await client.from('envios_sms').insert({
+        await adminClient.from('envios_sms').insert({
           id_campana: campanaId,
           id_cliente: cliente.id,
           id_tienda: tiendaId,
@@ -387,7 +396,7 @@ export class CampanasSmsService {
         });
       } else {
         fallidos++;
-        await client
+        await adminClient
           .from('campanas_sms_destinatarios')
           .update({
             estado: 'fallido',
@@ -396,7 +405,7 @@ export class CampanasSmsService {
           .eq('id', dest.id);
 
         // Registrar envío fallido
-        await client.from('envios_sms').insert({
+        await adminClient.from('envios_sms').insert({
           id_campana: campanaId,
           id_cliente: cliente.id,
           id_tienda: tiendaId,
@@ -413,7 +422,7 @@ export class CampanasSmsService {
     }
 
     // Actualizar estadísticas de la campaña
-    await client
+    await adminClient
       .from('campanas_sms')
       .update({
         estado: 'enviada',
