@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { SmsService } from '../sms/sms.service';
+import { EmailService } from '../email/email.service';
 import { CreateTiendaDto } from './dto/create-tienda.dto';
 import { UpdateTiendaDto } from './dto/update-tienda.dto';
 import { ConfigureSmsDto } from './dto/configure-sms.dto';
@@ -17,6 +18,7 @@ export class SuperAdminService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly smsService: SmsService,
+    private readonly emailService: EmailService,
   ) {}
 
   /**
@@ -59,15 +61,102 @@ export class SuperAdminService {
 
     // En desarrollo, mostrar el código en la consola
     console.log('\n========================================');
-    console.log('🔐 CÓDIGO OTP DE DESARROLLO');
+    console.log('🔐 CÓDIGO OTP DE SUPERADMIN');
     console.log('========================================');
     console.log(`Email: ${email}`);
     console.log(`Código: ${codigo}`);
     console.log(`Expira en: 10 minutos`);
     console.log('========================================\n');
 
+    // Enviar email con el código OTP
+    const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Código de acceso SuperAdmin</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #1a1a1a;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #1a1a1a; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #2d2d2d; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); padding: 40px 20px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">🛡️ SuperAdmin Access</h1>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="color: #ffffff; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                Hola <strong>SuperAdmin</strong>,
+              </p>
+
+              <p style="color: #b0b0b0; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">
+                Has solicitado acceder al panel de <strong>SuperAdmin de Qronnect</strong>. Usa el siguiente código para iniciar sesión:
+              </p>
+
+              <!-- Código OTP -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding: 20px; background-color: #1a1a1a; border-radius: 8px; border: 2px solid #f59e0b;">
+                    <span style="font-size: 40px; font-weight: bold; color: #f59e0b; letter-spacing: 10px; font-family: 'Courier New', monospace;">
+                      ${codigo}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color: #f59e0b; font-size: 13px; line-height: 1.6; margin: 30px 0 0 0; text-align: center; font-weight: bold;">
+                ⏱️ Este código expira en <strong>10 minutos</strong>
+              </p>
+
+              <div style="margin: 30px 0 0 0; padding-top: 20px; border-top: 1px solid #404040;">
+                <p style="color: #808080; font-size: 12px; line-height: 1.6; margin: 0;">
+                  ⚠️ <strong>Advertencia de Seguridad:</strong> Este es un acceso privilegiado al panel de SuperAdmin. Si no solicitaste este código, ignora este mensaje y reporta el incidente inmediatamente.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #1a1a1a; padding: 20px; text-align: center; border-top: 1px solid #f59e0b;">
+              <p style="color: #808080; font-size: 12px; margin: 0; line-height: 1.6;">
+                🔐 <strong>Qronnect SuperAdmin Panel</strong><br>
+                © ${new Date().getFullYear()} Qronnect. Todos los derechos reservados.<br>
+                Este es un mensaje automático de seguridad, por favor no respondas a este email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
+
+    // Enviar email
+    const emailResult = await this.emailService.sendEmail({
+      to: email,
+      subject: `🔐 Código de acceso SuperAdmin: ${codigo}`,
+      html: emailHtml,
+    });
+
+    if (!emailResult.success) {
+      console.warn('⚠️  No se pudo enviar el email:', emailResult.error);
+      console.warn('  - Código disponible en consola para desarrollo');
+    } else {
+      console.log('✅ Email de SuperAdmin enviado exitosamente');
+    }
+
     return {
-      message: `Código de verificación generado. Revisa la consola del backend.`,
+      message: `Código de verificación enviado a tu email.`,
       // En desarrollo, también devolvemos el código en la respuesta (SOLO PARA DESARROLLO)
       codigo: process.env.NODE_ENV === 'development' ? codigo : undefined,
     };

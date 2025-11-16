@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../supabase/supabase.service';
+import { EmailService } from '../email/email.service';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { ClienteResponseDto } from './dto/cliente-response.dto';
 import { PuntosResponseDto } from './dto/puntos-response.dto';
@@ -18,6 +19,7 @@ export class ClientesService {
   constructor(
     private supabaseService: SupabaseService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   /**
@@ -275,12 +277,115 @@ export class ClientesService {
 
     console.log('  - Código generado:', codigo);
 
-    // TODO: Enviar email real (por ahora solo devolvemos el código para desarrollo)
-    // await this.emailService.send...
+    // Obtener nombre y dominio de la tienda
+    const { data: tienda } = await supabase
+      .from('tiendas')
+      .select('nombre, dominio')
+      .eq('id', tenantId)
+      .single();
+
+    const nombreTienda = tienda?.nombre || 'Qronnect';
+    const dominioTienda = tienda?.dominio || 'qronnect';
+
+    // Construir el email remitente
+    // Si RESEND_WILDCARD_ENABLED=true en .env, usa subdominios dinámicos
+    // Si no, usa el dominio base pero con el nombre de la tienda visible
+    const useWildcard = process.env.RESEND_WILDCARD_ENABLED === 'true';
+    const fromEmail = useWildcard
+      ? `${nombreTienda} <noreply@${dominioTienda}.qronnect.es>`
+      : `${nombreTienda} <noreply@qronnect.es>`;
+
+    // Enviar email con el código OTP
+    const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Código de acceso</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">🔐 Código de Acceso</h1>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                Hola <strong>${cliente.nombre}</strong>,
+              </p>
+
+              <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">
+                Has solicitado acceder a tu cuenta en <strong>${nombreTienda}</strong>. Usa el siguiente código para iniciar sesión:
+              </p>
+
+              <!-- Código OTP -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; border: 2px dashed #667eea;">
+                    <span style="font-size: 36px; font-weight: bold; color: #667eea; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                      ${codigo}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color: #666666; font-size: 13px; line-height: 1.6; margin: 30px 0 0 0; text-align: center;">
+                ⏱️ Este código expira en <strong>10 minutos</strong>
+              </p>
+
+              <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 30px 0 0 0; padding-top: 20px; border-top: 1px solid #eeeeee;">
+                Si no solicitaste este código, puedes ignorar este mensaje de forma segura.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+              <p style="color: #999999; font-size: 12px; margin: 0; line-height: 1.6;">
+                © ${new Date().getFullYear()} ${nombreTienda}. Todos los derechos reservados.<br>
+                Este es un mensaje automático, por favor no respondas a este email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
+
+    // Enviar email
+    const emailResult = await this.emailService.sendEmail({
+      to: sendCodeDto.email,
+      subject: `Tu código de acceso: ${codigo}`,
+      html: emailHtml,
+      from: fromEmail, // Email dinámico basado en el tenant
+    });
+
+    if (!emailResult.success) {
+      console.warn('⚠️  No se pudo enviar el email:', emailResult.error);
+      console.warn('  - Devolviendo código en desarrollo para testing');
+    } else {
+      console.log('✅ Email enviado exitosamente');
+    }
+
+    // En desarrollo, devolver el código para facilitar testing
+    const isDevelopment = this.configService.get('NODE_ENV') === 'development';
 
     return {
       message: 'Código enviado a tu email',
-      codigo_enviado: codigo, // Solo para desarrollo, eliminar en producción
+      codigo_enviado: isDevelopment ? codigo : undefined, // Solo en desarrollo
     };
   }
 

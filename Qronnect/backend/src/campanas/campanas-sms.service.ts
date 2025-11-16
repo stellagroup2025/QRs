@@ -72,14 +72,13 @@ export class CampanasSmsService {
     // Calcular costo estimado
     const costoEstimado = this.calcularCostoEstimado(createDto.mensaje, destinatariosIds.length);
 
-    const insertData = {
+    const insertData: any = {
       id_tienda: tiendaId,
       nombre: createDto.nombre,
       mensaje: createDto.mensaje,
       filtros_segmentacion: createDto.filtros_segmentacion || {},
       estado: createDto.estado || 'borrador',
       fecha_programada: createDto.fecha_programada,
-      creado_por: adminUserId,
       total_destinatarios: destinatariosIds.length,
       tipo: createDto.tipo || 'promocional',
       envio_unico: createDto.envio_unico || false,
@@ -89,6 +88,15 @@ export class CampanasSmsService {
       zona_horaria: createDto.zona_horaria || 'Europe/Madrid',
       costo_estimado: costoEstimado,
     };
+
+    // Solo agregar creado_por si no es null para evitar problemas de FK
+    // Comentario: La tabla espera auth.users pero admin_users no está ahí
+    // TODO: Crear migración para hacer creado_por nullable o cambiar FK
+    if (adminUserId) {
+      // Omitir creado_por temporalmente hasta que se arregle la FK
+      // insertData.creado_por = adminUserId;
+      console.log('[CREATE CAMPAÑA SMS] Omitiendo creado_por debido a FK constraint');
+    }
 
     console.log('[CREATE CAMPAÑA SMS] Insert data:', insertData);
 

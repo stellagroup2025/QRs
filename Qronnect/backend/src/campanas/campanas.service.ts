@@ -166,6 +166,27 @@ export class CampanasService {
     // Verificar que la campaña existe y pertenece a la tienda
     const campanaAnterior = await this.findOne(tiendaId, campanaId);
 
+    // Si se proporcionan nuevos destinatarios, actualizar la tabla de destinatarios
+    if (updateDto.destinatarios_ids && updateDto.destinatarios_ids.length > 0) {
+      // Eliminar destinatarios anteriores
+      await client.from('campanas_destinatarios').delete().eq('id_campana', campanaId);
+
+      // Crear nuevos destinatarios
+      const destinatariosData = updateDto.destinatarios_ids.map((clienteId) => ({
+        id_campana: campanaId,
+        id_cliente: clienteId,
+        estado: 'pendiente',
+      }));
+
+      const { error: destinatariosError } = await client
+        .from('campanas_destinatarios')
+        .insert(destinatariosData);
+
+      if (destinatariosError) {
+        console.error('[UPDATE CAMPAÑA] Error actualizando destinatarios:', destinatariosError);
+      }
+    }
+
     const { data, error } = await client
       .from('campanas_email')
       .update({
@@ -176,6 +197,7 @@ export class CampanasService {
         filtros_segmentacion: updateDto.filtros_segmentacion,
         estado: updateDto.estado,
         fecha_programada: updateDto.fecha_programada,
+        total_destinatarios: updateDto.destinatarios_ids?.length || campanaAnterior.total_destinatarios,
       })
       .eq('id', campanaId)
       .eq('id_tienda', tiendaId)
@@ -428,6 +450,24 @@ export class CampanasService {
     // Obtener datos de la campaña
     const campana = await this.findOne(tiendaId, campanaId);
 
+    // Obtener información de la tienda para el remitente dinámico
+    const { data: tienda } = await client
+      .from('tiendas')
+      .select('nombre, dominio')
+      .eq('id', tiendaId)
+      .single();
+
+    const nombreTienda = tienda?.nombre || 'Qronnect';
+    const dominioTienda = tienda?.dominio || 'qronnect';
+
+    // Configurar remitente dinámico (igual que en OTP)
+    const useWildcard = process.env.RESEND_WILDCARD_ENABLED === 'true';
+    const fromEmail = useWildcard
+      ? `${nombreTienda} <noreply@${dominioTienda}.qronnect.es>`
+      : `${nombreTienda} <noreply@qronnect.es>`;
+
+    console.log('[ENVIAR CAMPAÑA] Email remitente:', fromEmail);
+
     // Obtener destinatarios de la campaña
     const { data: destinatarios, error: destError } = await client
       .from('campanas_destinatarios')
@@ -478,11 +518,12 @@ export class CampanasService {
       htmlPersonalizado = htmlPersonalizado.replace(/\{\{nombre\}\}/g, cliente.nombre || '');
       htmlPersonalizado = htmlPersonalizado.replace(/\{\{email\}\}/g, cliente.email || '');
 
-      // Enviar email
+      // Enviar email con remitente dinámico
       const result = await this.emailService.sendEmail({
         to: cliente.email,
         subject: campana.asunto,
         html: htmlPersonalizado,
+        from: fromEmail,
       });
 
       // Actualizar estado del destinatario y registrar en envios_campanas
