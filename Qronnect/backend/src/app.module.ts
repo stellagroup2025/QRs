@@ -76,6 +76,8 @@ export class AppModule implements NestModule {
       .exclude(
         'superadmin/(.*)', // Excluir todas las rutas de superadmin
         'api/superadmin/(.*)',
+        'health', // Excluir health check (no necesita tenant)
+        'api/health', // Excluir health check con prefijo api
       )
       .forRoutes('*'); // Aplicar a todas las demás rutas
   }
