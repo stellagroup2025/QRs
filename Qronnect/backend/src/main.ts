@@ -15,7 +15,13 @@ async function bootstrap() {
         'http://localhost:3000',
         /^http:\/\/[\w-]+\.localhost:3000$/, // Permite cualquier subdominio.localhost:3000
         process.env.FRONTEND_URL,
+        // En producción, permitir subdominios wildcard
+        /^https:\/\/[\w-]+\.vercel\.app$/, // Vercel preview deployments
+        /^https:\/\/([\w-]+\.)?qronnect\.com$/, // Dominio principal con subdominios
       ].filter(Boolean);
+
+      // Permitir origenes adicionales desde variable de entorno
+      const extraOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
 
       // Permitir requests sin origin (Postman, curl, etc.)
       if (!origin) {
@@ -23,7 +29,7 @@ async function bootstrap() {
       }
 
       // Verificar si el origin está en la lista permitida
-      const isAllowed = allowedOrigins.some((allowed) => {
+      const isAllowed = [...allowedOrigins, ...extraOrigins].some((allowed) => {
         if (typeof allowed === 'string') {
           return allowed === origin;
         } else if (allowed instanceof RegExp) {

@@ -1,4 +1,4 @@
-# 🚀 Guía de Configuración del Proyecto Qronnect
+0# 🚀 Guía de Configuración del Proyecto Qronnect
 
 Esta guía te ayudará a configurar, compilar y ejecutar el proyecto Qronnect desde cero.
 

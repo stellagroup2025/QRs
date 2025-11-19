@@ -78,7 +78,19 @@
       "Bash(curl -s \"http://localhost:3001/api/campanas-sms/148f327a-f065-4962-9e60-5d0460e614e3\" -H \"Authorization: Bearer eyJzdWIiOiIzM2RiM2NmZi1iOGIzLTQ5ZGMtODgyZi1iYWQ4N2Y4OTc5ZmEiLCJ0aWVuZGFfaWQiOiIxMWJmMjQzMy00MjMyLTRjNTgtYTQ0Ni1hODA1ZTFiNzhmOWIiLCJlbWFpbCI6ImFkbWluQGxva2V5b2tpZXJhLmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc2MzM1MjU0OH0=\" -H \"X-Tenant-Domain: lokeyokiera\")",
       "Bash(curl -X PATCH \"http://localhost:3001/api/campanas-sms/148f327a-f065-4962-9e60-5d0460e614e3\" -H \"Content-Type: application/json\" -H \"Authorization: Bearer eyJzdWIiOiIzM2RiM2NmZi1iOGIzLTQ5ZGMtODgyZi1iYWQ4N2Y4OTc5ZmEiLCJ0aWVuZGFfaWQiOiIxMWJmMjQzMy00MjMyLTRjNTgtYTQ0Ni1hODA1ZTFiNzhmOWIiLCJlbWFpbCI6ImFkbWluQGxva2V5b2tpZXJhLmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc2MzM1MjU0OH0=\" -H \"X-Tenant-Domain: lokeyokiera\" -d '{\n  \"\"\"\"estado\"\"\"\": \"\"\"\"borrador\"\"\"\"\n}' -s)",
       "Bash(python3 -c \"import sys, json; data=json.load(sys.stdin); print(f''''Estado cambiado a: {data.get(\"\"estado\"\", \"\"N/A\"\")}'''')\")",
-      "Bash(curl -X PATCH \"http://localhost:3001/api/campanas-sms/148f327a-f065-4962-9e60-5d0460e614e3\" )"
+      "Bash(curl -X PATCH \"http://localhost:3001/api/campanas-sms/148f327a-f065-4962-9e60-5d0460e614e3\" )",
+      "Bash(chmod +x /mnt/c/Users/Omar/Documents/Qrs/Qronnect/deploy-checklist.sh)",
+      "Bash(chmod +x /mnt/c/Users/Omar/Documents/Qrs/Qronnect/scripts/deploy.sh)",
+      "Bash(chmod +x /mnt/c/Users/Omar/Documents/Qrs/Qronnect/scripts/pre-deployment-check.sh)",
+      "Bash(/mnt/c/Users/Omar/Documents/Qrs/Qronnect/scripts/pre-deployment-check.sh)",
+      "Bash(dos2unix scripts/pre-deployment-check.sh)",
+      "Bash(bash scripts/pre-deployment-check.sh)",
+      "Bash(npm run build)",
+      "Bash(git add .)",
+      "Bash(git commit -m \"🚀 Preparar para deployment a producción\n\n- Añadidas guías de deployment (QUICK_DEPLOY, GUIA_DEPLOYMENT_VERCEL, etc.)\n- Configuración para Render y Vercel\n- CORS mejorado para wildcard domains\n- Health check endpoint\n- Security headers\n- Templates de variables de entorno\n- Scripts de deployment automatizado\n- Fix temporal TypeScript en frontend\n\nReady for production! 🎉\")",
+      "Bash(git config user.email \"stellagroupapps@gmail.com\")",
+      "Bash(git config user.name \"stellagroup2025\")",
+      "Bash(git commit -m \"🚀 Preparar para deployment a producción\n\n- Añadidas guías de deployment (QUICK_DEPLOY, GUIA_DEPLOYMENT_VERCEL, MI_DEPLOYMENT)\n- Configuración para Render y Vercel\n- CORS mejorado para wildcard domains  \n- Health check endpoint (/health)\n- Security headers configurados\n- Templates de variables de entorno (.env.production)\n- Scripts de deployment automatizado (deploy.sh)\n- Fix temporal TypeScript en frontend (next.config.mjs)\n- Archivos de config: Procfile, railway.json, render.yaml, vercel.json\n\nArchivos creados:\n- 6 guías de deployment\n- 10 archivos de configuración\n- 2 scripts automatizados\n\nReady for production deployment! 🎉\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")"
     ],
     "deny": [],
     "ask": []
