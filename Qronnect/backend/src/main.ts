@@ -17,7 +17,7 @@ async function bootstrap() {
         process.env.FRONTEND_URL,
         // En producción, permitir subdominios wildcard
         /^https:\/\/[\w-]+\.vercel\.app$/, // Vercel preview deployments
-        /^https:\/\/([\w-]+\.)?qronnect\.com$/, // Dominio principal con subdominios
+        /^https:\/\/([\w-]+\.)?qronnect\.es$/, // Dominio principal con subdominios (qronnect.es, app.qronnect.es, *.qronnect.es)
       ].filter(Boolean);
 
       // Permitir origenes adicionales desde variable de entorno
