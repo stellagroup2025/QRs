@@ -12,6 +12,8 @@ import { PuntosResponseDto } from './dto/puntos-response.dto';
 import { RegisterClienteDto } from './dto/register-cliente.dto';
 import { SendCodeClienteDto } from './dto/send-code-cliente.dto';
 import { VerifyCodeClienteDto } from './dto/verify-code-cliente.dto';
+import { SendValidationCodeDto } from './dto/send-validation-code.dto';
+import { VerifyValidationCodeDto } from './dto/verify-validation-code.dto';
 
 /**
  * Controlador de endpoints para clientes finales
@@ -115,6 +117,67 @@ export class ClientesController {
     @Body() verifyDto: VerifyCodeClienteDto,
   ): Promise<{ access_token: string; cliente: ClienteResponseDto }> {
     return this.clientesService.verifyLoginCode(tenantId, verifyDto);
+  }
+
+  /**
+   * POST /api/clientes/auth/send-validation-code
+   * Envía código de validación de email al cliente (pública)
+   */
+  @Post('auth/send-validation-code')
+  @ApiOperation({
+    summary: 'Enviar código de validación de email',
+    description:
+      'Genera un código OTP de 6 dígitos y lo envía al email del cliente para validar su cuenta. ' +
+      'El código expira en 10 minutos. Este endpoint debe usarse después del registro.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Código de validación enviado',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        codigo_enviado: { type: 'string', description: 'Solo para desarrollo' },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Cliente no encontrado en esta tienda' })
+  async sendValidationCode(
+    @Tenant('id') tenantId: string,
+    @Body() sendValidationDto: SendValidationCodeDto,
+  ): Promise<{ message: string; codigo_enviado?: string }> {
+    return this.clientesService.sendValidationCode(tenantId, sendValidationDto);
+  }
+
+  /**
+   * POST /api/clientes/auth/verify-validation-code
+   * Verifica el código de validación y marca el email como validado (pública)
+   */
+  @Post('auth/verify-validation-code')
+  @ApiOperation({
+    summary: 'Verificar código de validación de email',
+    description:
+      'Valida el código OTP enviado por email y marca el email del cliente como validado. ' +
+      'Una vez validado, el cliente puede acceder a todos los endpoints protegidos.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Email validado exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        email_validado: { type: 'boolean' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Código inválido o expirado' })
+  @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
+  async verifyValidationCode(
+    @Tenant('id') tenantId: string,
+    @Body() verifyValidationDto: VerifyValidationCodeDto,
+  ): Promise<{ message: string; email_validado: boolean }> {
+    return this.clientesService.verifyValidationCode(tenantId, verifyValidationDto);
   }
 
   /**

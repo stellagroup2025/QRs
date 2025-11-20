@@ -13,6 +13,8 @@ import { PuntosResponseDto } from './dto/puntos-response.dto';
 import { RegisterClienteDto } from './dto/register-cliente.dto';
 import { SendCodeClienteDto } from './dto/send-code-cliente.dto';
 import { VerifyCodeClienteDto } from './dto/verify-code-cliente.dto';
+import { SendValidationCodeDto } from './dto/send-validation-code.dto';
+import { VerifyValidationCodeDto } from './dto/verify-validation-code.dto';
 
 @Injectable()
 export class ClientesService {
@@ -562,6 +564,181 @@ export class ClientesService {
         notas: c.notas,
       })),
     };
+  }
+
+  /**
+   * =====================================================
+   * VALIDACIÓN DE EMAIL
+   * =====================================================
+   */
+
+  /**
+   * Envía un código de validación de 6 dígitos al email del cliente
+   * El código expira en 10 minutos
+   */
+  async sendValidationCode(
+    tenantId: string,
+    sendValidationDto: SendValidationCodeDto,
+  ): Promise<{ message: string; codigo_enviado?: string }> {
+    const supabase = this.supabaseService.getAdminClient();
+    const { email } = sendValidationDto;
+
+    // Buscar el cliente por email en la tienda actual
+    const { data: cliente, error: fetchError } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('email', email)
+      .eq('id_tienda', tenantId)
+      .single();
+
+    if (fetchError || !cliente) {
+      throw new NotFoundException('Cliente no encontrado en esta tienda');
+    }
+
+    // Si ya está validado, no enviar código de nuevo
+    if (cliente.email_validado) {
+      return {
+        message: 'El email ya está validado',
+      };
+    }
+
+    // Generar código de 6 dígitos
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
+
+    // Guardar código en la base de datos
+    const { error: updateError } = await supabase
+      .from('clientes')
+      .update({
+        codigo_validacion: codigo,
+        codigo_validacion_expires_at: expiresAt.toISOString(),
+        validacion_enviada_at: new Date().toISOString(),
+      })
+      .eq('id', cliente.id);
+
+    if (updateError) {
+      console.error('Error al guardar código de validación:', updateError);
+      throw new BadRequestException('Error al generar código de validación');
+    }
+
+    // Obtener información de la tienda para el email
+    const { data: tienda } = await supabase
+      .from('tiendas')
+      .select('nombre, nombre_comercial')
+      .eq('id', tenantId)
+      .single();
+
+    const nombreTienda = tienda?.nombre_comercial || tienda?.nombre || 'Nuestra tienda';
+
+    // Enviar email con el código
+    try {
+      await this.emailService.sendEmail({
+        to: email,
+        subject: `Código de validación - ${nombreTienda}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333;">Validación de Email</h2>
+            <p>Hola <strong>${cliente.nombre}</strong>,</p>
+            <p>Tu código de validación para <strong>${nombreTienda}</strong> es:</p>
+            <div style="background: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;">
+              <h1 style="color: #667eea; margin: 0; font-size: 36px; letter-spacing: 5px;">${codigo}</h1>
+            </div>
+            <p>Este código expira en <strong>10 minutos</strong>.</p>
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+              Si no solicitaste este código, puedes ignorar este email.
+            </p>
+          </div>
+        `,
+      });
+    } catch (emailError) {
+      console.error('Error al enviar email de validación:', emailError);
+      // No lanzar error para que en desarrollo se pueda ver el código
+    }
+
+    // En desarrollo, devolver el código para testing
+    const isDevelopment = this.configService.get('NODE_ENV') === 'development';
+
+    return {
+      message: 'Código de validación enviado al email',
+      ...(isDevelopment && { codigo_enviado: codigo }),
+    };
+  }
+
+  /**
+   * Verifica el código de validación y marca el email como validado
+   */
+  async verifyValidationCode(
+    tenantId: string,
+    verifyDto: VerifyValidationCodeDto,
+  ): Promise<{ message: string; email_validado: boolean }> {
+    const supabase = this.supabaseService.getAdminClient();
+    const { email, codigo } = verifyDto;
+
+    // Buscar el cliente por email y código
+    const { data: cliente, error: fetchError } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('email', email)
+      .eq('id_tienda', tenantId)
+      .eq('codigo_validacion', codigo)
+      .single();
+
+    if (fetchError || !cliente) {
+      throw new UnauthorizedException('Código de validación inválido');
+    }
+
+    // Verificar si el código ha expirado
+    const now = new Date();
+    const expiresAt = new Date(cliente.codigo_validacion_expires_at);
+
+    if (now > expiresAt) {
+      throw new UnauthorizedException('El código de validación ha expirado');
+    }
+
+    // Marcar el email como validado y limpiar el código
+    const { error: updateError } = await supabase
+      .from('clientes')
+      .update({
+        email_validado: true,
+        codigo_validacion: null,
+        codigo_validacion_expires_at: null,
+      })
+      .eq('id', cliente.id);
+
+    if (updateError) {
+      console.error('Error al validar email:', updateError);
+      throw new BadRequestException('Error al validar el email');
+    }
+
+    return {
+      message: 'Email validado exitosamente',
+      email_validado: true,
+    };
+  }
+
+  /**
+   * Verifica si un cliente tiene el email validado
+   * Lanza excepción si no está validado
+   */
+  async requireEmailValidated(clienteId: string, tenantId: string): Promise<void> {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const { data: cliente, error } = await supabase
+      .from('clientes')
+      .select('email_validado, email')
+      .eq('id', clienteId)
+      .eq('id_tienda', tenantId)
+      .single();
+
+    if (error || !cliente) {
+      throw new NotFoundException('Cliente no encontrado');
+    }
+
+    if (!cliente.email_validado) {
+      throw new UnauthorizedException(
+        'Debes validar tu email antes de acceder. Revisa tu bandeja de entrada.',
+      );
+    }
   }
 
   /**
