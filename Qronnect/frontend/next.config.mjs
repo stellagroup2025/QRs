@@ -14,6 +14,16 @@ const nextConfig = {
         hostname: '*.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
+      // Permitir cualquier dominio HTTPS para logos (CDNs, servicios de imágenes, etc.)
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      // Permitir HTTP solo en desarrollo
+      ...(process.env.NODE_ENV === 'development' ? [{
+        protocol: 'http',
+        hostname: '**',
+      }] : []),
     ],
   },
   // Optimizaciones para producción
