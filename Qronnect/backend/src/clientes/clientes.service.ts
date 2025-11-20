@@ -210,6 +210,16 @@ export class ClientesService {
 
     console.log('  - Cliente creado:', newCliente.id);
 
+    // Enviar código de validación de email automáticamente
+    try {
+      console.log('  - Enviando código de validación de email...');
+      await this.sendValidationCode(tenantId, { email: registerDto.email });
+      console.log('  - Código de validación enviado exitosamente');
+    } catch (emailError) {
+      console.error('  - Error enviando código de validación:', emailError);
+      // No fallar el registro si el email falla, solo loguearlo
+    }
+
     // El QR del cliente es su ID
     const qr_code = newCliente.id;
 

@@ -92,10 +92,11 @@ export function RegistroForm() {
 
       toast({
         title: "¡Cuenta creada!",
-        description: "Bienvenido, tu cuenta ha sido activada automáticamente",
+        description: "Hemos enviado un código de verificación a tu email. Por favor, revisa tu bandeja de entrada.",
       })
 
       // Redirigir directamente al perfil (auto-login)
+      // El usuario podrá usar la app pero verá un aviso para validar su email
       router.push(`/mi-perfil`)
     } catch (error: any) {
       toast({
