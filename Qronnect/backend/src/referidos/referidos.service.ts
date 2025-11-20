@@ -1,11 +1,15 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CrearProgramaReferidosDto } from './dto/crear-programa-referidos.dto';
 import { RegistrarReferidoDto } from './dto/registrar-referido.dto';
 
 @Injectable()
 export class ReferidosService {
-  constructor(private readonly supabase: SupabaseService) {}
+  constructor(
+    private readonly supabase: SupabaseService,
+    private readonly configService: ConfigService,
+  ) {}
 
   /**
    * Crea un programa de referidos para una tienda
@@ -187,8 +191,20 @@ export class ReferidosService {
     }
 
     // Generar URL de referido con subdominio de la tienda
-    const frontendPort = process.env.FRONTEND_PORT || '3000';
-    const url = `http://${tiendaData.dominio}.localhost:${frontendPort}/registro?ref=${codigoReferido}`;
+    // Detectar entorno: desarrollo vs producción
+    const nodeEnv = this.configService.get('NODE_ENV');
+    const isDevelopment = nodeEnv === 'development';
+
+    let url: string;
+    if (isDevelopment) {
+      // En desarrollo: usar localhost con puerto
+      const frontendPort = this.configService.get('FRONTEND_PORT') || '3000';
+      url = `http://${tiendaData.dominio}.localhost:${frontendPort}/registro?ref=${codigoReferido}`;
+    } else {
+      // En producción: usar dominio real
+      const baseDomain = this.configService.get('BASE_DOMAIN') || 'qronnect.es';
+      url = `https://${tiendaData.dominio}.${baseDomain}/registro?ref=${codigoReferido}`;
+    }
 
     return {
       codigo: codigoReferido,
