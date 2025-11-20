@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SenderIDModal } from '@/components/superadmin/SenderIDModal'
+import { getAdminDashboardUrl } from '@/lib/urls'
 import {
   Table,
   TableBody,
@@ -163,7 +164,7 @@ export default function SuperAdminTiendasPage() {
 
       // Construir la URL del tenant con el token como parámetro
       // El panel de admin detectará este parámetro y lo usará para autenticar
-      const tenantUrl = `http://${data.tienda.dominio}.localhost:3000/admin/dashboard?superadmin_token=${data.access_token}`
+      const tenantUrl = getAdminDashboardUrl(data.tienda.dominio, data.access_token)
 
       // Abrir en nueva pestaña
       window.open(tenantUrl, '_blank')

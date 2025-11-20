@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { AdminNav } from '@/components/AdminNav'
+import { getQrUrl } from '@/lib/urls'
 import {
   Table,
   TableBody,
@@ -193,7 +194,7 @@ export default function AdminDashboardPage() {
 
     // Generar URL del QR con subdominio del tenant
     const storedTienda = JSON.parse(tiendaData)
-    const registroUrl = `http://${storedTienda.dominio}.localhost:3000/get-qr`
+    const registroUrl = getQrUrl(storedTienda.dominio)
     setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(registroUrl)}`)
   }, [router])
 
@@ -233,7 +234,7 @@ export default function AdminDashboardPage() {
       setTienda(tiendaData)
 
       // Generar URL del QR
-      const registroUrl = `http://${domain}.localhost:3000/get-qr`
+      const registroUrl = getQrUrl(domain)
       setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(registroUrl)}`)
 
       // Cargar dashboard
@@ -546,12 +547,12 @@ export default function AdminDashboardPage() {
                       <label className="text-sm font-medium">URL de registro</label>
                       <div className="flex items-center space-x-2">
                         <code className="flex-1 text-sm bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded">
-                          http://{tienda?.dominio}.localhost:3000/get-qr
+                          {tienda?.dominio && getQrUrl(tienda.dominio)}
                         </code>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => window.open(`http://${tienda?.dominio}.localhost:3000/get-qr`, '_blank')}
+                          onClick={() => tienda?.dominio && window.open(getQrUrl(tienda.dominio), '_blank')}
                         >
                           <ExternalLink className="h-4 w-4" />
                         </Button>

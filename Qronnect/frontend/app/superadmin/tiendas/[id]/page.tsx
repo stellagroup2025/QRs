@@ -18,6 +18,7 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { SenderIDForm } from '@/components/superadmin/SenderIDForm'
 import { SMSConfigForm } from '@/components/superadmin/SMSConfigForm'
+import { getRegistroUrl } from '@/lib/urls'
 import { IAConfigForm } from '@/components/superadmin/IAConfigForm'
 import { UsuariosTiendaManager } from '@/components/superadmin/UsuariosTiendaManager'
 import {
@@ -156,7 +157,7 @@ export default function TiendaDetallePage() {
       setMoneda(tiendaData.configuracion?.moneda || 'EUR')
 
       // Generar URL del QR de registro
-      const registroUrl = `http://localhost:3000/registro?tienda=${tiendaData.dominio}`
+      const registroUrl = getRegistroUrl(tiendaData.dominio)
       setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(registroUrl)}`)
     } catch (error) {
       console.error('Error:', error)
@@ -296,7 +297,7 @@ export default function TiendaDetallePage() {
       alert('✅ Datos básicos guardados exitosamente')
 
       // Si cambió el dominio, actualizar el QR
-      const registroUrl = `http://localhost:3000/registro?tienda=${dominio}`
+      const registroUrl = getRegistroUrl(dominio)
       setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(registroUrl)}`)
     } catch (error: any) {
       console.error('Error:', error)
@@ -955,12 +956,12 @@ export default function TiendaDetallePage() {
                     <label className="text-sm font-medium">URL de registro</label>
                     <div className="flex items-center space-x-2">
                       <code className="flex-1 text-sm bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded">
-                        http://localhost:3000/registro?tienda={tienda.dominio}
+                        {getRegistroUrl(tienda.dominio)}
                       </code>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => window.open(`http://localhost:3000/registro?tienda=${tienda.dominio}`, '_blank')}
+                        onClick={() => window.open(getRegistroUrl(tienda.dominio), '_blank')}
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>
