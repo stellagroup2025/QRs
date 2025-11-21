@@ -13,11 +13,13 @@ async function bootstrap() {
       // Lista de orígenes permitidos
       const allowedOrigins = [
         'http://localhost:3000',
+        'http://localhost:3001',
         /^http:\/\/[\w-]+\.localhost:3000$/, // Permite cualquier subdominio.localhost:3000
         process.env.FRONTEND_URL,
         // En producción, permitir subdominios wildcard
         /^https:\/\/[\w-]+\.vercel\.app$/, // Vercel preview deployments
-        /^https:\/\/([\w-]+\.)?qronnect\.es$/, // Dominio principal con subdominios (qronnect.es, app.qronnect.es, *.qronnect.es)
+        'https://qronnect.es', // Dominio principal
+        /^https:\/\/[\w-]+\.qronnect\.es$/, // Todos los subdominios de qronnect.es (burgerco, cuentosmas, etc.)
       ].filter(Boolean);
 
       // Permitir origenes adicionales desde variable de entorno
@@ -39,13 +41,17 @@ async function bootstrap() {
       });
 
       if (isAllowed) {
+        console.log(`✅ CORS permitido para origin: ${origin}`);
         callback(null, true);
       } else {
         console.warn(`⚠️  CORS bloqueado para origin: ${origin}`);
+        console.warn(`   Origenes permitidos:`, allowedOrigins.map(o => o.toString()));
         callback(new Error('Not allowed by CORS'));
       }
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-Domain'],
   });
 
   // Validación automática de DTOs usando class-validator
