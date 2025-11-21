@@ -34,7 +34,8 @@ interface Codigo {
 
 interface Referido {
   nombre: string;
-  fecha_registro: string;
+  fecha_registro?: string;
+  creado_en?: string; // Campo que viene del backend
   estado: string;
   primera_compra: boolean;
   recompensa_obtenida: string;
@@ -488,27 +489,39 @@ export default function MisReferidosPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {referidos.map((ref, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="font-medium">{ref.nombre}</p>
-                    <p className="text-sm text-gray-500">
-                      Registrado el {new Date(ref.fecha_registro).toLocaleDateString()}
-                    </p>
-                    <p className="text-xs text-green-600 mt-1">{ref.recompensa_obtenida}</p>
+              {referidos.map((ref, idx) => {
+                // Usar creado_en o fecha_registro dependiendo de qué campo exista
+                const fecha = ref.creado_en || ref.fecha_registro;
+                const fechaFormateada = fecha
+                  ? new Date(fecha).toLocaleDateString('es-ES', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })
+                  : 'Fecha no disponible';
+
+                return (
+                  <div key={idx} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{ref.nombre}</p>
+                      <p className="text-sm text-gray-500">
+                        Registrado el {fechaFormateada}
+                      </p>
+                      <p className="text-xs text-green-600 mt-1">{ref.recompensa_obtenida}</p>
+                    </div>
+                    <div className="text-right">
+                      {ref.primera_compra ? (
+                        <div className="flex items-center gap-1 text-green-600">
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="text-sm font-medium">Primera compra</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-500">Sin compra aún</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    {ref.primera_compra ? (
-                      <div className="flex items-center gap-1 text-green-600">
-                        <CheckCircle className="h-4 w-4" />
-                        <span className="text-sm font-medium">Primera compra</span>
-                      </div>
-                    ) : (
-                      <span className="text-sm text-gray-500">Sin compra aún</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

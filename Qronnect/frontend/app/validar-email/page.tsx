@@ -29,12 +29,25 @@ function ValidarEmailContent() {
 
         // Obtener el dominio de la tienda actual
         const host = window.location.host
-        const domain = host.split(':')[0].split('.')[0]
+        let domain = host.split(':')[0].split('.')[0]
+
+        // Si es localhost, intentar obtener del localStorage primero
+        if (domain === 'localhost') {
+          const storedDomain = localStorage.getItem('tenant_domain')
+          domain = storedDomain || 'lokeyokiera'
+        }
+
+        console.log('🔍 [VALIDAR EMAIL]', {
+          host,
+          domain,
+          token: token.substring(0, 16) + '...',
+          apiUrl: `${API_URL}/api/clientes/auth/validate-email/${token}`
+        })
 
         const response = await fetch(`${API_URL}/api/clientes/auth/validate-email/${token}`, {
           method: 'GET',
           headers: {
-            'X-Tenant-Domain': domain === 'localhost' ? 'lokeyokiera' : domain,
+            'X-Tenant-Domain': domain,
           },
         })
 
@@ -56,10 +69,18 @@ function ValidarEmailContent() {
         setStatus('exitoso')
         setMensaje(data.message || 'Email validado exitosamente')
 
-        // Redirigir al perfil después de 3 segundos
+        // Si el backend devolvió un access_token, guardarlo para auto-login
+        if (data.access_token) {
+          console.log('🔐 Guardando access_token para auto-login...')
+          localStorage.setItem('client_token', data.access_token)
+          localStorage.setItem(`client_token_${domain}`, data.access_token)
+          console.log('✅ Auto-login activado - Redirigiendo al perfil')
+        }
+
+        // Redirigir al perfil después de 2 segundos
         setTimeout(() => {
-          router.push('/mi-perfil')
-        }, 3000)
+          router.push(`/${domain}/mi-perfil`)
+        }, 2000)
       } catch (error: any) {
         console.error('Error validando email:', error)
         setStatus('error')
@@ -107,9 +128,14 @@ function ValidarEmailContent() {
           </p>
 
           {status === 'exitoso' && (
-            <p className="text-center text-sm text-gray-500">
-              Redirigiendo a tu perfil en unos segundos...
-            </p>
+            <div className="space-y-2">
+              <p className="text-center text-sm font-medium text-green-600">
+                ✅ Iniciando sesión automáticamente...
+              </p>
+              <p className="text-center text-sm text-gray-500">
+                Redirigiendo a tu perfil
+              </p>
+            </div>
           )}
 
           {status === 'expirado' && nuevoEnlaceEnviado && (

@@ -203,6 +203,7 @@ export class ClientesController {
         message: { type: 'string' },
         email_validado: { type: 'boolean' },
         cliente: { type: 'object' },
+        access_token: { type: 'string', description: 'JWT token para auto-login' },
       },
     },
   })
@@ -211,7 +212,7 @@ export class ClientesController {
   async validateEmailLink(
     @Tenant('id') tenantId: string,
     @Param('token') token: string,
-  ): Promise<{ message: string; email_validado: boolean; cliente?: ClienteResponseDto; token_expirado?: boolean; nuevo_enlace_enviado?: boolean }> {
+  ): Promise<{ message: string; email_validado: boolean; cliente?: ClienteResponseDto; token_expirado?: boolean; nuevo_enlace_enviado?: boolean; access_token?: string }> {
     return this.clientesService.validateEmailLink(tenantId, token);
   }
 

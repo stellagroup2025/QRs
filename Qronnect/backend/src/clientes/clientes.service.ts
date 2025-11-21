@@ -1006,7 +1006,7 @@ export class ClientesService {
   async validateEmailLink(
     tenantId: string,
     token: string,
-  ): Promise<{ message: string; email_validado: boolean; cliente?: ClienteResponseDto; token_expirado?: boolean; nuevo_enlace_enviado?: boolean }> {
+  ): Promise<{ message: string; email_validado: boolean; cliente?: ClienteResponseDto; token_expirado?: boolean; nuevo_enlace_enviado?: boolean; access_token?: string }> {
     const supabase = this.supabaseService.getAdminClient();
 
     console.log('✅ [VALIDAR EMAIL]');
@@ -1180,10 +1180,22 @@ export class ClientesService {
 
     console.log('✅ Email validado exitosamente para:', cliente.email);
 
+    // Generar JWT access_token para auto-login
+    console.log('🔐 Generando access_token para auto-login...');
+    const access_token = await this.supabaseService.generateClientJWT({
+      id: cliente.id,
+      email: cliente.email,
+      id_tienda: cliente.id_tienda,
+      nombre: cliente.nombre,
+    });
+
+    console.log('✅ Access token generado para auto-login');
+
     return {
       message: 'Email validado exitosamente',
       email_validado: true,
       cliente: this.mapToResponseDto(cliente),
+      access_token, // Incluir token para auto-login
     };
   }
 
