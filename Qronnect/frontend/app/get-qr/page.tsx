@@ -4,7 +4,7 @@ import { Suspense, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { AppShell } from "@/components/app-shell"
-import { RegistroForm } from "@/components/registro-form"
+import { RegistroFormV2 } from "@/components/registro-form-v2"
 
 export default function GetQRPage() {
   const router = useRouter()
@@ -22,9 +22,9 @@ export default function GetQRPage() {
 
   return (
     <AppShell showBackButton>
-      <div className="max-w-md mx-auto py-8 space-y-4">
+      <div className="container mx-auto py-8 px-4">
         <Suspense fallback={<div className="text-center">Cargando formulario...</div>}>
-          <RegistroForm />
+          <RegistroFormV2 />
         </Suspense>
         <div className="text-center pt-2">
           <Link
