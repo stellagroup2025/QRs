@@ -245,7 +245,127 @@ export class ClientesService {
     // Enviar código de validación de email automáticamente
     try {
       console.log('  - Enviando código de validación de email...');
-      await this.sendValidationCode(tenantId, { email: registerDto.email });
+
+      // Generar token único para validación
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
+      // Guardar token directamente con el cliente recién creado
+      await supabase
+        .from('clientes')
+        .update({
+          codigo_validacion: token,
+          codigo_validacion_expires_at: expiresAt.toISOString(),
+          validacion_enviada_at: new Date().toISOString(),
+        })
+        .eq('id', newCliente.id);
+
+      // Obtener información de la tienda
+      const { data: tienda } = await supabase
+        .from('tiendas')
+        .select('nombre, nombre_comercial, dominio')
+        .eq('id', tenantId)
+        .single();
+
+      const nombreTienda = tienda?.nombre_comercial || tienda?.nombre || 'Nuestra tienda';
+
+      // Construir URL de validación
+      const nodeEnv = this.configService.get('NODE_ENV');
+      const isDevelopment = nodeEnv === 'development';
+
+      let validationUrl: string;
+      if (isDevelopment) {
+        const frontendPort = this.configService.get('FRONTEND_PORT') || '3000';
+        validationUrl = `http://${tienda.dominio}.localhost:${frontendPort}/validar-email?token=${token}`;
+      } else {
+        const baseDomain = this.configService.get('BASE_DOMAIN') || 'qronnect.es';
+        validationUrl = `https://${tienda.dominio}.${baseDomain}/validar-email?token=${token}`;
+      }
+
+      console.log('📧 [VALIDACIÓN EMAIL]');
+      console.log('  - Destinatario:', newCliente.email);
+      console.log('  - Token generado:', token.substring(0, 10) + '...');
+      console.log('  - URL de validación:', validationUrl);
+      console.log('  - Nombre tienda:', nombreTienda);
+
+      // Enviar email
+      const emailResult = await this.emailService.sendEmail({
+        to: newCliente.email,
+        subject: `Confirma tu email - ${nombreTienda}`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirma tu email</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <tr>
+            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">✉️ Confirma tu Email</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                Hola <strong>${newCliente.nombre}</strong>,
+              </p>
+              <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">
+                Gracias por registrarte en <strong>${nombreTienda}</strong>. Para completar tu registro, necesitamos que confirmes tu dirección de email.
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding: 20px 0;">
+                    <a href="${validationUrl}"
+                       style="display: inline-block; padding: 16px 32px; background-color: #667eea; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                      Confirmar mi email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="color: #666666; font-size: 13px; line-height: 1.6; margin: 30px 0 0 0; text-align: center;">
+                ⏱️ Este enlace expira en <strong>24 horas</strong>
+              </p>
+              <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 30px 0 0 0; padding-top: 20px; border-top: 1px solid #eeeeee;">
+                Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:<br>
+                <a href="${validationUrl}" style="color: #667eea; word-break: break-all;">${validationUrl}</a>
+              </p>
+              <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 20px 0 0 0;">
+                Si no te registraste en ${nombreTienda}, puedes ignorar este mensaje de forma segura.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+              <p style="color: #999999; font-size: 12px; margin: 0; line-height: 1.6;">
+                © ${new Date().getFullYear()} ${nombreTienda}. Todos los derechos reservados.<br>
+                Este es un mensaje automático, por favor no respondas a este email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `,
+      });
+
+      console.log('📬 Resultado del envío:', JSON.stringify(emailResult, null, 2));
+
+      if (emailResult.success) {
+        console.log('✅ Enlace de validación enviado a:', newCliente.email);
+        console.log('  - Message ID:', emailResult.messageId);
+      } else {
+        console.error('❌ Error al enviar email de validación:', emailResult.error);
+      }
+
       console.log('  - Código de validación enviado exitosamente');
     } catch (emailError) {
       console.error('  - Error enviando código de validación:', emailError);
