@@ -161,20 +161,27 @@ export function RegistroFormV2() {
 
       const result = await response.json()
 
-      if (result.access_token) {
-        localStorage.setItem('client_token', result.access_token)
+      // El backend ya NO devuelve access_token - el usuario debe validar su email primero
+      if (result.requiere_validacion) {
+        // Guardar email para usarlo en la pantalla de validación
+        localStorage.setItem('pending_validation_email', data.email)
+
+        toast({
+          title: "📧 ¡Registro exitoso!",
+          description: result.mensaje || "Revisa tu email para validar tu cuenta antes de poder iniciar sesión.",
+          duration: 6000,
+        })
+
+        // Redirigir a una página que informe sobre la validación
+        router.push(`/validacion-pendiente`)
+      } else {
+        // Fallback por si el backend devuelve algo diferente
+        toast({
+          title: "✅ Registro completado",
+          description: "Por favor, inicia sesión para continuar.",
+        })
+        router.push(`/login`)
       }
-
-      if (result.cliente) {
-        localStorage.setItem('client_data', JSON.stringify(result.cliente))
-      }
-
-      toast({
-        title: "🎉 ¡Bienvenido al club!",
-        description: "Revisa tu email para confirmar tu cuenta y empezar a acumular beneficios.",
-      })
-
-      router.push(`/mi-perfil`)
     } catch (error: any) {
       toast({
         title: "Ups, algo salió mal",

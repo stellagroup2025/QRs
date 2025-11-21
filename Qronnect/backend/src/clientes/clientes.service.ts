@@ -383,23 +383,16 @@ export class ClientesService {
     // El QR del cliente es su ID
     const qr_code = newCliente.id;
 
-    // Generar token de acceso automáticamente (auto-login después del registro)
-    const access_token = Buffer.from(
-      JSON.stringify({
-        sub: newCliente.id,
-        tienda_id: tenantId,
-        email: newCliente.email,
-        role: 'cliente',
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // 30 días
-      }),
-    ).toString('base64');
-
-    console.log('  - Token generado para auto-login');
+    // ⚠️ NO GENERAR ACCESS_TOKEN AQUÍ
+    // El usuario debe validar su email antes de poder hacer login
+    console.log('  - Registro completado. Usuario debe validar email antes de acceder.');
 
     return {
       cliente: this.mapToResponseDto(newCliente),
       qr_code,
-      access_token,
+      // NO devolver access_token - el usuario debe validar su email primero
+      requiere_validacion: true,
+      mensaje: 'Registro exitoso. Por favor revisa tu email para validar tu cuenta.',
     };
   }
 

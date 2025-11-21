@@ -63,10 +63,16 @@ export class ClientAuthGuard implements CanActivate {
       .eq('activo', true)
       .single();
 
-    console.log('📊 Resultado búsqueda cliente:', { cliente: cliente ? { id: cliente.id, nombre: cliente.nombre } : null, error });
+    console.log('📊 Resultado búsqueda cliente:', { cliente: cliente ? { id: cliente.id, nombre: cliente.nombre, email_validado: cliente.email_validado } : null, error });
 
     if (error || !cliente) {
       throw new UnauthorizedException('Cliente no encontrado o inactivo');
+    }
+
+    // ⚠️ VERIFICAR QUE EL EMAIL ESTÉ VALIDADO
+    if (!cliente.email_validado) {
+      console.log('❌ Cliente sin email validado:', cliente.email);
+      throw new UnauthorizedException('Debes validar tu email antes de poder acceder. Revisa tu bandeja de entrada.');
     }
 
     // Agregar información del cliente al request
