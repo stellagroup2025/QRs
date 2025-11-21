@@ -107,15 +107,16 @@ export class ClientesController {
       properties: {
         access_token: { type: 'string' },
         cliente: { type: 'object' },
+        email_validado: { type: 'boolean' },
       },
     },
   })
-  @ApiResponse({ status: 401, description: 'Código inválido o expirado' })
+  @ApiResponse({ status: 401, description: 'Código inválido, expirado, o email no validado' })
   @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
   async verifyCode(
     @Tenant('id') tenantId: string,
     @Body() verifyDto: VerifyCodeClienteDto,
-  ): Promise<{ access_token: string; cliente: ClienteResponseDto }> {
+  ): Promise<{ access_token: string; cliente: ClienteResponseDto; email_validado: boolean }> {
     return this.clientesService.verifyLoginCode(tenantId, verifyDto);
   }
 
@@ -208,8 +209,39 @@ export class ClientesController {
   async validateEmailLink(
     @Tenant('id') tenantId: string,
     @Param('token') token: string,
-  ): Promise<{ message: string; email_validado: boolean; cliente: ClienteResponseDto }> {
+  ): Promise<{ message: string; email_validado: boolean; cliente?: ClienteResponseDto; token_expirado?: boolean; nuevo_enlace_enviado?: boolean }> {
     return this.clientesService.validateEmailLink(tenantId, token);
+  }
+
+  /**
+   * POST /api/clientes/auth/resend-validation-link
+   * Reenvía el enlace de validación de email (pública)
+   */
+  @Post('auth/resend-validation-link')
+  @ApiOperation({
+    summary: 'Reenviar enlace de validación de email',
+    description:
+      'Genera un nuevo token de validación y lo envía al email del cliente. ' +
+      'Útil cuando el enlace anterior expiró o el email no llegó.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Nuevo enlace enviado',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        enlace_enviado: { type: 'boolean' },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
+  @ApiResponse({ status: 400, description: 'Email ya validado' })
+  async resendValidationLink(
+    @Tenant('id') tenantId: string,
+    @Body() sendValidationDto: SendValidationCodeDto,
+  ): Promise<{ message: string; enlace_enviado: boolean }> {
+    return this.clientesService.resendValidationLink(tenantId, sendValidationDto);
   }
 
   /**

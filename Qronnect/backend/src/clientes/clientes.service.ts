@@ -562,6 +562,8 @@ export class ClientesService {
   ): Promise<{
     access_token: string;
     cliente: ClienteResponseDto;
+    email_validado: boolean;
+    requiere_validacion?: boolean;
   }> {
     const supabase = this.supabaseService.getAdminClient();
 
@@ -601,6 +603,17 @@ export class ClientesService {
     // Marcar el código como usado
     await supabase.from('email_otps').delete().eq('id', otp.id);
 
+    // Verificar si el email está validado
+    const emailValidado = cliente.email_validado === true;
+
+    if (!emailValidado) {
+      console.log('  ⚠️  Email NO validado para:', cliente.email);
+      // NO permitir login completo, pero retornar info para que el frontend sepa qué hacer
+      throw new UnauthorizedException(
+        'Debes validar tu email antes de poder acceder. Revisa tu bandeja de entrada y haz clic en el enlace de validación.'
+      );
+    }
+
     // Actualizar última visita
     await supabase
       .from('clientes')
@@ -619,11 +632,12 @@ export class ClientesService {
       }),
     ).toString('base64');
 
-    console.log('  - Login exitoso');
+    console.log('  - Login exitoso - Email validado ✅');
 
     return {
       access_token,
       cliente: this.mapToResponseDto(cliente),
+      email_validado: true,
     };
   }
 
@@ -970,7 +984,7 @@ export class ClientesService {
   async validateEmailLink(
     tenantId: string,
     token: string,
-  ): Promise<{ message: string; email_validado: boolean; cliente: ClienteResponseDto }> {
+  ): Promise<{ message: string; email_validado: boolean; cliente?: ClienteResponseDto; token_expirado?: boolean; nuevo_enlace_enviado?: boolean }> {
     const supabase = this.supabaseService.getAdminClient();
 
     // Buscar el cliente por token
@@ -990,7 +1004,125 @@ export class ClientesService {
     const expiresAt = new Date(cliente.codigo_validacion_expires_at);
 
     if (now > expiresAt) {
-      throw new UnauthorizedException('El enlace de validación ha expirado');
+      console.log('⏰ Token expirado para:', cliente.email);
+      console.log('  - Generando nuevo enlace automáticamente...');
+
+      // Generar nuevo token
+      const newToken = crypto.randomBytes(32).toString('hex');
+      const newExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
+      // Actualizar el token en la base de datos
+      await supabase
+        .from('clientes')
+        .update({
+          codigo_validacion: newToken,
+          codigo_validacion_expires_at: newExpiresAt.toISOString(),
+          validacion_enviada_at: new Date().toISOString(),
+        })
+        .eq('id', cliente.id);
+
+      // Obtener información de la tienda
+      const { data: tienda } = await supabase
+        .from('tiendas')
+        .select('nombre, nombre_comercial, dominio')
+        .eq('id', tenantId)
+        .single();
+
+      const nombreTienda = tienda?.nombre_comercial || tienda?.nombre || 'Nuestra tienda';
+
+      // Construir nueva URL de validación
+      const nodeEnv = this.configService.get('NODE_ENV');
+      const isDevelopment = nodeEnv === 'development';
+
+      let validationUrl: string;
+      if (isDevelopment) {
+        const frontendPort = this.configService.get('FRONTEND_PORT') || '3000';
+        validationUrl = `http://${tienda.dominio}.localhost:${frontendPort}/validar-email?token=${newToken}`;
+      } else {
+        const baseDomain = this.configService.get('BASE_DOMAIN') || 'qronnect.es';
+        validationUrl = `https://${tienda.dominio}.${baseDomain}/validar-email?token=${newToken}`;
+      }
+
+      // Enviar nuevo email
+      const emailResult = await this.emailService.sendEmail({
+        to: cliente.email,
+        subject: `Nuevo enlace de validación - ${nombreTienda}`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuevo enlace de validación</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <tr>
+            <td style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 40px 20px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">🔄 Nuevo Enlace de Validación</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                Hola <strong>${cliente.nombre}</strong>,
+              </p>
+              <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
+                Tu enlace de validación anterior ha <strong>expirado</strong>. No te preocupes, hemos generado uno nuevo para ti.
+              </p>
+              <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">
+                Haz clic en el botón de abajo para confirmar tu email en <strong>${nombreTienda}</strong>:
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding: 20px 0;">
+                    <a href="${validationUrl}"
+                       style="display: inline-block; padding: 16px 32px; background-color: #f5576c; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                      Confirmar mi email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="color: #666666; font-size: 13px; line-height: 1.6; margin: 30px 0 0 0; text-align: center;">
+                ⏱️ Este nuevo enlace expira en <strong>24 horas</strong>
+              </p>
+              <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 30px 0 0 0; padding-top: 20px; border-top: 1px solid #eeeeee;">
+                Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:<br>
+                <a href="${validationUrl}" style="color: #f5576c; word-break: break-all;">${validationUrl}</a>
+              </p>
+              <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 20px 0 0 0;">
+                Si no solicitaste este enlace, puedes ignorar este mensaje de forma segura.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+              <p style="color: #999999; font-size: 12px; margin: 0; line-height: 1.6;">
+                © ${new Date().getFullYear()} ${nombreTienda}. Todos los derechos reservados.<br>
+                Este es un mensaje automático, por favor no respondas a este email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `,
+      });
+
+      console.log('📧 Nuevo enlace enviado:', emailResult.success ? '✅' : '❌');
+
+      return {
+        message: 'El enlace ha expirado. Te hemos enviado un nuevo enlace de validación a tu email.',
+        email_validado: false,
+        token_expirado: true,
+        nuevo_enlace_enviado: emailResult.success,
+      };
     }
 
     // Marcar el email como validado y limpiar el token
@@ -1014,6 +1146,152 @@ export class ClientesService {
       message: 'Email validado exitosamente',
       email_validado: true,
       cliente: this.mapToResponseDto(cliente),
+    };
+  }
+
+  /**
+   * Reenvía el enlace de validación de email al cliente
+   */
+  async resendValidationLink(
+    tenantId: string,
+    sendValidationDto: SendValidationCodeDto,
+  ): Promise<{ message: string; enlace_enviado: boolean }> {
+    const supabase = this.supabaseService.getAdminClient();
+
+    console.log('🔄 [REENVIAR ENLACE DE VALIDACIÓN]');
+    console.log('  - Email:', sendValidationDto.email);
+
+    // Buscar el cliente
+    const { data: cliente, error: fetchError } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('email', sendValidationDto.email)
+      .eq('id_tienda', tenantId)
+      .single();
+
+    if (fetchError || !cliente) {
+      throw new NotFoundException('Cliente no encontrado en esta tienda');
+    }
+
+    // Verificar si el email ya está validado
+    if (cliente.email_validado) {
+      throw new BadRequestException('Tu email ya está validado. Puedes iniciar sesión normalmente.');
+    }
+
+    // Generar nuevo token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
+    // Actualizar el token en la base de datos
+    await supabase
+      .from('clientes')
+      .update({
+        codigo_validacion: token,
+        codigo_validacion_expires_at: expiresAt.toISOString(),
+        validacion_enviada_at: new Date().toISOString(),
+      })
+      .eq('id', cliente.id);
+
+    // Obtener información de la tienda
+    const { data: tienda } = await supabase
+      .from('tiendas')
+      .select('nombre, nombre_comercial, dominio')
+      .eq('id', tenantId)
+      .single();
+
+    const nombreTienda = tienda?.nombre_comercial || tienda?.nombre || 'Nuestra tienda';
+
+    // Construir URL de validación
+    const nodeEnv = this.configService.get('NODE_ENV');
+    const isDevelopment = nodeEnv === 'development';
+
+    let validationUrl: string;
+    if (isDevelopment) {
+      const frontendPort = this.configService.get('FRONTEND_PORT') || '3000';
+      validationUrl = `http://${tienda.dominio}.localhost:${frontendPort}/validar-email?token=${token}`;
+    } else {
+      const baseDomain = this.configService.get('BASE_DOMAIN') || 'qronnect.es';
+      validationUrl = `https://${tienda.dominio}.${baseDomain}/validar-email?token=${token}`;
+    }
+
+    // Enviar email
+    const emailResult = await this.emailService.sendEmail({
+      to: cliente.email,
+      subject: `Confirma tu email - ${nombreTienda}`,
+      html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirma tu email</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <tr>
+            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">✉️ Confirma tu Email</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                Hola <strong>${cliente.nombre}</strong>,
+              </p>
+              <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">
+                Has solicitado un nuevo enlace de validación para <strong>${nombreTienda}</strong>. Haz clic en el botón de abajo para confirmar tu email:
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding: 20px 0;">
+                    <a href="${validationUrl}"
+                       style="display: inline-block; padding: 16px 32px; background-color: #667eea; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                      Confirmar mi email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="color: #666666; font-size: 13px; line-height: 1.6; margin: 30px 0 0 0; text-align: center;">
+                ⏱️ Este enlace expira en <strong>24 horas</strong>
+              </p>
+              <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 30px 0 0 0; padding-top: 20px; border-top: 1px solid #eeeeee;">
+                Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:<br>
+                <a href="${validationUrl}" style="color: #667eea; word-break: break-all;">${validationUrl}</a>
+              </p>
+              <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 20px 0 0 0;">
+                Si no solicitaste este enlace, puedes ignorar este mensaje de forma segura.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+              <p style="color: #999999; font-size: 12px; margin: 0; line-height: 1.6;">
+                © ${new Date().getFullYear()} ${nombreTienda}. Todos los derechos reservados.<br>
+                Este es un mensaje automático, por favor no respondas a este email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+      `,
+    });
+
+    console.log('📧 Resultado del envío:', emailResult.success ? '✅' : '❌');
+
+    if (!emailResult.success) {
+      throw new BadRequestException('No se pudo enviar el email. Inténtalo de nuevo más tarde.');
+    }
+
+    return {
+      message: 'Nuevo enlace de validación enviado a tu email. Revisa tu bandeja de entrada.',
+      enlace_enviado: true,
     };
   }
 

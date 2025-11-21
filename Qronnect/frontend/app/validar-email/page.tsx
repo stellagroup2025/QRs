@@ -9,8 +9,10 @@ import { Loader2, CheckCircle2, XCircle } from "lucide-react"
 function ValidarEmailContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [status, setStatus] = useState<'validando' | 'exitoso' | 'error'>('validando')
+  const [status, setStatus] = useState<'validando' | 'exitoso' | 'error' | 'expirado' | 'reenviando'>('validando')
   const [mensaje, setMensaje] = useState('')
+  const [tokenExpirado, setTokenExpirado] = useState(false)
+  const [nuevoEnlaceEnviado, setNuevoEnlaceEnviado] = useState(false)
 
   useEffect(() => {
     const validarEmail = async () => {
@@ -36,12 +38,20 @@ function ValidarEmailContent() {
           },
         })
 
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.message || 'Error al validar el email')
+        const data = await response.json()
+
+        // Si el token expiró, el backend automáticamente envía un nuevo enlace
+        if (data.token_expirado) {
+          setStatus('expirado')
+          setTokenExpirado(true)
+          setNuevoEnlaceEnviado(data.nuevo_enlace_enviado || false)
+          setMensaje(data.message || 'El enlace ha expirado. Te hemos enviado un nuevo enlace.')
+          return
         }
 
-        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data.message || 'Error al validar el email')
+        }
 
         setStatus('exitoso')
         setMensaje(data.message || 'Email validado exitosamente')
@@ -71,6 +81,9 @@ function ValidarEmailContent() {
             {status === 'exitoso' && (
               <CheckCircle2 className="h-16 w-16 text-green-500" />
             )}
+            {status === 'expirado' && (
+              <div className="text-6xl">⏰</div>
+            )}
             {status === 'error' && (
               <XCircle className="h-16 w-16 text-red-500" />
             )}
@@ -78,11 +91,13 @@ function ValidarEmailContent() {
           <CardTitle className="text-2xl">
             {status === 'validando' && 'Validando tu email...'}
             {status === 'exitoso' && '¡Email validado!'}
+            {status === 'expirado' && 'Enlace expirado'}
             {status === 'error' && 'Error de validación'}
           </CardTitle>
           <CardDescription>
             {status === 'validando' && 'Por favor espera mientras confirmamos tu email'}
             {status === 'exitoso' && 'Tu email ha sido confirmado exitosamente'}
+            {status === 'expirado' && 'Te hemos enviado un nuevo enlace'}
             {status === 'error' && 'Hubo un problema al validar tu email'}
           </CardDescription>
         </CardHeader>
@@ -97,6 +112,25 @@ function ValidarEmailContent() {
             </p>
           )}
 
+          {status === 'expirado' && nuevoEnlaceEnviado && (
+            <div className="space-y-3">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800 text-center">
+                  ✉️ <strong>Revisa tu bandeja de entrada</strong>
+                  <br />
+                  Te hemos enviado un nuevo enlace de validación que expira en 24 horas.
+                </p>
+              </div>
+              <Button
+                onClick={() => router.push('/login')}
+                className="w-full"
+                variant="outline"
+              >
+                Ir al login
+              </Button>
+            </div>
+          )}
+
           {status === 'error' && (
             <div className="space-y-2">
               <Button
@@ -107,10 +141,10 @@ function ValidarEmailContent() {
                 Volver al registro
               </Button>
               <Button
-                onClick={() => router.push('/mi-perfil')}
+                onClick={() => router.push('/login')}
                 className="w-full"
               >
-                Ir a mi perfil
+                Ir al login
               </Button>
             </div>
           )}
