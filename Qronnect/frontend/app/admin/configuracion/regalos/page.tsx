@@ -69,14 +69,34 @@ export default function RegalosPage() {
   const cargarDatos = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-      const tenant = localStorage.getItem('tenant_domain');
+      let tenant = localStorage.getItem('tenant_domain');
+
+      // Fallback: Si no hay tenant en localStorage, extraerlo del dominio actual
+      if (!tenant) {
+        const host = window.location.host;
+        const parts = host.split('.');
+
+        // Si es subdominio.qronnect.es -> usar subdominio
+        if (parts.length >= 2 && !host.startsWith('localhost')) {
+          tenant = parts[0];
+        }
+        // Si es localhost -> usar default
+        else {
+          tenant = 'lokeyokiera'; // fallback para desarrollo
+        }
+
+        console.log('⚠️ tenant_domain no encontrado en localStorage, usando:', tenant);
+        // Guardar para futuras peticiones
+        localStorage.setItem('tenant_domain', tenant);
+      }
+
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
       // Cargar configuración
       const configRes = await fetch(`${API_URL}/api/tiendas/config/regalo-bienvenida`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'X-Tenant-Domain': tenant || '',
+          'X-Tenant-Domain': tenant,
         },
       });
 
@@ -91,7 +111,7 @@ export default function RegalosPage() {
       const statsRes = await fetch(`${API_URL}/api/tiendas/regalos-bienvenida/estadisticas`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'X-Tenant-Domain': tenant || '',
+          'X-Tenant-Domain': tenant,
         },
       });
 
@@ -104,7 +124,7 @@ export default function RegalosPage() {
       const historialRes = await fetch(`${API_URL}/api/tiendas/regalos-bienvenida/historial?limit=10`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'X-Tenant-Domain': tenant || '',
+          'X-Tenant-Domain': tenant,
         },
       });
 
@@ -123,7 +143,33 @@ export default function RegalosPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const tenant = localStorage.getItem('tenant_domain');
+      let tenant = localStorage.getItem('tenant_domain');
+
+      // Fallback: Si no hay tenant en localStorage, extraerlo del dominio actual
+      if (!tenant) {
+        const host = window.location.host;
+        const parts = host.split('.');
+
+        // Si es subdominio.qronnect.es -> usar subdominio
+        if (parts.length >= 2 && !host.startsWith('localhost')) {
+          tenant = parts[0];
+        }
+        // Si es localhost -> usar default
+        else {
+          tenant = 'lokeyokiera'; // fallback para desarrollo
+        }
+
+        console.log('⚠️ tenant_domain no encontrado en localStorage, usando:', tenant);
+        // Guardar para futuras peticiones
+        localStorage.setItem('tenant_domain', tenant);
+      }
+
+      console.log('🔧 [GUARDAR CONFIG REGALOS]', {
+        tenant,
+        hasToken: !!token,
+        apiUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/tiendas/config/regalo-bienvenida`
+      });
+
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
       const response = await fetch(`${API_URL}/api/tiendas/config/regalo-bienvenida`, {
@@ -131,7 +177,7 @@ export default function RegalosPage() {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
-          'X-Tenant-Domain': tenant || '',
+          'X-Tenant-Domain': tenant,
         },
         body: JSON.stringify(config),
       });
