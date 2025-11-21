@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { AppShell } from "@/components/app-shell"
@@ -23,7 +23,9 @@ export default function GetQRPage() {
   return (
     <AppShell showBackButton>
       <div className="max-w-md mx-auto py-8 space-y-4">
-        <RegistroForm />
+        <Suspense fallback={<div className="text-center">Cargando formulario...</div>}>
+          <RegistroForm />
+        </Suspense>
         <div className="text-center pt-2">
           <Link
             href="/login"

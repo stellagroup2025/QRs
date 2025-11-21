@@ -10,13 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useBrandingContext } from "@/components/BrandingProvider"
 import { hexToRgb } from "@/lib/brand-colors"
-import { FileText } from "lucide-react"
+import { FileText, UserCheck } from "lucide-react"
 
 const registroSchema = z.object({
   nombre: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -35,9 +35,11 @@ type RegistroFormData = z.infer<typeof registroSchema>
 export function RegistroForm() {
   const { branding } = useBrandingContext()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [aceptaTerminos, setAceptaTerminos] = useState(false)
+  const [codigoReferido, setCodigoReferido] = useState<string | null>(null)
 
   const {
     register,
@@ -47,6 +49,15 @@ export function RegistroForm() {
   } = useForm<RegistroFormData>({
     resolver: zodResolver(registroSchema),
   })
+
+  // Capturar código de referido de la URL al montar el componente
+  useEffect(() => {
+    const ref = searchParams.get('ref')
+    if (ref) {
+      setCodigoReferido(ref)
+      console.log('Código de referido detectado:', ref)
+    }
+  }, [searchParams])
 
   const onSubmit = async (data: RegistroFormData) => {
     setIsSubmitting(true)
@@ -70,6 +81,7 @@ export function RegistroForm() {
           codigo_postal: data.codigo_postal || undefined,
           fecha_nacimiento: data.fecha_nacimiento || undefined,
           genero: data.genero && data.genero !== "" ? data.genero : undefined,
+          codigo_referido: codigoReferido || undefined, // Incluir código de referido si existe
         }),
       })
 
@@ -115,6 +127,22 @@ export function RegistroForm() {
         <CardDescription>Crea tu QR y comienza a acumular beneficios</CardDescription>
       </CardHeader>
       <CardContent>
+        {/* Mostrar banner si hay código de referido */}
+        {codigoReferido && (
+          <div
+            className="mb-4 p-3 rounded-lg border-2 flex items-center gap-2"
+            style={{
+              backgroundColor: `${hexToRgb(branding.color_primario)}15`,
+              borderColor: hexToRgb(branding.color_primario)
+            }}
+          >
+            <UserCheck className="h-5 w-5" style={{ color: hexToRgb(branding.color_primario) }} />
+            <p className="text-sm font-medium">
+              ¡Te registras con un código de referido! Recibirás puntos bonus al completar tu registro.
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="nombre">Nombre completo</Label>

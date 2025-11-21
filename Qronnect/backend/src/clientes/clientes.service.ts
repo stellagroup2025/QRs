@@ -3,6 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   UnauthorizedException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../supabase/supabase.service';
@@ -15,6 +17,8 @@ import { SendCodeClienteDto } from './dto/send-code-cliente.dto';
 import { VerifyCodeClienteDto } from './dto/verify-code-cliente.dto';
 import { SendValidationCodeDto } from './dto/send-validation-code.dto';
 import { VerifyValidationCodeDto } from './dto/verify-validation-code.dto';
+import { ReferidosService } from '../referidos/referidos.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class ClientesService {
@@ -22,6 +26,8 @@ export class ClientesService {
     private supabaseService: SupabaseService,
     private configService: ConfigService,
     private emailService: EmailService,
+    @Inject(forwardRef(() => ReferidosService))
+    private referidosService: ReferidosService,
   ) {}
 
   /**
@@ -173,6 +179,7 @@ export class ClientesService {
     console.log('📝 [REGISTER CLIENTE]');
     console.log('  - Email:', registerDto.email);
     console.log('  - Tenant ID:', tenantId);
+    console.log('  - Código referido:', registerDto.codigo_referido || 'ninguno');
 
     // Verificar si el cliente ya existe en esta tienda
     const { data: existingCliente } = await supabase
@@ -209,6 +216,29 @@ export class ClientesService {
     }
 
     console.log('  - Cliente creado:', newCliente.id);
+
+    // Procesar código de referido si fue proporcionado
+    if (registerDto.codigo_referido) {
+      try {
+        console.log('  - Procesando código de referido:', registerDto.codigo_referido);
+
+        const resultadoReferido = await this.referidosService.registrarReferido(tenantId, {
+          codigo_referido: registerDto.codigo_referido,
+          nuevo_cliente_id: newCliente.id,
+        });
+
+        if (resultadoReferido.success) {
+          console.log('  ✅ Referido registrado exitosamente');
+          console.log('  - Puntos para referidor:', resultadoReferido.puntos_otorgados_referidor);
+          console.log('  - Puntos para nuevo cliente:', resultadoReferido.puntos_otorgados_referido);
+        } else {
+          console.warn('  ⚠️  No se pudo registrar el referido:', resultadoReferido.message);
+        }
+      } catch (referidoError) {
+        console.error('  ❌ Error procesando referido:', referidoError);
+        // No fallar el registro si el referido falla
+      }
+    }
 
     // Enviar código de validación de email automáticamente
     try {
@@ -583,8 +613,8 @@ export class ClientesService {
    */
 
   /**
-   * Envía un código de validación de 6 dígitos al email del cliente
-   * El código expira en 10 minutos
+   * Envía un enlace de validación al email del cliente
+   * El enlace expira en 24 horas
    */
   async sendValidationCode(
     tenantId: string,
@@ -605,72 +635,145 @@ export class ClientesService {
       throw new NotFoundException('Cliente no encontrado en esta tienda');
     }
 
-    // Si ya está validado, no enviar código de nuevo
+    // Si ya está validado, no enviar enlace de nuevo
     if (cliente.email_validado) {
       return {
         message: 'El email ya está validado',
       };
     }
 
-    // Generar código de 6 dígitos
-    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
+    // Generar token único para validación (más seguro que un código)
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
-    // Guardar código en la base de datos
+    // Guardar token en la base de datos
     const { error: updateError } = await supabase
       .from('clientes')
       .update({
-        codigo_validacion: codigo,
+        codigo_validacion: token, // Reutilizamos este campo para el token
         codigo_validacion_expires_at: expiresAt.toISOString(),
         validacion_enviada_at: new Date().toISOString(),
       })
       .eq('id', cliente.id);
 
     if (updateError) {
-      console.error('Error al guardar código de validación:', updateError);
-      throw new BadRequestException('Error al generar código de validación');
+      console.error('Error al guardar token de validación:', updateError);
+      throw new BadRequestException('Error al generar enlace de validación');
     }
 
     // Obtener información de la tienda para el email
     const { data: tienda } = await supabase
       .from('tiendas')
-      .select('nombre, nombre_comercial')
+      .select('nombre, nombre_comercial, dominio')
       .eq('id', tenantId)
       .single();
 
     const nombreTienda = tienda?.nombre_comercial || tienda?.nombre || 'Nuestra tienda';
 
-    // Enviar email con el código
+    // Construir URL de validación
+    const nodeEnv = this.configService.get('NODE_ENV');
+    const isDevelopment = nodeEnv === 'development';
+
+    let validationUrl: string;
+    if (isDevelopment) {
+      const frontendPort = this.configService.get('FRONTEND_PORT') || '3000';
+      validationUrl = `http://${tienda.dominio}.localhost:${frontendPort}/validar-email?token=${token}`;
+    } else {
+      const baseDomain = this.configService.get('BASE_DOMAIN') || 'qronnect.es';
+      validationUrl = `https://${tienda.dominio}.${baseDomain}/validar-email?token=${token}`;
+    }
+
+    // Enviar email con el enlace
     try {
       await this.emailService.sendEmail({
         to: email,
-        subject: `Código de validación - ${nombreTienda}`,
+        subject: `Confirma tu email - ${nombreTienda}`,
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">Validación de Email</h2>
-            <p>Hola <strong>${cliente.nombre}</strong>,</p>
-            <p>Tu código de validación para <strong>${nombreTienda}</strong> es:</p>
-            <div style="background: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;">
-              <h1 style="color: #667eea; margin: 0; font-size: 36px; letter-spacing: 5px;">${codigo}</h1>
-            </div>
-            <p>Este código expira en <strong>10 minutos</strong>.</p>
-            <p style="color: #666; font-size: 14px; margin-top: 30px;">
-              Si no solicitaste este código, puedes ignorar este email.
-            </p>
-          </div>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirma tu email</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">✉️ Confirma tu Email</h1>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                Hola <strong>${cliente.nombre}</strong>,
+              </p>
+
+              <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">
+                Gracias por registrarte en <strong>${nombreTienda}</strong>. Para completar tu registro, necesitamos que confirmes tu dirección de email.
+              </p>
+
+              <!-- Botón de validación -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding: 20px 0;">
+                    <a href="${validationUrl}"
+                       style="display: inline-block; padding: 16px 32px; background-color: #667eea; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                      Confirmar mi email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color: #666666; font-size: 13px; line-height: 1.6; margin: 30px 0 0 0; text-align: center;">
+                ⏱️ Este enlace expira en <strong>24 horas</strong>
+              </p>
+
+              <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 30px 0 0 0; padding-top: 20px; border-top: 1px solid #eeeeee;">
+                Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:<br>
+                <a href="${validationUrl}" style="color: #667eea; word-break: break-all;">${validationUrl}</a>
+              </p>
+
+              <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 20px 0 0 0;">
+                Si no te registraste en ${nombreTienda}, puedes ignorar este mensaje de forma segura.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+              <p style="color: #999999; font-size: 12px; margin: 0; line-height: 1.6;">
+                © ${new Date().getFullYear()} ${nombreTienda}. Todos los derechos reservados.<br>
+                Este es un mensaje automático, por favor no respondas a este email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
         `,
       });
+
+      console.log('✅ Enlace de validación enviado a:', email);
     } catch (emailError) {
       console.error('Error al enviar email de validación:', emailError);
-      // No lanzar error para que en desarrollo se pueda ver el código
+      // No lanzar error para que en desarrollo se pueda usar el token
     }
 
-    // En desarrollo, devolver el código para testing
-    const isDevelopment = this.configService.get('NODE_ENV') === 'development';
-
+    // En desarrollo, devolver el enlace completo para testing
     return {
-      message: 'Código de validación enviado al email',
-      ...(isDevelopment && { codigo_enviado: codigo }),
+      message: 'Enlace de validación enviado al email',
+      ...(isDevelopment && { codigo_enviado: validationUrl }),
     };
   }
 
@@ -723,6 +826,59 @@ export class ClientesService {
     return {
       message: 'Email validado exitosamente',
       email_validado: true,
+    };
+  }
+
+  /**
+   * Valida el email del cliente usando el token del enlace
+   */
+  async validateEmailLink(
+    tenantId: string,
+    token: string,
+  ): Promise<{ message: string; email_validado: boolean; cliente: ClienteResponseDto }> {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Buscar el cliente por token
+    const { data: cliente, error: fetchError } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('id_tienda', tenantId)
+      .eq('codigo_validacion', token)
+      .single();
+
+    if (fetchError || !cliente) {
+      throw new UnauthorizedException('Enlace de validación inválido');
+    }
+
+    // Verificar si el token ha expirado
+    const now = new Date();
+    const expiresAt = new Date(cliente.codigo_validacion_expires_at);
+
+    if (now > expiresAt) {
+      throw new UnauthorizedException('El enlace de validación ha expirado');
+    }
+
+    // Marcar el email como validado y limpiar el token
+    const { error: updateError } = await supabase
+      .from('clientes')
+      .update({
+        email_validado: true,
+        codigo_validacion: null,
+        codigo_validacion_expires_at: null,
+      })
+      .eq('id', cliente.id);
+
+    if (updateError) {
+      console.error('Error al validar email:', updateError);
+      throw new BadRequestException('Error al validar el email');
+    }
+
+    console.log('✅ Email validado exitosamente para:', cliente.email);
+
+    return {
+      message: 'Email validado exitosamente',
+      email_validado: true,
+      cliente: this.mapToResponseDto(cliente),
     };
   }
 

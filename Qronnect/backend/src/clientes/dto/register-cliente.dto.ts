@@ -40,4 +40,13 @@ export class RegisterClienteDto {
   @IsOptional()
   @IsString({ message: 'El género debe ser un texto' })
   genero?: string;
+
+  @ApiProperty({
+    example: 'JUAN-A3F2',
+    description: 'Código de referido usado para el registro',
+    required: false,
+  })
+  @IsOptional()
+  @IsString({ message: 'El código de referido debe ser un texto' })
+  codigo_referido?: string;
 }
