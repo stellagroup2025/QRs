@@ -684,8 +684,14 @@ export class ClientesService {
     }
 
     // Enviar email con el enlace
+    console.log('📧 [VALIDACIÓN EMAIL]');
+    console.log('  - Destinatario:', email);
+    console.log('  - Token generado:', token.substring(0, 10) + '...');
+    console.log('  - URL de validación:', validationUrl);
+    console.log('  - Nombre tienda:', nombreTienda);
+
     try {
-      await this.emailService.sendEmail({
+      const emailResult = await this.emailService.sendEmail({
         to: email,
         subject: `Confirma tu email - ${nombreTienda}`,
         html: `
@@ -764,9 +770,16 @@ export class ClientesService {
         `,
       });
 
-      console.log('✅ Enlace de validación enviado a:', email);
+      console.log('📬 Resultado del envío:', JSON.stringify(emailResult, null, 2));
+
+      if (emailResult.success) {
+        console.log('✅ Enlace de validación enviado a:', email);
+        console.log('  - Message ID:', emailResult.messageId);
+      } else {
+        console.error('❌ Error al enviar email de validación:', emailResult.error);
+      }
     } catch (emailError) {
-      console.error('Error al enviar email de validación:', emailError);
+      console.error('💥 Excepción al enviar email de validación:', emailError);
       // No lanzar error para que en desarrollo se pueda usar el token
     }
 
