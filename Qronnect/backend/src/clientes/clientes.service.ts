@@ -242,16 +242,22 @@ export class ClientesService {
       }
     }
 
-    // Enviar código de validación de email automáticamente
+    // Enviar enlace de validación de email automáticamente
     try {
-      console.log('  - Enviando código de validación de email...');
+      console.log('  - Enviando enlace de validación de email...');
 
       // Generar token único para validación
       const token = crypto.randomBytes(32).toString('hex');
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
-      // Guardar token directamente con el cliente recién creado
-      await supabase
+      console.log('📧 [VALIDACIÓN EMAIL - REGISTRO]');
+      console.log('  - Cliente ID:', newCliente.id);
+      console.log('  - Destinatario:', newCliente.email);
+      console.log('  - Token generado:', token);
+      console.log('  - Token expira en:', expiresAt.toISOString());
+
+      // Guardar token en la base de datos ANTES de enviar el email
+      const { error: updateError } = await supabase
         .from('clientes')
         .update({
           codigo_validacion: token,
@@ -259,6 +265,13 @@ export class ClientesService {
           validacion_enviada_at: new Date().toISOString(),
         })
         .eq('id', newCliente.id);
+
+      if (updateError) {
+        console.error('❌ Error al guardar token de validación:', updateError);
+        throw new Error('No se pudo guardar el token de validación');
+      }
+
+      console.log('✅ Token guardado en base de datos');
 
       // Obtener información de la tienda
       const { data: tienda } = await supabase
@@ -282,9 +295,6 @@ export class ClientesService {
         validationUrl = `https://${tienda.dominio}.${baseDomain}/validar-email?token=${token}`;
       }
 
-      console.log('📧 [VALIDACIÓN EMAIL]');
-      console.log('  - Destinatario:', newCliente.email);
-      console.log('  - Token generado:', token.substring(0, 10) + '...');
       console.log('  - URL de validación:', validationUrl);
       console.log('  - Nombre tienda:', nombreTienda);
 
@@ -365,10 +375,8 @@ export class ClientesService {
       } else {
         console.error('❌ Error al enviar email de validación:', emailResult.error);
       }
-
-      console.log('  - Código de validación enviado exitosamente');
     } catch (emailError) {
-      console.error('  - Error enviando código de validación:', emailError);
+      console.error('💥 Error enviando enlace de validación:', emailError);
       // No fallar el registro si el email falla, solo loguearlo
     }
 
