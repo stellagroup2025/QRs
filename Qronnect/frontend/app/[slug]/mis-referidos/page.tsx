@@ -120,7 +120,9 @@ export default function MisReferidosPage() {
 
       if (referidosRes.ok) {
         const data = await referidosRes.json();
-        setReferidos(data.referidos || []);
+        console.log('📋 Referidos recibidos:', data);
+        // El backend devuelve directamente el array, no { referidos: [] }
+        setReferidos(Array.isArray(data) ? data : []);
       }
 
       // Cargar progreso

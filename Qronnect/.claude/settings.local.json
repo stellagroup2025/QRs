@@ -1,12 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add backend/src/clientes/clientes.service.ts backend/src/clientes/clientes.controller.ts frontend/app/validar-email/page.tsx)",
-      "Bash(npm run start:dev)",
-      "Bash(git add backend/src/clientes/clientes.service.ts)",
-      "Bash(git add backend/src/clientes/clientes.service.ts FIX_EMAIL_VALIDATION_TOKEN.md)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfix: Mejorar sistema de validación de email con logs detallados\n\nMejoras implementadas:\n- Añadidos logs detallados para debugging del proceso de validación\n- Token completo visible en logs (no truncado) para verificación\n- Validación de guardado en BD antes de enviar email\n- Mejor estructura y claridad en el flujo de validación\n- Confirmación de cada paso del proceso\n\nEsto permite identificar y resolver problemas de validación de email\nde forma más eficiente.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git add -A)"
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: Corregir visualización de lista de amigos referidos\n\nPROBLEMA 1 - RESUELTO:\n- La lista de referidos no se mostraba aunque el contador funcionaba\n- El backend devuelve array directamente, frontend esperaba { referidos: [] }\n\nSOLUCIÓN:\n- Modificado frontend/app/[slug]/mis-referidos/page.tsx\n- Ahora verifica si data es array y lo asigna correctamente\n- Añadido log para debugging\n\nPROBLEMA 2 - DOCUMENTADO:\n- Email de confirmación de registro no llega\n- Sistema tiene logs detallados para identificar causa\n- Posibles causas: Resend API key, rate limit, dominio no verificado\n- Documentación completa en FIXES_REFERIDOS_EMAIL.md\n\nARCHIVOS:\n- frontend/app/[slug]/mis-referidos/page.tsx: Fix de parsing de respuesta\n- FIXES_REFERIDOS_EMAIL.md: Guía completa de troubleshooting\n\nLa lista de referidos ahora funciona correctamente. Para el email,\nrevisar logs del backend y seguir guía de troubleshooting.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
