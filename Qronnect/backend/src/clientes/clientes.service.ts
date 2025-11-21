@@ -275,13 +275,21 @@ export class ClientesService {
       console.log('✅ Token guardado en base de datos');
 
       // Obtener información de la tienda
-      const { data: tienda } = await supabase
+      const { data: tienda, error: tiendaError } = await supabase
         .from('tiendas')
         .select('nombre, nombre_comercial, dominio')
         .eq('id', tenantId)
         .single();
 
-      const nombreTienda = tienda?.nombre_comercial || tienda?.nombre || 'Nuestra tienda';
+      if (tiendaError || !tienda) {
+        console.error('❌ Error obteniendo tienda:', tiendaError);
+        throw new Error('No se pudo obtener información de la tienda');
+      }
+
+      const nombreTienda = tienda.nombre_comercial || tienda.nombre || 'Nuestra tienda';
+      const dominioTienda = tienda.dominio;
+
+      console.log('  - Tienda:', nombreTienda, `(dominio: ${dominioTienda})`);
 
       // Construir URL de validación
       const nodeEnv = this.configService.get('NODE_ENV');
@@ -290,19 +298,18 @@ export class ClientesService {
       let validationUrl: string;
       if (isDevelopment) {
         const frontendPort = this.configService.get('FRONTEND_PORT') || '3000';
-        validationUrl = `http://${tienda.dominio}.localhost:${frontendPort}/validar-email?token=${token}`;
+        validationUrl = `http://${dominioTienda}.localhost:${frontendPort}/validar-email?token=${token}`;
       } else {
         const baseDomain = this.configService.get('BASE_DOMAIN') || 'qronnect.es';
-        validationUrl = `https://${tienda.dominio}.${baseDomain}/validar-email?token=${token}`;
+        validationUrl = `https://${dominioTienda}.${baseDomain}/validar-email?token=${token}`;
       }
 
       console.log('  - URL de validación:', validationUrl);
-      console.log('  - Nombre tienda:', nombreTienda);
 
       // Construir el email remitente (igual que en sendLoginCode)
       const useWildcard = process.env.RESEND_WILDCARD_ENABLED === 'true';
       const fromEmail = useWildcard
-        ? `${nombreTienda} <noreply@${tienda.dominio}.qronnect.es>`
+        ? `${nombreTienda} <noreply@${dominioTienda}.qronnect.es>`
         : `${nombreTienda} <noreply@qronnect.es>`;
 
       console.log('  - From Email:', fromEmail);
@@ -386,8 +393,12 @@ export class ClientesService {
         console.error('❌ Error al enviar email de validación:', emailResult.error);
       }
     } catch (emailError) {
-      console.error('💥 Error enviando enlace de validación:', emailError);
+      console.error('💥 ERROR CRÍTICO enviando enlace de validación:');
+      console.error('   Tipo:', emailError?.constructor?.name);
+      console.error('   Mensaje:', emailError?.message);
+      console.error('   Stack:', emailError?.stack);
       // No fallar el registro si el email falla, solo loguearlo
+      // PERO esto significa que el usuario NO recibirá el email automáticamente
     }
 
     // El QR del cliente es su ID
