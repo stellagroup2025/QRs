@@ -298,10 +298,19 @@ export class ClientesService {
       console.log('  - URL de validación:', validationUrl);
       console.log('  - Nombre tienda:', nombreTienda);
 
+      // Construir el email remitente (igual que en sendLoginCode)
+      const useWildcard = process.env.RESEND_WILDCARD_ENABLED === 'true';
+      const fromEmail = useWildcard
+        ? `${nombreTienda} <noreply@${tienda.dominio}.qronnect.es>`
+        : `${nombreTienda} <noreply@qronnect.es>`;
+
+      console.log('  - From Email:', fromEmail);
+
       // Enviar email
       const emailResult = await this.emailService.sendEmail({
         to: newCliente.email,
         subject: `Confirma tu email - ${nombreTienda}`,
+        from: fromEmail, // ⬅️ CRÍTICO: Especificar el remitente
         html: `
 <!DOCTYPE html>
 <html>
