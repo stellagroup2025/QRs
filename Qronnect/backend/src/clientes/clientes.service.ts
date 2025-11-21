@@ -172,7 +172,8 @@ export class ClientesService {
   ): Promise<{
     cliente: ClienteResponseDto;
     qr_code: string;
-    access_token: string;
+    requiere_validacion: boolean;
+    mensaje: string;
   }> {
     const supabase = this.supabaseService.getAdminClient();
 
