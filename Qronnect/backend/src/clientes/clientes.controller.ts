@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, UseGuards, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { ClientesService } from './clientes.service';
 import { TiendasService } from '../tiendas/tiendas.service';
@@ -178,6 +178,38 @@ export class ClientesController {
     @Body() verifyValidationDto: VerifyValidationCodeDto,
   ): Promise<{ message: string; email_validado: boolean }> {
     return this.clientesService.verifyValidationCode(tenantId, verifyValidationDto);
+  }
+
+  /**
+   * GET /api/clientes/auth/validate-email/:token
+   * Valida el email del cliente mediante enlace con token (pública)
+   */
+  @Get('auth/validate-email/:token')
+  @ApiOperation({
+    summary: 'Validar email mediante enlace',
+    description:
+      'Valida el email del cliente usando el token único del enlace enviado por email. ' +
+      'El token expira en 24 horas.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Email validado exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        email_validado: { type: 'boolean' },
+        cliente: { type: 'object' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Token inválido o expirado' })
+  @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
+  async validateEmailLink(
+    @Tenant('id') tenantId: string,
+    @Param('token') token: string,
+  ): Promise<{ message: string; email_validado: boolean; cliente: ClienteResponseDto }> {
+    return this.clientesService.validateEmailLink(tenantId, token);
   }
 
   /**

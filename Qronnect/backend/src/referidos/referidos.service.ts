@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../supabase/supabase.service';
+import { EmailService } from '../email/email.service';
 import { CrearProgramaReferidosDto } from './dto/crear-programa-referidos.dto';
 import { RegistrarReferidoDto } from './dto/registrar-referido.dto';
 
@@ -9,6 +10,7 @@ export class ReferidosService {
   constructor(
     private readonly supabase: SupabaseService,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   /**
@@ -112,7 +114,139 @@ export class ReferidosService {
       throw new BadRequestException(data.message || 'No se pudo registrar el referido');
     }
 
+    // Si se registró exitosamente, enviar email al referidor
+    if (data.success) {
+      try {
+        await this.enviarEmailReferidorExitoso(tiendaId, dto.codigo_referido, dto.nuevo_cliente_id, data);
+      } catch (emailError) {
+        console.error('Error enviando email al referidor:', emailError);
+        // No fallar la operación si el email falla
+      }
+    }
+
     return data;
+  }
+
+  /**
+   * Envía email de notificación al referidor cuando alguien usa su código
+   */
+  private async enviarEmailReferidorExitoso(
+    tiendaId: string,
+    codigoReferido: string,
+    nuevoClienteId: string,
+    resultadoReferido: any,
+  ): Promise<void> {
+    const client = this.supabase.getAdminClient();
+
+    // Obtener datos del referidor (quien compartió el código)
+    const { data: referidor } = await client
+      .from('clientes')
+      .select('id, nombre, email')
+      .eq('codigo_referido_personal', codigoReferido)
+      .eq('id_tienda', tiendaId)
+      .single();
+
+    if (!referidor || !referidor.email) {
+      console.warn('No se encontró email del referidor');
+      return;
+    }
+
+    // Obtener datos del nuevo cliente referido
+    const { data: nuevoCliente } = await client
+      .from('clientes')
+      .select('nombre')
+      .eq('id', nuevoClienteId)
+      .single();
+
+    // Obtener datos de la tienda
+    const { data: tienda } = await client
+      .from('tiendas')
+      .select('nombre, nombre_comercial, dominio')
+      .eq('id', tiendaId)
+      .single();
+
+    const nombreTienda = tienda?.nombre_comercial || tienda?.nombre || 'Nuestra tienda';
+    const nombreNuevoCliente = nuevoCliente?.nombre || 'Un amigo';
+    const puntosGanados = resultadoReferido.puntos_otorgados_referidor || 0;
+
+    // Construir el email
+    const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¡Nuevo referido!</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">🎉 ¡Felicidades!</h1>
+              <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 16px;">Tienes un nuevo referido</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                Hola <strong>${referidor.nombre}</strong>,
+              </p>
+
+              <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">
+                ¡Excelentes noticias! <strong>${nombreNuevoCliente}</strong> se ha registrado en ${nombreTienda} usando tu código de referido.
+              </p>
+
+              ${puntosGanados > 0 ? `
+              <!-- Puntos ganados -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
+                <tr>
+                  <td align="center" style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #667eea;">
+                    <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">Has ganado</p>
+                    <span style="font-size: 42px; font-weight: bold; color: #667eea;">
+                      ${puntosGanados} puntos
+                    </span>
+                  </td>
+                </tr>
+              </table>
+              ` : ''}
+
+              <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 0;">
+                Sigue compartiendo tu código de referido para seguir ganando beneficios. ¡Gracias por ayudarnos a crecer!
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 20px; text-align: center;">
+              <p style="color: #999999; font-size: 12px; margin: 0; line-height: 1.6;">
+                © ${new Date().getFullYear()} ${nombreTienda}. Todos los derechos reservados.<br>
+                Este es un mensaje automático, por favor no respondas a este email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
+
+    // Enviar email
+    await this.emailService.sendEmail({
+      to: referidor.email,
+      subject: `🎉 ¡${nombreNuevoCliente} usó tu código de referido!`,
+      html: emailHtml,
+    });
+
+    console.log('✅ Email de referido enviado a:', referidor.email);
   }
 
   /**
