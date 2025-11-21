@@ -181,17 +181,19 @@ export class ClientesService {
     console.log('  - Tenant ID:', tenantId);
     console.log('  - Código referido:', registerDto.codigo_referido || 'ninguno');
 
+    // ⚠️ TEMPORAL: Validación deshabilitada para testing
     // Verificar si el cliente ya existe en esta tienda
-    const { data: existingCliente } = await supabase
-      .from('clientes')
-      .select('id')
-      .eq('email', registerDto.email)
-      .eq('id_tienda', tenantId)
-      .single();
+    // const { data: existingCliente } = await supabase
+    //   .from('clientes')
+    //   .select('id')
+    //   .eq('email', registerDto.email)
+    //   .eq('id_tienda', tenantId)
+    //   .single();
 
-    if (existingCliente) {
-      throw new BadRequestException('Ya estás registrado en esta tienda');
-    }
+    // if (existingCliente) {
+    //   throw new BadRequestException('Ya estás registrado en esta tienda');
+    // }
+    console.log('  ⚠️  Validación de usuario duplicado DESHABILITADA para testing');
 
     // Crear el nuevo cliente
     const { data: newCliente, error } = await supabase
