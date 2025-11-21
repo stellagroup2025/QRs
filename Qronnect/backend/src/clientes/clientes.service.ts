@@ -998,6 +998,10 @@ export class ClientesService {
   ): Promise<{ message: string; email_validado: boolean; cliente?: ClienteResponseDto; token_expirado?: boolean; nuevo_enlace_enviado?: boolean }> {
     const supabase = this.supabaseService.getAdminClient();
 
+    console.log('✅ [VALIDAR EMAIL]');
+    console.log('  - Tenant ID:', tenantId);
+    console.log('  - Token:', token.substring(0, 16) + '...');
+
     // Buscar el cliente por token
     const { data: cliente, error: fetchError } = await supabase
       .from('clientes')
@@ -1007,8 +1011,13 @@ export class ClientesService {
       .single();
 
     if (fetchError || !cliente) {
+      console.error('❌ Error buscando cliente:', fetchError);
+      console.log('  - ¿El token es correcto?');
+      console.log('  - ¿El tenant ID es correcto?');
       throw new UnauthorizedException('Enlace de validación inválido');
     }
+
+    console.log('  - Cliente encontrado:', cliente.email);
 
     // Verificar si el token ha expirado
     const now = new Date();
@@ -1054,10 +1063,17 @@ export class ClientesService {
         validationUrl = `https://${tienda.dominio}.${baseDomain}/validar-email?token=${newToken}`;
       }
 
+      // Construir el email remitente
+      const useWildcard = process.env.RESEND_WILDCARD_ENABLED === 'true';
+      const fromEmail = useWildcard
+        ? `${nombreTienda} <noreply@${tienda.dominio}.qronnect.es>`
+        : `${nombreTienda} <noreply@qronnect.es>`;
+
       // Enviar nuevo email
       const emailResult = await this.emailService.sendEmail({
         to: cliente.email,
         subject: `Nuevo enlace de validación - ${nombreTienda}`,
+        from: fromEmail,
         html: `
 <!DOCTYPE html>
 <html>
@@ -1225,10 +1241,20 @@ export class ClientesService {
       validationUrl = `https://${tienda.dominio}.${baseDomain}/validar-email?token=${token}`;
     }
 
+    // Construir el email remitente
+    const useWildcard = process.env.RESEND_WILDCARD_ENABLED === 'true';
+    const fromEmail = useWildcard
+      ? `${nombreTienda} <noreply@${tienda.dominio}.qronnect.es>`
+      : `${nombreTienda} <noreply@qronnect.es>`;
+
+    console.log('  - From Email:', fromEmail);
+    console.log('  - URL de validación:', validationUrl);
+
     // Enviar email
     const emailResult = await this.emailService.sendEmail({
       to: cliente.email,
       subject: `Confirma tu email - ${nombreTienda}`,
+      from: fromEmail,
       html: `
 <!DOCTYPE html>
 <html>
