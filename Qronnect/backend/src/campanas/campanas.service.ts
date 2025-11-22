@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../supabase/supabase.service';
 import { EmailService } from '../email/email.service';
 import { CreateCampanaDto } from './dto/create-campana.dto';
@@ -12,6 +13,7 @@ export class CampanasService {
   constructor(
     private readonly supabase: SupabaseService,
     private readonly emailService: EmailService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**

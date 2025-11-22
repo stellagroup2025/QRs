@@ -1523,10 +1523,10 @@ export class ClientesService {
         .eq('id', cliente.id_tienda)
         .single();
 
-      await this.emailService.sendEmail(
-        cliente.email,
-        `Has sido dado de baja - ${tienda?.nombre || 'Nuestro programa'}`,
-        `
+      await this.emailService.sendEmail({
+        to: cliente.email,
+        subject: `Has sido dado de baja - ${tienda?.nombre || 'Nuestro programa'}`,
+        html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>Baja confirmada</h2>
             <p>Hola ${cliente.nombre},</p>
@@ -1541,7 +1541,7 @@ export class ClientesService {
             </p>
           </div>
         `,
-      );
+      });
       console.log(`  📧 Email de confirmación de baja enviado`);
     } catch (emailError) {
       console.error(`  ⚠️  Error enviando email de confirmación:`, emailError.message);

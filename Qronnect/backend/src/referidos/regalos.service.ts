@@ -336,11 +336,11 @@ export class RegalosService {
       </div>
     `;
 
-    await this.emailService.sendEmail(
-      cliente.email,
-      '🎉 ¡Has desbloqueado nuevas recompensas!',
+    await this.emailService.sendEmail({
+      to: cliente.email,
+      subject: '🎉 ¡Has desbloqueado nuevas recompensas!',
       html,
-    );
+    });
 
     console.log(`  📧 Email de notificación enviado a ${cliente.email}`);
   }
@@ -396,11 +396,11 @@ export class RegalosService {
       </div>
     `;
 
-    await this.emailService.sendEmail(
-      cliente.email,
-      `🎁 ¡Tienes un regalo: ${cupon.regalo_nombre}!`,
+    await this.emailService.sendEmail({
+      to: cliente.email,
+      subject: `🎁 ¡Tienes un regalo: ${cupon.regalo_nombre}!`,
       html,
-    );
+    });
 
     // Marcar email como enviado
     await client

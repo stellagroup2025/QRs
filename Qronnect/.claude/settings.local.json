@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git commit -m \"$(cat <<''EOF''\nfix: Corregir visualización de lista de amigos referidos\n\nPROBLEMA 1 - RESUELTO:\n- La lista de referidos no se mostraba aunque el contador funcionaba\n- El backend devuelve array directamente, frontend esperaba { referidos: [] }\n\nSOLUCIÓN:\n- Modificado frontend/app/[slug]/mis-referidos/page.tsx\n- Ahora verifica si data es array y lo asigna correctamente\n- Añadido log para debugging\n\nPROBLEMA 2 - DOCUMENTADO:\n- Email de confirmación de registro no llega\n- Sistema tiene logs detallados para identificar causa\n- Posibles causas: Resend API key, rate limit, dominio no verificado\n- Documentación completa en FIXES_REFERIDOS_EMAIL.md\n\nARCHIVOS:\n- frontend/app/[slug]/mis-referidos/page.tsx: Fix de parsing de respuesta\n- FIXES_REFERIDOS_EMAIL.md: Guía completa de troubleshooting\n\nLa lista de referidos ahora funciona correctamente. Para el email,\nrevisar logs del backend y seguir guía de troubleshooting.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git add frontend/app/[slug]/mis-cupones/page.tsx frontend/app/[slug]/mis-referidos/page.tsx)",
+      "Bash(git add RESUMEN_SISTEMA_REGALOS.md)",
+      "Bash(git commit -m \"docs: Resumen ejecutivo completo del sistema de regalos\n\nDocumentación completa de implementación:\n- Estado de todos los commits\n- Estructura de base de datos\n- Endpoints de API\n- Componentes frontend\n- Guía de testing\n- Deployment steps\n- Beneficios alcanzados\n\n100% implementado y listo para producción.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")",
+      "Bash(npx supabase db pull --dry-run)",
+      "Bash(pkill -f \"nest start\")",
+      "Bash(npm run build)",
+      "Bash(git add -u)",
+      "Bash(git commit -m \"fix: Corregir errores de compilación TypeScript\n\nERRORES CORREGIDOS:\n\n1. campanas.service.ts:\n   - Faltaba inyectar ConfigService\n   - Añadido import y en constructor\n\n2. clientes.service.ts:\n   - Llamada incorrecta a sendEmail (3 args vs objeto)\n   - Cambiado a formato correcto: {to, subject, html}\n\n3. regalos.service.ts (2 ocurrencias):\n   - Mismo error que #2\n   - Corregido en notificarMilestonesAlcanzados()\n   - Corregido en enviarEmailCupon()\n\nRESULTADO:\n✅ Backend compila sin errores\n✅ Listo para testing\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")"
     ],
     "deny": [],
     "ask": []
