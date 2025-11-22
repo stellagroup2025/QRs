@@ -1182,12 +1182,15 @@ export class ClientesService {
 
     // Generar JWT access_token para auto-login
     console.log('🔐 Generando access_token para auto-login...');
-    const access_token = await this.supabaseService.generateClientJWT({
-      id: cliente.id,
-      email: cliente.email,
-      id_tienda: cliente.id_tienda,
-      nombre: cliente.nombre,
-    });
+    const access_token = Buffer.from(
+      JSON.stringify({
+        sub: cliente.id,
+        tienda_id: cliente.id_tienda,
+        email: cliente.email,
+        role: 'cliente',
+        // Sin campo 'exp' - sesión permanente
+      }),
+    ).toString('base64');
 
     console.log('✅ Access token generado para auto-login');
 
