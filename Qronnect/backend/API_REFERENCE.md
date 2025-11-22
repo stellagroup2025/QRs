@@ -16,7 +16,8 @@ Referencia rápida de todos los endpoints disponibles.
 GET /api
 ```
 
-**Respuesta**:
+**Respuest a**:
+
 ```json
 {
   "status": "ok",
@@ -40,6 +41,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Respuesta**:
+
 ```json
 {
   "id": "uuid",
@@ -53,6 +55,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Notas**:
+
 - Si el cliente no existe, se crea automáticamente
 - El cliente se asocia a `DEFAULT_TIENDA_ID`
 
@@ -84,6 +87,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Respuesta**:
+
 ```json
 {
   "puntos_totales": 150,
@@ -100,6 +104,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Notas**:
+
 - Devuelve las últimas 10 compras
 - Ordenadas por fecha descendente
 
@@ -113,6 +118,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Respuesta**:
+
 ```json
 {
   "id": "uuid",
@@ -122,6 +128,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Notas**:
+
 - Si no existe, se genera automáticamente
 - El código tiene 16 caracteres alfanuméricos
 - El frontend debe convertir el `codigo` a QR visual
@@ -147,6 +154,7 @@ Content-Type: application/json
 ```
 
 **Respuesta**:
+
 ```json
 {
   "compra_id": "uuid",
@@ -163,6 +171,7 @@ Content-Type: application/json
 ```
 
 **Notas**:
+
 - `puntos_otorgados` = `importe` × `PUNTOS_POR_EURO`
 - Se actualiza `puntos_totales` y `ultima_visita` del cliente
 - Si el `codigoQr` no existe, devuelve 400
@@ -177,10 +186,12 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Query params**:
+
 - `limit` (opcional): Número de resultados (default: 50)
 - `offset` (opcional): Saltar resultados (default: 0)
 
 **Respuesta**:
+
 ```json
 [
   {
@@ -197,6 +208,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Notas**:
+
 - Solo devuelve clientes de la tienda del admin
 - Ordenados por fecha de registro (más recientes primero)
 - Solo clientes activos
@@ -211,10 +223,12 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Query params**:
+
 - `limit` (opcional): Número de resultados (default: 50)
 - `offset` (opcional): Saltar resultados (default: 0)
 
 **Respuesta**:
+
 ```json
 [
   {
@@ -234,6 +248,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Notas**:
+
 - Ordenadas por fecha descendente (más recientes primero)
 - Solo compras de la tienda del admin
 
@@ -247,6 +262,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Respuesta**:
+
 ```json
 {
   "total_clientes": 250,
@@ -259,6 +275,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Notas**:
+
 - Usa la vista SQL `vista_dashboard_tienda` si está disponible
 - Fallback a cálculo manual si la vista falla
 - Solo datos de la tienda del admin
@@ -283,6 +300,7 @@ apikey: <SUPABASE_ANON_KEY>
 ```
 
 **Respuesta**:
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -294,6 +312,7 @@ apikey: <SUPABASE_ANON_KEY>
 ```
 
 **Notas**:
+
 - Usa el `access_token` en el header `Authorization: Bearer <token>`
 - El token expira en 1 hora por defecto
 - Usa el `refresh_token` para obtener un nuevo `access_token`
@@ -302,15 +321,15 @@ apikey: <SUPABASE_ANON_KEY>
 
 ## 🚫 Códigos de Error
 
-| Código | Significado |
-|--------|-------------|
-| 200 | OK - Operación exitosa |
-| 201 | Created - Recurso creado |
-| 400 | Bad Request - Datos inválidos |
-| 401 | Unauthorized - Token inválido o no proporcionado |
-| 403 | Forbidden - Sin permisos |
-| 404 | Not Found - Recurso no encontrado |
-| 500 | Internal Server Error - Error del servidor |
+| Código | Significado                                      |
+| ------ | ------------------------------------------------ |
+| 200    | OK - Operación exitosa                           |
+| 201    | Created - Recurso creado                         |
+| 400    | Bad Request - Datos inválidos                    |
+| 401    | Unauthorized - Token inválido o no proporcionado |
+| 403    | Forbidden - Sin permisos                         |
+| 404    | Not Found - Recurso no encontrado                |
+| 500    | Internal Server Error - Error del servidor       |
 
 ---
 
@@ -375,6 +394,7 @@ PUNTOS_POR_EURO=0.5 # 2 euros = 1 punto
 ```
 
 **Ejemplo de cálculo**:
+
 - Compra: 25.50 €
 - Factor: 10
 - Puntos otorgados: `Math.floor(25.50 × 10)` = **255 puntos**
