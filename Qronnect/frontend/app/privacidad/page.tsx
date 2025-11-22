@@ -106,6 +106,54 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
+          <h2>5 bis. Transferencias Internacionales de Datos</h2>
+          <p>
+            Algunos de nuestros proveedores tecnológicos están ubicados fuera del Espacio Económico Europeo (EEE).
+            En estos casos, nos aseguramos de que se apliquen garantías adecuadas para proteger tus datos personales
+            mediante:
+          </p>
+          <ul>
+            <li>
+              <strong>Cláusulas Contractuales Tipo (SCC):</strong> Aprobadas por la Comisión Europea, que garantizan
+              un nivel de protección equivalente al del RGPD.
+            </li>
+            <li>
+              <strong>EU-US Data Privacy Framework:</strong> Certificación que sustituye al antiguo Privacy Shield
+              para transferencias a Estados Unidos.
+            </li>
+            <li>
+              <strong>Medidas técnicas adicionales:</strong> Encriptación de datos en tránsito y en reposo,
+              controles de acceso estrictos, y auditorías periódicas de seguridad.
+            </li>
+          </ul>
+          <p>
+            <strong>Proveedores que pueden implicar transferencias internacionales:</strong>
+          </p>
+          <ul>
+            <li>
+              <strong>Supabase:</strong> Base de datos alojada en servidores dentro de la Unión Europea (Alemania).
+            </li>
+            <li>
+              <strong>Resend:</strong> Servicio de envío de emails. Utiliza Cláusulas Contractuales Tipo.
+            </li>
+            <li>
+              <strong>Twilio:</strong> Servicio de SMS. Certificado bajo EU-US Data Privacy Framework y SCCs.
+            </li>
+            <li>
+              <strong>Google (Gemini AI):</strong> Servicios de inteligencia artificial. Google Cloud tiene
+              certificación EU-US DPF y ofrece Data Processing Amendment.
+            </li>
+            <li>
+              <strong>Vercel/Render:</strong> Hosting de aplicaciones. Utilizan SCCs para transferencias a USA.
+            </li>
+          </ul>
+          <p>
+            Puedes obtener más información sobre las garantías específicas aplicadas o solicitar una copia
+            de las mismas contactando con nosotros en {contactEmail}.
+          </p>
+        </section>
+
+        <section>
           <h2>6. Derechos del Usuario (ARSOPL)</h2>
           <p>
             En cumplimiento del RGPD, tienes derecho a:

@@ -478,7 +478,8 @@ export class CampanasService {
         clientes (
           id,
           nombre,
-          email
+          email,
+          unsubscribe_token
         )
       `,
       )
@@ -517,6 +518,25 @@ export class CampanasService {
       let htmlPersonalizado = campana.contenido_html;
       htmlPersonalizado = htmlPersonalizado.replace(/\{\{nombre\}\}/g, cliente.nombre || '');
       htmlPersonalizado = htmlPersonalizado.replace(/\{\{email\}\}/g, cliente.email || '');
+
+      // Añadir enlace de baja (unsubscribe) al final del HTML
+      const baseUrl = this.configService.get('FRONTEND_URL') || 'https://qronnect.es';
+      const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${cliente.unsubscribe_token}`;
+      const unsubscribeFooter = `
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+          <p style="font-size: 12px; color: #6b7280; margin: 0;">
+            Si no deseas recibir más emails de marketing, puedes
+            <a href="${unsubscribeUrl}" style="color: #3b82f6; text-decoration: underline;">darte de baja aquí</a>
+          </p>
+        </div>
+      `;
+
+      // Si el HTML ya tiene un </body>, insertar antes; si no, añadir al final
+      if (htmlPersonalizado.includes('</body>')) {
+        htmlPersonalizado = htmlPersonalizado.replace('</body>', `${unsubscribeFooter}</body>`);
+      } else {
+        htmlPersonalizado += unsubscribeFooter;
+      }
 
       // Enviar email con remitente dinámico
       const result = await this.emailService.sendEmail({

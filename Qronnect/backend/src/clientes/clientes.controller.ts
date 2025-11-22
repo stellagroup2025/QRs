@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Post, Body, UseGuards, Param } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, UseGuards, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { ClientesService } from './clientes.service';
 import { TiendasService } from '../tiendas/tiendas.service';
@@ -14,6 +14,7 @@ import { SendCodeClienteDto } from './dto/send-code-cliente.dto';
 import { VerifyCodeClienteDto } from './dto/verify-code-cliente.dto';
 import { SendValidationCodeDto } from './dto/send-validation-code.dto';
 import { VerifyValidationCodeDto } from './dto/verify-validation-code.dto';
+import { UnsubscribeDto } from './dto/unsubscribe.dto';
 
 /**
  * Controlador de endpoints para clientes finales
@@ -346,5 +347,35 @@ export class ClientesController {
   })
   async getTiendaInfo(@Tenant('id') tenantId: string) {
     return this.tiendasService.getInfoTienda(tenantId);
+  }
+
+  /**
+   * GET /api/clientes/unsubscribe?token=xxx
+   * Da de baja a un cliente de emails de marketing (endpoint público)
+   */
+  @Get('unsubscribe')
+  @ApiOperation({
+    summary: 'Darse de baja de emails de marketing',
+    description:
+      'Permite a un cliente darse de baja de emails de marketing usando su token único. ' +
+      'No requiere autenticación. El token se incluye en todos los emails de marketing.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cliente dado de baja exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        mensaje: { type: 'string', example: 'Te hemos dado de baja exitosamente de nuestros emails de marketing' },
+        nombre: { type: 'string', example: 'Juan Pérez' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token inválido o expirado',
+  })
+  async unsubscribeFromMarketing(@Query('token') token: string) {
+    return this.clientesService.unsubscribeFromMarketing(token);
   }
 }

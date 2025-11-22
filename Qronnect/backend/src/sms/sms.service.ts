@@ -118,12 +118,12 @@ export class SmsService {
         // Usar Sender ID alfanumérico (ej: "GYMFITZONE")
         // NO añadir nombre de tienda al mensaje (ya está en el remitente)
         from = credenciales.sender_id;
-        mensajeFinal = message;
+        mensajeFinal = `${message}\n\nResponde STOP para darte de baja`;
       } else {
         // Usar número de teléfono tradicional
         // Añadir prefijo con nombre de tienda
         from = credenciales.phone_number;
-        mensajeFinal = `${tiendaNombre}: ${message}`;
+        mensajeFinal = `${tiendaNombre}: ${message}\n\nResponde STOP para darte de baja`;
       }
 
       const result = await tenantClient.messages.create({
@@ -187,12 +187,12 @@ export class SmsService {
     if (smsConfig.sender_id && usarSenderId) {
       // Usar Sender ID alfanumérico configurado por tienda (ej: "GYMFITZONE")
       from = smsConfig.sender_id;
-      mensajeFinal = message;
+      mensajeFinal = `${message}\n\nResponde STOP para darte de baja`;
     } else {
       // Usar número de teléfono global
       // Añadir prefijo con nombre de tienda para identificación
       from = this.globalFromNumber;
-      mensajeFinal = `${tiendaNombre}: ${message}`;
+      mensajeFinal = `${tiendaNombre}: ${message}\n\nResponde STOP para darte de baja`;
     }
 
     try {
@@ -397,5 +397,118 @@ export class SmsService {
         error: error.message,
       };
     }
+  }
+
+  /**
+   * Procesa respuestas STOP de SMS (webhook de Twilio)
+   * Cuando un cliente responde STOP, se da de baja automáticamente
+   */
+  async procesarStopSms(params: {
+    From: string; // Número del cliente que responde
+    Body: string; // Mensaje recibido
+    MessageSid?: string;
+  }): Promise<{ mensaje: string; procesado: boolean }> {
+    console.log(`\n🛑 [SMS STOP] Respuesta recibida`);
+    console.log(`  - Desde: ${params.From}`);
+    console.log(`  - Mensaje: ${params.Body}`);
+
+    // Normalizar teléfono a formato E.164
+    let telefono = params.From;
+    if (!telefono.startsWith('+')) {
+      telefono = '+' + telefono;
+    }
+
+    // Verificar si el mensaje es STOP, UNSUBSCRIBE, CANCEL, END, QUIT
+    const mensajeNormalizado = params.Body.trim().toUpperCase();
+    const palabrasStop = ['STOP', 'UNSUBSCRIBE', 'CANCEL', 'END', 'QUIT', 'BAJA', 'CANCELAR'];
+
+    if (!palabrasStop.includes(mensajeNormalizado)) {
+      console.log(`  ℹ️  No es un mensaje STOP, ignorando`);
+      return { mensaje: 'No es un mensaje de baja', procesado: false };
+    }
+
+    console.log(`  ✅ Detectado mensaje de baja: ${mensajeNormalizado}`);
+
+    // Buscar cliente por teléfono
+    const supabase = this.supabase.getAdminClient();
+
+    const { data: clientes, error } = await supabase
+      .from('clientes')
+      .select('id, nombre, email, id_tienda, acepta_marketing_sms')
+      .eq('telefono', telefono);
+
+    if (error || !clientes || clientes.length === 0) {
+      console.log(`  ⚠️  Cliente no encontrado con teléfono ${telefono}`);
+      return { mensaje: 'Cliente no encontrado', procesado: false };
+    }
+
+    // Si hay múltiples clientes con el mismo teléfono (multi-tenant), dar de baja a todos
+    console.log(`  - Encontrados ${clientes.length} cliente(s) con ese teléfono`);
+
+    let procesados = 0;
+
+    for (const cliente of clientes) {
+      // Si ya está dado de baja, saltarlo
+      if (cliente.acepta_marketing_sms === false) {
+        console.log(`  ℹ️  Cliente ${cliente.nombre} ya estaba dado de baja`);
+        continue;
+      }
+
+      // Actualizar preferencia de SMS
+      const { error: updateError } = await supabase
+        .from('clientes')
+        .update({
+          acepta_marketing_sms: false,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', cliente.id);
+
+      if (updateError) {
+        console.error(`  ❌ Error actualizando cliente ${cliente.id}:`, updateError);
+        continue;
+      }
+
+      // Registrar en log de opt-out
+      await supabase.from('sms_opt_out_log').insert({
+        id_cliente: cliente.id,
+        id_tienda: cliente.id_tienda,
+        telefono: telefono,
+        mensaje_recibido: params.Body,
+        fecha_opt_out: new Date().toISOString(),
+      });
+
+      console.log(`  ✅ Cliente dado de baja: ${cliente.nombre} (${cliente.email})`);
+      procesados++;
+
+      // Opcional: Enviar SMS de confirmación
+      try {
+        const { data: tienda } = await supabase
+          .from('tiendas')
+          .select('nombre')
+          .eq('id', cliente.id_tienda)
+          .single();
+
+        const mensajeConfirmacion = `Has sido dado de baja de SMS de ${tienda?.nombre || 'nuestro programa'}. Ya no recibirás más mensajes promocionales.`;
+
+        // Enviar confirmación (usando el mismo servicio)
+        await this.sendSms({
+          tiendaId: cliente.id_tienda,
+          to: telefono,
+          message: mensajeConfirmacion,
+        });
+
+        console.log(`  📱 SMS de confirmación enviado`);
+      } catch (smsError) {
+        console.error(`  ⚠️  Error enviando SMS de confirmación:`, smsError.message);
+        // No lanzar error - la baja ya se procesó
+      }
+    }
+
+    console.log(`  ✅ Total procesados: ${procesados} cliente(s)`);
+
+    return {
+      mensaje: `Se dieron de baja ${procesados} cliente(s) exitosamente`,
+      procesado: procesados > 0,
+    };
   }
 }

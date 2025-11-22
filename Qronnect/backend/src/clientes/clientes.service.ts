@@ -1398,4 +1398,93 @@ export class ClientesService {
       genero: cliente.genero,
     };
   }
+
+  /**
+   * Dar de baja a un cliente de emails de marketing usando su token de unsubscribe
+   * No requiere autenticación - solo el token único
+   */
+  async unsubscribeFromMarketing(token: string): Promise<{ mensaje: string; nombre: string }> {
+    const supabase = this.supabaseService.getAdminClient();
+
+    console.log(`\n🚫 [UNSUBSCRIBE EMAIL]`);
+    console.log(`  - Token recibido: ${token.substring(0, 10)}...`);
+
+    // Buscar cliente por token de unsubscribe
+    const { data: cliente, error } = await supabase
+      .from('clientes')
+      .select('id, nombre, email, acepta_marketing_email, id_tienda')
+      .eq('unsubscribe_token', token)
+      .single();
+
+    if (error || !cliente) {
+      console.log(`  ❌ Cliente no encontrado con ese token`);
+      throw new NotFoundException('Token de baja inválido o expirado');
+    }
+
+    console.log(`  - Cliente encontrado: ${cliente.nombre} (${cliente.email})`);
+    console.log(`  - Estado actual marketing: ${cliente.acepta_marketing_email}`);
+
+    // Si ya está dado de baja, devolver mensaje informativo
+    if (!cliente.acepta_marketing_email) {
+      console.log(`  ℹ️  Ya estaba dado de baja previamente`);
+      return {
+        mensaje: 'Ya estabas dado de baja de nuestros emails de marketing',
+        nombre: cliente.nombre,
+      };
+    }
+
+    // Actualizar preferencia de marketing
+    const { error: updateError } = await supabase
+      .from('clientes')
+      .update({
+        acepta_marketing_email: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', cliente.id);
+
+    if (updateError) {
+      console.error(`  ❌ Error al actualizar cliente:`, updateError);
+      throw new BadRequestException('Error al procesar tu solicitud de baja');
+    }
+
+    console.log(`  ✅ Cliente dado de baja de emails de marketing exitosamente`);
+
+    // Opcional: Enviar email de confirmación de baja
+    try {
+      const { data: tienda } = await supabase
+        .from('tiendas')
+        .select('nombre')
+        .eq('id', cliente.id_tienda)
+        .single();
+
+      await this.emailService.sendEmail(
+        cliente.email,
+        `Has sido dado de baja - ${tienda?.nombre || 'Nuestro programa'}`,
+        `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Baja confirmada</h2>
+            <p>Hola ${cliente.nombre},</p>
+            <p>Confirmamos que has sido dado de baja de nuestros emails de marketing.</p>
+            <p>Ya no recibirás más ofertas y promociones por email.</p>
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+              Si cambiaste de opinión, puedes volver a activar las comunicaciones desde tu perfil.
+            </p>
+            <p style="margin-top: 30px;">
+              Saludos,<br>
+              ${tienda?.nombre || 'El equipo'}
+            </p>
+          </div>
+        `,
+      );
+      console.log(`  📧 Email de confirmación de baja enviado`);
+    } catch (emailError) {
+      console.error(`  ⚠️  Error enviando email de confirmación:`, emailError.message);
+      // No lanzar error - la baja ya se procesó correctamente
+    }
+
+    return {
+      mensaje: 'Te hemos dado de baja exitosamente de nuestros emails de marketing',
+      nombre: cliente.nombre,
+    };
+  }
 }
