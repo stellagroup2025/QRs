@@ -339,16 +339,10 @@ CREATE POLICY "Tiendas pueden actualizar su propio progreso"
   ));
 
 -- Políticas para plantillas_promociones
+-- Todas las tiendas pueden ver plantillas activas
 CREATE POLICY "Plantillas son públicas (solo lectura)"
   ON plantillas_promociones FOR SELECT
   USING (activa = TRUE);
 
--- Solo superadmin puede crear/editar plantillas
-CREATE POLICY "Solo superadmin puede modificar plantillas"
-  ON plantillas_promociones FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM superadmins
-      WHERE id = auth.uid()
-    )
-  );
+-- Las modificaciones se harán vía service role (backend)
+-- No permitimos modificaciones directas desde frontend por seguridad
