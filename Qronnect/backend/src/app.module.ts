@@ -21,6 +21,7 @@ import { EmailModule } from './email/email.module';
 import { AiModule } from './ai/ai.module';
 import { ReferidosModule } from './referidos/referidos.module';
 import { UsuariosTiendaModule } from './usuarios-tienda/usuarios-tienda.module';
+import { OnboardingModule } from './onboarding/onboarding.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { UsuariosTiendaModule } from './usuarios-tienda/usuarios-tienda.module';
     CampanasModule,
     ReferidosModule,
     UsuariosTiendaModule,
+    OnboardingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
