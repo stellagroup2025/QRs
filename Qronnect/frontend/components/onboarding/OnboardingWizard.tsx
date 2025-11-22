@@ -106,8 +106,8 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
         return
       }
 
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
-      const response = await fetch(`${API_URL}/onboarding/progreso`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${API_URL}/api/onboarding/progreso`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-Tenant-Domain': domain,
@@ -144,8 +144,8 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
       const domain = window.location.hostname.split('.')[0]
       const token = localStorage.getItem(`admin_token_${domain}`) || localStorage.getItem('admin_token')
 
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
-      const response = await fetch(`${API_URL}/onboarding/progreso`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${API_URL}/api/onboarding/progreso`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -199,8 +199,8 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
       const domain = window.location.hostname.split('.')[0]
       const token = localStorage.getItem(`admin_token_${domain}`) || localStorage.getItem('admin_token')
 
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
-      await fetch(`${API_URL}/onboarding/progreso/omitir`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+      await fetch(`${API_URL}/api/onboarding/progreso/omitir`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
