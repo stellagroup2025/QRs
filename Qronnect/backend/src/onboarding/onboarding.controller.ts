@@ -7,12 +7,12 @@ import {
   Param,
   Query,
   UseGuards,
-  Headers,
   Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiQuery } from '@nestjs/swagger';
 import { OnboardingService } from './onboarding.service';
 import { AdminAuthGuard } from '../auth/guards/admin-auth.guard';
+import { Tenant } from '../tenant/decorators/tenant.decorator';
 import { ActualizarProgresoDto } from './dto/actualizar-progreso.dto';
 import { OmitirPasoDto } from './dto/omitir-paso.dto';
 import { ProgresoResponseDto } from './dto/progreso-response.dto';
@@ -51,7 +51,7 @@ export class OnboardingController {
     type: ProgresoResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Progreso no encontrado' })
-  async getProgreso(@Headers('x-tenant-id') tenantId: string): Promise<ProgresoResponseDto> {
+  async getProgreso(@Tenant('id') tenantId: string): Promise<ProgresoResponseDto> {
     this.logger.log(`GET /onboarding/progreso - Tenant: ${tenantId}`);
     return this.onboardingService.getProgreso(tenantId);
   }
@@ -84,7 +84,7 @@ export class OnboardingController {
     },
   })
   async actualizarProgreso(
-    @Headers('x-tenant-id') tenantId: string,
+    @Tenant('id') tenantId: string,
     @Body() body: ActualizarProgresoDto,
   ) {
     this.logger.log(`PUT /onboarding/progreso - Tenant: ${tenantId}, Paso: ${body.paso}`);
@@ -112,7 +112,7 @@ export class OnboardingController {
     description: 'Paso omitido correctamente',
     schema: { example: { mensaje: 'Paso omitido correctamente' } },
   })
-  async omitirPaso(@Headers('x-tenant-id') tenantId: string, @Body() body: OmitirPasoDto) {
+  async omitirPaso(@Tenant('id') tenantId: string, @Body() body: OmitirPasoDto) {
     this.logger.log(`POST /onboarding/progreso/omitir - Tenant: ${tenantId}, Paso: ${body.paso}`);
     await this.onboardingService.omitirPaso(tenantId, body.paso);
     return { mensaje: 'Paso omitido correctamente' };
@@ -139,7 +139,7 @@ export class OnboardingController {
     description: 'Progreso reiniciado correctamente',
     schema: { example: { mensaje: 'Progreso reiniciado correctamente' } },
   })
-  async reiniciarProgreso(@Headers('x-tenant-id') tenantId: string) {
+  async reiniciarProgreso(@Tenant('id') tenantId: string) {
     this.logger.warn(`POST /onboarding/progreso/reiniciar - Tenant: ${tenantId}`);
     await this.onboardingService.reiniciarProgreso(tenantId);
     return { mensaje: 'Progreso reiniciado correctamente' };
