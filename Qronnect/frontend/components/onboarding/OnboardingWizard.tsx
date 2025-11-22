@@ -7,6 +7,11 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Sparkles } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { Paso1Branding } from './steps/Paso1Branding'
+import { Paso2Puntos } from './steps/Paso2Puntos'
+import { Paso3Promocion } from './steps/Paso3Promocion'
+import { Paso4Regalo } from './steps/Paso4Regalo'
+import { Paso5QR } from './steps/Paso5QR'
 
 // Tipos
 interface ProgresoOnboarding {
@@ -46,6 +51,13 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
   const [pasoActual, setPasoActual] = useState(1)
   const [guardando, setGuardando] = useState(false)
   const [mostrarCelebracion, setMostrarCelebracion] = useState(false)
+
+  // Datos de cada paso
+  const [datosPaso, setDatosPaso] = useState<Record<string, any>>({})
+
+  const handlePasoChange = (data: any) => {
+    setDatosPaso((prev) => ({ ...prev, ...data }))
+  }
 
   // Configuración de pasos
   const pasos: PasoWizard[] = [
@@ -410,12 +422,30 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                {/* Aquí irán los componentes específicos de cada paso */}
-                <div className="min-h-[400px] flex items-center justify-center border-2 border-dashed rounded-lg">
-                  <p className="text-muted-foreground">
-                    Componente del Paso {pasoActual} (próximamente)
-                  </p>
-                </div>
+                {pasoActual === 1 && (
+                  <Paso1Branding
+                    datosIniciales={progreso?.wizard_data}
+                    onChange={handlePasoChange}
+                  />
+                )}
+                {pasoActual === 2 && (
+                  <Paso2Puntos
+                    datosIniciales={progreso?.wizard_data}
+                    onChange={handlePasoChange}
+                  />
+                )}
+                {pasoActual === 3 && (
+                  <Paso3Promocion onChange={handlePasoChange} />
+                )}
+                {pasoActual === 4 && (
+                  <Paso4Regalo
+                    datosIniciales={progreso?.wizard_data}
+                    onChange={handlePasoChange}
+                  />
+                )}
+                {pasoActual === 5 && (
+                  <Paso5QR onChange={handlePasoChange} />
+                )}
               </motion.div>
             </AnimatePresence>
 
@@ -439,7 +469,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
               </Button>
 
               <Button
-                onClick={() => guardarPaso(pasoActual, {})}
+                onClick={() => guardarPaso(pasoActual, datosPaso)}
                 disabled={guardando || pasos[pasoActual - 1].completado}
               >
                 {guardando ? (
