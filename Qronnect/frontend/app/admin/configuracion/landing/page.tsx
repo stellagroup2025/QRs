@@ -8,9 +8,11 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Save, Eye } from "lucide-react"
+import { Loader2, Save, Eye, Monitor } from "lucide-react"
 import { LandingConfig } from "@/hooks/use-landing"
+import { LandingPreview } from "@/components/LandingPreview"
 
 const iconOptions = ["Users", "Gift", "TrendingUp", "QrCode", "Shield", "Zap", "Store"]
 
@@ -18,6 +20,7 @@ export default function LandingConfigPage() {
   const [config, setConfig] = useState<Partial<LandingConfig>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -122,10 +125,14 @@ export default function LandingConfigPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowPreview(true)}>
+            <Monitor className="w-4 h-4 mr-2" />
+            Preview en Vivo
+          </Button>
           <Button variant="outline" asChild>
             <a href="/" target="_blank" rel="noopener noreferrer">
               <Eye className="w-4 h-4 mr-2" />
-              Vista Previa
+              Abrir Landing
             </a>
           </Button>
           <Button onClick={saveConfig} disabled={saving}>
@@ -143,6 +150,22 @@ export default function LandingConfigPage() {
           </Button>
         </div>
       </div>
+
+      {/* Modal de Preview en Vivo */}
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Preview en Vivo de tu Landing Page</DialogTitle>
+            <DialogDescription>
+              Así es como se verá tu landing page con los cambios actuales.
+              Los cambios se actualizan en tiempo real mientras editas.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 border rounded-lg overflow-hidden">
+            <LandingPreview config={config} scale={0.6} />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Tabs defaultValue="hero" className="space-y-4">
         <TabsList>
