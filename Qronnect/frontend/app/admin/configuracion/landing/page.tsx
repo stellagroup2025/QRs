@@ -8,11 +8,11 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Save, Eye, Monitor } from "lucide-react"
-import { LandingConfig } from "@/hooks/use-landing"
+import { Loader2, Save, Eye, Monitor, Smartphone, Tablet } from "lucide-react"
+import { LandingConfig } from "@/hooks/use-landing-config"
 import { LandingPreview } from "@/components/LandingPreview"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 const iconOptions = ["Users", "Gift", "TrendingUp", "QrCode", "Shield", "Zap", "Store"]
 
@@ -20,7 +20,7 @@ export default function LandingConfigPage() {
   const [config, setConfig] = useState<Partial<LandingConfig>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
+  const [deviceType, setDeviceType] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
   const { toast } = useToast()
 
   useEffect(() => {
@@ -116,19 +116,15 @@ export default function LandingConfigPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Configuración de Landing Page</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl font-bold tracking-tight">Configuración de Landing Page</h1>
+          <p className="text-muted-foreground text-sm">
             Personaliza todos los textos e imágenes de tu página de inicio
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowPreview(true)}>
-            <Monitor className="w-4 h-4 mr-2" />
-            Preview en Vivo
-          </Button>
           <Button variant="outline" asChild>
             <a href="/" target="_blank" rel="noopener noreferrer">
               <Eye className="w-4 h-4 mr-2" />
@@ -151,21 +147,10 @@ export default function LandingConfigPage() {
         </div>
       </div>
 
-      {/* Modal de Preview en Vivo */}
-      <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Preview en Vivo de tu Landing Page</DialogTitle>
-            <DialogDescription>
-              Así es como se verá tu landing page con los cambios actuales.
-              Los cambios se actualizan en tiempo real mientras editas.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4 border rounded-lg overflow-hidden">
-            <LandingPreview config={config} scale={0.6} />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Split Screen Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-140px)]">
+        {/* Left Side: Editor */}
+        <div className="overflow-y-auto pr-2">
 
       <Tabs defaultValue="hero" className="space-y-4">
         <TabsList>
@@ -593,6 +578,32 @@ export default function LandingConfigPage() {
           </Card>
         </TabsContent>
       </Tabs>
+        </div>
+
+        {/* Right Side: Preview */}
+        <div className="sticky top-0 h-full border-l pl-4 flex flex-col">
+          {/* Device Type Controls */}
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-700">Preview en Vivo</h3>
+            <ToggleGroup type="single" value={deviceType} onValueChange={(value) => value && setDeviceType(value as 'desktop' | 'tablet' | 'mobile')}>
+              <ToggleGroupItem value="desktop" aria-label="Vista Desktop" title="Vista Desktop">
+                <Monitor className="w-4 h-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="tablet" aria-label="Vista Tablet" title="Vista Tablet">
+                <Tablet className="w-4 h-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="mobile" aria-label="Vista Móvil" title="Vista Móvil">
+                <Smartphone className="w-4 h-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+
+          {/* Preview Component */}
+          <div className="flex-1 overflow-hidden">
+            <LandingPreview config={config} deviceType={deviceType} />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
