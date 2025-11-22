@@ -25,6 +25,8 @@ export class BrandingController {
     schema: {
       example: {
         logo_url: 'https://ejemplo.com/logo.png',
+        favicon_url: '/brand/cafeteria/favicon.ico',
+        og_image_url: 'https://ejemplo.com/og-image.jpg',
         color_primario: '#FF5733',
         color_secundario: '#333333',
         color_acento: '#0066CC',

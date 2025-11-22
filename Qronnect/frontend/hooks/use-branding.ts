@@ -4,6 +4,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export interface BrandingConfig {
   logo_url: string | null
+  favicon_url: string | null
+  og_image_url: string | null
   color_primario: string
   color_secundario: string
   color_acento: string
@@ -12,6 +14,8 @@ export interface BrandingConfig {
 
 const defaultBranding: BrandingConfig = {
   logo_url: null,
+  favicon_url: '/brand/base/favicon.ico',
+  og_image_url: '/brand/base/og.jpg',
   color_primario: '#000000',
   color_secundario: '#666666',
   color_acento: '#0066cc',

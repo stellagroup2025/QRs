@@ -64,6 +64,22 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
       if (branding.nombre_comercial) {
         document.title = `${branding.nombre_comercial} - Fidelización`
       }
+
+      // Actualizar favicon dinámicamente
+      if (branding.favicon_url) {
+        const faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement
+        if (faviconLink) {
+          faviconLink.href = branding.favicon_url
+          console.log('🖼️ [BRANDING] Favicon actualizado:', branding.favicon_url)
+        } else {
+          // Crear el link si no existe
+          const newFavicon = document.createElement('link')
+          newFavicon.rel = 'icon'
+          newFavicon.href = branding.favicon_url
+          document.head.appendChild(newFavicon)
+          console.log('🖼️ [BRANDING] Favicon creado:', branding.favicon_url)
+        }
+      }
     }
   }, [branding, loading])
 

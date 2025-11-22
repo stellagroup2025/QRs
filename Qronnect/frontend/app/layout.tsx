@@ -30,6 +30,25 @@ const baseMetadata: Metadata = {
   generator: "v0.app",
 }
 
+// Función helper para obtener branding del tenant (si existe)
+async function getTenantBranding(tenantDomain?: string) {
+  if (!tenantDomain) return null
+
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const response = await fetch(`${API_URL}/api/config/branding`, {
+      headers: { 'X-Tenant-Domain': tenantDomain },
+      cache: 'no-store', // Siempre fresh data
+    })
+
+    if (!response.ok) return null
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching tenant branding:', error)
+    return null
+  }
+}
+
 // Next 16 (tipos nuevos): headers() puede ser Promise<ReadonlyHeaders> -> usar await
 export async function generateMetadata(): Promise<Metadata> {
   const h = await headers()
@@ -37,19 +56,34 @@ export async function generateMetadata(): Promise<Metadata> {
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")
   const base = new URL(`${proto}://${host}`)
 
+  // Intentar obtener subdomain para branding específico del tenant
+  const subdomain = host.split('.')[0]
+  const tenantDomain = subdomain !== 'localhost:3000' && subdomain !== 'qronnect' ? subdomain : undefined
+  const tenantBranding = await getTenantBranding(tenantDomain)
+
+  // Usar branding del tenant si está disponible, sino usar defaults
+  const favicon = tenantBranding?.favicon_url || BRAND.assets.favicon
+  const ogImage = tenantBranding?.og_image_url || BRAND.assets.ogImage
+  const title = tenantBranding?.nombre_comercial
+    ? `${tenantBranding.nombre_comercial} - Programa de Fidelización`
+    : baseMetadata.title
+
   return {
     ...baseMetadata,
+    title,
     metadataBase: base,
+    icons: favicon || undefined,
     openGraph: {
       ...(baseMetadata.openGraph ?? {}),
       url: base.toString(),
+      images: ogImage ? [{ url: ogImage }] : (baseMetadata.openGraph as any)?.images,
+      title: title as string,
     },
     twitter: {
       card: "summary_large_image",
-      title: (baseMetadata.title as string) ?? BRAND.copy.companyName,
-      // Corrige el tipo: `string | null | undefined` -> `string | undefined`
+      title: title as string,
       description: (baseMetadata.description ?? undefined) as string | undefined,
-      images: (baseMetadata.openGraph as any)?.images,
+      images: ogImage ? [ogImage] : (baseMetadata.openGraph as any)?.images,
     },
   }
 }
