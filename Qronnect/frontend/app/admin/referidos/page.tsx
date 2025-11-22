@@ -127,7 +127,21 @@ export default function ReferidosPage() {
       if (programaRes.ok) {
         const data = await programaRes.json();
         if (data.nombre) {
-          setPrograma(data);
+          // Transformar datos del backend al formato del frontend
+          const programaTransformado: ProgramaReferidos = {
+            id: data.id,
+            nombre: data.nombre,
+            descripcion: data.descripcion || '',
+            activo: data.activo,
+            recompensas: {
+              por_registro: {
+                referidor: { tipo: 'puntos', valor: data.puntos_por_referido || 0 },
+                referido: { tipo: 'puntos', valor: 0 },
+              },
+            },
+            milestones: data.recompensas || [],
+          };
+          setPrograma(programaTransformado);
         }
       }
 
@@ -179,12 +193,12 @@ export default function ReferidosPage() {
       // Transformar datos del frontend al formato que espera el backend
       const payload = {
         nombre: programa.nombre,
-        descripcion: programa.descripcion,
-        activo: programa.activo,
+        descripcion: programa.descripcion || '',
+        activo: programa.activo ?? false,
         // El backend espera puntos_por_referido (número)
-        puntos_por_referido: programa.recompensas?.por_registro?.referidor?.valor || 0,
+        puntos_por_referido: programa.recompensas?.por_registro?.referidor?.valor ?? 0,
         // El backend espera recompensas (array de objetivos/milestones)
-        recompensas: programa.milestones || [],
+        recompensas: Array.isArray(programa.milestones) ? programa.milestones : [],
       };
 
       console.log('📤 Enviando payload al backend:', payload);
