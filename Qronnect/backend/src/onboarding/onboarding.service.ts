@@ -71,6 +71,9 @@ export class OnboardingService {
 
     const supabase = this.supabaseService.getClient();
 
+    // Asegurarse de que el registro existe (auto-crear si no existe)
+    await this.getProgreso(idTienda);
+
     // Llamar a la función PostgreSQL actualizar_progreso_onboarding
     const { data: result, error } = await supabase.rpc('actualizar_progreso_onboarding', {
       p_id_tienda: idTienda,
