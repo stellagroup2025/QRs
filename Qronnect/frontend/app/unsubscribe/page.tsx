@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, XCircle, Loader2, Mail } from 'lucide-react'
 import Link from 'next/link'
 
-export default function UnsubscribePage() {
+function UnsubscribeContent() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 
@@ -115,5 +115,25 @@ export default function UnsubscribePage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function UnsubscribePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full">
+            <CardHeader className="text-center">
+              <Loader2 className="h-16 w-16 mx-auto mb-4 animate-spin text-primary" />
+              <CardTitle>Cargando...</CardTitle>
+              <CardDescription>Un momento por favor</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      }
+    >
+      <UnsubscribeContent />
+    </Suspense>
   )
 }
