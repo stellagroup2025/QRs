@@ -26,7 +26,15 @@ const baseMetadata: Metadata = {
     images: BRAND.assets.ogImage ? [{ url: BRAND.assets.ogImage }] : undefined,
     type: "website",
   },
-  icons: BRAND.assets.favicon || undefined,
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' }
+    ],
+    apple: [
+      { url: '/apple-icon.svg', type: 'image/svg+xml' }
+    ],
+  },
   generator: "v0.app",
 }
 
@@ -72,7 +80,11 @@ export async function generateMetadata(): Promise<Metadata> {
     ...baseMetadata,
     title,
     metadataBase: base,
-    icons: favicon || undefined,
+    icons: tenantBranding?.favicon_url ? {
+      icon: [
+        { url: tenantBranding.favicon_url, type: 'image/x-icon' }
+      ],
+    } : baseMetadata.icons,
     openGraph: {
       ...(baseMetadata.openGraph ?? {}),
       url: base.toString(),
