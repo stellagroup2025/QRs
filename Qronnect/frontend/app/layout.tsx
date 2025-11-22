@@ -61,9 +61,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const tenantDomain = subdomain !== 'localhost:3000' && subdomain !== 'qronnect' ? subdomain : undefined
   const tenantBranding = await getTenantBranding(tenantDomain)
 
-  // Usar branding del tenant si está disponible, sino usar defaults
-  const favicon = tenantBranding?.favicon_url || BRAND.assets.favicon
-  const ogImage = tenantBranding?.og_image_url || BRAND.assets.ogImage
+  // Usar branding del tenant si está disponible, sino usar logo de Qronnect
+  const favicon = tenantBranding?.favicon_url || '/brand/qronnect/favicon.ico'
+  const ogImage = tenantBranding?.og_image_url || '/brand/qronnect/og-qronnect.jpg'
   const title = tenantBranding?.nombre_comercial
     ? `${tenantBranding.nombre_comercial} - Programa de Fidelización`
     : baseMetadata.title

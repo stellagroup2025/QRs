@@ -13,13 +13,13 @@ export interface BrandingConfig {
 }
 
 const defaultBranding: BrandingConfig = {
-  logo_url: null,
-  favicon_url: '/brand/base/favicon.ico',
-  og_image_url: '/brand/base/og.jpg',
-  color_primario: '#000000',
-  color_secundario: '#666666',
-  color_acento: '#0066cc',
-  nombre_comercial: 'Mi Tienda',
+  logo_url: '/brand/qronnect/logo.svg',
+  favicon_url: '/brand/qronnect/favicon.ico',
+  og_image_url: '/brand/qronnect/og-qronnect.jpg',
+  color_primario: '#0ea5e9', // Azul Qronnect
+  color_secundario: '#6366f1', // Índigo
+  color_acento: '#22c55e', // Verde
+  nombre_comercial: 'Qronnect',
 }
 
 /**

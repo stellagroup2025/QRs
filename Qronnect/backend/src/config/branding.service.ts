@@ -25,9 +25,9 @@ export class BrandingService {
     }
 
     return {
-      logo_url: tienda.logo_url || null,
-      favicon_url: tienda.favicon_url || '/brand/base/favicon.ico',
-      og_image_url: tienda.og_image_url || '/brand/base/og.jpg',
+      logo_url: tienda.logo_url || '/brand/qronnect/logo.svg',
+      favicon_url: tienda.favicon_url || '/brand/qronnect/favicon.ico',
+      og_image_url: tienda.og_image_url || '/brand/qronnect/og-qronnect.jpg',
       color_primario: tienda.color_primario || '#000000',
       color_secundario: tienda.color_secundario || '#666666',
       color_acento: tienda.color_acento || '#0066cc',
