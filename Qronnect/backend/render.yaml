@@ -3,7 +3,7 @@ services:
     name: qronnect-backend
     env: node
     plan: starter
-    buildCommand: npm install && npm run build
+    buildCommand: rm -rf dist node_modules/.cache && npm install && npm run build
     startCommand: npm run start:prod
     healthCheckPath: /health
     envVars:
