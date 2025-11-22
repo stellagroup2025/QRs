@@ -61,6 +61,34 @@ interface Progreso {
   }>;
 }
 
+interface Milestone {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  cantidad_referidos: number;
+  tipo_recompensa: 'regalo_concreto' | 'puntos' | 'ambos';
+  puntos: number | null;
+  orden: number;
+  activo: boolean;
+  regalo: {
+    id: string;
+    nombre: string;
+    descripcion: string | null;
+    tipo: string;
+    icono: string | null;
+  } | null;
+}
+
+interface MilestoneAlcanzado {
+  id: string;
+  fecha_alcanzado: string;
+  milestone: Milestone;
+  cupon: {
+    id: string;
+    codigo: string;
+  } | null;
+}
+
 export default function MisReferidosPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -70,6 +98,8 @@ export default function MisReferidosPage() {
   const [referidos, setReferidos] = useState<Referido[]>([]);
   const [progreso, setProgreso] = useState<Progreso | null>(null);
   const [mostrarQR, setMostrarQR] = useState(false);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [milestonesAlcanzados, setMilestonesAlcanzados] = useState<MilestoneAlcanzado[]>([]);
 
   useEffect(() => {
     cargarDatos();
@@ -137,6 +167,40 @@ export default function MisReferidosPage() {
       if (progresoRes.ok) {
         const data = await progresoRes.json();
         setProgreso(data);
+      }
+
+      // Cargar milestones disponibles (públicos)
+      try {
+        const tiendaId = slug; // Asumimos que slug es el ID de la tienda
+        const milestonesRes = await fetch(`${API_URL}/api/regalos/milestones/${tiendaId}`, {
+          headers: {
+            'X-Tenant-Domain': slug,
+          },
+        });
+
+        if (milestonesRes.ok) {
+          const data = await milestonesRes.json();
+          setMilestones(data || []);
+        }
+      } catch (error) {
+        console.error('Error cargando milestones:', error);
+      }
+
+      // Cargar milestones alcanzados (requiere auth)
+      try {
+        const alcanzadosRes = await fetch(`${API_URL}/api/regalos/mis-milestones`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'X-Tenant-Domain': slug,
+          },
+        });
+
+        if (alcanzadosRes.ok) {
+          const data = await alcanzadosRes.json();
+          setMilestonesAlcanzados(data || []);
+        }
+      } catch (error) {
+        console.error('Error cargando milestones alcanzados:', error);
       }
     } catch (error) {
       console.error('Error cargando datos:', error);
@@ -435,6 +499,87 @@ export default function MisReferidosPage() {
                 {progreso.proxima_recompensa.descripcion}
               </p>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Milestones */}
+      {milestones.length > 0 && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-yellow-500" />
+              Objetivos de Referidos
+            </CardTitle>
+            <CardDescription>Alcanza estos objetivos y gana regalos increíbles</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {milestones.map((milestone) => {
+              const totalReferidos = codigo?.total_referidos || 0;
+              const alcanzado = milestonesAlcanzados.some((m) => m.milestone.id === milestone.id);
+              const progreso = Math.min((totalReferidos / milestone.cantidad_referidos) * 100, 100);
+              const restantes = Math.max(milestone.cantidad_referidos - totalReferidos, 0);
+
+              return (
+                <div
+                  key={milestone.id}
+                  className={`p-4 rounded-lg border-2 ${
+                    alcanzado
+                      ? 'bg-green-50 border-green-300'
+                      : progreso === 100
+                      ? 'bg-yellow-50 border-yellow-300'
+                      : 'bg-white border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-semibold text-lg">{milestone.nombre}</h4>
+                        {alcanzado && (
+                          <Badge className="bg-green-600">
+                            <Check className="h-3 w-3 mr-1" />
+                            ¡Completado!
+                          </Badge>
+                        )}
+                      </div>
+                      {milestone.descripcion && (
+                        <p className="text-sm text-gray-600">{milestone.descripcion}</p>
+                      )}
+                    </div>
+                    {milestone.regalo && (
+                      <div className="ml-4 text-center min-w-[80px]">
+                        <Gift className="h-6 w-6 mx-auto text-blue-600 mb-1" />
+                        <p className="text-xs font-medium text-gray-700">{milestone.regalo.nombre}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">
+                        {totalReferidos} / {milestone.cantidad_referidos} amigos
+                      </span>
+                      {!alcanzado && (
+                        <span className="text-gray-500">
+                          Faltan {restantes} {restantes === 1 ? 'amigo' : 'amigos'}
+                        </span>
+                      )}
+                    </div>
+                    <Progress
+                      value={progreso}
+                      className={`h-3 ${alcanzado ? 'bg-green-200' : 'bg-gray-200'}`}
+                    />
+
+                    {milestone.tipo_recompensa === 'ambos' && milestone.puntos && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">
+                        <Sparkles className="h-4 w-4" />
+                        <span>+ {milestone.puntos} puntos extra</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       )}
