@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useBrandingContext } from '@/components/BrandingProvider'
+import { useLandingConfig } from '@/hooks/use-landing-config'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -34,7 +35,10 @@ const stagger = {
 }
 
 export default function HomePage() {
-  const { branding, loading } = useBrandingContext()
+  const { branding, loading: brandingLoading } = useBrandingContext()
+  const { config, loading: configLoading } = useLandingConfig()
+
+  const loading = brandingLoading || configLoading
 
   const displayBrandName =
     !branding.nombre_comercial || branding.nombre_comercial === 'Mi Tienda'
@@ -50,18 +54,18 @@ export default function HomePage() {
   const metrics = [
     {
       id: 'retention',
-      value: '40%',
-      label: 'Incremento promedio en retención'
+      value: config.estadistica_principal_numero,
+      label: config.estadistica_principal_texto
     },
     {
       id: 'businesses',
-      value: '10k+',
-      label: 'Negocios activos'
+      value: config.estadistica_1_numero,
+      label: config.estadistica_1_texto
     },
     {
       id: 'users',
-      value: '500k+',
-      label: 'Usuarios registrados'
+      value: config.estadistica_2_numero,
+      label: config.estadistica_2_texto
     }
   ]
 
@@ -109,76 +113,76 @@ export default function HomePage() {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`
   }
 
+  const iconMap: Record<string, any> = {
+    Users,
+    Gift,
+    TrendingUp,
+    QrCode,
+    Shield,
+    Zap,
+  }
+
   const services = [
     {
-      icon: Users,
-      title: 'Gestión de Clientes',
-      description:
-        'Sistema completo para gestionar tu base de clientes de forma eficiente y personalizada.'
+      icon: iconMap[config.servicio_1_icono] || Users,
+      title: config.servicio_1_titulo,
+      description: config.servicio_1_descripcion,
     },
     {
-      icon: Gift,
-      title: 'Programa de Fidelización',
-      description:
-        'Recompensa a tus clientes habituales y aumenta su lealtad con nuestro sistema de puntos.'
+      icon: iconMap[config.servicio_2_icono] || Gift,
+      title: config.servicio_2_titulo,
+      description: config.servicio_2_descripcion,
     },
     {
-      icon: TrendingUp,
-      title: 'Análisis y Métricas',
-      description:
-        'Obtén insights valiosos sobre el comportamiento de tus clientes y optimiza tu negocio.'
+      icon: iconMap[config.servicio_3_icono] || TrendingUp,
+      title: config.servicio_3_titulo,
+      description: config.servicio_3_descripcion,
     },
     {
-      icon: QrCode,
-      title: 'Tarjetas Digitales QR',
-      description:
-        'Olvídate de las tarjetas físicas. Todo digital, fácil y accesible desde el móvil.'
+      icon: iconMap[config.servicio_4_icono] || QrCode,
+      title: config.servicio_4_titulo,
+      description: config.servicio_4_descripcion,
     },
     {
-      icon: Shield,
-      title: 'Seguridad Garantizada',
-      description:
-        'Tus datos y los de tus clientes protegidos con los más altos estándares de seguridad.'
+      icon: iconMap[config.servicio_5_icono] || Shield,
+      title: config.servicio_5_titulo,
+      description: config.servicio_5_descripcion,
     },
     {
-      icon: Zap,
-      title: 'Rápido y Eficiente',
-      description:
-        'Implementación inmediata. Empieza a usar el sistema en minutos, no en semanas.'
-    }
+      icon: iconMap[config.servicio_6_icono] || Zap,
+      title: config.servicio_6_titulo,
+      description: config.servicio_6_descripcion,
+    },
   ]
 
   const benefits = [
-    'Aumenta la retención de clientes hasta un 40%',
-    'Reduce costos operativos eliminando tarjetas físicas',
-    'Acceso a métricas en tiempo real',
-    'Integración sencilla con tu sistema actual',
-    'Soporte técnico incluido',
-    'Actualizaciones automáticas sin costo adicional'
+    config.beneficio_1,
+    config.beneficio_2,
+    config.beneficio_3,
+    config.beneficio_4,
+    config.beneficio_5,
+    config.beneficio_6,
   ]
 
   const testimonials = [
     {
-      name: 'María García',
-      role: 'Gerente, Boutique Fashion',
-      content:
-        'Desde que implementamos este sistema, nuestros clientes están más comprometidos y las ventas han aumentado un 35%.',
-      rating: 5
+      name: config.testimonio_1_nombre,
+      role: config.testimonio_1_cargo,
+      content: config.testimonio_1_contenido,
+      rating: config.testimonio_1_rating,
     },
     {
-      name: 'Carlos Rodríguez',
-      role: 'Propietario, Café Central',
-      content:
-        'La mejor inversión que hemos hecho. Nuestros clientes adoran la comodidad de la tarjeta digital y nosotros ahorramos en impresiones.',
-      rating: 5
+      name: config.testimonio_2_nombre,
+      role: config.testimonio_2_cargo,
+      content: config.testimonio_2_contenido,
+      rating: config.testimonio_2_rating,
     },
     {
-      name: 'Ana Martínez',
-      role: 'Directora, Spa Wellness',
-      content:
-        'Excelente plataforma. Fácil de usar tanto para nosotros como para nuestros clientes. El soporte es excepcional.',
-      rating: 5
-    }
+      name: config.testimonio_3_nombre,
+      role: config.testimonio_3_cargo,
+      content: config.testimonio_3_contenido,
+      rating: config.testimonio_3_rating,
+    },
   ]
 
   return (
@@ -214,17 +218,16 @@ export default function HomePage() {
                 <div className='space-y-4'>
                   <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold leading-tight'>
                     <span className='bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent'>
-                      Impulsa tu negocio
+                      {config.hero_titulo_principal}
                     </span>
                     <br />
                     <span style={{ color: branding.color_primario }}>
-                      al siguiente nivel
+                      {config.hero_titulo_destacado}
                     </span>
                   </h1>
 
                   <p className='text-lg md:text-xl text-gray-600 leading-relaxed'>
-                    Sistema integral de fidelización y gestión de clientes para
-                    negocios modernos.
+                    {config.hero_subtitulo}
                   </p>
                 </div>
 
@@ -236,7 +239,7 @@ export default function HomePage() {
                     style={{ backgroundColor: branding.color_primario }}
                   >
                     <Link href='/get-qr' className='flex items-center gap-2'>
-                      Solicitar Información
+                      {config.hero_cta_principal}
                       <ArrowRight className='w-5 h-5' />
                     </Link>
                   </Button>
@@ -251,7 +254,7 @@ export default function HomePage() {
                       color: branding.color_primario
                     }}
                   >
-                    <Link href='/login'>Acceder</Link>
+                    <Link href='/login'>{config.hero_cta_secundario}</Link>
                   </Button>
                 </div>
 
@@ -273,8 +276,7 @@ export default function HomePage() {
                     ))}
                   </div>
                   <div className='text-sm text-gray-600'>
-                    <span className='font-semibold text-gray-900'>+10,000</span>{' '}
-                    negocios confían en nosotros
+                    {config.hero_social_proof}
                   </div>
                 </div>
               </motion.div>
@@ -328,14 +330,13 @@ export default function HomePage() {
               className='text-center mb-10 md:mb-12'
             >
               <h2 className='text-3xl md:text-4xl font-bold mb-4'>
-                <span className='text-gray-900'>Soluciones </span>
+                <span className='text-gray-900'>{config.servicios_titulo.split(' ')[0]} </span>
                 <span style={{ color: branding.color_primario }}>
-                  completas
+                  {config.servicios_titulo.split(' ').slice(1).join(' ')}
                 </span>
               </h2>
               <p className='text-lg text-gray-600 max-w-2xl mx-auto'>
-                Todo lo que necesitas para gestionar y fidelizar a tus clientes
-                en una sola plataforma
+                {config.servicios_subtitulo}
               </p>
             </motion.div>
 
@@ -394,10 +395,10 @@ export default function HomePage() {
               <motion.div variants={fadeInUp} className='space-y-6'>
                 <div className='space-y-2'>
                   <h2 className='text-3xl md:text-4xl font-bold'>
-                    <span className='text-gray-900'>¿Por qué elegirnos?</span>
+                    <span className='text-gray-900'>{config.beneficios_titulo}</span>
                   </h2>
                   <p className='text-lg text-gray-600'>
-                    Beneficios reales que impactan directamente en tu negocio
+                    {config.beneficios_subtitulo}
                   </p>
                 </div>
 
@@ -490,9 +491,9 @@ export default function HomePage() {
               className='text-center mb-10 md:mb-12'
             >
               <h2 className='text-3xl md:text-4xl font-bold mb-4'>
-                <span className='text-gray-900'>Lo que dicen </span>
+                <span className='text-gray-900'>{config.testimonios_titulo.split(' ').slice(0, -2).join(' ')} </span>
                 <span style={{ color: branding.color_primario }}>
-                  nuestros clientes
+                  {config.testimonios_titulo.split(' ').slice(-2).join(' ')}
                 </span>
               </h2>
             </motion.div>
@@ -558,15 +559,14 @@ export default function HomePage() {
             className='max-w-4xl mx-auto text-center space-y-6'
           >
             <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold'>
-              <span className='text-gray-900'>¿Listo para transformar </span>
+              <span className='text-gray-900'>{config.cta_final_titulo_1} </span>
               <br />
               <span style={{ color: branding.color_primario }}>
-                tu negocio?
+                {config.cta_final_titulo_2}
               </span>
             </h2>
             <p className='text-lg md:text-xl text-gray-600 max-w-2xl mx-auto'>
-              Únete a miles de negocios que ya están revolucionando la forma de
-              gestionar sus clientes
+              {config.cta_final_subtitulo}
             </p>
             <div className='flex flex-col sm:flex-row gap-3 justify-center pt-2'>
               <Button
@@ -576,7 +576,7 @@ export default function HomePage() {
                 style={{ backgroundColor: branding.color_primario }}
               >
                 <Link href='/get-qr' className='flex items-center gap-2'>
-                  Comenzar ahora
+                  {config.cta_final_boton_principal}
                   <ArrowRight className='w-5 h-5' />
                 </Link>
               </Button>
@@ -590,7 +590,7 @@ export default function HomePage() {
                   color: branding.color_primario
                 }}
               >
-                <Link href='/login'>Ya tengo cuenta</Link>
+                <Link href='/login'>{config.cta_final_boton_secundario}</Link>
               </Button>
             </div>
           </motion.div>
