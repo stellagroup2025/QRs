@@ -69,9 +69,9 @@ export const BRAND: AppBrand = {
   },
 
   assets: {
-    logo: "/brand/base/logo.svg",
-    favicon: "/brand/base/favicon.ico",
-    ogImage: "/brand/base/og.jpg",
+    logo: "/LogoQronnect.png",
+    favicon: "/icon.svg", // Next.js detecta automáticamente icon.svg en /public/
+    ogImage: "/opengraph-image.png",
   },
 }
 
