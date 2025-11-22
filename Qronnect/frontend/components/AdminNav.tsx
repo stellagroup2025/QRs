@@ -14,6 +14,8 @@ import {
   Brain,
   Mail,
   MessageSquare,
+  Sparkles,
+  Globe,
 } from 'lucide-react'
 
 interface NavItem {
@@ -38,6 +40,17 @@ const mainNavItems: NavItem[] = [
 ]
 
 const configNavItems: NavItem[] = [
+  {
+    href: '/admin/onboarding',
+    label: 'Wizard Inicial',
+    icon: Sparkles,
+    badge: 'Nuevo',
+  },
+  {
+    href: '/admin/configuracion/landing',
+    label: 'Landing Page',
+    icon: Globe,
+  },
   {
     href: '/admin/configuracion/regalos',
     label: 'Regalos Bienvenida',
