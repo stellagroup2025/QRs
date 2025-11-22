@@ -176,6 +176,19 @@ export default function ReferidosPage() {
 
       const method = programa.id ? 'PUT' : 'POST';
 
+      // Transformar datos del frontend al formato que espera el backend
+      const payload = {
+        nombre: programa.nombre,
+        descripcion: programa.descripcion,
+        activo: programa.activo,
+        // El backend espera puntos_por_referido (número)
+        puntos_por_referido: programa.recompensas?.por_registro?.referidor?.valor || 0,
+        // El backend espera recompensas (array de objetivos/milestones)
+        recompensas: programa.milestones || [],
+      };
+
+      console.log('📤 Enviando payload al backend:', payload);
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -183,7 +196,7 @@ export default function ReferidosPage() {
           Authorization: `Bearer ${token}`,
           'X-Tenant-Domain': tenant || '',
         },
-        body: JSON.stringify(programa),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
