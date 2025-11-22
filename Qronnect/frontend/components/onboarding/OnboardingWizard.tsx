@@ -161,8 +161,18 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
 
       const resultado = await response.json()
 
-      // Recargar progreso
-      await cargarProgreso()
+      // Actualizar progreso localmente (sin recargar para evitar loop)
+      if (progreso) {
+        const camposPaso = ['paso_1_branding', 'paso_2_puntos', 'paso_3_promo', 'paso_4_regalo', 'paso_5_qr']
+        const progresoActualizado: ProgresoOnboarding = {
+          ...progreso,
+          paso_actual: resultado.paso_actual,
+          porcentaje_completado: resultado.porcentaje_completado,
+          completado: resultado.completado,
+          [camposPaso[paso - 1]]: true,
+        }
+        setProgreso(progresoActualizado)
+      }
 
       // Si completó todos los pasos
       if (resultado.completado) {
@@ -212,7 +222,15 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
 
       // Avanzar al siguiente paso sin marcar como completado
       setPasoActual(Math.min(paso + 1, 5))
-      await cargarProgreso()
+
+      // Actualizar progreso localmente
+      if (progreso) {
+        setProgreso({
+          ...progreso,
+          paso_actual: Math.min(paso + 1, 5),
+          pasos_omitidos: [...(progreso.pasos_omitidos || []), `paso_${paso}`],
+        })
+      }
 
       toast({
         title: 'Paso omitido',
