@@ -17,13 +17,34 @@ export class OnboardingService {
 
     const supabase = this.supabaseService.getClient();
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('onboarding_progress')
       .select('*')
       .eq('id_tienda', idTienda)
       .single();
 
-    if (error) {
+    // Si no existe, crear automáticamente (tiendas existentes antes de la migración)
+    if (error && error.code === 'PGRST116') {
+      this.logger.warn(`⚠️ No existe progreso para tienda ${idTienda}, creando...`);
+
+      const { data: newProgress, error: insertError } = await supabase
+        .from('onboarding_progress')
+        .insert({
+          id_tienda: idTienda,
+          paso_actual: 1,
+          porcentaje_completado: 0,
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        this.logger.error(`❌ Error al crear progreso: ${insertError.message}`);
+        throw new Error(`Error al crear progreso: ${insertError.message}`);
+      }
+
+      data = newProgress;
+      this.logger.log(`✅ Progreso creado automáticamente para tienda ${idTienda}`);
+    } else if (error) {
       this.logger.error(`❌ Error al obtener progreso: ${error.message}`);
       throw new NotFoundException(
         `No se encontró progreso de onboarding para la tienda ${idTienda}`,
