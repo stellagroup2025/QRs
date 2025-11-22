@@ -1,7 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../supabase/supabase.service';
 import { EmailService } from '../email/email.service';
+import { RegalosService } from './regalos.service';
 import { CrearProgramaReferidosDto } from './dto/crear-programa-referidos.dto';
 import { RegistrarReferidoDto } from './dto/registrar-referido.dto';
 
@@ -11,6 +12,8 @@ export class ReferidosService {
     private readonly supabase: SupabaseService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
+    @Inject(forwardRef(() => RegalosService))
+    private readonly regalosService: RegalosService,
   ) {}
 
   /**
@@ -121,6 +124,25 @@ export class ReferidosService {
       } catch (emailError) {
         console.error('Error enviando email al referidor:', emailError);
         // No fallar la operación si el email falla
+      }
+
+      // 🎯 VERIFICAR MILESTONES DEL REFERIDOR
+      try {
+        // Obtener el ID del cliente referidor
+        const { data: referidor } = await client
+          .from('clientes')
+          .select('id')
+          .eq('codigo_personal', dto.codigo_referido)
+          .eq('id_tienda', tiendaId)
+          .single();
+
+        if (referidor) {
+          console.log(`\n🎯 Verificando milestones para referidor: ${referidor.id}`);
+          await this.regalosService.verificarMilestonesCliente(referidor.id);
+        }
+      } catch (milestonesError) {
+        console.error('⚠️  Error verificando milestones:', milestonesError);
+        // No fallar la operación si los milestones fallan
       }
     }
 

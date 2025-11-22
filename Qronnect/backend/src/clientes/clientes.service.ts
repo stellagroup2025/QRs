@@ -18,6 +18,7 @@ import { VerifyCodeClienteDto } from './dto/verify-code-cliente.dto';
 import { SendValidationCodeDto } from './dto/send-validation-code.dto';
 import { VerifyValidationCodeDto } from './dto/verify-validation-code.dto';
 import { ReferidosService } from '../referidos/referidos.service';
+import { RegalosService } from '../referidos/regalos.service';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -28,6 +29,7 @@ export class ClientesService {
     private emailService: EmailService,
     @Inject(forwardRef(() => ReferidosService))
     private referidosService: ReferidosService,
+    private regalosService: RegalosService,
   ) {}
 
   /**
@@ -1179,6 +1181,70 @@ export class ClientesService {
     }
 
     console.log('✅ Email validado exitosamente para:', cliente.email);
+
+    // 🎁 OTORGAR REGALO DE BIENVENIDA (si está configurado)
+    try {
+      console.log('\n🎁 [REGALO DE BIENVENIDA]');
+
+      // Obtener configuración de la tienda
+      const { data: tienda } = await supabase
+        .from('tiendas')
+        .select('regalo_bienvenida_activo, regalo_bienvenida_tipo, regalo_bienvenida_puntos, regalo_bienvenida_id_regalo')
+        .eq('id', tenantId)
+        .single();
+
+      if (tienda?.regalo_bienvenida_activo) {
+        const tipo = tienda.regalo_bienvenida_tipo || 'puntos';
+        console.log(`  - Tipo de regalo: ${tipo}`);
+
+        if (tipo === 'regalo_concreto' && tienda.regalo_bienvenida_id_regalo) {
+          // NUEVO: Otorgar regalo concreto
+          console.log(`  - Otorgando regalo concreto ID: ${tienda.regalo_bienvenida_id_regalo}`);
+
+          const cupon = await this.regalosService.otorgarRegalo({
+            clienteId: cliente.id,
+            regaloId: tienda.regalo_bienvenida_id_regalo,
+            origen: 'bienvenida',
+            origenDetalles: { email_validado: true },
+          });
+
+          console.log(`  ✅ Regalo concreto otorgado: ${cupon.regalo_nombre}`);
+          console.log(`  - Cupón ID: ${cupon.id}`);
+          console.log(`  - Código: ${cupon.codigo}`);
+
+          // Enviar email con el cupón
+          try {
+            await this.regalosService.enviarEmailCupon(cupon.id);
+            console.log('  📧 Email de cupón enviado');
+          } catch (emailError) {
+            console.error('  ⚠️  Error enviando email de cupón:', emailError.message);
+            // No fallar - el cupón ya está otorgado
+          }
+
+        } else if (tipo === 'puntos' && tienda.regalo_bienvenida_puntos > 0) {
+          // ACTUAL: Otorgar puntos de bienvenida
+          console.log(`  - Otorgando ${tienda.regalo_bienvenida_puntos} puntos de bienvenida`);
+
+          const { error: puntosError } = await supabase
+            .from('clientes')
+            .update({
+              puntos_totales: cliente.puntos_totales + tienda.regalo_bienvenida_puntos
+            })
+            .eq('id', cliente.id);
+
+          if (!puntosError) {
+            console.log(`  ✅ ${tienda.regalo_bienvenida_puntos} puntos otorgados`);
+          } else {
+            console.error('  ❌ Error otorgando puntos:', puntosError);
+          }
+        }
+      } else {
+        console.log('  - Regalo de bienvenida NO activo');
+      }
+    } catch (regaloError) {
+      console.error('  ❌ Error procesando regalo de bienvenida:', regaloError);
+      // No fallar la validación por error en regalo
+    }
 
     // Generar JWT access_token para auto-login
     console.log('🔐 Generando access_token para auto-login...');
