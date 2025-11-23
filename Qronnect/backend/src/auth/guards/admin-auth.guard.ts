@@ -82,9 +82,10 @@ export class AdminAuthGuard implements CanActivate {
       }
 
       // Verificar que el admin existe y está activo (acceso normal)
+      // IMPORTANTE: Buscamos en usuarios_tienda (tabla unificada)
       const supabase = this.supabaseService.getAdminClient();
       const { data: admin, error } = await supabase
-        .from('admin_users')
+        .from('usuarios_tienda')
         .select('id, email, nombre, activo')
         .eq('id', decoded.sub)
         .eq('id_tienda', tenant.id)
