@@ -6,11 +6,18 @@ import { useBrandingContext } from '@/components/BrandingProvider'
 
 interface LandingPreviewProps {
   config: Partial<LandingConfig>
-  scale?: number
+  deviceType?: 'desktop' | 'tablet' | 'mobile'
 }
 
-export function LandingPreview({ config, scale = 0.5 }: LandingPreviewProps) {
+const DEVICE_SIZES = {
+  desktop: { width: '100%', scale: 1 },
+  tablet: { width: '768px', scale: 0.8 },
+  mobile: { width: '375px', scale: 0.7 },
+}
+
+export function LandingPreview({ config, deviceType = 'desktop' }: LandingPreviewProps) {
   const { branding } = useBrandingContext()
+  const deviceSize = DEVICE_SIZES[deviceType]
 
   const iconMap: Record<string, any> = {
     Users,
@@ -62,16 +69,16 @@ export function LandingPreview({ config, scale = 0.5 }: LandingPreviewProps) {
   }
 
   return (
-    <div
-      className="bg-white rounded-lg border shadow-sm overflow-hidden"
-      style={{
-        transform: `scale(${scale})`,
-        transformOrigin: 'top left',
-        width: `${100 / scale}%`,
-        height: `${100 / scale}%`,
-      }}
-    >
-      <div className="space-y-8 p-8">
+    <div className="flex justify-center items-start w-full h-full overflow-auto bg-gray-50 p-4">
+      <div
+        className="bg-white rounded-lg border shadow-sm overflow-hidden transition-all duration-300"
+        style={{
+          width: deviceSize.width,
+          transform: `scale(${deviceSize.scale})`,
+          transformOrigin: 'top center',
+        }}
+      >
+        <div className="space-y-8 p-8">
         {/* Hero Preview */}
         <div className="space-y-4">
           <div className="space-y-2">

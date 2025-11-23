@@ -1,14 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add frontend/app/[slug]/mis-cupones/page.tsx frontend/app/[slug]/mis-referidos/page.tsx)",
-      "Bash(git add RESUMEN_SISTEMA_REGALOS.md)",
-      "Bash(git commit -m \"docs: Resumen ejecutivo completo del sistema de regalos\n\nDocumentación completa de implementación:\n- Estado de todos los commits\n- Estructura de base de datos\n- Endpoints de API\n- Componentes frontend\n- Guía de testing\n- Deployment steps\n- Beneficios alcanzados\n\n100% implementado y listo para producción.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")",
-      "Bash(npx supabase db pull --dry-run)",
-      "Bash(pkill -f \"nest start\")",
-      "Bash(npm run build)",
-      "Bash(git add -u)",
-      "Bash(git commit -m \"fix: Corregir errores de compilación TypeScript\n\nERRORES CORREGIDOS:\n\n1. campanas.service.ts:\n   - Faltaba inyectar ConfigService\n   - Añadido import y en constructor\n\n2. clientes.service.ts:\n   - Llamada incorrecta a sendEmail (3 args vs objeto)\n   - Cambiado a formato correcto: {to, subject, html}\n\n3. regalos.service.ts (2 ocurrencias):\n   - Mismo error que #2\n   - Corregido en notificarMilestonesAlcanzados()\n   - Corregido en enviarEmailCupon()\n\nRESULTADO:\n✅ Backend compila sin errores\n✅ Listo para testing\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")"
+      "Bash(curl -s \"https://paco-restaurante.qronnect.es/admin/quick-sale?cliente_id=d1614ff9-de7e-4c2d-82d3-fe0c743781d9\" -I)",
+      "Bash(git ls-tree -r HEAD --name-only)",
+      "Bash(git add app/[slug]/mi-perfil/page.tsx)",
+      "Bash(git commit -m \"fix: QR apunta directo a dashboard en lugar de quick-sale\n\nSimplificado el flujo del QR para evitar redirección intermedia.\n\nANTES:\nQR → /admin/quick-sale?cliente_id=X → /admin/dashboard?open_sale=true&cliente_id=X\n\nAHORA:\nQR → /admin/dashboard?open_sale=true&cliente_id=X\n\nEl dashboard ya tiene la lógica para:\n1. Verificar autenticación\n2. Redirigir a login si es necesario\n3. Abrir modal automáticamente\n\nEsto evita el problema del 404 y simplifica la arquitectura.\")",
+      "Bash(git commit -m \"debug: Añadir logs para verificar generación de QR con URL correcta\")",
+      "Bash(npx tsc --noEmit app/[slug]/mi-perfil/page.tsx)",
+      "Bash(npm install @radix-ui/react-toggle-group @radix-ui/react-toggle)",
+      "Bash(npm install @radix-ui/react-toggle-group @radix-ui/react-toggle --legacy-peer-deps)",
+      "Bash(git add package.json package-lock.json)",
+      "Bash(git commit -m \"fix: Añadir dependencias faltantes @radix-ui/react-toggle y toggle-group\n\nEl build en Vercel estaba fallando porque faltaban estas dependencias\nnecesarias para toggle-group.tsx y toggle.tsx.\n\nInstalado con --legacy-peer-deps para evitar conflictos con react-qr-reader.\")",
+      "Bash(git commit -m \"fix: Eliminar página quick-sale innecesaria que causaba error de build\n\nLa página quick-sale causaba error en Next.js 15 por useSearchParams\nsin Suspense boundary.\n\nYa no es necesaria porque el QR apunta directamente a:\n/admin/dashboard?open_sale=true&cliente_id=X\n\nEl dashboard maneja toda la lógica de redirección y autenticación.\")"
     ],
     "deny": [],
     "ask": []
