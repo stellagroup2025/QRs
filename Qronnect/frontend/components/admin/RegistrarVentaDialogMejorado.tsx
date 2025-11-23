@@ -227,6 +227,23 @@ export function RegistrarVentaDialogMejorado({
     }
   }, [open, scannerMode, paso])
 
+  // Detectar cliente preseleccionado desde QR (sessionStorage)
+  useEffect(() => {
+    if (open && paso === 1 && !clienteSeleccionado) {
+      const preselectedClientId = sessionStorage.getItem('preselected_cliente_id')
+
+      if (preselectedClientId) {
+        console.log('🎯 Cliente preseleccionado detectado:', preselectedClientId)
+
+        // Buscar y cargar el cliente automáticamente
+        buscarClientePorQr(preselectedClientId)
+
+        // Limpiar sessionStorage para que no se vuelva a usar
+        sessionStorage.removeItem('preselected_cliente_id')
+      }
+    }
+  }, [open, paso, clienteSeleccionado])
+
   // Auto-buscar clientes mientras escribe
   useEffect(() => {
     if (searchTerm.length >= 2) {
