@@ -241,8 +241,10 @@ export default function MiPerfilPage() {
       // Si se escanea desde cámara normal del móvil, abre el dashboard con modal de venta
       const baseUrl = window.location.origin
       const qrData = `${baseUrl}/admin/dashboard?open_sale=true&cliente_id=${clienteData.id}`
+      console.log('🔍 Generando QR con URL:', qrData)
       const qrUrl = await QRCode.toDataURL(qrData, { width: 300 })
       setQrCodeUrl(qrUrl)
+      console.log('✅ QR generado correctamente')
 
       setIsLoading(false)
     } catch (error: any) {
