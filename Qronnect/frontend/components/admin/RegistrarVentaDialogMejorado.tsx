@@ -125,36 +125,59 @@ export function RegistrarVentaDialogMejorado({
         const element = document.getElementById(qrReaderDivId)
         if (element && !scannerRef.current) {
           try {
+            console.log('Inicializando scanner QR...')
             scannerRef.current = new Html5QrcodeScanner(
               qrReaderDivId,
               {
                 fps: 10,
                 qrbox: { width: 250, height: 250 },
                 aspectRatio: 1.0,
+                // Configuración mejorada para producción
+                rememberLastUsedCamera: true,
+                showTorchButtonIfSupported: true,
               },
-              false
+              /* verbose= */ false
             )
 
             scannerRef.current.render(
               (decodedText) => {
                 // Éxito al escanear
+                console.log('QR escaneado:', decodedText)
                 setCodigoQr(decodedText)
                 setScannerError('')
                 buscarClientePorQr(decodedText)
                 // Detener el scanner después de escanear
                 if (scannerRef.current) {
-                  scannerRef.current.clear()
+                  scannerRef.current.clear().catch(console.error)
                   scannerRef.current = null
                 }
               },
-              (error) => {
-                // Error o sin resultado - ignorar
-                console.debug('Scan error:', error)
+              (errorMessage) => {
+                // Ignorar errores de escaneo continuo (normal cuando no hay QR en vista)
+                // Solo loggear para debugging
               }
             )
-          } catch (err) {
+
+            console.log('Scanner inicializado correctamente')
+          } catch (err: any) {
             console.error('Error inicializando scanner:', err)
-            setScannerError('Error al iniciar la cámara. Verifica los permisos.')
+            let errorMsg = 'Error al iniciar la cámara.'
+
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+              errorMsg = 'Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.'
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+              errorMsg = 'No se encontró ninguna cámara en este dispositivo.'
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+              errorMsg = 'La cámara está siendo usada por otra aplicación.'
+            } else if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
+              errorMsg = 'La cámara no cumple con los requisitos necesarios.'
+            } else if (err.name === 'NotSupportedError') {
+              errorMsg = 'Tu navegador no soporta acceso a la cámara. Usa el modo Manual.'
+            } else if (err.name === 'TypeError') {
+              errorMsg = 'Error de inicialización. Intenta recargar la página.'
+            }
+
+            setScannerError(errorMsg)
           }
         }
       }, 100)
