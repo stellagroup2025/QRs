@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Users, Plus, Edit, Trash2, Shield, ShieldCheck, Smartphone, Eye, EyeOff } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -47,6 +48,7 @@ interface UsuariosTiendaManagerProps {
 }
 
 export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) {
+  const { toast } = useToast()
   const [usuarios, setUsuarios] = useState<UsuarioTienda[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -83,7 +85,11 @@ export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) 
       setUsuarios(data)
     } catch (error) {
       console.error('Error:', error)
-      alert('Error al cargar usuarios')
+      toast({
+        title: 'Error',
+        description: 'No se pudieron cargar los usuarios',
+        variant: 'destructive',
+      })
     } finally {
       setLoading(false)
     }
@@ -122,22 +128,38 @@ export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) 
   const handleSave = async () => {
     // Validaciones
     if (!formData.nombre || !formData.email) {
-      alert('Nombre y email son obligatorios')
+      toast({
+        title: 'Campos requeridos',
+        description: 'Nombre y email son obligatorios',
+        variant: 'destructive',
+      })
       return
     }
 
     if (!editingUsuario && !formData.pin) {
-      alert('El PIN es obligatorio para nuevos usuarios')
+      toast({
+        title: 'PIN requerido',
+        description: 'El PIN es obligatorio para nuevos usuarios',
+        variant: 'destructive',
+      })
       return
     }
 
     if (formData.pin && (formData.pin.length < 4 || formData.pin.length > 6)) {
-      alert('El PIN debe tener entre 4 y 6 dígitos')
+      toast({
+        title: 'PIN inválido',
+        description: 'El PIN debe tener entre 4 y 6 dígitos',
+        variant: 'destructive',
+      })
       return
     }
 
     if (formData.sms_2fa_activo && !formData.sms_2fa_telefono) {
-      alert('Debe proporcionar un teléfono para activar 2FA')
+      toast({
+        title: 'Teléfono requerido',
+        description: 'Debe proporcionar un teléfono para activar 2FA',
+        variant: 'destructive',
+      })
       return
     }
 
@@ -170,11 +192,20 @@ export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) 
         throw new Error(error.message || 'Error al guardar usuario')
       }
 
-      alert(editingUsuario ? 'Usuario actualizado' : 'Usuario creado')
+      toast({
+        title: editingUsuario ? 'Usuario actualizado' : 'Usuario creado',
+        description: editingUsuario
+          ? 'Los datos del usuario se actualizaron correctamente'
+          : 'El usuario se creó correctamente y ya puede iniciar sesión',
+      })
       setModalOpen(false)
       fetchUsuarios()
     } catch (error: any) {
-      alert(error.message || 'Error al guardar usuario')
+      toast({
+        title: 'Error',
+        description: error.message || 'No se pudo guardar el usuario',
+        variant: 'destructive',
+      })
     } finally {
       setSaving(false)
     }
@@ -192,10 +223,17 @@ export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) 
 
       if (!response.ok) throw new Error('Error al eliminar')
 
-      alert('Usuario eliminado')
+      toast({
+        title: 'Usuario eliminado',
+        description: `El usuario "${nombre}" fue eliminado correctamente`,
+      })
       fetchUsuarios()
     } catch (error) {
-      alert('Error al eliminar usuario')
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar el usuario',
+        variant: 'destructive',
+      })
     }
   }
 
