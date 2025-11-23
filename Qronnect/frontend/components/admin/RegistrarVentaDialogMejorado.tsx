@@ -715,7 +715,11 @@ export function RegistrarVentaDialogMejorado({
                 {scannerMode === 'camera' && (
                   <div className="space-y-2">
                     <Label className="text-sm">Escanea el QR del cliente</Label>
-                    <div id={qrReaderDivId} className="rounded-lg overflow-hidden" />
+                    <div
+                      id={qrReaderDivId}
+                      className="rounded-lg overflow-hidden border-2 border-gray-200"
+                      style={{ minHeight: '300px', width: '100%' }}
+                    />
                     {scannerError && (
                       <Alert variant="destructive" className="py-2">
                         <AlertDescription className="text-xs">{scannerError}</AlertDescription>
