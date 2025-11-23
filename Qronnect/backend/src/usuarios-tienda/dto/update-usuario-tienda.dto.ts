@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsEnum, IsBoolean, IsOptional, MinLength, MaxLength, Matches } from 'class-validator';
+import { IsString, IsEmail, IsEnum, IsBoolean, IsOptional, MinLength, MaxLength, Matches, ValidateIf } from 'class-validator';
 
 export class UpdateUsuarioTiendaDto {
   @IsOptional()
@@ -10,12 +10,12 @@ export class UpdateUsuarioTiendaDto {
   @IsEmail()
   email?: string;
 
-  @IsOptional()
+  @ValidateIf(o => o.telefono && o.telefono.trim().length > 0)
   @IsString()
   @Matches(/^\+?[1-9]\d{1,14}$/, { message: 'Formato de teléfono inválido' })
   telefono?: string;
 
-  @IsOptional()
+  @ValidateIf(o => o.pin && o.pin.trim().length > 0)
   @IsString()
   @MinLength(4)
   @MaxLength(6)
@@ -30,7 +30,8 @@ export class UpdateUsuarioTiendaDto {
   @IsBoolean()
   sms_2fa_activo?: boolean;
 
-  @IsOptional()
+  // Solo validar el teléfono 2FA si tiene contenido
+  @ValidateIf(o => o.sms_2fa_telefono && o.sms_2fa_telefono.trim().length > 0)
   @IsString()
   @Matches(/^\+?[1-9]\d{1,14}$/, { message: 'Formato de teléfono 2FA inválido' })
   sms_2fa_telefono?: string;
