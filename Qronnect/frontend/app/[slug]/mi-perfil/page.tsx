@@ -238,9 +238,9 @@ export default function MiPerfilPage() {
       }
 
       // Generar QR Code con URL que abre directamente añadir venta
-      // Si se escanea desde cámara normal del móvil, abre el admin con este cliente preseleccionado
+      // Si se escanea desde cámara normal del móvil, abre el dashboard con modal de venta
       const baseUrl = window.location.origin
-      const qrData = `${baseUrl}/admin/quick-sale?cliente_id=${clienteData.id}`
+      const qrData = `${baseUrl}/admin/dashboard?open_sale=true&cliente_id=${clienteData.id}`
       const qrUrl = await QRCode.toDataURL(qrData, { width: 300 })
       setQrCodeUrl(qrUrl)
 
