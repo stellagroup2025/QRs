@@ -499,7 +499,9 @@ export function RegistrarVentaDialogMejorado({
   }
 
   async function handleSubmit() {
-    if (!clienteSeleccionado || !importe) return
+    // Validar que hay cliente y (importe O cupón)
+    if (!clienteSeleccionado) return
+    if (!cuponSeleccionado && (!importe || parseFloat(importe) <= 0)) return
 
     setLoading(true)
     setError('')
@@ -509,9 +511,11 @@ export function RegistrarVentaDialogMejorado({
       const tiendaData = localStorage.getItem('admin_tienda')
       const domain = tiendaData ? JSON.parse(tiendaData).dominio : 'localhost'
 
+      const importeNum = importe && parseFloat(importe) > 0 ? parseFloat(importe) : 0
+
       const payload: any = {
         clienteId: clienteSeleccionado.id,
-        importe: parseFloat(importe),
+        importe: importeNum,
         notas: notas.trim() || undefined,
       }
 
@@ -539,9 +543,16 @@ export function RegistrarVentaDialogMejorado({
       setSuccessData(data)
       setSuccess(true)
 
+      // Mensaje personalizado según si hubo cupón
+      const successMessage = cuponSeleccionado && importeNum === 0
+        ? `Cupón "${cuponSeleccionado.titulo}" canjeado exitosamente`
+        : cuponSeleccionado
+        ? `Venta registrada con descuento. +${data.puntos_otorgados} puntos`
+        : `+${data.puntos_otorgados} puntos para ${data.cliente.nombre}`
+
       toast({
-        title: '¡Venta registrada!',
-        description: `+${data.puntos_otorgados} puntos para ${data.cliente.nombre}`,
+        title: cuponSeleccionado && importeNum === 0 ? '¡Cupón canjeado!' : '¡Venta registrada!',
+        description: successMessage,
       })
 
       // Resetear después de 2 segundos
@@ -840,19 +851,15 @@ export function RegistrarVentaDialogMejorado({
                     </Label>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                       {cupones.map((cupon) => (
-                        <button
+                        <div
                           key={cupon.id}
-                          type="button"
-                          onClick={() => {
-                            setCuponSeleccionado(cupon.id === cuponSeleccionado?.id ? null : cupon)
-                          }}
-                          className={`w-full p-3 border-2 rounded-lg text-left transition-all ${
+                          className={`w-full p-3 border-2 rounded-lg transition-all ${
                             cuponSeleccionado?.id === cupon.id
                               ? 'border-green-500 bg-green-50'
-                              : 'border-gray-200 hover:border-gray-300'
+                              : 'border-gray-200'
                           }`}
                         >
-                          <div className="flex items-start justify-between">
+                          <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
                               <p className="font-medium text-sm">{cupon.titulo}</p>
                               <p className="text-xs text-gray-600 mt-1">{cupon.descripcion}</p>
@@ -861,15 +868,36 @@ export function RegistrarVentaDialogMejorado({
                               <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 ml-2" />
                             )}
                           </div>
-                          <div className="mt-2">
+                          <div className="flex items-center justify-between gap-2">
                             <Badge variant="secondary" className="text-xs">
                               {cupon.descuento_porcentaje
                                 ? `${cupon.descuento_porcentaje}% OFF`
                                 : `€${cupon.descuento_fijo} OFF`
                               }
                             </Badge>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={cuponSeleccionado?.id === cupon.id ? "default" : "outline"}
+                              onClick={() => {
+                                setCuponSeleccionado(cupon.id === cuponSeleccionado?.id ? null : cupon)
+                              }}
+                              className="text-xs h-7"
+                              style={cuponSeleccionado?.id === cupon.id ? {
+                                backgroundColor: hexToRgb(branding.color_primario)
+                              } : {}}
+                            >
+                              {cuponSeleccionado?.id === cupon.id ? (
+                                <>
+                                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  Seleccionado
+                                </>
+                              ) : (
+                                'Usar en venta'
+                              )}
+                            </Button>
                           </div>
-                        </button>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -891,61 +919,69 @@ export function RegistrarVentaDialogMejorado({
                         const isRedeeming = redeemingPromoId === promo.id
 
                         return (
-                          <button
+                          <div
                             key={promo.id}
-                            type="button"
-                            onClick={() => {
-                              if (puedeRedimir && !redeeming) {
-                                canjearPromocion(promo.id)
-                              }
-                            }}
-                            disabled={!puedeRedimir || redeeming}
-                            className={`w-full p-3 border-2 rounded-lg text-left transition-all ${
+                            className={`w-full p-3 border-2 rounded-lg transition-all ${
                               puedeRedimir
-                                ? 'border-purple-200 bg-purple-50 hover:border-purple-400 hover:bg-purple-100 cursor-pointer'
-                                : 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-                            } ${isRedeeming ? 'opacity-50' : ''}`}
+                                ? 'border-purple-200 bg-purple-50'
+                                : 'border-gray-200 bg-gray-50 opacity-60'
+                            }`}
                           >
-                            <div className="flex items-start justify-between">
+                            <div className="flex items-start justify-between mb-2">
                               <div className="flex-1">
                                 <p className="font-medium text-sm">{promo.titulo}</p>
                                 <p className="text-xs text-gray-600 mt-1">{promo.descripcion}</p>
                               </div>
-                              {isRedeeming && (
-                                <Loader2 className="h-5 w-5 animate-spin text-purple-600 flex-shrink-0 ml-2" />
-                              )}
                             </div>
-                            <div className="mt-2 flex items-center gap-2 flex-wrap">
-                              <Badge
-                                variant="outline"
-                                className={`text-xs ${
-                                  puedeRedimir ? 'border-purple-400 text-purple-700' : 'border-gray-300 text-gray-500'
-                                }`}
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge
+                                  variant="outline"
+                                  className={`text-xs ${
+                                    puedeRedimir ? 'border-purple-400 text-purple-700' : 'border-gray-300 text-gray-500'
+                                  }`}
+                                >
+                                  {promo.puntos_requeridos} pts
+                                </Badge>
+                                {promo.descuento_porcentaje && (
+                                  <Badge className="text-xs bg-purple-100 text-purple-700">
+                                    {promo.descuento_porcentaje}% OFF
+                                  </Badge>
+                                )}
+                                {promo.descuento_fijo && (
+                                  <Badge className="text-xs bg-purple-100 text-purple-700">
+                                    €{promo.descuento_fijo} OFF
+                                  </Badge>
+                                )}
+                              </div>
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => {
+                                  if (puedeRedimir && !redeeming) {
+                                    canjearPromocion(promo.id)
+                                  }
+                                }}
+                                disabled={!puedeRedimir || redeeming}
+                                className="text-xs h-7"
+                                style={puedeRedimir ? {
+                                  backgroundColor: hexToRgb(branding.color_primario)
+                                } : {}}
                               >
-                                {promo.puntos_requeridos} pts requeridos
-                              </Badge>
-                              {promo.descuento_porcentaje && (
-                                <Badge className="text-xs bg-purple-100 text-purple-700">
-                                  {promo.descuento_porcentaje}% OFF
-                                </Badge>
-                              )}
-                              {promo.descuento_fijo && (
-                                <Badge className="text-xs bg-purple-100 text-purple-700">
-                                  €{promo.descuento_fijo} OFF
-                                </Badge>
-                              )}
-                              {puedeRedimir && !isRedeeming && (
-                                <Badge className="text-xs bg-green-100 text-green-700">
-                                  ✓ Disponible
-                                </Badge>
-                              )}
-                              {!puedeRedimir && (
-                                <Badge className="text-xs bg-red-100 text-red-700">
-                                  Puntos insuficientes
-                                </Badge>
-                              )}
+                                {isRedeeming ? (
+                                  <>
+                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                    Adquiriendo...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Gift className="h-3 w-3 mr-1" />
+                                    Adquirir
+                                  </>
+                                )}
+                              </Button>
                             </div>
-                          </button>
+                          </div>
                         )
                       })}
                     </div>
@@ -1001,28 +1037,44 @@ export function RegistrarVentaDialogMejorado({
             {/* Cupón seleccionado */}
             {cuponSeleccionado && (
               <Alert className="border-green-200 bg-green-50">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <Gift className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-sm">
-                  <span className="font-medium">Cupón aplicado:</span> {cuponSeleccionado.titulo}
+                  <div>
+                    <p className="font-medium">{cuponSeleccionado.titulo}</p>
+                    <p className="text-xs text-gray-600 mt-1">{cuponSeleccionado.descripcion}</p>
+                    <Badge variant="secondary" className="text-xs mt-2">
+                      {cuponSeleccionado.descuento_porcentaje
+                        ? `${cuponSeleccionado.descuento_porcentaje}% de descuento`
+                        : `€${cuponSeleccionado.descuento_fijo} de descuento`
+                      }
+                    </Badge>
+                  </div>
                 </AlertDescription>
               </Alert>
             )}
 
             {/* Importe */}
             <div className="space-y-2">
-              <Label htmlFor="importe">Importe (€) *</Label>
+              <Label htmlFor="importe">
+                Importe (€) {cuponSeleccionado ? '(opcional si el cupón es gratis)' : '*'}
+              </Label>
               <Input
                 id="importe"
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="25.00"
+                placeholder={cuponSeleccionado ? "0.00 para cupón gratis" : "25.00"}
                 value={importe}
                 onChange={(e) => setImporte(e.target.value)}
-                required
+                required={!cuponSeleccionado}
                 autoFocus
                 className="text-lg"
               />
+              {cuponSeleccionado && (
+                <p className="text-xs text-gray-600">
+                  💡 Deja en 0 si el cupón cubre todo (ej: café gratis)
+                </p>
+              )}
             </div>
 
             {/* Preview de cálculos */}
@@ -1093,7 +1145,7 @@ export function RegistrarVentaDialogMejorado({
               <Button
                 type="button"
                 onClick={handleSubmit}
-                disabled={loading || !importe || parseFloat(importe) <= 0}
+                disabled={loading || (!cuponSeleccionado && (!importe || parseFloat(importe) <= 0))}
                 className="text-white"
                 style={{ backgroundColor: hexToRgb(branding.color_acento) }}
               >
@@ -1105,7 +1157,10 @@ export function RegistrarVentaDialogMejorado({
                 ) : (
                   <>
                     <CheckCircle2 className="mr-2 h-4 w-4" />
-                    Confirmar Venta
+                    {cuponSeleccionado && (!importe || parseFloat(importe) === 0)
+                      ? 'Canjear Cupón'
+                      : 'Confirmar Venta'
+                    }
                   </>
                 )}
               </Button>
