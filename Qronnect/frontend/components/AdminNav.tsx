@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -16,6 +17,8 @@ import {
   MessageSquare,
   Sparkles,
   Globe,
+  Menu,
+  X,
 } from 'lucide-react'
 
 interface NavItem {
@@ -68,6 +71,7 @@ const configNavItems: NavItem[] = [
 export function AdminNav() {
   const pathname = usePathname()
   const router = useRouter()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token')
@@ -86,7 +90,7 @@ export function AdminNav() {
             </Link>
           </div>
 
-          {/* Navigation Links */}
+          {/* Navigation Links - Desktop */}
           <nav className="hidden md:flex items-center gap-1">
             {mainNavItems.map((item) => {
               const Icon = item.icon
@@ -161,43 +165,110 @@ export function AdminNav() {
             </div>
           </nav>
 
-          {/* Logout Button */}
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Salir
-          </Button>
-        </div>
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Salir
+            </Button>
+          </div>
 
-        {/* Mobile Navigation */}
-        <div className="md:hidden pb-4">
-          <div className="flex flex-col gap-2">
-            {[...mainNavItems, ...configNavItems].map((item) => {
-              const Icon = item.icon
-              const isActive = pathname === item.href
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                  {item.badge && (
-                    <span className="ml-auto px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              )
-            })}
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </Button>
           </div>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t py-4">
+            <div className="flex flex-col gap-2">
+              {mainNavItems.map((item) => {
+                const Icon = item.icon
+                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                    {item.badge && (
+                      <span className="ml-auto px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                )
+              })}
+
+              {/* Configuración Section */}
+              <div className="border-t pt-2 mt-2">
+                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
+                  Configuración
+                </div>
+                {configNavItems.map((item) => {
+                  const Icon = item.icon
+                  const isActive = pathname === item.href
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        'flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                        isActive
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                      {item.badge && (
+                        <span className="ml-auto px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  )
+                })}
+              </div>
+
+              {/* Logout */}
+              <div className="border-t pt-2 mt-2">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleLogout()
+                  }}
+                  className="flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 w-full transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Cerrar Sesión
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
