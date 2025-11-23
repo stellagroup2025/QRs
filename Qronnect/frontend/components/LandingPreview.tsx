@@ -261,6 +261,7 @@ export function LandingPreview({ config, deviceType = 'desktop' }: LandingPrevie
             </div>
           </div>
         </div>
+        </div>
       </div>
     </div>
   )
