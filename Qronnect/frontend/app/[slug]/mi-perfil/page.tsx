@@ -237,8 +237,10 @@ export default function MiPerfilPage() {
         console.error('💥 Error al cargar datos de referidos:', error)
       }
 
-      // Generar QR Code con el ID del cliente
-      const qrData = clienteData.id
+      // Generar QR Code con URL que abre directamente añadir venta
+      // Si se escanea desde cámara normal del móvil, abre el admin con este cliente preseleccionado
+      const baseUrl = window.location.origin
+      const qrData = `${baseUrl}/admin/quick-sale?cliente_id=${clienteData.id}`
       const qrUrl = await QRCode.toDataURL(qrData, { width: 300 })
       setQrCodeUrl(qrUrl)
 

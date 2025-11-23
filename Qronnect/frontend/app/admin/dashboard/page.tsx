@@ -167,6 +167,8 @@ export default function AdminDashboardPage() {
     // Verificar si hay un token de superadmin en la URL
     const urlParams = new URLSearchParams(window.location.search)
     const superadminToken = urlParams.get('superadmin_token')
+    const openSale = urlParams.get('open_sale')
+    const clienteId = urlParams.get('cliente_id')
 
     if (superadminToken) {
       // El superadmin está accediendo, guardar el token y limpiar la URL
@@ -196,6 +198,16 @@ export default function AdminDashboardPage() {
     const storedTienda = JSON.parse(tiendaData)
     const registroUrl = getQrUrl(storedTienda.dominio)
     setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(registroUrl)}`)
+
+    // Si viene de quick-sale, abrir modal de venta con cliente preseleccionado
+    if (openSale === 'true' && clienteId) {
+      console.log('🎯 Abriendo modal de venta con cliente:', clienteId)
+      // Guardar el cliente_id para que el modal lo use
+      sessionStorage.setItem('preselected_cliente_id', clienteId)
+      setRegistrarVentaOpen(true)
+      // Limpiar la URL
+      window.history.replaceState({}, '', window.location.pathname)
+    }
   }, [router])
 
   // Cargar datos cuando cambia el tab activo
