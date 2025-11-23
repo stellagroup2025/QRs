@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import {
   Dialog,
@@ -35,12 +35,7 @@ import {
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
 import { useToast } from '@/hooks/use-toast'
-
-// Importar QrReader dinámicamente para evitar SSR issues
-const QrReader = dynamic(() => import('react-qr-reader').then(mod => mod.QrReader), {
-  ssr: false,
-  loading: () => <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">Cargando cámara...</div>
-})
+import { Html5QrcodeScanner } from 'html5-qrcode'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -100,6 +95,8 @@ export function RegistrarVentaDialogMejorado({
   const [scannerMode, setScannerMode] = useState<'camera' | 'manual'>('camera')
   const [codigoQr, setCodigoQr] = useState('')
   const [scannerError, setScannerError] = useState('')
+  const scannerRef = useRef<Html5QrcodeScanner | null>(null)
+  const qrReaderDivId = 'qr-reader'
 
   // Paso 2: Promociones y cupones
   const [loadingPromos, setLoadingPromos] = useState(false)
@@ -119,6 +116,58 @@ export function RegistrarVentaDialogMejorado({
   // Éxito
   const [success, setSuccess] = useState(false)
   const [successData, setSuccessData] = useState<any>(null)
+
+  // Inicializar escáner QR cuando se selecciona modo cámara
+  useEffect(() => {
+    if (open && scannerMode === 'camera' && paso === 1) {
+      // Esperar un tick para que el DOM se renderice
+      setTimeout(() => {
+        const element = document.getElementById(qrReaderDivId)
+        if (element && !scannerRef.current) {
+          try {
+            scannerRef.current = new Html5QrcodeScanner(
+              qrReaderDivId,
+              {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0,
+              },
+              false
+            )
+
+            scannerRef.current.render(
+              (decodedText) => {
+                // Éxito al escanear
+                setCodigoQr(decodedText)
+                setScannerError('')
+                buscarClientePorQr(decodedText)
+                // Detener el scanner después de escanear
+                if (scannerRef.current) {
+                  scannerRef.current.clear()
+                  scannerRef.current = null
+                }
+              },
+              (error) => {
+                // Error o sin resultado - ignorar
+                console.debug('Scan error:', error)
+              }
+            )
+          } catch (err) {
+            console.error('Error inicializando scanner:', err)
+            setScannerError('Error al iniciar la cámara. Verifica los permisos.')
+          }
+        }
+      }, 100)
+    }
+
+    // Limpiar el scanner cuando el modal se cierra o cambia de modo
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(console.error)
+        scannerRef.current = null
+      }
+    }
+  }, [open, scannerMode, paso])
 
   // Auto-buscar clientes mientras escribe
   useEffect(() => {
@@ -187,21 +236,6 @@ export function RegistrarVentaDialogMejorado({
     } finally {
       setSearching(false)
     }
-  }
-
-  const handleScan = async (result: any) => {
-    if (result?.text) {
-      setCodigoQr(result.text)
-      setScannerError('')
-
-      // Buscar cliente por código QR
-      await buscarClientePorQr(result.text)
-    }
-  }
-
-  const handleScanError = (error: any) => {
-    console.error('Error al escanear:', error)
-    setScannerError('Error al acceder a la cámara. Verifica los permisos.')
   }
 
   async function buscarClientePorQr(qrCode: string) {
@@ -636,14 +670,7 @@ export function RegistrarVentaDialogMejorado({
                 {scannerMode === 'camera' && (
                   <div className="space-y-2">
                     <Label className="text-sm">Escanea el QR del cliente</Label>
-                    <div className="border-2 rounded-lg overflow-hidden bg-black" style={{ maxWidth: '220px', margin: '0 auto' }}>
-                      <QrReader
-                        constraints={{ facingMode: 'environment' }}
-                        onResult={handleScan}
-                        videoStyle={{ width: '100%', objectFit: 'cover' }}
-                        containerStyle={{ paddingTop: '100%', position: 'relative' }}
-                      />
-                    </div>
+                    <div id={qrReaderDivId} className="rounded-lg overflow-hidden" />
                     {scannerError && (
                       <Alert variant="destructive" className="py-2">
                         <AlertDescription className="text-xs">{scannerError}</AlertDescription>
