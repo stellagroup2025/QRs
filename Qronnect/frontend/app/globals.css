@@ -167,3 +167,13 @@
 .border-brand-accent {
   border-color: rgb(var(--brand-accent));
 }
+
+/* Utilidad para ocultar scrollbar pero mantener funcionalidad */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

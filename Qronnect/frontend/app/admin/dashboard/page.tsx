@@ -511,27 +511,40 @@ export default function AdminDashboardPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="qr">QR de Registro</TabsTrigger>
-            <TabsTrigger value="clientes">Clientes</TabsTrigger>
-            <TabsTrigger value="ventas">Ventas</TabsTrigger>
-            <TabsTrigger value="promociones">
-              <Gift className="h-4 w-4 mr-2" />
-              Promociones
-            </TabsTrigger>
-            <TabsTrigger value="campanas">
-              <Mail className="h-4 w-4 mr-2" />
-              Campañas
-            </TabsTrigger>
-            <TabsTrigger value="analytics">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="ia">
-              <Sparkles className="h-4 w-4 mr-2" />
-              IA
-            </TabsTrigger>
-          </TabsList>
+          <div className="relative -mx-4 sm:mx-0">
+            <div className="overflow-x-auto scrollbar-hide px-4 sm:px-0">
+              <TabsList className="inline-flex w-auto min-w-full sm:w-full justify-start">
+                <TabsTrigger value="qr" className="flex-shrink-0">
+                  <QrCode className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">QR de Registro</span>
+                </TabsTrigger>
+                <TabsTrigger value="clientes" className="flex-shrink-0">
+                  <Users className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Clientes</span>
+                </TabsTrigger>
+                <TabsTrigger value="ventas" className="flex-shrink-0">
+                  <ShoppingCart className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Ventas</span>
+                </TabsTrigger>
+                <TabsTrigger value="promociones" className="flex-shrink-0">
+                  <Gift className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Promociones</span>
+                </TabsTrigger>
+                <TabsTrigger value="campanas" className="flex-shrink-0">
+                  <Mail className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Campañas</span>
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="flex-shrink-0">
+                  <BarChart3 className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Analytics</span>
+                </TabsTrigger>
+                <TabsTrigger value="ia" className="flex-shrink-0">
+                  <Sparkles className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">IA</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
 
           {/* QR Tab */}
           <TabsContent value="qr" className="space-y-6">
