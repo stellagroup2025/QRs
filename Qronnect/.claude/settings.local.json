@@ -11,7 +11,17 @@
       "Bash(npm install @radix-ui/react-toggle-group @radix-ui/react-toggle --legacy-peer-deps)",
       "Bash(git add package.json package-lock.json)",
       "Bash(git commit -m \"fix: Añadir dependencias faltantes @radix-ui/react-toggle y toggle-group\n\nEl build en Vercel estaba fallando porque faltaban estas dependencias\nnecesarias para toggle-group.tsx y toggle.tsx.\n\nInstalado con --legacy-peer-deps para evitar conflictos con react-qr-reader.\")",
-      "Bash(git commit -m \"fix: Eliminar página quick-sale innecesaria que causaba error de build\n\nLa página quick-sale causaba error en Next.js 15 por useSearchParams\nsin Suspense boundary.\n\nYa no es necesaria porque el QR apunta directamente a:\n/admin/dashboard?open_sale=true&cliente_id=X\n\nEl dashboard maneja toda la lógica de redirección y autenticación.\")"
+      "Bash(git commit -m \"fix: Eliminar página quick-sale innecesaria que causaba error de build\n\nLa página quick-sale causaba error en Next.js 15 por useSearchParams\nsin Suspense boundary.\n\nYa no es necesaria porque el QR apunta directamente a:\n/admin/dashboard?open_sale=true&cliente_id=X\n\nEl dashboard maneja toda la lógica de redirección y autenticación.\")",
+      "Bash(npx tsc --noEmit components/LandingPreview.tsx)",
+      "Bash(cat -A)",
+      "Bash(awk 'NR>=81 && NR<=120' components/LandingPreview.tsx)",
+      "Bash(awk 'NR>=260 && NR<=267 {printf \"\"%3d: %s\\n\"\", NR, $0}' components/LandingPreview.tsx)",
+      "Bash(awk 'NR>=230 && NR<=267 {printf \"\"%3d: %s\\n\"\", NR, $0}' components/LandingPreview.tsx)",
+      "Bash(awk 'NR>=263 && NR<=269 {print NR\"\": [\"\"$0\"\"]\"\"}' components/LandingPreview.tsx)",
+      "Bash(cat -n)",
+      "Bash(awk 'NR==81 || (NR>230 && /^      <\\/div>/) {print NR\"\"\"\": \"\"\"\"$0}' components/LandingPreview.tsx)",
+      "Bash(awk 'NR>=180 && NR<=270' components/LandingPreview.tsx)",
+      "Bash(git add components/LandingPreview.tsx)"
     ],
     "deny": [],
     "ask": []
