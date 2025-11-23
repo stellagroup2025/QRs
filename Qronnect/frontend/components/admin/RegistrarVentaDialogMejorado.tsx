@@ -94,8 +94,9 @@ export function RegistrarVentaDialogMejorado({
   const [scannerMode, setScannerMode] = useState<'camera' | 'manual'>('camera')
   const [codigoQr, setCodigoQr] = useState('')
   const [scannerError, setScannerError] = useState('')
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null)
+  const scannerRef = useRef<any>(null)
   const qrReaderDivId = 'qr-reader'
+  const [isScanning, setIsScanning] = useState(false)
 
   // Paso 2: Promociones y cupones
   const [loadingPromos, setLoadingPromos] = useState(false)
@@ -118,66 +119,69 @@ export function RegistrarVentaDialogMejorado({
 
   // Inicializar escáner QR cuando se selecciona modo cámara
   useEffect(() => {
-    console.log('🔍 useEffect ejecutado - Estado:', { open, scannerMode, paso })
+    console.log('🔍 useEffect ejecutado - Estado:', { open, scannerMode, paso, isScanning })
 
-    if (open && scannerMode === 'camera' && paso === 1) {
+    if (open && scannerMode === 'camera' && paso === 1 && !isScanning) {
       console.log('✅ Condiciones cumplidas, iniciando scanner...')
-      // Importar dinámicamente para evitar problemas de SSR
+
       const initScanner = async () => {
         try {
           console.log('📦 Importando html5-qrcode...')
-          const { Html5QrcodeScanner } = await import('html5-qrcode')
+          const { Html5Qrcode } = await import('html5-qrcode')
           console.log('✅ html5-qrcode importado correctamente')
 
           // Esperar un tick para que el DOM se renderice
-          setTimeout(() => {
+          setTimeout(async () => {
             const element = document.getElementById(qrReaderDivId)
             console.log('🎯 Elemento DOM:', element ? 'ENCONTRADO' : 'NO ENCONTRADO')
             console.log('🎯 scannerRef.current:', scannerRef.current ? 'YA EXISTE' : 'LIBRE')
 
             if (element && !scannerRef.current) {
               try {
-                console.log('🎥 Inicializando scanner QR...')
-                scannerRef.current = new Html5QrcodeScanner(
-                  qrReaderDivId,
+                console.log('🎥 Creando instancia de Html5Qrcode...')
+                scannerRef.current = new Html5Qrcode(qrReaderDivId)
+
+                console.log('📹 Iniciando cámara...')
+                setIsScanning(true)
+
+                await scannerRef.current.start(
+                  { facingMode: "environment" }, // Usa cámara trasera en móviles
                   {
                     fps: 10,
                     qrbox: { width: 250, height: 250 },
                     aspectRatio: 1.0,
-                    // Configuración mejorada para producción
-                    rememberLastUsedCamera: true,
-                    showTorchButtonIfSupported: true,
                   },
-                  /* verbose= */ false
-                )
-
-                scannerRef.current.render(
-                  (decodedText) => {
+                  (decodedText, decodedResult) => {
                     // Éxito al escanear
-                    console.log('QR escaneado:', decodedText)
+                    console.log('✅ QR escaneado:', decodedText)
                     setCodigoQr(decodedText)
                     setScannerError('')
-                    buscarClientePorQr(decodedText)
-                    // Detener el scanner después de escanear
+
+                    // Detener scanner antes de buscar cliente
                     if (scannerRef.current) {
-                      scannerRef.current.clear().catch(console.error)
-                      scannerRef.current = null
+                      scannerRef.current.stop().then(() => {
+                        console.log('🛑 Scanner detenido')
+                        scannerRef.current = null
+                        setIsScanning(false)
+                        buscarClientePorQr(decodedText)
+                      }).catch(console.error)
                     }
                   },
                   (errorMessage) => {
-                    // Ignorar errores de escaneo continuo (normal cuando no hay QR en vista)
-                    // Solo loggear para debugging
+                    // Errores normales durante escaneo (cuando no hay QR en vista)
+                    // No hacer nada, es normal
                   }
                 )
 
-                console.log('✅✅✅ Scanner inicializado correctamente y .render() llamado')
-                setScannerError('') // Limpiar cualquier error previo
+                console.log('✅✅✅ Cámara iniciada correctamente')
+                setScannerError('')
               } catch (err: any) {
-                console.error('Error inicializando scanner:', err)
+                console.error('❌ Error iniciando scanner:', err)
+                setIsScanning(false)
                 let errorMsg = 'Error al iniciar la cámara.'
 
                 if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                  errorMsg = 'Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.'
+                  errorMsg = 'Permiso de cámara denegado. Permite el acceso en la configuración de tu navegador.'
                 } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
                   errorMsg = 'No se encontró ninguna cámara en este dispositivo.'
                 } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
@@ -195,7 +199,8 @@ export function RegistrarVentaDialogMejorado({
             }
           }, 100)
         } catch (importError) {
-          console.error('Error importando html5-qrcode:', importError)
+          console.error('❌ Error importando html5-qrcode:', importError)
+          setIsScanning(false)
           setScannerError('Error al cargar el escáner. Por favor, recarga la página.')
         }
       }
@@ -207,9 +212,17 @@ export function RegistrarVentaDialogMejorado({
 
     // Limpiar el scanner cuando el modal se cierra o cambia de modo
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(console.error)
-        scannerRef.current = null
+      if (scannerRef.current && isScanning) {
+        console.log('🧹 Limpiando scanner...')
+        scannerRef.current.stop().then(() => {
+          console.log('✅ Scanner limpiado')
+          scannerRef.current = null
+          setIsScanning(false)
+        }).catch((err: any) => {
+          console.error('Error limpiando scanner:', err)
+          scannerRef.current = null
+          setIsScanning(false)
+        })
       }
     }
   }, [open, scannerMode, paso])
