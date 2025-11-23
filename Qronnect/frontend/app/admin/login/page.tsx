@@ -134,12 +134,12 @@ export default function AdminLoginPage() {
                   onChange={(e) => setPin(e.target.value)}
                   required
                   disabled={loading}
-                  maxLength={4}
+                  maxLength={6}
                   className="pl-10"
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                PIN de 4 dígitos proporcionado por el administrador
+                PIN de 4-6 dígitos proporcionado por el administrador
               </p>
             </div>
 

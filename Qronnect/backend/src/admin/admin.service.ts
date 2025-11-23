@@ -41,9 +41,10 @@ export class AdminService {
     console.log('  - PIN recibido:', loginDto.pin);
     console.log('  - Tenant ID:', tenantId);
 
-    // Buscar admin por email y tienda
+    // IMPORTANTE: Ahora buscamos en usuarios_tienda en lugar de admin_users
+    // porque el superadmin crea usuarios en usuarios_tienda
     const { data: admin, error: adminError } = await supabase
-      .from('admin_users')
+      .from('usuarios_tienda')
       .select(
         `
         *,
@@ -79,7 +80,7 @@ export class AdminService {
 
     // Actualizar último acceso
     await supabase
-      .from('admin_users')
+      .from('usuarios_tienda')
       .update({ ultimo_acceso: new Date().toISOString() })
       .eq('id', admin.id);
 
