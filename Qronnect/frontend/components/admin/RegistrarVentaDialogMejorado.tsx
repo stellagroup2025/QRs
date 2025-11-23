@@ -35,7 +35,6 @@ import {
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
 import { useToast } from '@/hooks/use-toast'
-import { Html5QrcodeScanner } from 'html5-qrcode'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -120,67 +119,80 @@ export function RegistrarVentaDialogMejorado({
   // Inicializar escáner QR cuando se selecciona modo cámara
   useEffect(() => {
     if (open && scannerMode === 'camera' && paso === 1) {
-      // Esperar un tick para que el DOM se renderice
-      setTimeout(() => {
-        const element = document.getElementById(qrReaderDivId)
-        if (element && !scannerRef.current) {
-          try {
-            console.log('Inicializando scanner QR...')
-            scannerRef.current = new Html5QrcodeScanner(
-              qrReaderDivId,
-              {
-                fps: 10,
-                qrbox: { width: 250, height: 250 },
-                aspectRatio: 1.0,
-                // Configuración mejorada para producción
-                rememberLastUsedCamera: true,
-                showTorchButtonIfSupported: true,
-              },
-              /* verbose= */ false
-            )
+      // Importar dinámicamente para evitar problemas de SSR
+      const initScanner = async () => {
+        try {
+          console.log('Importando html5-qrcode...')
+          const { Html5QrcodeScanner } = await import('html5-qrcode')
 
-            scannerRef.current.render(
-              (decodedText) => {
-                // Éxito al escanear
-                console.log('QR escaneado:', decodedText)
-                setCodigoQr(decodedText)
-                setScannerError('')
-                buscarClientePorQr(decodedText)
-                // Detener el scanner después de escanear
-                if (scannerRef.current) {
-                  scannerRef.current.clear().catch(console.error)
-                  scannerRef.current = null
+          // Esperar un tick para que el DOM se renderice
+          setTimeout(() => {
+            const element = document.getElementById(qrReaderDivId)
+            if (element && !scannerRef.current) {
+              try {
+                console.log('Inicializando scanner QR...')
+                scannerRef.current = new Html5QrcodeScanner(
+                  qrReaderDivId,
+                  {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0,
+                    // Configuración mejorada para producción
+                    rememberLastUsedCamera: true,
+                    showTorchButtonIfSupported: true,
+                  },
+                  /* verbose= */ false
+                )
+
+                scannerRef.current.render(
+                  (decodedText) => {
+                    // Éxito al escanear
+                    console.log('QR escaneado:', decodedText)
+                    setCodigoQr(decodedText)
+                    setScannerError('')
+                    buscarClientePorQr(decodedText)
+                    // Detener el scanner después de escanear
+                    if (scannerRef.current) {
+                      scannerRef.current.clear().catch(console.error)
+                      scannerRef.current = null
+                    }
+                  },
+                  (errorMessage) => {
+                    // Ignorar errores de escaneo continuo (normal cuando no hay QR en vista)
+                    // Solo loggear para debugging
+                  }
+                )
+
+                console.log('Scanner inicializado correctamente')
+              } catch (err: any) {
+                console.error('Error inicializando scanner:', err)
+                let errorMsg = 'Error al iniciar la cámara.'
+
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                  errorMsg = 'Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.'
+                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                  errorMsg = 'No se encontró ninguna cámara en este dispositivo.'
+                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                  errorMsg = 'La cámara está siendo usada por otra aplicación.'
+                } else if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
+                  errorMsg = 'La cámara no cumple con los requisitos necesarios.'
+                } else if (err.name === 'NotSupportedError') {
+                  errorMsg = 'Tu navegador no soporta acceso a la cámara. Usa el modo Manual.'
+                } else if (err.name === 'TypeError') {
+                  errorMsg = 'Error de inicialización. Intenta recargar la página.'
                 }
-              },
-              (errorMessage) => {
-                // Ignorar errores de escaneo continuo (normal cuando no hay QR en vista)
-                // Solo loggear para debugging
+
+                setScannerError(errorMsg)
               }
-            )
-
-            console.log('Scanner inicializado correctamente')
-          } catch (err: any) {
-            console.error('Error inicializando scanner:', err)
-            let errorMsg = 'Error al iniciar la cámara.'
-
-            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-              errorMsg = 'Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.'
-            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-              errorMsg = 'No se encontró ninguna cámara en este dispositivo.'
-            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
-              errorMsg = 'La cámara está siendo usada por otra aplicación.'
-            } else if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
-              errorMsg = 'La cámara no cumple con los requisitos necesarios.'
-            } else if (err.name === 'NotSupportedError') {
-              errorMsg = 'Tu navegador no soporta acceso a la cámara. Usa el modo Manual.'
-            } else if (err.name === 'TypeError') {
-              errorMsg = 'Error de inicialización. Intenta recargar la página.'
             }
-
-            setScannerError(errorMsg)
-          }
+          }, 100)
+        } catch (importError) {
+          console.error('Error importando html5-qrcode:', importError)
+          setScannerError('Error al cargar el escáner. Por favor, recarga la página.')
         }
-      }, 100)
+      }
+
+      initScanner()
     }
 
     // Limpiar el scanner cuando el modal se cierra o cambia de modo
