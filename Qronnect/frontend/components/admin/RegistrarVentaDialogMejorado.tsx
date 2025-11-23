@@ -118,19 +118,26 @@ export function RegistrarVentaDialogMejorado({
 
   // Inicializar escáner QR cuando se selecciona modo cámara
   useEffect(() => {
+    console.log('🔍 useEffect ejecutado - Estado:', { open, scannerMode, paso })
+
     if (open && scannerMode === 'camera' && paso === 1) {
+      console.log('✅ Condiciones cumplidas, iniciando scanner...')
       // Importar dinámicamente para evitar problemas de SSR
       const initScanner = async () => {
         try {
-          console.log('Importando html5-qrcode...')
+          console.log('📦 Importando html5-qrcode...')
           const { Html5QrcodeScanner } = await import('html5-qrcode')
+          console.log('✅ html5-qrcode importado correctamente')
 
           // Esperar un tick para que el DOM se renderice
           setTimeout(() => {
             const element = document.getElementById(qrReaderDivId)
+            console.log('🎯 Elemento DOM:', element ? 'ENCONTRADO' : 'NO ENCONTRADO')
+            console.log('🎯 scannerRef.current:', scannerRef.current ? 'YA EXISTE' : 'LIBRE')
+
             if (element && !scannerRef.current) {
               try {
-                console.log('Inicializando scanner QR...')
+                console.log('🎥 Inicializando scanner QR...')
                 scannerRef.current = new Html5QrcodeScanner(
                   qrReaderDivId,
                   {
@@ -163,7 +170,8 @@ export function RegistrarVentaDialogMejorado({
                   }
                 )
 
-                console.log('Scanner inicializado correctamente')
+                console.log('✅✅✅ Scanner inicializado correctamente y .render() llamado')
+                setScannerError('') // Limpiar cualquier error previo
               } catch (err: any) {
                 console.error('Error inicializando scanner:', err)
                 let errorMsg = 'Error al iniciar la cámara.'
@@ -193,6 +201,8 @@ export function RegistrarVentaDialogMejorado({
       }
 
       initScanner()
+    } else {
+      console.log('❌ Condiciones NO cumplidas para iniciar scanner')
     }
 
     // Limpiar el scanner cuando el modal se cierra o cambia de modo
