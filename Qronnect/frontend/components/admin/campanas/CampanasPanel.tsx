@@ -124,7 +124,7 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
     }
 
     return (
-      <Badge className={`${estilos[estado]} text-[10px] px-1.5 py-0 gap-1`}>
+      <Badge className={`${estilos[estado]} text-xs px-1.5 py-0 gap-1`}>
         {getEstadoIcon(estado)}
         {textos[estado]}
       </Badge>
@@ -311,19 +311,19 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
                         <Users className="h-3.5 w-3.5 text-muted-foreground" />
                         {campana.total_destinatarios}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">destinatarios</p>
+                      <p className="text-xs text-muted-foreground">destinatarios</p>
                     </div>
                     <div className="w-px h-8 bg-border" />
                     <div className="text-center flex-1">
                       <p className="text-lg font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
                         {campana.enviados}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">enviados</p>
+                      <p className="text-xs text-muted-foreground">enviados</p>
                     </div>
                     <div className="w-px h-8 bg-border" />
                     <div className="text-center flex-1">
                       <p className="text-lg font-bold">{tasaCampana}%</p>
-                      <p className="text-[10px] text-muted-foreground">apertura</p>
+                      <p className="text-xs text-muted-foreground">apertura</p>
                     </div>
                   </div>
 
@@ -340,7 +340,7 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
                             }}
                           />
                         </div>
-                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
                           {campana.abiertos}/{campana.enviados}
                         </span>
                       </div>
@@ -349,7 +349,7 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
 
                   {/* Footer con fecha y acciones */}
                   <div className="flex items-center justify-between pt-2 border-t">
-                    <div className="text-[10px] text-muted-foreground">
+                    <div className="text-xs text-muted-foreground">
                       {campana.fecha_enviada ? (
                         <span>Enviada {formatearFecha(campana.fecha_enviada)}</span>
                       ) : campana.fecha_programada ? (
@@ -358,52 +358,52 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
                         <span>Creada {formatearFecha(campana.creado_en)}</span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-0.5">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-9 w-9"
                         onClick={() => handleVer(campana)}
                       >
-                        <Eye className="h-3.5 w-3.5" />
+                        <Eye className="h-4 w-4" />
                       </Button>
                       {campana.estado === 'borrador' && (
                         <>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-9 w-9"
                             onClick={() => {
                               setCampanaParaEditar(campana)
                               setEditDialogOpen(true)
                             }}
                           >
-                            <Edit className="h-3.5 w-3.5" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-9 w-9"
                             style={{ color: hexToRgb(branding.color_primario) }}
                             onClick={() => {
                               setCampanaSeleccionada(campana)
                               setEnviarDialogOpen(true)
                             }}
                           >
-                            <Send className="h-3.5 w-3.5" />
+                            <Send className="h-4 w-4" />
                           </Button>
                         </>
                       )}
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-red-500 hover:text-red-700"
+                        className="h-9 w-9 text-red-500 hover:text-red-700"
                         onClick={() => {
                           setCampanaSeleccionada(campana)
                           setBorrarDialogOpen(true)
                         }}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -455,17 +455,17 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
               <div className="grid grid-cols-3 gap-2">
                 <div className="p-2 bg-muted rounded-lg text-center">
                   <p className="text-xl font-bold">{campanaSeleccionada.total_destinatarios}</p>
-                  <p className="text-[10px] text-muted-foreground">Destinatarios</p>
+                  <p className="text-xs text-muted-foreground">Destinatarios</p>
                 </div>
                 <div className="p-2 bg-muted rounded-lg text-center">
                   <p className="text-xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
                     {campanaSeleccionada.enviados}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">Enviados</p>
+                  <p className="text-xs text-muted-foreground">Enviados</p>
                 </div>
                 <div className="p-2 bg-muted rounded-lg text-center">
                   <p className="text-xl font-bold">{campanaSeleccionada.abiertos}</p>
-                  <p className="text-[10px] text-muted-foreground">Abiertos</p>
+                  <p className="text-xs text-muted-foreground">Abiertos</p>
                 </div>
               </div>
 

@@ -9,6 +9,7 @@ import { BrandProvider } from "@/components/BrandProvider"
 import { BrandingProvider } from "@/components/BrandingProvider"
 import { CookieConsentProvider } from "@/components/CookieConsentProvider"
 import { CookieBanner } from "@/components/CookieBanner"
+import { SkipLink } from "@/components/ui/skip-link"
 import { BRAND } from "@/config/appBrand"
 import "./globals.css"
 
@@ -106,10 +107,13 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`font-sans antialiased ${_geist.className}`}>
+        <SkipLink />
         <BrandingProvider>
           <CookieConsentProvider>
             <BrandProvider>
-              {children}
+              <main id="main-content">
+                {children}
+              </main>
               <Toaster />
               <CookieBanner />
             </BrandProvider>

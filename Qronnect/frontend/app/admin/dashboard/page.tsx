@@ -468,7 +468,7 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
               <div className="text-lg sm:text-2xl font-bold">{data?.total_clientes || 0}</div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">Registrados</p>
+              <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">Registrados</p>
             </CardContent>
           </Card>
 
@@ -479,7 +479,7 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
               <div className="text-lg sm:text-2xl font-bold">{data?.total_compras || 0}</div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">
+              <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
                 Ticket: €{(data?.ticket_medio || 0).toFixed(0)}
               </p>
             </CardContent>
@@ -494,7 +494,7 @@ export default function AdminDashboardPage() {
               <div className="text-lg sm:text-2xl font-bold">
                 €{(data?.ventas_totales || 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
               </div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">
+              <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
                 {data?.puntos_otorgados_totales || 0} pts
               </p>
             </CardContent>

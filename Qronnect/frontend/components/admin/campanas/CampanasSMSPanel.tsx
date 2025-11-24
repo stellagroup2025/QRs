@@ -134,7 +134,7 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
       cancelada: 'Cancelada',
     }
     return (
-      <Badge className={`${estilos[estado] || ''} text-[10px] px-1.5 py-0 gap-1`}>
+      <Badge className={`${estilos[estado] || ''} text-xs px-1.5 py-0 gap-1`}>
         {getEstadoIcon(estado)}
         {textos[estado] || estado}
       </Badge>
@@ -148,7 +148,7 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
       transaccional: 'bg-gray-100 text-gray-700',
     }
     return (
-      <Badge className={`${estilos[tipo] || ''} text-[10px] px-1.5 py-0`}>
+      <Badge className={`${estilos[tipo] || ''} text-xs px-1.5 py-0`}>
         {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
       </Badge>
     )
@@ -279,19 +279,19 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
                           <Users className="h-3.5 w-3.5 text-muted-foreground" />
                           {campana.total_destinatarios}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">destinatarios</p>
+                        <p className="text-xs text-muted-foreground">destinatarios</p>
                       </div>
                       <div className="w-px h-8 bg-border" />
                       <div className="text-center flex-1">
                         <p className="text-lg font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
                           {campana.enviados || 0}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">enviados</p>
+                        <p className="text-xs text-muted-foreground">enviados</p>
                       </div>
                       <div className="w-px h-8 bg-border" />
                       <div className="text-center flex-1">
                         <p className="text-lg font-bold text-green-600">{campana.entregados || 0}</p>
-                        <p className="text-[10px] text-muted-foreground">entregados</p>
+                        <p className="text-xs text-muted-foreground">entregados</p>
                       </div>
                     </div>
 
@@ -307,12 +307,12 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
                               }}
                             />
                           </div>
-                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
                             {campana.entregados || 0}/{campana.enviados}
                           </span>
                         </div>
                         {campana.fallidos && campana.fallidos > 0 && (
-                          <div className="flex items-center gap-1 mt-1 text-[10px] text-red-500">
+                          <div className="flex items-center gap-1 mt-1 text-xs text-red-500">
                             <XCircle className="h-3 w-3" />
                             {campana.fallidos} fallidos
                           </div>
@@ -322,7 +322,7 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
 
                     {/* Footer con fecha y acciones */}
                     <div className="flex items-center justify-between pt-2 border-t">
-                      <div className="text-[10px] text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         {campana.fecha_envio ? (
                           <span>Enviada {formatearFecha(campana.fecha_envio)}</span>
                         ) : campana.fecha_programada ? (
@@ -331,23 +331,23 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
                           <span>Creada {formatearFecha(campana.creado_en)}</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-0.5">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-9 w-9"
                           onClick={() => setDetalleCampana(campana)}
                         >
-                          <Eye className="h-3.5 w-3.5" />
+                          <Eye className="h-4 w-4" />
                         </Button>
                         {campana.estado === 'borrador' && (
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-red-500 hover:text-red-700"
+                            className="h-9 w-9 text-red-500 hover:text-red-700"
                             onClick={() => eliminarCampana(campana.id)}
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -379,7 +379,7 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
                 <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
                   {detalleCampana.mensaje}
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {detalleCampana.mensaje.length} caracteres
                 </p>
               </div>
@@ -388,17 +388,17 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
               <div className="grid grid-cols-3 gap-2">
                 <div className="p-2 bg-muted rounded-lg text-center">
                   <p className="text-xl font-bold">{detalleCampana.total_destinatarios}</p>
-                  <p className="text-[10px] text-muted-foreground">Destinatarios</p>
+                  <p className="text-xs text-muted-foreground">Destinatarios</p>
                 </div>
                 <div className="p-2 bg-muted rounded-lg text-center">
                   <p className="text-xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
                     {detalleCampana.enviados || 0}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">Enviados</p>
+                  <p className="text-xs text-muted-foreground">Enviados</p>
                 </div>
                 <div className="p-2 bg-muted rounded-lg text-center">
                   <p className="text-xl font-bold text-green-600">{detalleCampana.entregados || 0}</p>
-                  <p className="text-[10px] text-muted-foreground">Entregados</p>
+                  <p className="text-xs text-muted-foreground">Entregados</p>
                 </div>
               </div>
 
