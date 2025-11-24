@@ -1,17 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   MessageSquare,
   Plus,
@@ -23,8 +23,11 @@ import {
   Eye,
   Trash2,
   Smartphone,
+  Loader2,
 } from 'lucide-react'
 import { CrearCampanaSMSModal } from './CrearCampanaSMSModal'
+import { useBrandingContext } from '@/components/BrandingProvider'
+import { hexToRgb } from '@/lib/brand-colors'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -49,10 +52,13 @@ interface CampanasSMSPanelProps {
 }
 
 export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelProps) {
+  const { branding } = useBrandingContext()
   const [campanas, setCampanas] = useState<CampanaSMS[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [mostrarTodas, setMostrarTodas] = useState(false)
+  const [detalleCampana, setDetalleCampana] = useState<CampanaSMS | null>(null)
 
   useEffect(() => {
     cargarCampanas()
@@ -103,248 +109,350 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
     }
   }
 
-  const getEstadoBadge = (estado: string) => {
-    const badges = {
-      borrador: <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />Borrador</Badge>,
-      programada: <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" />Programada</Badge>,
-      enviada: <Badge variant="default" className="gap-1 bg-green-600"><CheckCircle className="h-3 w-3" />Enviada</Badge>,
-      cancelada: <Badge variant="destructive" className="gap-1"><XCircle className="h-3 w-3" />Cancelada</Badge>,
+  function getEstadoIcon(estado: string) {
+    switch (estado) {
+      case 'borrador': return <Clock className="h-3 w-3" />
+      case 'programada': return <Clock className="h-3 w-3" />
+      case 'enviando': return <Loader2 className="h-3 w-3 animate-spin" />
+      case 'enviada': return <CheckCircle className="h-3 w-3" />
+      case 'cancelada': return <XCircle className="h-3 w-3" />
+      default: return null
     }
-    return badges[estado as keyof typeof badges] || <Badge>{estado}</Badge>
+  }
+
+  const getEstadoBadge = (estado: string) => {
+    const estilos: Record<string, string> = {
+      borrador: 'bg-gray-100 text-gray-700',
+      programada: 'bg-blue-100 text-blue-700',
+      enviada: 'bg-green-100 text-green-700',
+      cancelada: 'bg-red-100 text-red-700',
+    }
+    const textos: Record<string, string> = {
+      borrador: 'Borrador',
+      programada: 'Programada',
+      enviada: 'Enviada',
+      cancelada: 'Cancelada',
+    }
+    return (
+      <Badge className={`${estilos[estado] || ''} text-[10px] px-1.5 py-0 gap-1`}>
+        {getEstadoIcon(estado)}
+        {textos[estado] || estado}
+      </Badge>
+    )
   }
 
   const getTipoBadge = (tipo: string) => {
-    const badges = {
-      marketing: <Badge variant="default">Marketing</Badge>,
-      informativa: <Badge variant="secondary">Informativa</Badge>,
-      transaccional: <Badge variant="outline">Transaccional</Badge>,
+    const estilos: Record<string, string> = {
+      marketing: 'bg-purple-100 text-purple-700',
+      informativa: 'bg-blue-100 text-blue-700',
+      transaccional: 'bg-gray-100 text-gray-700',
     }
-    return badges[tipo as keyof typeof badges] || <Badge>{tipo}</Badge>
+    return (
+      <Badge className={`${estilos[tipo] || ''} text-[10px] px-1.5 py-0`}>
+        {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+      </Badge>
+    )
   }
+
+  function formatearFecha(fecha: string | undefined) {
+    if (!fecha) return '-'
+    return new Date(fecha).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+    })
+  }
+
+  // Filtrar campañas
+  const campanasActivas = campanas.filter(c => c.estado !== 'enviada' && c.estado !== 'cancelada')
+  const campanasVisibles = mostrarTodas ? campanas : campanasActivas
+
+  // Stats
+  const totalEnviados = campanas.reduce((acc, c) => acc + (c.enviados || 0), 0)
+  const totalEntregados = campanas.reduce((acc, c) => acc + (c.entregados || 0), 0)
+  const tasaEntrega = totalEnviados > 0 ? ((totalEntregados / totalEnviados) * 100).toFixed(0) : '0'
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
+          ))}
+        </div>
+      </div>
     )
   }
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Campañas SMS
-              </CardTitle>
-              <CardDescription>
-                Gestiona tus campañas de SMS para enviar mensajes a tus clientes
-              </CardDescription>
+      <div className="space-y-4">
+        {/* Header compacto */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <Badge variant="secondary">{campanasActivas.length} pendientes</Badge>
+              <Badge variant="outline">{totalEnviados} SMS enviados</Badge>
+              <Badge variant="outline">{tasaEntrega}% entrega</Badge>
             </div>
-            <Button onClick={() => setModalOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Campaña SMS
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="mostrar-todas-sms"
+                checked={mostrarTodas}
+                onCheckedChange={setMostrarTodas}
+              />
+              <Label htmlFor="mostrar-todas-sms" className="text-sm text-muted-foreground">
+                Ver historial
+              </Label>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setModalOpen(true)}
+              style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+              className="text-white"
+            >
+              <Plus className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Nueva</span>
             </Button>
           </div>
-        </CardHeader>
-      <CardContent>
+        </div>
+
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
-        {campanas.length === 0 ? (
-          <div className="text-center py-12">
-            <Smartphone className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No hay campañas SMS</h3>
-            <p className="text-gray-600 mb-4">
-              Crea tu primera campaña SMS para empezar a comunicarte con tus clientes
-            </p>
-            <Button onClick={() => setModalOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Crear Primera Campaña
-            </Button>
-          </div>
+        {/* Lista de campañas */}
+        {campanasVisibles.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center">
+              <Smartphone className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+              <p className="text-sm text-muted-foreground mb-3">
+                {mostrarTodas ? 'No hay campañas SMS' : 'No hay campañas SMS pendientes'}
+              </p>
+              <Button
+                size="sm"
+                onClick={() => setModalOpen(true)}
+                style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+                className="text-white"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Crear Campaña SMS
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="space-y-4">
-            {/* Resumen */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-blue-600 font-medium">Total Campañas</p>
-                    <p className="text-2xl font-bold text-blue-900">{campanas.length}</p>
-                  </div>
-                  <MessageSquare className="h-8 w-8 text-blue-600 opacity-50" />
-                </div>
-              </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {campanasVisibles.map((campana) => {
+              const tasaCampana = campana.enviados && campana.enviados > 0
+                ? ((campana.entregados || 0) / campana.enviados * 100).toFixed(0)
+                : '0'
 
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-green-600 font-medium">Enviadas</p>
-                    <p className="text-2xl font-bold text-green-900">
-                      {campanas.filter(c => c.estado === 'enviada').length}
-                    </p>
-                  </div>
-                  <CheckCircle className="h-8 w-8 text-green-600 opacity-50" />
-                </div>
-              </div>
-
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-yellow-600 font-medium">Programadas</p>
-                    <p className="text-2xl font-bold text-yellow-900">
-                      {campanas.filter(c => c.estado === 'programada').length}
-                    </p>
-                  </div>
-                  <Clock className="h-8 w-8 text-yellow-600 opacity-50" />
-                </div>
-              </div>
-
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-purple-600 font-medium">SMS Enviados</p>
-                    <p className="text-2xl font-bold text-purple-900">
-                      {campanas.reduce((acc, c) => acc + (c.enviados || 0), 0)}
-                    </p>
-                  </div>
-                  <Send className="h-8 w-8 text-purple-600 opacity-50" />
-                </div>
-              </div>
-            </div>
-
-            {/* Tabla */}
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Campaña</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-center">Destinatarios</TableHead>
-                    <TableHead className="text-center">Enviados</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {campanas.map((campana) => (
-                    <TableRow key={campana.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-semibold">{campana.nombre}</p>
-                          <p className="text-xs text-gray-500 truncate max-w-xs">
-                            {campana.mensaje.substring(0, 60)}...
-                          </p>
+              return (
+                <Card
+                  key={campana.id}
+                  className={`overflow-hidden transition-opacity ${campana.estado === 'cancelada' ? 'opacity-60' : ''}`}
+                >
+                  <CardContent className="p-3">
+                    {/* Header de la card */}
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-sm truncate">{campana.nombre}</h3>
+                          {getEstadoBadge(campana.estado)}
+                          {getTipoBadge(campana.tipo)}
                         </div>
-                      </TableCell>
-                      <TableCell>{getTipoBadge(campana.tipo)}</TableCell>
-                      <TableCell>{getEstadoBadge(campana.estado)}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Users className="h-4 w-4 text-gray-400" />
-                          <span className="font-semibold">{campana.total_destinatarios}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {campana.estado === 'enviada' ? (
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-center gap-1 text-green-600">
-                              <CheckCircle className="h-3 w-3" />
-                              <span className="text-sm font-semibold">{campana.entregados || 0}</span>
-                            </div>
-                            {campana.fallidos && campana.fallidos > 0 && (
-                              <div className="flex items-center justify-center gap-1 text-red-600">
-                                <XCircle className="h-3 w-3" />
-                                <span className="text-xs">{campana.fallidos}</span>
-                              </div>
-                            )}
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                          {campana.mensaje.length > 50
+                            ? campana.mensaje.substring(0, 50) + '...'
+                            : campana.mensaje}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Info principal */}
+                    <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg mb-2">
+                      <div className="text-center flex-1">
+                        <p className="text-lg font-bold flex items-center justify-center gap-1">
+                          <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                          {campana.total_destinatarios}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">destinatarios</p>
+                      </div>
+                      <div className="w-px h-8 bg-border" />
+                      <div className="text-center flex-1">
+                        <p className="text-lg font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
+                          {campana.enviados || 0}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">enviados</p>
+                      </div>
+                      <div className="w-px h-8 bg-border" />
+                      <div className="text-center flex-1">
+                        <p className="text-lg font-bold text-green-600">{campana.entregados || 0}</p>
+                        <p className="text-[10px] text-muted-foreground">entregados</p>
+                      </div>
+                    </div>
+
+                    {/* Barra de progreso de entrega */}
+                    {campana.enviados && campana.enviados > 0 && (
+                      <div className="mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                            <div
+                              className="h-1.5 rounded-full transition-all bg-green-500"
+                              style={{
+                                width: `${Math.min(100, parseFloat(tasaCampana))}%`,
+                              }}
+                            />
                           </div>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {campana.fecha_envio ? (
-                            <>
-                              <p className="font-medium">
-                                {new Date(campana.fecha_envio).toLocaleDateString('es-ES')}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(campana.fecha_envio).toLocaleTimeString('es-ES', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </p>
-                            </>
-                          ) : campana.fecha_programada ? (
-                            <>
-                              <p className="font-medium text-yellow-600">
-                                {new Date(campana.fecha_programada).toLocaleDateString('es-ES')}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(campana.fecha_programada).toLocaleTimeString('es-ES', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </p>
-                            </>
-                          ) : (
-                            <span className="text-gray-400">Sin programar</span>
-                          )}
+                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                            {campana.entregados || 0}/{campana.enviados}
+                          </span>
                         </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        {campana.fallidos && campana.fallidos > 0 && (
+                          <div className="flex items-center gap-1 mt-1 text-[10px] text-red-500">
+                            <XCircle className="h-3 w-3" />
+                            {campana.fallidos} fallidos
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Footer con fecha y acciones */}
+                    <div className="flex items-center justify-between pt-2 border-t">
+                      <div className="text-[10px] text-muted-foreground">
+                        {campana.fecha_envio ? (
+                          <span>Enviada {formatearFecha(campana.fecha_envio)}</span>
+                        ) : campana.fecha_programada ? (
+                          <span className="text-blue-600">Programada {formatearFecha(campana.fecha_programada)}</span>
+                        ) : (
+                          <span>Creada {formatearFecha(campana.creado_en)}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => setDetalleCampana(campana)}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                        {campana.estado === 'borrador' && (
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => window.location.href = `/admin/campanas-sms/${campana.id}`}
+                            className="h-7 w-7 text-red-500 hover:text-red-700"
+                            onClick={() => eliminarCampana(campana.id)}
                           >
-                            <Eye className="h-4 w-4" />
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
-                          {campana.estado === 'borrador' && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => eliminarCampana(campana.id)}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
 
-    {/* Modal para crear campaña */}
-    <CrearCampanaSMSModal
-      open={modalOpen}
-      onOpenChange={setModalOpen}
-      adminToken={adminToken}
-      tenantDomain={tenantDomain}
-      onSuccess={cargarCampanas}
-    />
+      {/* Modal de detalle */}
+      <Dialog open={!!detalleCampana} onOpenChange={() => setDetalleCampana(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 flex-wrap">
+              {detalleCampana?.nombre}
+              {detalleCampana && getEstadoBadge(detalleCampana.estado)}
+              {detalleCampana && getTipoBadge(detalleCampana.tipo)}
+            </DialogTitle>
+          </DialogHeader>
+
+          {detalleCampana && (
+            <div className="space-y-4">
+              {/* Mensaje completo */}
+              <div>
+                <h4 className="text-sm font-medium mb-1">Mensaje</h4>
+                <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                  {detalleCampana.mensaje}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {detalleCampana.mensaje.length} caracteres
+                </p>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-2 bg-muted rounded-lg text-center">
+                  <p className="text-xl font-bold">{detalleCampana.total_destinatarios}</p>
+                  <p className="text-[10px] text-muted-foreground">Destinatarios</p>
+                </div>
+                <div className="p-2 bg-muted rounded-lg text-center">
+                  <p className="text-xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
+                    {detalleCampana.enviados || 0}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">Enviados</p>
+                </div>
+                <div className="p-2 bg-muted rounded-lg text-center">
+                  <p className="text-xl font-bold text-green-600">{detalleCampana.entregados || 0}</p>
+                  <p className="text-[10px] text-muted-foreground">Entregados</p>
+                </div>
+              </div>
+
+              {/* Fallidos */}
+              {detalleCampana.fallidos && detalleCampana.fallidos > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Fallidos:</span>
+                  <span className="font-medium text-red-500">{detalleCampana.fallidos}</span>
+                </div>
+              )}
+
+              {/* Fechas */}
+              <div className="space-y-1 pt-2 border-t text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Creada:</span>
+                  <span>{new Date(detalleCampana.creado_en).toLocaleDateString('es-ES')}</span>
+                </div>
+                {detalleCampana.fecha_programada && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Programada:</span>
+                    <span>{new Date(detalleCampana.fecha_programada).toLocaleDateString('es-ES')}</span>
+                  </div>
+                )}
+                {detalleCampana.fecha_envio && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Enviada:</span>
+                    <span>{new Date(detalleCampana.fecha_envio).toLocaleDateString('es-ES')}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Acciones */}
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setDetalleCampana(null)}
+                >
+                  Cerrar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para crear campaña */}
+      <CrearCampanaSMSModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        adminToken={adminToken}
+        tenantDomain={tenantDomain}
+        onSuccess={cargarCampanas}
+      />
     </>
   )
 }
