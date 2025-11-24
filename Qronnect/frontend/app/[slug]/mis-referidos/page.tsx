@@ -120,8 +120,6 @@ export default function MisReferidosPage() {
         return;
       }
 
-      console.log('🔍 Cargando código de referido...', { token: token?.substring(0, 20), slug });
-
       // Cargar código personal
       const codigoRes = await fetch(`${API_URL}/api/referidos/mi-codigo`, {
         headers: {
@@ -130,15 +128,9 @@ export default function MisReferidosPage() {
         },
       });
 
-      console.log('📡 Respuesta del servidor:', codigoRes.status);
-
       if (codigoRes.ok) {
         const data = await codigoRes.json();
-        console.log('✅ Datos recibidos:', data);
         setCodigo(data);
-      } else {
-        const error = await codigoRes.text();
-        console.error('❌ Error al cargar código:', codigoRes.status, error);
       }
 
       // Cargar mis referidos
@@ -151,8 +143,6 @@ export default function MisReferidosPage() {
 
       if (referidosRes.ok) {
         const data = await referidosRes.json();
-        console.log('📋 Referidos recibidos:', data);
-        // El backend devuelve directamente el array, no { referidos: [] }
         setReferidos(Array.isArray(data) ? data : []);
       }
 
@@ -183,7 +173,7 @@ export default function MisReferidosPage() {
           setMilestones(data || []);
         }
       } catch (error) {
-        console.error('Error cargando milestones:', error);
+        // Milestones es funcionalidad opcional
       }
 
       // Cargar milestones alcanzados (requiere auth)
@@ -200,10 +190,10 @@ export default function MisReferidosPage() {
           setMilestonesAlcanzados(data || []);
         }
       } catch (error) {
-        console.error('Error cargando milestones alcanzados:', error);
+        // Milestones alcanzados es funcionalidad opcional
       }
     } catch (error) {
-      console.error('Error cargando datos:', error);
+      // Error general silencioso
     } finally {
       setLoading(false);
     }
@@ -338,7 +328,7 @@ export default function MisReferidosPage() {
           url: codigo?.url,
         });
       } catch (error) {
-        console.log('Error al compartir:', error);
+        // Usuario canceló compartir
       }
     } else {
       toast({
@@ -351,12 +341,35 @@ export default function MisReferidosPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando...</p>
+      <>
+        <ClientNav slug={slug} />
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <div className="mb-8">
+            <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2" />
+            <div className="h-4 w-64 bg-gray-200 rounded animate-pulse" />
+          </div>
+          {/* QR Card skeleton */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 mb-8">
+            <div className="h-6 w-40 bg-gray-200 rounded animate-pulse mx-auto mb-6" />
+            <div className="h-72 w-72 bg-white rounded-2xl animate-pulse mx-auto mb-6" />
+            <div className="h-12 w-32 bg-gray-200 rounded animate-pulse mx-auto mb-6" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-10 bg-gray-200 rounded animate-pulse" />
+              ))}
+            </div>
+          </div>
+          {/* Referidos list skeleton */}
+          <div className="bg-white rounded-lg p-6">
+            <div className="h-6 w-48 bg-gray-200 rounded animate-pulse mb-4" />
+            <div className="space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-16 bg-gray-100 rounded animate-pulse" />
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
