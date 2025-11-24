@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
 import { useState, useEffect, useCallback } from "react"
 import { useBrandingContext } from "@/components/BrandingProvider"
 import { hexToRgb } from "@/lib/brand-colors"
@@ -89,6 +90,17 @@ export function RegistroFormV2() {
   })
 
   const watchedFields = watch()
+
+  // Detectar si hay datos sin guardar para advertir antes de salir
+  const hasFormData = Boolean(
+    watchedFields.nombre ||
+    watchedFields.email ||
+    watchedFields.telefono
+  )
+  useUnsavedChanges({
+    hasUnsavedChanges: hasFormData && !isSubmitting,
+    message: '¿Seguro que quieres salir? Los datos del formulario se perderán.',
+  })
 
   // Persistencia del formulario para evitar pérdida de datos
   const STORAGE_KEY = 'registro_form_draft'
