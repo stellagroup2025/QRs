@@ -644,19 +644,19 @@ export default function AdminDashboardPage() {
           <TabsContent value="clientes" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <CardTitle>Gestión de Clientes</CardTitle>
                     <CardDescription>
                       {data?.total_clientes || 0} clientes registrados
                     </CardDescription>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="relative">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div className="relative flex-1 sm:flex-initial">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Buscar clientes..."
-                        className="pl-9 w-64"
+                        className="pl-9 w-full sm:w-48"
                         value={searchClientes}
                         onChange={(e) => {
                           setSearchClientes(e.target.value)
@@ -673,6 +673,7 @@ export default function AdminDashboardPage() {
                       onClick={() => fetchClientes(1, searchClientes)}
                       style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                       className="text-white"
+                      size="sm"
                     >
                       Buscar
                     </Button>
@@ -1022,14 +1023,14 @@ export default function AdminDashboardPage() {
 
           {/* Promociones Tab */}
           <TabsContent value="promociones" className="space-y-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold">Gestión de Promociones</h2>
-                <p className="text-muted-foreground">
-                  Crea y gestiona las promociones que los clientes pueden canjear con sus puntos
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div className="min-w-0">
+                <h2 className="text-xl sm:text-2xl font-bold">Promociones</h2>
+                <p className="text-sm text-muted-foreground">
+                  Gestiona las promociones canjeables con puntos
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <IADrawerPromociones
                   tenantDomain={tienda?.dominio || ''}
                   adminToken={token || ''}
@@ -1037,10 +1038,11 @@ export default function AdminDashboardPage() {
                 <Button
                   onClick={() => setValidarCanjeOpen(true)}
                   variant="outline"
+                  size="sm"
                   className="flex items-center gap-2"
                 >
                   <Ticket className="h-4 w-4" />
-                  Validar Cupón
+                  <span className="hidden sm:inline">Validar Cupón</span>
                 </Button>
               </div>
             </div>
@@ -1086,15 +1088,15 @@ export default function AdminDashboardPage() {
             {/* Selector de Periodo */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="min-w-0">
                     <CardTitle>Analytics y Métricas</CardTitle>
                     <CardDescription>
-                      Visualiza el rendimiento de tu negocio con gráficos interactivos
+                      Rendimiento del negocio
                     </CardDescription>
                   </div>
                   <Select value={analyticsPeriodo} onValueChange={(value: '7d' | '30d' | '90d') => setAnalyticsPeriodo(value)}>
-                    <SelectTrigger className="w-[160px]">
+                    <SelectTrigger className="w-full sm:w-[160px]">
                       <SelectValue placeholder="Periodo" />
                     </SelectTrigger>
                     <SelectContent>
