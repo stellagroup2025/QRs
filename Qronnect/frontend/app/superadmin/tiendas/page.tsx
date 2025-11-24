@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { SenderIDModal } from '@/components/superadmin/SenderIDModal'
 import { getAdminDashboardUrl } from '@/lib/urls'
 import {
@@ -29,7 +30,8 @@ import {
   Smartphone,
   MessageSquare,
   Globe2,
-  Building2
+  Building2,
+  Search
 } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
@@ -57,6 +59,18 @@ export default function SuperAdminTiendasPage() {
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedTienda, setSelectedTienda] = useState<Tienda | null>(null)
+  const [searchTiendas, setSearchTiendas] = useState('')
+
+  // Filtrar tiendas por búsqueda
+  const filteredTiendas = tiendas.filter((tienda) => {
+    if (!searchTiendas.trim()) return true
+    const search = searchTiendas.toLowerCase()
+    return (
+      tienda.nombre.toLowerCase().includes(search) ||
+      tienda.dominio.toLowerCase().includes(search) ||
+      tienda.plan.toLowerCase().includes(search)
+    )
+  })
 
   useEffect(() => {
     const token = localStorage.getItem('superadmin_token')
@@ -217,29 +231,56 @@ export default function SuperAdminTiendasPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Todas las Tiendas</CardTitle>
-            <CardDescription>
-              Listado completo de comercios en el sistema
-            </CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle>Todas las Tiendas</CardTitle>
+                <CardDescription>
+                  {searchTiendas ? `${filteredTiendas.length} de ${tiendas.length}` : tiendas.length} comercios
+                </CardDescription>
+              </div>
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar tienda..."
+                  className="pl-9"
+                  value={searchTiendas}
+                  onChange={(e) => setSearchTiendas(e.target.value)}
+                />
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            {tiendas.length === 0 ? (
+            {filteredTiendas.length === 0 ? (
               <div className="text-center py-12">
                 <Store className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No hay tiendas</h3>
-                <p className="text-muted-foreground mb-4">
-                  Crea tu primera tienda para empezar
-                </p>
-                <Button onClick={() => router.push('/superadmin/tiendas/nueva')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Crear Primera Tienda
-                </Button>
+                {searchTiendas ? (
+                  <>
+                    <h3 className="text-lg font-semibold mb-2">Sin resultados</h3>
+                    <p className="text-muted-foreground mb-4">
+                      No se encontraron tiendas con "{searchTiendas}"
+                    </p>
+                    <Button variant="outline" onClick={() => setSearchTiendas('')}>
+                      Limpiar búsqueda
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-semibold mb-2">No hay tiendas</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Crea tu primera tienda para empezar
+                    </p>
+                    <Button onClick={() => router.push('/superadmin/tiendas/nueva')}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Crear Primera Tienda
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
               <>
                 {/* Vista Móvil - Cards */}
                 <div className="lg:hidden space-y-4">
-                  {tiendas.map((tienda) => (
+                  {filteredTiendas.map((tienda) => (
                     <Card key={tienda.id} className="overflow-hidden">
                       <CardContent className="p-4">
                         {/* Header de la card */}
@@ -386,7 +427,7 @@ export default function SuperAdminTiendasPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {tiendas.map((tienda) => (
+                      {filteredTiendas.map((tienda) => (
                         <TableRow key={tienda.id}>
                           <TableCell>
                             <div>
