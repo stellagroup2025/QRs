@@ -290,6 +290,7 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
                       variant="ghost"
                       size="icon"
                       className="h-9 w-9"
+                      aria-label="Ver detalle"
                       onClick={() => setDetallePromo(promo)}
                     >
                       <Eye className="h-4 w-4" />
@@ -298,6 +299,7 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
                       variant="ghost"
                       size="icon"
                       className="h-9 w-9"
+                      aria-label="Editar promoción"
                       onClick={() => {
                         setEditingPromo(promo)
                         setDialogOpen(true)
@@ -309,6 +311,7 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
                       variant="ghost"
                       size="icon"
                       className="h-9 w-9 text-red-500 hover:text-red-700"
+                      aria-label="Eliminar promoción"
                       onClick={() => handleDelete(promo.id)}
                     >
                       <Trash2 className="h-4 w-4" />

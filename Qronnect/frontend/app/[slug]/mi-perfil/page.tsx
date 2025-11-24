@@ -593,6 +593,7 @@ export default function MiPerfilPage() {
                     size="icon"
                     onClick={handleCopiarCodigo}
                     className="h-12 w-12"
+                    aria-label="Copiar código de referido"
                     style={{
                       borderColor: hexToRgb(branding.color_acento),
                       color: hexToRgb(branding.color_acento)
@@ -978,6 +979,7 @@ export default function MiPerfilPage() {
                     variant="outline"
                     size="icon"
                     onClick={handleCopiarCodigo}
+                    aria-label="Copiar código"
                     className="h-10 w-10 border-purple-300 text-purple-600 hover:bg-purple-50"
                   >
                     <Copy className="h-5 w-5" />
