@@ -52,6 +52,7 @@ import { IADrawerPromociones } from '@/components/admin/promociones/IADrawer'
 import { PanelIA } from '@/components/admin/ia/PanelIA'
 import { AnalistaKPIs } from '@/components/admin/ia/AnalistaKPIs'
 import { DashboardSkeleton } from '@/components/ui/skeletons'
+import { ErrorRetry } from '@/components/ui/error-retry'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -136,6 +137,7 @@ export default function AdminDashboardPage() {
   const [token, setToken] = useState<string | null>(null)
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [qrUrl, setQrUrl] = useState('')
 
   // Estado para clientes
@@ -279,7 +281,12 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const fetchDashboard = async (token: string) => {
+  const fetchDashboard = async (adminToken?: string) => {
+    const tokenToUse = adminToken || token
+    if (!tokenToUse) return
+
+    setLoadError(null)
+    setLoading(true)
     try {
       // Obtener el dominio de la tienda desde localStorage
       const tiendaData = localStorage.getItem('admin_tienda')
@@ -287,10 +294,16 @@ export default function AdminDashboardPage() {
 
       const response = await fetch(`${API_URL}/api/admin/dashboard/resumen`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${tokenToUse}`,
           'X-Tenant-Domain': domain,
         },
       })
+
+      if (response.status === 401) {
+        localStorage.removeItem('admin_token')
+        router.push('/admin/login')
+        return
+      }
 
       if (!response.ok) throw new Error('Error al cargar dashboard')
 
@@ -298,8 +311,7 @@ export default function AdminDashboardPage() {
       setData(dashboardData)
     } catch (error) {
       console.error('Error:', error)
-      localStorage.removeItem('admin_token')
-      router.push('/admin/login')
+      setLoadError('No se pudo cargar el dashboard. Verifica tu conexión.')
     } finally {
       setLoading(false)
     }
@@ -456,6 +468,22 @@ export default function AdminDashboardPage() {
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 sm:p-6">
         <div className="max-w-7xl mx-auto">
           <DashboardSkeleton />
+        </div>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        <AdminNav />
+        <div className="max-w-md mx-auto p-6 pt-20">
+          <ErrorRetry
+            title="Error de conexión"
+            message={loadError}
+            onRetry={() => fetchDashboard()}
+            isRetrying={loading}
+          />
         </div>
       </div>
     )

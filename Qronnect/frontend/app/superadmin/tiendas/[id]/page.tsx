@@ -37,6 +37,7 @@ import {
   Palette,
   Save,
 } from 'lucide-react'
+import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -382,6 +383,7 @@ export default function TiendaDetallePage() {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="Volver a tiendas"
                 onClick={() => router.push('/superadmin/tiendas')}
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -402,6 +404,16 @@ export default function TiendaDetallePage() {
 
       {/* Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumbs */}
+        <Breadcrumbs
+          className="mb-6"
+          homeHref="/superadmin/dashboard"
+          items={[
+            { label: 'Tiendas', href: '/superadmin/tiendas' },
+            { label: tienda.nombre }
+          ]}
+        />
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
