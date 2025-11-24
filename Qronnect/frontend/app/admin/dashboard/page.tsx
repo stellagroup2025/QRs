@@ -460,42 +460,42 @@ export default function AdminDashboardPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Clientes</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+        <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-8">
+          <Card className="p-2 sm:p-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Clientes</CardTitle>
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data?.total_clientes || 0}</div>
-              <p className="text-xs text-muted-foreground">Registrados en el programa</p>
+            <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{data?.total_clientes || 0}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">Registrados</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Compras</CardTitle>
-              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+          <Card className="p-2 sm:p-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Compras</CardTitle>
+              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data?.total_compras || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Ticket medio: €{(data?.ticket_medio || 0).toFixed(2)}
+            <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{data?.total_compras || 0}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">
+                Ticket: €{(data?.ticket_medio || 0).toFixed(0)}
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Facturación</CardTitle>
-              <Euro className="h-4 w-4 text-muted-foreground" />
+          <Card className="p-2 sm:p-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Ventas</CardTitle>
+              <Euro className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                €{(data?.ventas_totales || 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+            <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">
+                €{(data?.ventas_totales || 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
               </div>
-              <p className="text-xs text-muted-foreground">
-                {data?.puntos_otorgados_totales || 0} puntos otorgados
+              <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">
+                {data?.puntos_otorgados_totales || 0} pts
               </p>
             </CardContent>
           </Card>
