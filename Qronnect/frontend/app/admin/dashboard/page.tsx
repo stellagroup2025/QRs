@@ -699,7 +699,8 @@ export default function AdminDashboardPage() {
                   </div>
                 ) : (
                   <>
-                    <div className="rounded-md border">
+                    {/* Vista Desktop - Tabla */}
+                    <div className="hidden md:block rounded-md border">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -753,6 +754,59 @@ export default function AdminDashboardPage() {
                           ))}
                         </TableBody>
                       </Table>
+                    </div>
+
+                    {/* Vista Móvil - Cards */}
+                    <div className="md:hidden space-y-4">
+                      {clientes?.data?.map((cliente) => (
+                        <Card key={cliente.id}>
+                          <CardContent className="p-4 space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-base">{cliente.nombre}</h3>
+                                <p className="text-sm text-muted-foreground">{cliente.email}</p>
+                              </div>
+                              <div className="flex flex-col items-end">
+                                <span className="text-lg font-bold" style={{ color: hexToRgb(branding.color_acento) }}>
+                                  {cliente.puntos_totales}
+                                </span>
+                                <span className="text-xs text-muted-foreground">puntos</span>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Teléfono:</span>
+                                <p className="font-medium">{cliente.telefono || '-'}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Edad:</span>
+                                <p className="font-medium">{calcularEdad(cliente.fecha_nacimiento)}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Compras:</span>
+                                <p className="font-medium">{cliente.total_compras || 0}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Ticket medio:</span>
+                                <p className="font-medium">
+                                  {cliente.ticket_medio !== undefined
+                                    ? `${cliente.ticket_medio.toFixed(2)} €`
+                                    : '-'}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Última visita:</span>
+                                <p className="font-medium">{formatearDiasDesdeUltimaVisita(cliente.dias_desde_ultima_visita)}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Registro:</span>
+                                <p className="font-medium">{formatDate(cliente.fecha_registro)}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
 
                     {/* Paginación */}
@@ -831,7 +885,8 @@ export default function AdminDashboardPage() {
                   </div>
                 ) : (
                   <>
-                    <div className="rounded-md border">
+                    {/* Vista Desktop - Tabla */}
+                    <div className="hidden md:block rounded-md border">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -869,6 +924,38 @@ export default function AdminDashboardPage() {
                           ))}
                         </TableBody>
                       </Table>
+                    </div>
+
+                    {/* Vista Móvil - Cards */}
+                    <div className="md:hidden space-y-4">
+                      {compras?.data?.map((compra) => (
+                        <Card key={compra.id}>
+                          <CardContent className="p-4 space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-base">{compra.cliente.nombre}</h3>
+                                <p className="text-sm text-muted-foreground">{compra.cliente.email}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{formatDateTime(compra.fecha)}</p>
+                              </div>
+                              <div className="flex flex-col items-end">
+                                <span className="text-lg font-bold">
+                                  {formatCurrency(compra.importe)}
+                                </span>
+                                <span className="text-sm font-semibold" style={{ color: hexToRgb(branding.color_acento) }}>
+                                  +{compra.puntos_otorgados} pts
+                                </span>
+                              </div>
+                            </div>
+
+                            {compra.notas && (
+                              <div className="pt-2 border-t">
+                                <span className="text-xs text-muted-foreground">Notas:</span>
+                                <p className="text-sm mt-1">{compra.notas}</p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
 
                     {/* Paginación */}
