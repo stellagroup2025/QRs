@@ -17,6 +17,7 @@ import { Plus, Edit, Trash2, Calendar, Gift, TrendingUp, Eye, ChevronRight } fro
 import { PromocionFormDialog } from './PromocionFormDialog'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
+import { useConfirmDialog } from '@/hooks/use-confirm-dialog'
 
 interface Promocion {
   id: string
@@ -46,6 +47,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: PromocionesPanelProps) {
   const { branding } = useBrandingContext()
+  const { confirm } = useConfirmDialog()
   const [promociones, setPromociones] = useState<Promocion[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -79,7 +81,13 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
   }, [adminToken, tenantDomain])
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar esta promoción?')) return
+    const confirmed = await confirm({
+      title: '¿Eliminar promoción?',
+      description: 'Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      variant: 'destructive',
+    })
+    if (!confirmed) return
 
     try {
       const response = await fetch(`${API_URL}/api/admin/promociones/${id}`, {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSenderID, validateSenderID, generarSenderID } from '@/hooks/useSenderID'
+import { useConfirmDialog } from '@/hooks/use-confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -33,6 +34,7 @@ export function SenderIDModal({
   onSuccess,
 }: SenderIDModalProps) {
   const { actualizarSenderID, eliminarSenderID, loading, error } = useSenderID(tiendaId)
+  const { confirm } = useConfirmDialog()
 
   const [senderId, setSenderId] = useState(currentSenderId || '')
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -74,9 +76,13 @@ export function SenderIDModal({
   }
 
   const handleEliminar = async () => {
-    if (!confirm('¿Eliminar el Sender ID? La tienda volverá a usar número de teléfono.')) {
-      return
-    }
+    const confirmed = await confirm({
+      title: '¿Eliminar Sender ID?',
+      description: 'La tienda volverá a usar número de teléfono.',
+      confirmText: 'Eliminar',
+      variant: 'destructive',
+    })
+    if (!confirmed) return
 
     try {
       await eliminarSenderID()

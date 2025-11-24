@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useConfirmDialog } from '@/hooks/use-confirm-dialog'
+import { useDebounce } from '@/hooks/use-debounce'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -33,6 +35,7 @@ import {
   Building2,
   Search
 } from 'lucide-react'
+import { TiendasListSkeleton } from '@/components/ui/skeletons'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -55,6 +58,7 @@ interface Tienda {
 
 export default function SuperAdminTiendasPage() {
   const router = useRouter()
+  const { confirm } = useConfirmDialog()
   const [tiendas, setTiendas] = useState<Tienda[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -107,7 +111,13 @@ export default function SuperAdminTiendasPage() {
   }
 
   const handleDelete = async (id: string, nombre: string) => {
-    if (!confirm(`¿Seguro que quieres eliminar la tienda "${nombre}"?`)) return
+    const confirmed = await confirm({
+      title: '¿Eliminar tienda?',
+      description: `Se eliminará "${nombre}" y todos sus datos permanentemente.`,
+      confirmText: 'Eliminar',
+      variant: 'destructive',
+    })
+    if (!confirmed) return
 
     const token = localStorage.getItem('superadmin_token')
     try {
@@ -191,8 +201,10 @@ export default function SuperAdminTiendasPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto">
+          <TiendasListSkeleton />
+        </div>
       </div>
     )
   }

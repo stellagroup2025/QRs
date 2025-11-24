@@ -10,6 +10,7 @@ import { BrandingProvider } from "@/components/BrandingProvider"
 import { CookieConsentProvider } from "@/components/CookieConsentProvider"
 import { CookieBanner } from "@/components/CookieBanner"
 import { SkipLink } from "@/components/ui/skip-link"
+import { ConfirmDialogProvider } from "@/hooks/use-confirm-dialog"
 import { BRAND } from "@/config/appBrand"
 import "./globals.css"
 
@@ -36,6 +37,7 @@ const baseMetadata: Metadata = {
       { url: '/apple-icon.svg', type: 'image/svg+xml' }
     ],
   },
+  manifest: '/manifest.json',
   generator: "v0.app",
 }
 
@@ -111,11 +113,13 @@ export default function RootLayout({
         <BrandingProvider>
           <CookieConsentProvider>
             <BrandProvider>
-              <main id="main-content">
-                {children}
-              </main>
-              <Toaster />
-              <CookieBanner />
+              <ConfirmDialogProvider>
+                <main id="main-content">
+                  {children}
+                </main>
+                <Toaster />
+                <CookieBanner />
+              </ConfirmDialogProvider>
             </BrandProvider>
           </CookieConsentProvider>
         </BrandingProvider>
