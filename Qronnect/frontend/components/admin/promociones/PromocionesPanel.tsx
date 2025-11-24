@@ -4,7 +4,16 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Edit, Trash2, Calendar, Gift, TrendingUp } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Plus, Edit, Trash2, Calendar, Gift, TrendingUp, Eye, ChevronRight } from 'lucide-react'
 import { PromocionFormDialog } from './PromocionFormDialog'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
@@ -41,6 +50,8 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPromo, setEditingPromo] = useState<Promocion | null>(null)
+  const [mostrarInactivas, setMostrarInactivas] = useState(false)
+  const [detallePromo, setDetallePromo] = useState<Promocion | null>(null)
 
   const fetchPromociones = async () => {
     setLoading(true)
@@ -95,113 +106,88 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
 
   const getTipoLabel = (tipo: string) => {
     switch (tipo) {
-      case 'descuento_fijo': return 'Descuento Fijo'
-      case 'descuento_porcentaje': return 'Descuento %'
-      case 'producto_gratis': return 'Producto Gratis'
+      case 'descuento_fijo': return 'Fijo'
+      case 'descuento_porcentaje': return '%'
+      case 'producto_gratis': return 'Gratis'
       default: return tipo
     }
   }
 
   const getValorLabel = (tipo: string, valor: number) => {
     switch (tipo) {
-      case 'descuento_fijo': return `€${valor.toFixed(2)}`
+      case 'descuento_fijo': return `€${valor.toFixed(0)}`
       case 'descuento_porcentaje': return `${valor}%`
       case 'producto_gratis': return 'Gratis'
       default: return valor.toString()
     }
   }
 
+  // Filtrar promociones según el estado del switch
+  const promocionesVisibles = mostrarInactivas
+    ? promociones
+    : promociones.filter(p => p.activo)
+
+  const promocionesActivas = promociones.filter(p => p.activo).length
+  const totalCanjes = promociones.reduce((sum, p) => sum + p.cantidad_canjeada, 0)
+
   if (loading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(6)].map((_, i) => (
-          <Card key={i}>
-            <CardHeader>
-              <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-            </CardHeader>
-            <CardContent>
-              <div className="h-24 bg-gray-100 rounded animate-pulse" />
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
+          ))}
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Promociones</h2>
-          <p className="text-muted-foreground">Gestiona las promociones disponibles para canjear</p>
+    <div className="space-y-4">
+      {/* Header compacto */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-sm">
+            <Badge variant="secondary">{promocionesActivas} activas</Badge>
+            <Badge variant="outline">{totalCanjes} canjes</Badge>
+          </div>
         </div>
-        <Button
-          onClick={() => {
-            setEditingPromo(null)
-            setDialogOpen(true)
-          }}
-          style={{ backgroundColor: hexToRgb(branding.color_primario) }}
-          className="text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva Promoción
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Switch
+              id="mostrar-inactivas"
+              checked={mostrarInactivas}
+              onCheckedChange={setMostrarInactivas}
+            />
+            <Label htmlFor="mostrar-inactivas" className="text-sm text-muted-foreground">
+              Ver inactivas
+            </Label>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingPromo(null)
+              setDialogOpen(true)
+            }}
+            style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+            className="text-white"
+          >
+            <Plus className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Nueva</span>
+          </Button>
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Lista de promociones */}
+      {promocionesVisibles.length === 0 ? (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Promociones Activas</CardTitle>
-            <Gift className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {promociones.filter(p => p.activo).length}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Canjes</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {promociones.reduce((sum, p) => sum + p.cantidad_canjeada, 0)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Próximas a Vencer</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {promociones.filter(p => {
-                if (!p.fecha_fin) return false
-                const diff = new Date(p.fecha_fin).getTime() - new Date().getTime()
-                return diff > 0 && diff < 7 * 24 * 60 * 60 * 1000 // 7 días
-              }).length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Promociones Grid */}
-      {promociones.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-lg font-medium mb-2">No hay promociones creadas</p>
-            <p className="text-muted-foreground mb-4">
-              Crea tu primera promoción para que los clientes puedan canjear sus puntos
+          <CardContent className="py-8 text-center">
+            <Gift className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+            <p className="text-sm text-muted-foreground mb-3">
+              {mostrarInactivas ? 'No hay promociones' : 'No hay promociones activas'}
             </p>
             <Button
+              size="sm"
               onClick={() => {
                 setEditingPromo(null)
                 setDialogOpen(true)
@@ -209,104 +195,215 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
               style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               className="text-white"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Crear Primera Promoción
+              <Plus className="h-4 w-4 mr-1" />
+              Crear Promoción
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {promociones.map((promo) => (
-            <Card key={promo.id} className={!promo.activo ? 'opacity-60' : ''}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{promo.titulo}</CardTitle>
-                    <CardDescription className="mt-1">
-                      {promo.descripcion || 'Sin descripción'}
-                    </CardDescription>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {promocionesVisibles.map((promo) => (
+            <Card
+              key={promo.id}
+              className={`overflow-hidden transition-opacity ${!promo.activo ? 'opacity-60' : ''}`}
+            >
+              <CardContent className="p-3">
+                {/* Header de la card */}
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-sm truncate">{promo.titulo}</h3>
+                      <Badge
+                        variant={promo.activo ? 'default' : 'secondary'}
+                        className="text-[10px] px-1.5 py-0"
+                      >
+                        {promo.activo ? 'Activa' : 'Inactiva'}
+                      </Badge>
+                    </div>
+                    {promo.descripcion && (
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                        {promo.descripcion}
+                      </p>
+                    )}
                   </div>
-                  <Badge variant={promo.activo ? 'default' : 'secondary'}>
-                    {promo.activo ? 'Activa' : 'Inactiva'}
-                  </Badge>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Valor de la promoción */}
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Beneficio</p>
-                    <p className="text-2xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
+
+                {/* Info principal */}
+                <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg mb-2">
+                  <div className="text-center flex-1">
+                    <p className="text-lg font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
                       {getValorLabel(promo.tipo, promo.valor)}
                     </p>
+                    <p className="text-[10px] text-muted-foreground">{getTipoLabel(promo.tipo)}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Puntos</p>
-                    <p className="text-2xl font-bold">{promo.puntos_requeridos}</p>
+                  <div className="w-px h-8 bg-border" />
+                  <div className="text-center flex-1">
+                    <p className="text-lg font-bold">{promo.puntos_requeridos}</p>
+                    <p className="text-[10px] text-muted-foreground">puntos</p>
+                  </div>
+                  <div className="w-px h-8 bg-border" />
+                  <div className="text-center flex-1">
+                    <p className="text-lg font-bold">{promo.cantidad_canjeada}</p>
+                    <p className="text-[10px] text-muted-foreground">canjes</p>
                   </div>
                 </div>
 
-                {/* Tipo */}
-                <div>
-                  <Badge variant="outline">{getTipoLabel(promo.tipo)}</Badge>
-                </div>
-
-                {/* Cantidad */}
-                {promo.cantidad_disponible !== null && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Canjes disponibles</p>
+                {/* Barra de progreso si hay límite */}
+                {promo.cantidad_disponible !== null && promo.cantidad_disponible !== undefined && (
+                  <div className="mb-2">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-1.5">
                         <div
-                          className="h-2 rounded-full transition-all"
+                          className="h-1.5 rounded-full transition-all"
                           style={{
                             width: `${Math.min(100, (promo.cantidad_canjeada / promo.cantidad_disponible) * 100)}%`,
                             backgroundColor: hexToRgb(branding.color_acento),
                           }}
                         />
                       </div>
-                      <span className="text-sm font-medium">
+                      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
                         {promo.cantidad_canjeada}/{promo.cantidad_disponible}
                       </span>
                     </div>
                   </div>
                 )}
 
-                {/* Fechas */}
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <p>Inicio: {new Date(promo.fecha_inicio).toLocaleDateString('es-ES')}</p>
-                  {promo.fecha_fin && (
-                    <p>Fin: {new Date(promo.fecha_fin).toLocaleDateString('es-ES')}</p>
-                  )}
-                </div>
-
-                {/* Acciones */}
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      setEditingPromo(promo)
-                      setDialogOpen(true)
-                    }}
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Editar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(promo.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                {/* Footer con fechas y acciones */}
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="text-[10px] text-muted-foreground">
+                    {promo.fecha_fin ? (
+                      <span>Hasta {new Date(promo.fecha_fin).toLocaleDateString('es-ES')}</span>
+                    ) : (
+                      <span>Sin fecha límite</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => setDetallePromo(promo)}
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => {
+                        setEditingPromo(promo)
+                        setDialogOpen(true)
+                      }}
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-red-500 hover:text-red-700"
+                      onClick={() => handleDelete(promo.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Modal de detalle */}
+      <Dialog open={!!detallePromo} onOpenChange={() => setDetallePromo(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {detallePromo?.titulo}
+              <Badge variant={detallePromo?.activo ? 'default' : 'secondary'}>
+                {detallePromo?.activo ? 'Activa' : 'Inactiva'}
+              </Badge>
+            </DialogTitle>
+          </DialogHeader>
+
+          {detallePromo && (
+            <div className="space-y-4">
+              {/* Descripción completa */}
+              {detallePromo.descripcion && (
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Descripción</h4>
+                  <p className="text-sm text-muted-foreground">{detallePromo.descripcion}</p>
+                </div>
+              )}
+
+              {/* Detalles */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-muted rounded-lg text-center">
+                  <p className="text-2xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
+                    {getValorLabel(detallePromo.tipo, detallePromo.valor)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Beneficio</p>
+                </div>
+                <div className="p-3 bg-muted rounded-lg text-center">
+                  <p className="text-2xl font-bold">{detallePromo.puntos_requeridos}</p>
+                  <p className="text-xs text-muted-foreground">Puntos requeridos</p>
+                </div>
+              </div>
+
+              {/* Estadísticas */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Total canjeados:</span>
+                  <span className="font-medium">{detallePromo.cantidad_canjeada}</span>
+                </div>
+                {detallePromo.cantidad_disponible && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Disponibles:</span>
+                    <span className="font-medium">
+                      {detallePromo.cantidad_disponible - detallePromo.cantidad_canjeada} de {detallePromo.cantidad_disponible}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Fechas */}
+              <div className="space-y-2 pt-2 border-t">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Fecha inicio:</span>
+                  <span>{new Date(detallePromo.fecha_inicio).toLocaleDateString('es-ES')}</span>
+                </div>
+                {detallePromo.fecha_fin && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Fecha fin:</span>
+                    <span>{new Date(detallePromo.fecha_fin).toLocaleDateString('es-ES')}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Acciones */}
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setDetallePromo(null)
+                    setEditingPromo(detallePromo)
+                    setDialogOpen(true)
+                  }}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setDetallePromo(null)}
+                >
+                  Cerrar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog para crear/editar */}
       <PromocionFormDialog
