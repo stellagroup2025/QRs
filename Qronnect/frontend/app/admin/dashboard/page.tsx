@@ -21,7 +21,6 @@ import {
   ShoppingCart,
   Euro,
   QrCode,
-  LogOut,
   Download,
   ExternalLink,
   TrendingUp,
@@ -283,12 +282,6 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token')
-    localStorage.removeItem('admin_tienda')
-    router.push('/admin/login')
-  }
-
   const fetchClientes = async (page = 1, search = '') => {
     setClientesLoading(true)
     try {
@@ -447,20 +440,14 @@ export default function AdminDashboardPage() {
       {/* Header - Logo y Info */}
       <header className="bg-white dark:bg-slate-800 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <BrandLogo width={120} height={40} />
-              <div>
-                <h1 className="text-xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>{branding.nombre_comercial}</h1>
-                <p className="text-sm text-muted-foreground">
-                  Panel de administración
-                </p>
-              </div>
+          <div className="flex items-center space-x-4">
+            <BrandLogo width={120} height={40} />
+            <div>
+              <h1 className="text-xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>{branding.nombre_comercial}</h1>
+              <p className="text-sm text-muted-foreground">
+                Panel de administración
+              </p>
             </div>
-            <Button variant="ghost" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Salir
-            </Button>
           </div>
         </div>
       </header>
