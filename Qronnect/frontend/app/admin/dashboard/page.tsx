@@ -146,6 +146,7 @@ export default function AdminDashboardPage() {
   const [compras, setCompras] = useState<ComprasResponse | null>(null)
   const [comprasLoading, setComprasLoading] = useState(false)
   const [comprasPage, setComprasPage] = useState(1)
+  const [searchCompras, setSearchCompras] = useState('')
 
   // Estado para el tab activo
   const [activeTab, setActiveTab] = useState('qr')
@@ -318,7 +319,7 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const fetchCompras = async (page = 1) => {
+  const fetchCompras = async (page = 1, search = '') => {
     setComprasLoading(true)
     try {
       const token = localStorage.getItem('admin_token')
@@ -331,6 +332,10 @@ export default function AdminDashboardPage() {
         orderBy: 'fecha',
         order: 'desc',
       })
+
+      if (search.trim()) {
+        params.append('search', search.trim())
+      }
 
       const response = await fetch(`${API_URL}/api/admin/compras?${params}`, {
         headers: {
@@ -842,22 +847,50 @@ export default function AdminDashboardPage() {
           <TabsContent value="ventas" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <CardTitle>Registro de Ventas</CardTitle>
                     <CardDescription>
                       {data?.total_compras || 0} compras registradas
                     </CardDescription>
                   </div>
-                  <Button
-                    onClick={() => fetchCompras(1)}
-                    variant="outline"
-                    size="sm"
-                    disabled={comprasLoading}
-                  >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${comprasLoading ? 'animate-spin' : ''}`} />
-                    Actualizar
-                  </Button>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div className="relative flex-1 sm:flex-initial">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar por cliente..."
+                        className="pl-9 w-full sm:w-48"
+                        value={searchCompras}
+                        onChange={(e) => {
+                          setSearchCompras(e.target.value)
+                          setComprasPage(1)
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            fetchCompras(1, searchCompras)
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => fetchCompras(1, searchCompras)}
+                        style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+                        className="text-white flex-1 sm:flex-initial"
+                        size="sm"
+                      >
+                        Buscar
+                      </Button>
+                      <Button
+                        onClick={() => fetchCompras(1, searchCompras)}
+                        variant="outline"
+                        size="sm"
+                        disabled={comprasLoading}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${comprasLoading ? 'animate-spin' : ''}`} />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -958,7 +991,7 @@ export default function AdminDashboardPage() {
                             onClick={() => {
                               const newPage = comprasPage - 1
                               setComprasPage(newPage)
-                              fetchCompras(newPage)
+                              fetchCompras(newPage, searchCompras)
                             }}
                             disabled={comprasPage === 1}
                           >
@@ -971,7 +1004,7 @@ export default function AdminDashboardPage() {
                             onClick={() => {
                               const newPage = comprasPage + 1
                               setComprasPage(newPage)
-                              fetchCompras(newPage)
+                              fetchCompras(newPage, searchCompras)
                             }}
                             disabled={comprasPage === compras.totalPages}
                           >
@@ -1110,7 +1143,7 @@ export default function AdminDashboardPage() {
 
           // Recargar los listados según el tab activo
           if (activeTab === 'ventas') {
-            fetchCompras(comprasPage)
+            fetchCompras(comprasPage, searchCompras)
           } else if (activeTab === 'clientes') {
             fetchClientes(clientesPage, searchClientes)
           }
