@@ -215,7 +215,7 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
                       <h3 className="font-semibold text-sm truncate">{promo.titulo}</h3>
                       <Badge
                         variant={promo.activo ? 'default' : 'secondary'}
-                        className="text-[10px] px-1.5 py-0"
+                        className="text-xs px-1.5 py-0"
                       >
                         {promo.activo ? 'Activa' : 'Inactiva'}
                       </Badge>
@@ -234,17 +234,17 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
                     <p className="text-lg font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
                       {getValorLabel(promo.tipo, promo.valor)}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">{getTipoLabel(promo.tipo)}</p>
+                    <p className="text-xs text-muted-foreground">{getTipoLabel(promo.tipo)}</p>
                   </div>
                   <div className="w-px h-8 bg-border" />
                   <div className="text-center flex-1">
                     <p className="text-lg font-bold">{promo.puntos_requeridos}</p>
-                    <p className="text-[10px] text-muted-foreground">puntos</p>
+                    <p className="text-xs text-muted-foreground">puntos</p>
                   </div>
                   <div className="w-px h-8 bg-border" />
                   <div className="text-center flex-1">
                     <p className="text-lg font-bold">{promo.cantidad_canjeada}</p>
-                    <p className="text-[10px] text-muted-foreground">canjes</p>
+                    <p className="text-xs text-muted-foreground">canjes</p>
                   </div>
                 </div>
 
@@ -261,7 +261,7 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
                           }}
                         />
                       </div>
-                      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
                         {promo.cantidad_canjeada}/{promo.cantidad_disponible}
                       </span>
                     </div>
@@ -270,40 +270,40 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
 
                 {/* Footer con fechas y acciones */}
                 <div className="flex items-center justify-between pt-2 border-t">
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     {promo.fecha_fin ? (
                       <span>Hasta {new Date(promo.fecha_fin).toLocaleDateString('es-ES')}</span>
                     ) : (
                       <span>Sin fecha límite</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-9 w-9"
                       onClick={() => setDetallePromo(promo)}
                     >
-                      <Eye className="h-3.5 w-3.5" />
+                      <Eye className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-9 w-9"
                       onClick={() => {
                         setEditingPromo(promo)
                         setDialogOpen(true)
                       }}
                     >
-                      <Edit className="h-3.5 w-3.5" />
+                      <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-red-500 hover:text-red-700"
+                      className="h-9 w-9 text-red-500 hover:text-red-700"
                       onClick={() => handleDelete(promo.id)}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

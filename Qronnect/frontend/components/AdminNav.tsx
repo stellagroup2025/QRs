@@ -190,9 +190,13 @@ export function AdminNav() {
         </div>
 
         {/* Mobile Navigation Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t py-4">
-            <div className="flex flex-col gap-2">
+        <div
+          className={cn(
+            "md:hidden border-t overflow-hidden transition-all duration-200 ease-out",
+            mobileMenuOpen ? "max-h-[500px] py-4 opacity-100" : "max-h-0 py-0 opacity-0"
+          )}
+        >
+          <div className="flex flex-col gap-2">
               {mainNavItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -268,7 +272,7 @@ export function AdminNav() {
               </div>
             </div>
           </div>
-        )}
+
       </div>
     </div>
   )

@@ -384,7 +384,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
                 </div>
                 <div className="text-center hidden sm:block">
                   <p className="text-xs font-medium">{paso.titulo}</p>
-                  <p className="text-[10px] text-muted-foreground max-w-[100px]">
+                  <p className="text-xs text-muted-foreground max-w-[100px]">
                     {paso.descripcion}
                   </p>
                 </div>
