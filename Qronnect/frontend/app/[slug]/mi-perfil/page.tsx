@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge as BadgeUI } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog"
 import QRCode from 'qrcode'
 import { BrandLogo } from '@/components/BrandLogo'
 import { useBrandingContext } from '@/components/BrandingProvider'
@@ -63,6 +64,7 @@ export default function MiPerfilPage() {
   const [datosReferidos, setDatosReferidos] = useState<DatosReferidos | null>(null)
   const router = useRouter()
   const { toast } = useToast()
+  const { confirm } = useConfirmDialog()
 
   useEffect(() => {
     loadClienteData()
@@ -71,7 +73,6 @@ export default function MiPerfilPage() {
   useEffect(() => {
     // Verificar si debe mostrarse el popup de referidos
     if (datosReferidos && !isLoading) {
-      console.log('🔍 Verificando popup de referidos...', { datosReferidos, isLoading })
       checkReferidosPopup()
     }
   }, [datosReferidos, isLoading])
@@ -80,37 +81,21 @@ export default function MiPerfilPage() {
     const POPUP_KEY = `referidos_popup_${slug}`
     const lastShown = localStorage.getItem(POPUP_KEY)
 
-    console.log('🔍 CheckReferidosPopup:', { slug, POPUP_KEY, lastShown })
-
     if (!lastShown) {
       // Primera vez - mostrar inmediatamente
-      console.log('✅ Primera vez - mostrando popup')
-      console.log('🔄 Llamando a setShowReferidosPopup(true)')
       setShowReferidosPopup(true)
       localStorage.setItem(POPUP_KEY, new Date().toISOString())
-
-      // Verificar que se actualizó
-      setTimeout(() => {
-        console.log('🔍 Estado actual de showReferidosPopup después de 100ms')
-      }, 100)
     } else {
       // Verificar si ha pasado 1 mes (30 días)
       const lastShownDate = new Date(lastShown)
       const now = new Date()
       const daysDiff = Math.floor((now.getTime() - lastShownDate.getTime()) / (1000 * 60 * 60 * 24))
 
-      console.log('📅 Días desde último popup:', daysDiff)
-
-      // TODO: Cambiar a 30 antes de producción (ahora es 7 para testing)
-      const DIAS_INTERVALO = 7
+      const DIAS_INTERVALO = 30
 
       if (daysDiff >= DIAS_INTERVALO) {
-        console.log(`✅ Han pasado ${DIAS_INTERVALO} días - mostrando popup`)
         setShowReferidosPopup(true)
         localStorage.setItem(POPUP_KEY, now.toISOString())
-      } else {
-        console.log(`⏳ Aún no han pasado ${DIAS_INTERVALO} días, faltan:`, DIAS_INTERVALO - daysDiff, 'días')
-        console.log('💡 TIP: Para testear, ejecuta en consola: localStorage.removeItem("' + POPUP_KEY + '")')
       }
     }
   }
@@ -218,11 +203,9 @@ export default function MiPerfilPage() {
             'X-Tenant-Domain': slug,
           },
         })
-        console.log('📡 Respuesta referidos:', referidosResponse.status)
 
         if (referidosResponse.ok) {
           const referidosData = await referidosResponse.json()
-          console.log('✅ Datos de referidos cargados:', referidosData)
           setDatosReferidos(referidosData)
 
           // Generar QR del código de referido
@@ -230,21 +213,16 @@ export default function MiPerfilPage() {
             const qrReferidoData = await QRCode.toDataURL(referidosData.url, { width: 400 })
             setQrReferidoUrl(qrReferidoData)
           }
-        } else {
-          console.error('❌ Error al obtener referidos:', await referidosResponse.text())
         }
       } catch (error) {
-        console.error('💥 Error al cargar datos de referidos:', error)
+        // Error silencioso - referidos es funcionalidad opcional
       }
 
       // Generar QR Code con URL que abre directamente añadir venta
-      // Si se escanea desde cámara normal del móvil, abre el dashboard con modal de venta
       const baseUrl = window.location.origin
       const qrData = `${baseUrl}/admin/dashboard?open_sale=true&cliente_id=${clienteData.id}`
-      console.log('🔍 Generando QR con URL:', qrData)
       const qrUrl = await QRCode.toDataURL(qrData, { width: 300 })
       setQrCodeUrl(qrUrl)
-      console.log('✅ QR generado correctamente')
 
       setIsLoading(false)
     } catch (error: any) {
@@ -257,7 +235,14 @@ export default function MiPerfilPage() {
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const confirmed = await confirm({
+      title: '¿Cerrar sesión?',
+      description: 'Tendrás que volver a iniciar sesión para acceder a tu cuenta.',
+      confirmText: 'Cerrar sesión',
+    })
+    if (!confirmed) return
+
     localStorage.removeItem('client_token')
     localStorage.removeItem(`client_token_${slug}`)
     localStorage.removeItem('client_data')
@@ -366,8 +351,42 @@ export default function MiPerfilPage() {
     return (
       <>
         <ClientNav />
-        <div className="min-h-screen flex items-center justify-center">
-          <p>Cargando...</p>
+        <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-gray-50 to-gray-100">
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Header skeleton */}
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-4">
+                <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
+                <div>
+                  <div className="h-6 w-24 bg-gray-200 rounded animate-pulse mb-2" />
+                  <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+                </div>
+              </div>
+              <div className="h-10 w-28 bg-gray-200 rounded animate-pulse" />
+            </div>
+            {/* Puntos skeleton */}
+            <div className="bg-white rounded-lg p-6">
+              <div className="text-center">
+                <div className="h-4 w-20 bg-gray-200 rounded animate-pulse mx-auto mb-4" />
+                <div className="h-16 w-32 bg-gray-200 rounded animate-pulse mx-auto mb-2" />
+                <div className="h-4 w-28 bg-gray-200 rounded animate-pulse mx-auto" />
+              </div>
+            </div>
+            {/* QR y cards skeleton */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg p-6">
+                <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-4" />
+                <div className="h-48 w-48 bg-gray-200 rounded animate-pulse mx-auto" />
+              </div>
+              <div className="bg-white rounded-lg p-6">
+                <div className="h-6 w-40 bg-gray-200 rounded animate-pulse mb-4" />
+                <div className="space-y-3">
+                  <div className="h-20 bg-gray-100 rounded animate-pulse" />
+                  <div className="h-20 bg-gray-100 rounded animate-pulse" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </>
     )
