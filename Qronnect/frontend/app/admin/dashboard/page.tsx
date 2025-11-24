@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useDebounce } from '@/hooks/use-debounce'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -50,6 +51,7 @@ import { IADrawerCampanas } from '@/components/admin/campanas/IADrawer'
 import { IADrawerPromociones } from '@/components/admin/promociones/IADrawer'
 import { PanelIA } from '@/components/admin/ia/PanelIA'
 import { AnalistaKPIs } from '@/components/admin/ia/AnalistaKPIs'
+import { DashboardSkeleton } from '@/components/ui/skeletons'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -148,6 +150,10 @@ export default function AdminDashboardPage() {
   const [comprasPage, setComprasPage] = useState(1)
   const [searchCompras, setSearchCompras] = useState('')
 
+  // Debounce para búsquedas automáticas
+  const debouncedSearchClientes = useDebounce(searchClientes, 400)
+  const debouncedSearchCompras = useDebounce(searchCompras, 400)
+
   // Estado para el tab activo
   const [activeTab, setActiveTab] = useState('qr')
 
@@ -227,6 +233,22 @@ export default function AdminDashboardPage() {
       fetchAnalytics(analyticsPeriodo)
     }
   }, [analyticsPeriodo])
+
+  // Búsqueda automática con debounce para clientes
+  useEffect(() => {
+    if (activeTab === 'clientes' && token) {
+      fetchClientes(1, debouncedSearchClientes)
+      setClientesPage(1)
+    }
+  }, [debouncedSearchClientes])
+
+  // Búsqueda automática con debounce para compras
+  useEffect(() => {
+    if (activeTab === 'ventas' && token) {
+      fetchCompras(1, debouncedSearchCompras)
+      setComprasPage(1)
+    }
+  }, [debouncedSearchCompras])
 
   const fetchTiendaInfo = async (token: string) => {
     try {
@@ -431,8 +453,10 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: hexToRgb(branding.color_primario) }}></div>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto">
+          <DashboardSkeleton />
+        </div>
       </div>
     )
   }

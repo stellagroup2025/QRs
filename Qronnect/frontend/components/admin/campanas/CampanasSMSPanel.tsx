@@ -28,6 +28,7 @@ import {
 import { CrearCampanaSMSModal } from './CrearCampanaSMSModal'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
+import { useConfirmDialog } from '@/hooks/use-confirm-dialog'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -53,6 +54,7 @@ interface CampanasSMSPanelProps {
 
 export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelProps) {
   const { branding } = useBrandingContext()
+  const { confirm } = useConfirmDialog()
   const [campanas, setCampanas] = useState<CampanaSMS[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -90,7 +92,13 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
   }
 
   const eliminarCampana = async (id: string) => {
-    if (!confirm('¿Eliminar esta campaña SMS?')) return
+    const confirmed = await confirm({
+      title: '¿Eliminar campaña SMS?',
+      description: 'Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      variant: 'destructive',
+    })
+    if (!confirmed) return
 
     try {
       const res = await fetch(`${API_URL}/api/campanas-sms/${id}`, {

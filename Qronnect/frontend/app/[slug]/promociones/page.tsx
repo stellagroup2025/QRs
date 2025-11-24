@@ -9,6 +9,7 @@ import { Gift, Sparkles, Clock, Users, ArrowRight, CheckCircle2 } from 'lucide-r
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
 import { ClientNav } from '@/components/ClientNav'
+import { useConfirmDialog } from '@/hooks/use-confirm-dialog'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -31,6 +32,7 @@ export default function PromocionesPage() {
   const params = useParams()
   const router = useRouter()
   const { branding } = useBrandingContext()
+  const { confirm } = useConfirmDialog()
   const slug = params.slug as string
 
   const [promociones, setPromociones] = useState<Promocion[]>([])
@@ -92,9 +94,12 @@ export default function PromocionesPage() {
       return
     }
 
-    if (!confirm(`¿Quieres canjear ${promocion.puntos_requeridos} puntos por "${promocion.titulo}"?`)) {
-      return
-    }
+    const confirmed = await confirm({
+      title: '¿Canjear promoción?',
+      description: `Usarás ${promocion.puntos_requeridos} puntos para obtener "${promocion.titulo}"`,
+      confirmText: 'Canjear',
+    })
+    if (!confirmed) return
 
     setCanjeando(promocion.id)
     try {
