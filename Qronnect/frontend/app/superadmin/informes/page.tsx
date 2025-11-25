@@ -66,7 +66,7 @@ export default function InformesPage() {
   const cargarTiendas = async () => {
     try {
       const token = localStorage.getItem('superadmin_token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
       console.log('[Informes] Cargando tiendas desde:', `${apiUrl}/superadmin/tiendas`);
       console.log('[Informes] Token presente:', !!token);
@@ -95,8 +95,9 @@ export default function InformesPage() {
   const cargarInformes = async () => {
     try {
       const token = localStorage.getItem('superadmin_token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/superadmin/tiendas/${tiendaSeleccionada}/informes`,
+        `${apiUrl}/superadmin/tiendas/${tiendaSeleccionada}/informes`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -114,8 +115,9 @@ export default function InformesPage() {
   const cargarConfiguracion = async () => {
     try {
       const token = localStorage.getItem('superadmin_token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/superadmin/tiendas/${tiendaSeleccionada}/informes/configuracion`,
+        `${apiUrl}/superadmin/tiendas/${tiendaSeleccionada}/informes/configuracion`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -142,8 +144,9 @@ export default function InformesPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('superadmin_token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/superadmin/tiendas/${tiendaSeleccionada}/informes/generar`,
+        `${apiUrl}/superadmin/tiendas/${tiendaSeleccionada}/informes/generar`,
         {
           method: 'POST',
           headers: {
@@ -181,8 +184,9 @@ export default function InformesPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('superadmin_token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/superadmin/tiendas/${tiendaSeleccionada}/informes/enviar`,
+        `${apiUrl}/superadmin/tiendas/${tiendaSeleccionada}/informes/enviar`,
         {
           method: 'POST',
           headers: {
@@ -218,8 +222,9 @@ export default function InformesPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('superadmin_token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/superadmin/tiendas/${tiendaSeleccionada}/informes/configuracion`,
+        `${apiUrl}/superadmin/tiendas/${tiendaSeleccionada}/informes/configuracion`,
         {
           method: 'PUT',
           headers: {
