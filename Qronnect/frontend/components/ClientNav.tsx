@@ -136,8 +136,8 @@ export function ClientNav() {
 
   return (
     <nav className="border-b bg-white dark:bg-gray-900 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-around overflow-x-auto">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4">
+        <div className="flex items-center justify-between">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
@@ -148,7 +148,7 @@ export function ClientNav() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex flex-col items-center gap-1 py-3 px-4 text-sm transition-colors whitespace-nowrap relative',
+                  'flex flex-col items-center gap-0.5 py-2 px-1.5 sm:px-3 sm:py-3 text-xs sm:text-sm transition-colors relative flex-1',
                   isActive
                     ? 'border-b-2 font-medium'
                     : 'text-muted-foreground hover:text-foreground'
@@ -173,12 +173,12 @@ export function ClientNav() {
                     </Badge>
                   )}
                 </div>
-                <span>{item.label}</span>
+                <span className="truncate max-w-[60px] sm:max-w-none text-center">{item.label}</span>
               </Link>
             )
           })}
           {/* Theme Toggle */}
-          <div className="py-3 px-2">
+          <div className="py-2 pl-1 sm:py-3 sm:pl-2 flex-shrink-0">
             <ThemeToggle />
           </div>
         </div>
