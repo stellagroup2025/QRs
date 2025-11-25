@@ -15,6 +15,7 @@ import {
   Settings,
   BarChart3
 } from 'lucide-react'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -126,15 +127,17 @@ export default function SuperAdminDashboard() {
                 variant="outline"
                 size="icon"
                 className="sm:hidden"
+                aria-label="Gestionar tiendas"
                 onClick={() => router.push('/superadmin/tiendas')}
               >
                 <Store className="h-4 w-4" />
               </Button>
+              <ThemeToggle />
               <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Salir
               </Button>
-              <Button variant="ghost" size="icon" className="sm:hidden" onClick={handleLogout}>
+              <Button variant="ghost" size="icon" className="sm:hidden" aria-label="Cerrar sesión" onClick={handleLogout}>
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
