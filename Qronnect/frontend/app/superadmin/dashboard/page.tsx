@@ -13,7 +13,8 @@ import {
   LogOut,
   Plus,
   Settings,
-  BarChart3
+  BarChart3,
+  FileText
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
@@ -121,7 +122,16 @@ export default function SuperAdminDashboard() {
                 onClick={() => router.push('/superadmin/tiendas')}
               >
                 <Store className="h-4 w-4 mr-2" />
-                Gestionar Tiendas
+                Tiendas
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden sm:flex"
+                onClick={() => router.push('/superadmin/informes')}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Informes
               </Button>
               <Button
                 variant="outline"
@@ -131,6 +141,15 @@ export default function SuperAdminDashboard() {
                 onClick={() => router.push('/superadmin/tiendas')}
               >
                 <Store className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="sm:hidden"
+                aria-label="Ver informes"
+                onClick={() => router.push('/superadmin/informes')}
+              >
+                <FileText className="h-4 w-4" />
               </Button>
               <ThemeToggle />
               <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={handleLogout}>
