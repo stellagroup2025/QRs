@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { toast, Toaster } from 'sonner';
 import { FileText, Send, Settings, Calendar, Mail, Download, RefreshCw } from 'lucide-react';
 
 interface Tienda {
@@ -66,16 +66,28 @@ export default function InformesPage() {
   const cargarTiendas = async () => {
     try {
       const token = localStorage.getItem('superadmin_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/superadmin/tiendas`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+      console.log('[Informes] Cargando tiendas desde:', `${apiUrl}/superadmin/tiendas`);
+      console.log('[Informes] Token presente:', !!token);
+
+      const response = await fetch(`${apiUrl}/superadmin/tiendas`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      console.log('[Informes] Response status:', response.status);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('[Informes] Tiendas cargadas:', data.length);
         setTiendas(data);
+      } else {
+        const errorText = await response.text();
+        console.error('[Informes] Error response:', errorText);
+        toast.error(`Error al cargar tiendas: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error cargando tiendas:', error);
+      console.error('[Informes] Error cargando tiendas:', error);
       toast.error('Error al cargar tiendas');
     }
   };
@@ -250,13 +262,15 @@ export default function InformesPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Informes Mensuales</h1>
-        <p className="text-muted-foreground">
-          Genera y envía informes mensuales con análisis de IA a tus tiendas
-        </p>
-      </div>
+    <>
+      <Toaster position="top-right" richColors />
+      <div className="container mx-auto py-8 px-4">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Informes Mensuales</h1>
+          <p className="text-muted-foreground">
+            Genera y envía informes mensuales con análisis de IA a tus tiendas
+          </p>
+        </div>
 
       {/* Selector de Tienda */}
       <Card className="mb-6">
@@ -535,6 +549,7 @@ export default function InformesPage() {
           </TabsContent>
         </Tabs>
       )}
-    </div>
+      </div>
+    </>
   );
 }
