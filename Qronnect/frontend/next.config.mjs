@@ -26,8 +26,6 @@ const nextConfig = {
       }] : []),
     ],
   },
-  // Optimizaciones para producción
-  swcMinify: true,
   // Headers de seguridad
   async headers() {
     return [
