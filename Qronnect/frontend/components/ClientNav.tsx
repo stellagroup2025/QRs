@@ -8,6 +8,7 @@ import { useBrandingContext } from './BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface Promocion {
   id: string
@@ -176,6 +177,10 @@ export function ClientNav() {
               </Link>
             )
           })}
+          {/* Theme Toggle */}
+          <div className="py-3 px-2">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </nav>

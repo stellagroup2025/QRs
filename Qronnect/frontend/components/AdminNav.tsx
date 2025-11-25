@@ -20,6 +20,7 @@ import {
   Menu,
   X,
 } from 'lucide-react'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface NavItem {
   href: string
@@ -167,6 +168,7 @@ export function AdminNav() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-2">
+            <ThemeToggle />
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Salir
@@ -175,9 +177,11 @@ export function AdminNav() {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
+              aria-label="Abrir menú"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
