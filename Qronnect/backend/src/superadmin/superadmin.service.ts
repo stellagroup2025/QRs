@@ -3,6 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { SmsService } from '../sms/sms.service';
@@ -12,6 +14,8 @@ import { UpdateTiendaDto } from './dto/update-tienda.dto';
 import { ConfigureSmsDto } from './dto/configure-sms.dto';
 import { UpdateSenderIdDto } from './dto/update-sender-id.dto';
 import { ConfigureIaDto } from './dto/configure-ia.dto';
+import { InformesService } from '../informes/informes.service';
+import { FormatoInforme } from '../informes/dto/generar-informe.dto';
 
 @Injectable()
 export class SuperAdminService {
@@ -19,6 +23,8 @@ export class SuperAdminService {
     private readonly supabaseService: SupabaseService,
     private readonly smsService: SmsService,
     private readonly emailService: EmailService,
+    @Inject(forwardRef(() => InformesService))
+    private readonly informesService: InformesService,
   ) {}
 
   /**
@@ -1144,5 +1150,89 @@ export class SuperAdminService {
         dominio: tienda.dominio,
       },
     };
+  }
+
+  // ========================================
+  // INFORMES MENSUALES
+  // ========================================
+
+  /**
+   * Listar informes mensuales de una tienda
+   */
+  async listarInformesTienda(tiendaId: string, limite: number = 12) {
+    return this.informesService.listarInformes(tiendaId, limite);
+  }
+
+  /**
+   * Generar informe mensual para una tienda
+   */
+  async generarInformeTienda(
+    tiendaId: string,
+    params: { periodo_mes?: number; periodo_anio?: number },
+  ) {
+    return this.informesService.generarInforme(tiendaId, {
+      periodo_mes: params.periodo_mes,
+      periodo_anio: params.periodo_anio,
+      formato: FormatoInforme.JSON,
+    });
+  }
+
+  /**
+   * Enviar informe por email a una tienda (desde superadmin)
+   */
+  async enviarInformeTienda(
+    superadminId: string,
+    tiendaId: string,
+    params: { email_destino: string; periodo_mes?: number; periodo_anio?: number },
+  ) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Verificar que la tienda existe
+    const { data: tienda } = await supabase
+      .from('tiendas')
+      .select('nombre')
+      .eq('id', tiendaId)
+      .single();
+
+    if (!tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    // Enviar informe
+    const resultado = await this.informesService.enviarInforme(
+      tiendaId,
+      {
+        periodo_mes: params.periodo_mes,
+        periodo_anio: params.periodo_anio,
+        email_destino: params.email_destino,
+      },
+      superadminId, // Indica que fue enviado manualmente por superadmin
+    );
+
+    // Registrar en audit log
+    await this.registrarAuditLog(superadminId, 'enviar_informe_manual', 'informe', resultado.id_informe, {
+      tienda_id: tiendaId,
+      tienda_nombre: tienda.nombre,
+      email_destino: params.email_destino,
+    });
+
+    return resultado;
+  }
+
+  /**
+   * Obtener configuración de informes de una tienda
+   */
+  async obtenerConfiguracionInformes(tiendaId: string) {
+    return this.informesService.obtenerConfiguracion(tiendaId);
+  }
+
+  /**
+   * Configurar envío automático de informes para una tienda
+   */
+  async configurarInformesTienda(tiendaId: string, configuracion: any) {
+    return this.informesService.configurarEnvioAutomatico(tiendaId, {
+      ...configuracion,
+      id_tienda: tiendaId,
+    });
   }
 }

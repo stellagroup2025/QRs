@@ -394,4 +394,81 @@ export class SuperAdminController {
   async generarTokenAdminParaTienda(@Request() req, @Param('id') id: string) {
     return this.superAdminService.generarTokenAdminParaTienda(req.superadmin.id, id);
   }
+
+  // ========================================
+  // INFORMES MENSUALES
+  // ========================================
+
+  @Get('tiendas/:id/informes')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Listar informes mensuales de una tienda',
+    description: 'Retorna el historial de informes generados para la tienda',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiQuery({ name: 'limite', required: false, type: Number, description: 'Número de informes (default: 12)' })
+  @ApiResponse({ status: 200, description: 'Informes obtenidos correctamente' })
+  async listarInformesTienda(@Param('id') id: string, @Query('limite') limite?: number) {
+    return this.superAdminService.listarInformesTienda(id, limite ? Number(limite) : 12);
+  }
+
+  @Post('tiendas/:id/informes/generar')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Generar informe mensual para una tienda',
+    description: 'Genera un nuevo informe con análisis de IA para el período especificado',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Informe generado correctamente' })
+  async generarInformeTienda(
+    @Param('id') id: string,
+    @Body() body: { periodo_mes?: number; periodo_anio?: number },
+  ) {
+    return this.superAdminService.generarInformeTienda(id, body);
+  }
+
+  @Post('tiendas/:id/informes/enviar')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Enviar informe por email a una tienda',
+    description: 'Genera (si no existe) y envía el informe del mes por email a la dirección especificada',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Informe enviado correctamente' })
+  async enviarInformeTienda(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() body: { email_destino: string; periodo_mes?: number; periodo_anio?: number },
+  ) {
+    return this.superAdminService.enviarInformeTienda(req.superadmin.id, id, body);
+  }
+
+  @Get('tiendas/:id/informes/configuracion')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Obtener configuración de envío automático de informes',
+    description: 'Retorna la configuración de envío automático mensual de una tienda',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Configuración obtenida correctamente' })
+  async obtenerConfiguracionInformes(@Param('id') id: string) {
+    return this.superAdminService.obtenerConfiguracionInformes(id);
+  }
+
+  @Put('tiendas/:id/informes/configuracion')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Configurar envío automático de informes para una tienda',
+    description: 'Configura el envío automático mensual: email destino, día y hora de envío',
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tienda' })
+  @ApiResponse({ status: 200, description: 'Configuración guardada correctamente' })
+  async configurarInformesTienda(@Param('id') id: string, @Body() body: any) {
+    return this.superAdminService.configurarInformesTienda(id, body);
+  }
 }

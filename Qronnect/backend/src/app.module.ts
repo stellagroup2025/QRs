@@ -22,6 +22,7 @@ import { AiModule } from './ai/ai.module';
 import { ReferidosModule } from './referidos/referidos.module';
 import { UsuariosTiendaModule } from './usuarios-tienda/usuarios-tienda.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
+import { InformesModule } from './informes/informes.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { OnboardingModule } from './onboarding/onboarding.module';
     ReferidosModule,
     UsuariosTiendaModule,
     OnboardingModule,
+    InformesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
