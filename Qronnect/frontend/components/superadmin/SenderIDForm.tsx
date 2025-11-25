@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, CheckCircle, XCircle, Smartphone, AlertTriangle } from 'lucide-react'
+import { useConfirmDialog } from '@/hooks/use-confirm-dialog'
 
 interface SenderIDFormProps {
   tiendaId: string
@@ -17,6 +18,7 @@ interface SenderIDFormProps {
 
 export function SenderIDForm({ tiendaId, tiendaNombre, onSuccess }: SenderIDFormProps) {
   const { getConfiguracion, actualizarSenderID, eliminarSenderID, loading, error } = useSenderID(tiendaId)
+  const { confirm } = useConfirmDialog()
 
   const [config, setConfig] = useState<SMSConfig | null>(null)
   const [senderId, setSenderId] = useState('')
@@ -75,9 +77,13 @@ export function SenderIDForm({ tiendaId, tiendaNombre, onSuccess }: SenderIDForm
   }
 
   const handleEliminar = async () => {
-    if (!confirm('¿Eliminar el Sender ID? La tienda volverá a usar número de teléfono.')) {
-      return
-    }
+    const confirmed = await confirm({
+      title: '¿Eliminar Sender ID?',
+      description: 'La tienda volverá a usar número de teléfono.',
+      confirmText: 'Eliminar',
+      variant: 'destructive',
+    })
+    if (!confirmed) return
 
     setSuccessMessage(null)
     try {

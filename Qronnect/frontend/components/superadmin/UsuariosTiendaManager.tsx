@@ -27,6 +27,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Users, Plus, Edit, Trash2, Shield, ShieldCheck, Smartphone, Eye, EyeOff } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useConfirmDialog } from '@/hooks/use-confirm-dialog'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -49,6 +50,7 @@ interface UsuariosTiendaManagerProps {
 
 export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) {
   const { toast } = useToast()
+  const { confirm } = useConfirmDialog()
   const [usuarios, setUsuarios] = useState<UsuarioTienda[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -212,7 +214,13 @@ export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) 
   }
 
   const handleDelete = async (id: string, nombre: string) => {
-    if (!confirm(`¿Seguro que deseas eliminar al usuario "${nombre}"?`)) return
+    const confirmed = await confirm({
+      title: '¿Eliminar usuario?',
+      description: `Se eliminará a "${nombre}" y no podrá acceder al panel.`,
+      confirmText: 'Eliminar',
+      variant: 'destructive',
+    })
+    if (!confirmed) return
 
     try {
       const token = localStorage.getItem('superadmin_token')

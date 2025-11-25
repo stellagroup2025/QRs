@@ -15,6 +15,7 @@ import {
   Settings,
   BarChart3
 } from 'lucide-react'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -98,31 +99,46 @@ export default function SuperAdminDashboard() {
       {/* Header */}
       <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-500/10 rounded-lg">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center space-x-3 min-w-0">
+              <div className="p-2 bg-purple-500/10 rounded-lg flex-shrink-0">
                 <BarChart3 className="h-6 w-6 text-purple-500" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  SuperAdmin Dashboard
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white truncate">
+                  SuperAdmin
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  Bienvenido, {user?.nombre || 'Admin'}
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                  {user?.nombre || 'Admin'}
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
               <Button
                 variant="outline"
+                size="sm"
+                className="hidden sm:flex"
                 onClick={() => router.push('/superadmin/tiendas')}
               >
                 <Store className="h-4 w-4 mr-2" />
                 Gestionar Tiendas
               </Button>
-              <Button variant="ghost" onClick={handleLogout}>
+              <Button
+                variant="outline"
+                size="icon"
+                className="sm:hidden"
+                aria-label="Gestionar tiendas"
+                onClick={() => router.push('/superadmin/tiendas')}
+              >
+                <Store className="h-4 w-4" />
+              </Button>
+              <ThemeToggle />
+              <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Salir
+              </Button>
+              <Button variant="ghost" size="icon" className="sm:hidden" aria-label="Cerrar sesión" onClick={handleLogout}>
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           </div>

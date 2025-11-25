@@ -11,7 +11,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
-import { useState, useEffect } from "react"
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes"
+import { useState, useEffect, useCallback } from "react"
 import { useBrandingContext } from "@/components/BrandingProvider"
 import { hexToRgb } from "@/lib/brand-colors"
 import {
@@ -90,6 +91,70 @@ export function RegistroFormV2() {
 
   const watchedFields = watch()
 
+  // Detectar si hay datos sin guardar para advertir antes de salir
+  const hasFormData = Boolean(
+    watchedFields.nombre ||
+    watchedFields.email ||
+    watchedFields.telefono
+  )
+  useUnsavedChanges({
+    hasUnsavedChanges: hasFormData && !isSubmitting,
+    message: '¿Seguro que quieres salir? Los datos del formulario se perderán.',
+  })
+
+  // Persistencia del formulario para evitar pérdida de datos
+  const STORAGE_KEY = 'registro_form_draft'
+
+  // Restaurar datos guardados al cargar
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const { data, step, timestamp } = JSON.parse(saved)
+        // Solo restaurar si los datos tienen menos de 1 hora
+        if (Date.now() - timestamp < 60 * 60 * 1000) {
+          if (data.nombre) setValue('nombre', data.nombre)
+          if (data.email) setValue('email', data.email)
+          if (data.telefono) setValue('telefono', data.telefono)
+          if (data.codigo_postal) setValue('codigo_postal', data.codigo_postal)
+          if (data.fecha_nacimiento) setValue('fecha_nacimiento', data.fecha_nacimiento)
+          if (data.genero) setValue('genero', data.genero)
+          if (step) setCurrentStep(step)
+        } else {
+          localStorage.removeItem(STORAGE_KEY)
+        }
+      }
+    } catch (e) {
+      console.error('Error restaurando formulario:', e)
+    }
+  }, [setValue])
+
+  // Guardar datos automáticamente
+  useEffect(() => {
+    const data = {
+      nombre: watchedFields.nombre,
+      email: watchedFields.email,
+      telefono: watchedFields.telefono,
+      codigo_postal: watchedFields.codigo_postal,
+      fecha_nacimiento: watchedFields.fecha_nacimiento,
+      genero: watchedFields.genero,
+    }
+    // Solo guardar si hay algún dato
+    if (Object.values(data).some(v => v)) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        data,
+        step: currentStep,
+        timestamp: Date.now()
+      }))
+    }
+  }, [watchedFields.nombre, watchedFields.email, watchedFields.telefono,
+      watchedFields.codigo_postal, watchedFields.fecha_nacimiento, watchedFields.genero, currentStep])
+
+  // Limpiar datos guardados después de envío exitoso
+  const clearSavedForm = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY)
+  }, [])
+
   // Capturar código de referido
   useEffect(() => {
     const ref = searchParams.get('ref')
@@ -162,6 +227,9 @@ export function RegistroFormV2() {
       const result = await response.json()
 
       // El backend ya NO devuelve access_token - el usuario debe validar su email primero
+      // Limpiar el borrador guardado
+      clearSavedForm()
+
       if (result.requiere_validacion) {
         // Guardar email para usarlo en la pantalla de validación
         localStorage.setItem('pending_validation_email', data.email)

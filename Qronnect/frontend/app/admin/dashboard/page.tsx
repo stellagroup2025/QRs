@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useDebounce } from '@/hooks/use-debounce'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -21,7 +22,6 @@ import {
   ShoppingCart,
   Euro,
   QrCode,
-  LogOut,
   Download,
   ExternalLink,
   TrendingUp,
@@ -51,6 +51,9 @@ import { IADrawerCampanas } from '@/components/admin/campanas/IADrawer'
 import { IADrawerPromociones } from '@/components/admin/promociones/IADrawer'
 import { PanelIA } from '@/components/admin/ia/PanelIA'
 import { AnalistaKPIs } from '@/components/admin/ia/AnalistaKPIs'
+import { DashboardSkeleton } from '@/components/ui/skeletons'
+import { ErrorRetry } from '@/components/ui/error-retry'
+import { useToast } from '@/hooks/use-toast'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -135,6 +138,7 @@ export default function AdminDashboardPage() {
   const [token, setToken] = useState<string | null>(null)
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [qrUrl, setQrUrl] = useState('')
 
   // Estado para clientes
@@ -147,6 +151,11 @@ export default function AdminDashboardPage() {
   const [compras, setCompras] = useState<ComprasResponse | null>(null)
   const [comprasLoading, setComprasLoading] = useState(false)
   const [comprasPage, setComprasPage] = useState(1)
+  const [searchCompras, setSearchCompras] = useState('')
+
+  // Debounce para búsquedas automáticas
+  const debouncedSearchClientes = useDebounce(searchClientes, 400)
+  const debouncedSearchCompras = useDebounce(searchCompras, 400)
 
   // Estado para el tab activo
   const [activeTab, setActiveTab] = useState('qr')
@@ -162,6 +171,26 @@ export default function AdminDashboardPage() {
 
   // Estado para refresh de campañas
   const [refreshCampanas, setRefreshCampanas] = useState<(() => void) | null>(null)
+
+  // Toast para notificaciones
+  const { toast } = useToast()
+
+  // Handlers para crear campaña/promoción desde el plan de acción IA
+  const handleCreateCampaignFromIA = (datosPrellenados: any) => {
+    setActiveTab('campanas')
+    toast({
+      title: '💡 Sugerencia de IA',
+      description: datosPrellenados?.asunto || datosPrellenados?.objetivo || 'Crea una nueva campaña de email',
+    })
+  }
+
+  const handleCreatePromotionFromIA = (datosPrellenados: any) => {
+    setActiveTab('promociones')
+    toast({
+      title: '💡 Sugerencia de IA',
+      description: datosPrellenados?.nombre || datosPrellenados?.objetivo || 'Crea una nueva promoción',
+    })
+  }
 
   useEffect(() => {
     // Verificar si hay un token de superadmin en la URL
@@ -228,6 +257,22 @@ export default function AdminDashboardPage() {
     }
   }, [analyticsPeriodo])
 
+  // Búsqueda automática con debounce para clientes
+  useEffect(() => {
+    if (activeTab === 'clientes' && token) {
+      fetchClientes(1, debouncedSearchClientes)
+      setClientesPage(1)
+    }
+  }, [debouncedSearchClientes])
+
+  // Búsqueda automática con debounce para compras
+  useEffect(() => {
+    if (activeTab === 'ventas' && token) {
+      fetchCompras(1, debouncedSearchCompras)
+      setComprasPage(1)
+    }
+  }, [debouncedSearchCompras])
+
   const fetchTiendaInfo = async (token: string) => {
     try {
       // Decodificar el token para obtener el tienda_id
@@ -257,7 +302,12 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const fetchDashboard = async (token: string) => {
+  const fetchDashboard = async (adminToken?: string) => {
+    const tokenToUse = adminToken || token
+    if (!tokenToUse) return
+
+    setLoadError(null)
+    setLoading(true)
     try {
       // Obtener el dominio de la tienda desde localStorage
       const tiendaData = localStorage.getItem('admin_tienda')
@@ -265,10 +315,16 @@ export default function AdminDashboardPage() {
 
       const response = await fetch(`${API_URL}/api/admin/dashboard/resumen`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${tokenToUse}`,
           'X-Tenant-Domain': domain,
         },
       })
+
+      if (response.status === 401) {
+        localStorage.removeItem('admin_token')
+        router.push('/admin/login')
+        return
+      }
 
       if (!response.ok) throw new Error('Error al cargar dashboard')
 
@@ -276,17 +332,10 @@ export default function AdminDashboardPage() {
       setData(dashboardData)
     } catch (error) {
       console.error('Error:', error)
-      localStorage.removeItem('admin_token')
-      router.push('/admin/login')
+      setLoadError('No se pudo cargar el dashboard. Verifica tu conexión.')
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token')
-    localStorage.removeItem('admin_tienda')
-    router.push('/admin/login')
   }
 
   const fetchClientes = async (page = 1, search = '') => {
@@ -325,7 +374,7 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const fetchCompras = async (page = 1) => {
+  const fetchCompras = async (page = 1, search = '') => {
     setComprasLoading(true)
     try {
       const token = localStorage.getItem('admin_token')
@@ -338,6 +387,10 @@ export default function AdminDashboardPage() {
         orderBy: 'fecha',
         order: 'desc',
       })
+
+      if (search.trim()) {
+        params.append('search', search.trim())
+      }
 
       const response = await fetch(`${API_URL}/api/admin/compras?${params}`, {
         headers: {
@@ -433,8 +486,26 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: hexToRgb(branding.color_primario) }}></div>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto">
+          <DashboardSkeleton />
+        </div>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        <AdminNav />
+        <div className="max-w-md mx-auto p-6 pt-20">
+          <ErrorRetry
+            title="Error de conexión"
+            message={loadError}
+            onRetry={() => fetchDashboard()}
+            isRetrying={loading}
+          />
+        </div>
       </div>
     )
   }
@@ -447,20 +518,14 @@ export default function AdminDashboardPage() {
       {/* Header - Logo y Info */}
       <header className="bg-white dark:bg-slate-800 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <BrandLogo width={120} height={40} />
-              <div>
-                <h1 className="text-xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>{branding.nombre_comercial}</h1>
-                <p className="text-sm text-muted-foreground">
-                  Panel de administración
-                </p>
-              </div>
+          <div className="flex items-center space-x-4">
+            <BrandLogo width={120} height={40} />
+            <div>
+              <h1 className="text-xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>{branding.nombre_comercial}</h1>
+              <p className="text-sm text-muted-foreground">
+                Panel de administración
+              </p>
             </div>
-            <Button variant="ghost" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Salir
-            </Button>
           </div>
         </div>
       </header>
@@ -468,42 +533,42 @@ export default function AdminDashboardPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Clientes</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+        <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-8">
+          <Card className="p-2 sm:p-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Clientes</CardTitle>
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data?.total_clientes || 0}</div>
-              <p className="text-xs text-muted-foreground">Registrados en el programa</p>
+            <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{data?.total_clientes || 0}</div>
+              <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">Registrados</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Compras</CardTitle>
-              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+          <Card className="p-2 sm:p-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Compras</CardTitle>
+              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data?.total_compras || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Ticket medio: €{(data?.ticket_medio || 0).toFixed(2)}
+            <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{data?.total_compras || 0}</div>
+              <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
+                Ticket: €{(data?.ticket_medio || 0).toFixed(0)}
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Facturación</CardTitle>
-              <Euro className="h-4 w-4 text-muted-foreground" />
+          <Card className="p-2 sm:p-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium">Ventas</CardTitle>
+              <Euro className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                €{(data?.ventas_totales || 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+            <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">
+                €{(data?.ventas_totales || 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
               </div>
-              <p className="text-xs text-muted-foreground">
-                {data?.puntos_otorgados_totales || 0} puntos otorgados
+              <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
+                {data?.puntos_otorgados_totales || 0} pts
               </p>
             </CardContent>
           </Card>
@@ -652,19 +717,19 @@ export default function AdminDashboardPage() {
           <TabsContent value="clientes" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <CardTitle>Gestión de Clientes</CardTitle>
                     <CardDescription>
                       {data?.total_clientes || 0} clientes registrados
                     </CardDescription>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="relative">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div className="relative flex-1 sm:flex-initial">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Buscar clientes..."
-                        className="pl-9 w-64"
+                        className="pl-9 w-full sm:w-48"
                         value={searchClientes}
                         onChange={(e) => {
                           setSearchClientes(e.target.value)
@@ -681,6 +746,7 @@ export default function AdminDashboardPage() {
                       onClick={() => fetchClientes(1, searchClientes)}
                       style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                       className="text-white"
+                      size="sm"
                     >
                       Buscar
                     </Button>
@@ -855,22 +921,50 @@ export default function AdminDashboardPage() {
           <TabsContent value="ventas" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <CardTitle>Registro de Ventas</CardTitle>
                     <CardDescription>
                       {data?.total_compras || 0} compras registradas
                     </CardDescription>
                   </div>
-                  <Button
-                    onClick={() => fetchCompras(1)}
-                    variant="outline"
-                    size="sm"
-                    disabled={comprasLoading}
-                  >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${comprasLoading ? 'animate-spin' : ''}`} />
-                    Actualizar
-                  </Button>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div className="relative flex-1 sm:flex-initial">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar por cliente..."
+                        className="pl-9 w-full sm:w-48"
+                        value={searchCompras}
+                        onChange={(e) => {
+                          setSearchCompras(e.target.value)
+                          setComprasPage(1)
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            fetchCompras(1, searchCompras)
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => fetchCompras(1, searchCompras)}
+                        style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+                        className="text-white flex-1 sm:flex-initial"
+                        size="sm"
+                      >
+                        Buscar
+                      </Button>
+                      <Button
+                        onClick={() => fetchCompras(1, searchCompras)}
+                        variant="outline"
+                        size="sm"
+                        disabled={comprasLoading}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${comprasLoading ? 'animate-spin' : ''}`} />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -971,7 +1065,7 @@ export default function AdminDashboardPage() {
                             onClick={() => {
                               const newPage = comprasPage - 1
                               setComprasPage(newPage)
-                              fetchCompras(newPage)
+                              fetchCompras(newPage, searchCompras)
                             }}
                             disabled={comprasPage === 1}
                           >
@@ -984,7 +1078,7 @@ export default function AdminDashboardPage() {
                             onClick={() => {
                               const newPage = comprasPage + 1
                               setComprasPage(newPage)
-                              fetchCompras(newPage)
+                              fetchCompras(newPage, searchCompras)
                             }}
                             disabled={comprasPage === compras.totalPages}
                           >
@@ -1002,14 +1096,14 @@ export default function AdminDashboardPage() {
 
           {/* Promociones Tab */}
           <TabsContent value="promociones" className="space-y-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold">Gestión de Promociones</h2>
-                <p className="text-muted-foreground">
-                  Crea y gestiona las promociones que los clientes pueden canjear con sus puntos
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div className="min-w-0">
+                <h2 className="text-xl sm:text-2xl font-bold">Promociones</h2>
+                <p className="text-sm text-muted-foreground">
+                  Gestiona las promociones canjeables con puntos
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <IADrawerPromociones
                   tenantDomain={tienda?.dominio || ''}
                   adminToken={token || ''}
@@ -1017,10 +1111,11 @@ export default function AdminDashboardPage() {
                 <Button
                   onClick={() => setValidarCanjeOpen(true)}
                   variant="outline"
+                  size="sm"
                   className="flex items-center gap-2"
                 >
                   <Ticket className="h-4 w-4" />
-                  Validar Cupón
+                  <span className="hidden sm:inline">Validar Cupón</span>
                 </Button>
               </div>
             </div>
@@ -1061,20 +1156,22 @@ export default function AdminDashboardPage() {
             <AnalistaKPIs
               tenantDomain={tienda?.dominio || ''}
               adminToken={token || ''}
+              onCreateCampaign={handleCreateCampaignFromIA}
+              onCreatePromotion={handleCreatePromotionFromIA}
             />
 
             {/* Selector de Periodo */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="min-w-0">
                     <CardTitle>Analytics y Métricas</CardTitle>
                     <CardDescription>
-                      Visualiza el rendimiento de tu negocio con gráficos interactivos
+                      Rendimiento del negocio
                     </CardDescription>
                   </div>
                   <Select value={analyticsPeriodo} onValueChange={(value: '7d' | '30d' | '90d') => setAnalyticsPeriodo(value)}>
-                    <SelectTrigger className="w-[160px]">
+                    <SelectTrigger className="w-full sm:w-[160px]">
                       <SelectValue placeholder="Periodo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1123,7 +1220,7 @@ export default function AdminDashboardPage() {
 
           // Recargar los listados según el tab activo
           if (activeTab === 'ventas') {
-            fetchCompras(comprasPage)
+            fetchCompras(comprasPage, searchCompras)
           } else if (activeTab === 'clientes') {
             fetchClientes(clientesPage, searchClientes)
           }

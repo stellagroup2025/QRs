@@ -1,21 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -30,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Mail, Plus, Eye, Edit, Trash2, Send, Calendar, Users } from 'lucide-react'
+import { Mail, Plus, Eye, Edit, Trash2, Send, Users, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { hexToRgb } from '@/lib/brand-colors'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { CrearCampanaDialog } from './CrearCampanaDialog'
@@ -67,6 +60,7 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [campanaParaEditar, setCampanaParaEditar] = useState<Campana | null>(null)
+  const [mostrarTodas, setMostrarTodas] = useState(false)
 
   // Estados para los diálogos de acciones
   const [campanaSeleccionada, setCampanaSeleccionada] = useState<Campana | null>(null)
@@ -76,7 +70,6 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
 
   useEffect(() => {
     cargarCampanas()
-    // Exponer la función de refresh al componente padre
     if (onRefreshNeeded) {
       onRefreshNeeded(cargarCampanas)
     }
@@ -103,6 +96,16 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
     }
   }
 
+  function getEstadoIcon(estado: Campana['estado']) {
+    switch (estado) {
+      case 'borrador': return <Clock className="h-3 w-3" />
+      case 'programada': return <Clock className="h-3 w-3" />
+      case 'enviando': return <Loader2 className="h-3 w-3 animate-spin" />
+      case 'enviada': return <CheckCircle className="h-3 w-3" />
+      case 'cancelada': return <XCircle className="h-3 w-3" />
+    }
+  }
+
   function getEstadoBadge(estado: Campana['estado']) {
     const estilos = {
       borrador: 'bg-gray-100 text-gray-700',
@@ -121,7 +124,8 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
     }
 
     return (
-      <Badge className={estilos[estado]}>
+      <Badge className={`${estilos[estado]} text-xs px-1.5 py-0 gap-1`}>
+        {getEstadoIcon(estado)}
         {textos[estado]}
       </Badge>
     )
@@ -132,19 +136,14 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
     return new Date(fecha).toLocaleDateString('es-ES', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
     })
   }
 
-  // Función para ver el contenido de la campaña
   function handleVer(campana: Campana) {
     setCampanaSeleccionada(campana)
     setVerDialogOpen(true)
   }
 
-  // Función para borrar campaña
   async function handleBorrar() {
     if (!campanaSeleccionada) return
 
@@ -170,7 +169,6 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
     }
   }
 
-  // Función para enviar campaña
   async function handleEnviar() {
     if (!campanaSeleccionada) return
 
@@ -200,215 +198,219 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
         console.error('Error al enviar campaña:', errorData)
         alert(`Error al enviar la campaña: ${errorData}`)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error enviando campaña:', error)
       alert(`Error al enviar la campaña: ${error.message}`)
     }
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Header con botón de crear campaña */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Campañas de Email</h2>
-          <p className="text-muted-foreground">
-            Crea y gestiona campañas de email marketing con segmentación avanzada
-          </p>
+  // Filtrar campañas
+  const campanasActivas = campanas.filter(c => c.estado !== 'enviada' && c.estado !== 'cancelada')
+  const campanasVisibles = mostrarTodas ? campanas : campanasActivas
+
+  // Stats
+  const totalEnviados = campanas.reduce((sum, c) => sum + c.enviados, 0)
+  const totalAbiertos = campanas.reduce((sum, c) => sum + c.abiertos, 0)
+  const tasaApertura = totalEnviados > 0 ? ((totalAbiertos / totalEnviados) * 100).toFixed(0) : '0'
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
+          ))}
         </div>
-        <Button
-          style={{ backgroundColor: hexToRgb(branding.color_primario) }}
-          className="text-white"
-          onClick={() => setDialogOpen(true)}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Nueva Campaña
-        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Header compacto */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-sm">
+            <Badge variant="secondary">{campanasActivas.length} pendientes</Badge>
+            <Badge variant="outline">{totalEnviados} enviados</Badge>
+            <Badge variant="outline">{tasaApertura}% apertura</Badge>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Switch
+              id="mostrar-todas"
+              checked={mostrarTodas}
+              onCheckedChange={setMostrarTodas}
+            />
+            <Label htmlFor="mostrar-todas" className="text-sm text-muted-foreground">
+              Ver historial
+            </Label>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => setDialogOpen(true)}
+            style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+            className="text-white"
+          >
+            <Plus className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Nueva</span>
+          </Button>
+        </div>
       </div>
 
       {/* Lista de campañas */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Mis Campañas</CardTitle>
-          <CardDescription>
-            Historial de campañas de email enviadas y programadas
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-            </div>
-          ) : campanas.length === 0 ? (
-            <div className="text-center py-12">
-              <Mail className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-medium">No hay campañas</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Crea tu primera campaña para empezar a comunicarte con tus clientes
-              </p>
-              <Button
-                className="mt-4"
-                style={{ backgroundColor: hexToRgb(branding.color_primario) }}
-                onClick={() => setDialogOpen(true)}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Crear Primera Campaña
-              </Button>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Destinatarios</TableHead>
-                  <TableHead>Tasa Apertura</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {campanas.map((campana) => {
-                  const tasaApertura = campana.enviados > 0
-                    ? ((campana.abiertos / campana.enviados) * 100).toFixed(1)
-                    : '0'
+      {campanasVisibles.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <Mail className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+            <p className="text-sm text-muted-foreground mb-3">
+              {mostrarTodas ? 'No hay campañas' : 'No hay campañas pendientes'}
+            </p>
+            <Button
+              size="sm"
+              onClick={() => setDialogOpen(true)}
+              style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+              className="text-white"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Crear Campaña
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {campanasVisibles.map((campana) => {
+            const tasaCampana = campana.enviados > 0
+              ? ((campana.abiertos / campana.enviados) * 100).toFixed(0)
+              : '0'
 
-                  return (
-                    <TableRow key={campana.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{campana.nombre}</p>
-                          <p className="text-sm text-muted-foreground">{campana.asunto}</p>
+            return (
+              <Card
+                key={campana.id}
+                className={`overflow-hidden transition-opacity ${campana.estado === 'cancelada' ? 'opacity-60' : ''}`}
+              >
+                <CardContent className="p-3">
+                  {/* Header de la card */}
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-sm truncate">{campana.nombre}</h3>
+                        {getEstadoBadge(campana.estado)}
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                        {campana.asunto}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Info principal */}
+                  <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg mb-2">
+                    <div className="text-center flex-1">
+                      <p className="text-lg font-bold flex items-center justify-center gap-1">
+                        <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                        {campana.total_destinatarios}
+                      </p>
+                      <p className="text-xs text-muted-foreground">destinatarios</p>
+                    </div>
+                    <div className="w-px h-8 bg-border" />
+                    <div className="text-center flex-1">
+                      <p className="text-lg font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
+                        {campana.enviados}
+                      </p>
+                      <p className="text-xs text-muted-foreground">enviados</p>
+                    </div>
+                    <div className="w-px h-8 bg-border" />
+                    <div className="text-center flex-1">
+                      <p className="text-lg font-bold">{tasaCampana}%</p>
+                      <p className="text-xs text-muted-foreground">apertura</p>
+                    </div>
+                  </div>
+
+                  {/* Barra de progreso de apertura */}
+                  {campana.enviados > 0 && (
+                    <div className="mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                          <div
+                            className="h-1.5 rounded-full transition-all"
+                            style={{
+                              width: `${Math.min(100, parseFloat(tasaCampana))}%`,
+                              backgroundColor: hexToRgb(branding.color_acento),
+                            }}
+                          />
                         </div>
-                      </TableCell>
-                      <TableCell>{getEstadoBadge(campana.estado)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4 text-muted-foreground" />
-                          <span>{campana.total_destinatarios}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <span className="font-medium">{tasaApertura}%</span>
-                          <span className="text-muted-foreground ml-2">
-                            ({campana.abiertos}/{campana.enviados})
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {campana.fecha_enviada
-                          ? formatearFecha(campana.fecha_enviada)
-                          : campana.fecha_programada
-                          ? formatearFecha(campana.fecha_programada)
-                          : formatearFecha(campana.creado_en)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {campana.abiertos}/{campana.enviados}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Footer con fecha y acciones */}
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="text-xs text-muted-foreground">
+                      {campana.fecha_enviada ? (
+                        <span>Enviada {formatearFecha(campana.fecha_enviada)}</span>
+                      ) : campana.fecha_programada ? (
+                        <span className="text-blue-600">Programada {formatearFecha(campana.fecha_programada)}</span>
+                      ) : (
+                        <span>Creada {formatearFecha(campana.creado_en)}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9"
+                        onClick={() => handleVer(campana)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      {campana.estado === 'borrador' && (
+                        <>
                           <Button
                             variant="ghost"
-                            size="sm"
-                            onClick={() => handleVer(campana)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {campana.estado === 'borrador' && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setCampanaParaEditar(campana)
-                                  setEditDialogOpen(true)
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                style={{ color: hexToRgb(branding.color_primario) }}
-                                onClick={() => {
-                                  setCampanaSeleccionada(campana)
-                                  setEnviarDialogOpen(true)
-                                }}
-                              >
-                                <Send className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600"
+                            size="icon"
+                            className="h-9 w-9"
                             onClick={() => {
-                              setCampanaSeleccionada(campana)
-                              setBorrarDialogOpen(true)
+                              setCampanaParaEditar(campana)
+                              setEditDialogOpen(true)
                             }}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Edit className="h-4 w-4" />
                           </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Estadísticas generales */}
-      {campanas.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Enviados</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {campanas.reduce((sum, c) => sum + c.enviados, 0)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Tasa Apertura Media</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {(() => {
-                  const totalEnviados = campanas.reduce((sum, c) => sum + c.enviados, 0)
-                  const totalAbiertos = campanas.reduce((sum, c) => sum + c.abiertos, 0)
-                  return totalEnviados > 0
-                    ? ((totalAbiertos / totalEnviados) * 100).toFixed(1)
-                    : '0'
-                })()}%
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Campañas Activas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {campanas.filter(c => c.estado === 'programada' || c.estado === 'enviando').length}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Campañas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{campanas.length}</div>
-            </CardContent>
-          </Card>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9"
+                            style={{ color: hexToRgb(branding.color_primario) }}
+                            onClick={() => {
+                              setCampanaSeleccionada(campana)
+                              setEnviarDialogOpen(true)
+                            }}
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 text-red-500 hover:text-red-700"
+                        onClick={() => {
+                          setCampanaSeleccionada(campana)
+                          setBorrarDialogOpen(true)
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
 
@@ -433,38 +435,105 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
 
       {/* Dialog para ver contenido de campaña */}
       <Dialog open={verDialogOpen} onOpenChange={setVerDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{campanaSeleccionada?.nombre}</DialogTitle>
-            <DialogDescription>
-              Asunto: {campanaSeleccionada?.asunto}
-            </DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              {campanaSeleccionada?.nombre}
+              {campanaSeleccionada && getEstadoBadge(campanaSeleccionada.estado)}
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            {/* Preview del HTML */}
-            <div className="border rounded-lg p-4 bg-white">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: campanaSeleccionada?.contenido_html || '',
-                }}
-              />
-            </div>
 
-            {/* Información adicional */}
-            {campanaSeleccionada?.contenido_texto && (
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">Versión texto plano:</h4>
-                <div className="bg-gray-50 p-3 rounded text-sm whitespace-pre-wrap">
-                  {campanaSeleccionada.contenido_texto}
+          {campanaSeleccionada && (
+            <div className="space-y-4">
+              {/* Asunto */}
+              <div>
+                <h4 className="text-sm font-medium mb-1">Asunto</h4>
+                <p className="text-sm text-muted-foreground">{campanaSeleccionada.asunto}</p>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-2 bg-muted rounded-lg text-center">
+                  <p className="text-xl font-bold">{campanaSeleccionada.total_destinatarios}</p>
+                  <p className="text-xs text-muted-foreground">Destinatarios</p>
+                </div>
+                <div className="p-2 bg-muted rounded-lg text-center">
+                  <p className="text-xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
+                    {campanaSeleccionada.enviados}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Enviados</p>
+                </div>
+                <div className="p-2 bg-muted rounded-lg text-center">
+                  <p className="text-xl font-bold">{campanaSeleccionada.abiertos}</p>
+                  <p className="text-xs text-muted-foreground">Abiertos</p>
                 </div>
               </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setVerDialogOpen(false)}>
-              Cerrar
-            </Button>
-          </DialogFooter>
+
+              {/* Clicks */}
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Clicks en enlaces:</span>
+                <span className="font-medium">{campanaSeleccionada.clicks}</span>
+              </div>
+
+              {/* Preview del contenido */}
+              <div>
+                <h4 className="text-sm font-medium mb-2">Vista previa</h4>
+                <div className="border rounded-lg p-3 bg-white max-h-48 overflow-y-auto">
+                  <div
+                    className="text-sm"
+                    dangerouslySetInnerHTML={{
+                      __html: campanaSeleccionada.contenido_html || '',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Fechas */}
+              <div className="space-y-1 pt-2 border-t text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Creada:</span>
+                  <span>{new Date(campanaSeleccionada.creado_en).toLocaleDateString('es-ES')}</span>
+                </div>
+                {campanaSeleccionada.fecha_programada && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Programada:</span>
+                    <span>{new Date(campanaSeleccionada.fecha_programada).toLocaleDateString('es-ES')}</span>
+                  </div>
+                )}
+                {campanaSeleccionada.fecha_enviada && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Enviada:</span>
+                    <span>{new Date(campanaSeleccionada.fecha_enviada).toLocaleDateString('es-ES')}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Acciones */}
+              <div className="flex gap-2 pt-2">
+                {campanaSeleccionada.estado === 'borrador' && (
+                  <Button
+                    className="flex-1 text-white"
+                    style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+                    onClick={() => {
+                      setVerDialogOpen(false)
+                      setCampanaSeleccionada(campanaSeleccionada)
+                      setEnviarDialogOpen(true)
+                    }}
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    Enviar
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setVerDialogOpen(false)}
+                >
+                  Cerrar
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -472,9 +541,9 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
       <AlertDialog open={borrarDialogOpen} onOpenChange={setBorrarDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar campaña?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente la campaña
+              Se eliminará permanentemente la campaña
               <strong className="block mt-2">{campanaSeleccionada?.nombre}</strong>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -484,7 +553,7 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
               onClick={handleBorrar}
               className="bg-red-600 hover:bg-red-700"
             >
-              Sí, borrar campaña
+              Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -496,13 +565,11 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
           <AlertDialogHeader>
             <AlertDialogTitle>¿Enviar campaña ahora?</AlertDialogTitle>
             <AlertDialogDescription>
-              Se enviará la campaña <strong>{campanaSeleccionada?.nombre}</strong> inmediatamente
-              a {campanaSeleccionada?.total_destinatarios} destinatarios.
+              Se enviará a {campanaSeleccionada?.total_destinatarios} destinatarios.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-            ⚠️ Esta acción no se puede deshacer. Verifica que el contenido y los
-            destinatarios sean correctos antes de continuar.
+          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
+            ⚠️ Esta acción no se puede deshacer.
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
@@ -511,7 +578,7 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
               style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               className="text-white"
             >
-              Sí, enviar ahora
+              Enviar ahora
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

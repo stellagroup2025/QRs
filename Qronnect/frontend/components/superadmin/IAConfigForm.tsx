@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useConfirmDialog } from '@/hooks/use-confirm-dialog';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -53,6 +54,7 @@ interface Props {
 
 export function IAConfigForm({ tiendaId }: Props) {
   const { toast } = useToast();
+  const { confirm } = useConfirmDialog();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [config, setConfig] = useState<IAConfig>({
@@ -148,9 +150,13 @@ export function IAConfigForm({ tiendaId }: Props) {
   };
 
   const eliminarApiKey = async () => {
-    if (!confirm('¿Estás seguro de eliminar la API key? La tienda volverá a modo global.')) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: '¿Eliminar API key?',
+      description: 'La tienda volverá a modo global.',
+      confirmText: 'Eliminar',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
 
     try {
       const token = localStorage.getItem('superadmin_token');

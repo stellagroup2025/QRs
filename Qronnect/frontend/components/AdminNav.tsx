@@ -20,6 +20,7 @@ import {
   Menu,
   X,
 } from 'lucide-react'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface NavItem {
   href: string
@@ -167,6 +168,7 @@ export function AdminNav() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-2">
+            <ThemeToggle />
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Salir
@@ -175,9 +177,11 @@ export function AdminNav() {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
+              aria-label="Abrir menú"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -190,9 +194,13 @@ export function AdminNav() {
         </div>
 
         {/* Mobile Navigation Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t py-4">
-            <div className="flex flex-col gap-2">
+        <div
+          className={cn(
+            "md:hidden border-t overflow-hidden transition-all duration-200 ease-out",
+            mobileMenuOpen ? "max-h-[500px] py-4 opacity-100" : "max-h-0 py-0 opacity-0"
+          )}
+        >
+          <div className="flex flex-col gap-2">
               {mainNavItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -268,7 +276,7 @@ export function AdminNav() {
               </div>
             </div>
           </div>
-        )}
+
       </div>
     </div>
   )
