@@ -6,10 +6,6 @@
     {
       "source": "/api/:path*",
       "destination": "$NEXT_PUBLIC_API_URL/api/:path*"
-    },
-    {
-      "source": "/superadmin/:path*",
-      "destination": "$NEXT_PUBLIC_API_URL/superadmin/:path*"
     }
   ],
   "headers": [
