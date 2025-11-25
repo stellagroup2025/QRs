@@ -53,6 +53,7 @@ import { PanelIA } from '@/components/admin/ia/PanelIA'
 import { AnalistaKPIs } from '@/components/admin/ia/AnalistaKPIs'
 import { DashboardSkeleton } from '@/components/ui/skeletons'
 import { ErrorRetry } from '@/components/ui/error-retry'
+import { useToast } from '@/hooks/use-toast'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -170,6 +171,26 @@ export default function AdminDashboardPage() {
 
   // Estado para refresh de campañas
   const [refreshCampanas, setRefreshCampanas] = useState<(() => void) | null>(null)
+
+  // Toast para notificaciones
+  const { toast } = useToast()
+
+  // Handlers para crear campaña/promoción desde el plan de acción IA
+  const handleCreateCampaignFromIA = (datosPrellenados: any) => {
+    setActiveTab('campanas')
+    toast({
+      title: '💡 Sugerencia de IA',
+      description: datosPrellenados?.asunto || datosPrellenados?.objetivo || 'Crea una nueva campaña de email',
+    })
+  }
+
+  const handleCreatePromotionFromIA = (datosPrellenados: any) => {
+    setActiveTab('promociones')
+    toast({
+      title: '💡 Sugerencia de IA',
+      description: datosPrellenados?.nombre || datosPrellenados?.objetivo || 'Crea una nueva promoción',
+    })
+  }
 
   useEffect(() => {
     // Verificar si hay un token de superadmin en la URL
@@ -1135,6 +1156,8 @@ export default function AdminDashboardPage() {
             <AnalistaKPIs
               tenantDomain={tienda?.dominio || ''}
               adminToken={token || ''}
+              onCreateCampaign={handleCreateCampaignFromIA}
+              onCreatePromotion={handleCreatePromotionFromIA}
             />
 
             {/* Selector de Periodo */}
