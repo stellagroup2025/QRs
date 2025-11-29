@@ -283,49 +283,50 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
         </Card>
 
         {/* Top 10 Clientes VIP */}
-        <Card>
+        <Card className="overflow-hidden">
           <ChartHeader
             title="Top 10 Clientes VIP"
             description="Clientes con mayor facturación total"
             helpText="Identifica a tus clientes más valiosos por el dinero que han gastado en tu negocio. Estos clientes son clave para tu negocio - considera ofrecerles atención especial, promociones exclusivas o un programa VIP. Mantén la relación con ellos para asegurar su fidelidad."
           />
-          <CardContent>
-            <div className="overflow-auto max-h-[300px]">
-              <Table>
+          <CardContent className="p-0 sm:p-6">
+            <div className="overflow-x-auto max-h-[300px]">
+              <Table className="min-w-0">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]">#</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead className="text-right">Gastado</TableHead>
-                    <TableHead className="text-right">Compras</TableHead>
-                    <TableHead className="text-right">Puntos</TableHead>
+                    <TableHead className="w-[40px] sm:w-[50px] px-2 sm:px-4">#</TableHead>
+                    <TableHead className="px-2 sm:px-4">Cliente</TableHead>
+                    <TableHead className="text-right px-2 sm:px-4 whitespace-nowrap">Gastado</TableHead>
+                    <TableHead className="text-right px-2 sm:px-4 hidden sm:table-cell">Compras</TableHead>
+                    <TableHead className="text-right px-2 sm:px-4">Puntos</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.top_clientes && data.top_clientes.length > 0 ? (
                     data.top_clientes.map((cliente, index) => (
                       <TableRow key={cliente.id}>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium px-2 sm:px-4">
                           {index === 0 && '🥇'}
                           {index === 1 && '🥈'}
                           {index === 2 && '🥉'}
                           {index > 2 && index + 1}
                         </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium text-sm">{cliente.nombre}</p>
-                            <p className="text-xs text-muted-foreground">{cliente.email}</p>
+                        <TableCell className="px-2 sm:px-4">
+                          <div className="max-w-[120px] sm:max-w-none">
+                            <p className="font-medium text-sm truncate">{cliente.nombre}</p>
+                            <p className="text-xs text-muted-foreground truncate hidden sm:block">{cliente.email}</p>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right font-medium">
-                          €{cliente.total_gastado.toFixed(2)}
+                        <TableCell className="text-right font-medium px-2 sm:px-4 whitespace-nowrap">
+                          €{cliente.total_gastado.toFixed(0)}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right px-2 sm:px-4 hidden sm:table-cell">
                           {cliente.num_compras}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right px-2 sm:px-4">
                           <Badge
                             variant="secondary"
+                            className="text-xs"
                             style={{ backgroundColor: hexToRgb(branding.color_acento) + '20', color: hexToRgb(branding.color_acento) }}
                           >
                             {cliente.puntos_totales}

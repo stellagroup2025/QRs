@@ -48,9 +48,8 @@ const mainNavItems: NavItem[] = [
 const configNavItems: NavItem[] = [
   {
     href: '/admin/onboarding',
-    label: 'Wizard Inicial',
+    label: 'Configuración General',
     icon: Sparkles,
-    badge: 'Nuevo',
   },
   {
     href: '/admin/configuracion/landing',
@@ -214,6 +213,21 @@ export function AdminNav() {
           )}
         >
           <div className="flex flex-col gap-2">
+              {/* Configuración General primero */}
+              <Link
+                href="/admin/onboarding"
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  'flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors min-h-[44px]',
+                  pathname === '/admin/onboarding'
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                )}
+              >
+                <Sparkles className="h-5 w-5" />
+                Configuración General
+              </Link>
+
               {mainNavItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -241,12 +255,12 @@ export function AdminNav() {
                 )
               })}
 
-              {/* Configuración Section */}
+              {/* Configuración Section - sin Configuración General que ya está arriba */}
               <div className="border-t pt-2 mt-2">
                 <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
                   Configuración
                 </div>
-                {configNavItems.map((item) => {
+                {configNavItems.filter(item => item.href !== '/admin/onboarding').map((item) => {
                   const Icon = item.icon
                   const isActive = pathname === item.href
 
