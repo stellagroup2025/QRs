@@ -18,6 +18,7 @@ import { PromocionFormDialog } from './PromocionFormDialog'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
 import { useConfirmDialog } from '@/hooks/use-confirm-dialog'
+import { toast } from 'sonner'
 
 interface Promocion {
   id: string
@@ -100,15 +101,21 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
 
       if (!response.ok) {
         const error = await response.json()
-        alert(error.message || 'Error al eliminar promoción')
+        toast.error('Error al eliminar', {
+          description: error.message || 'No se pudo eliminar la promoción'
+        })
         return
       }
 
-      alert('Promoción eliminada exitosamente')
+      toast.success('Promoción eliminada', {
+        description: 'La promoción ha sido eliminada exitosamente'
+      })
       fetchPromociones()
     } catch (error) {
       console.error('Error:', error)
-      alert('Error al eliminar promoción')
+      toast.error('Error al eliminar', {
+        description: 'Ocurrió un error al eliminar la promoción'
+      })
     }
   }
 

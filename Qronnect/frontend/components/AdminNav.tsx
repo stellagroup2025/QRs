@@ -194,6 +194,7 @@ export function AdminNav() {
               size="icon"
               aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
               aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -207,6 +208,7 @@ export function AdminNav() {
 
         {/* Mobile Navigation Menu */}
         <div
+          id="mobile-menu"
           className={cn(
             "md:hidden border-t overflow-hidden transition-all duration-200 ease-out",
             mobileMenuOpen ? "max-h-[500px] py-4 opacity-100" : "max-h-0 py-0 opacity-0"

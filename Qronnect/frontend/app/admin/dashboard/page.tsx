@@ -853,7 +853,8 @@ export default function AdminDashboardPage() {
                       />
                       {clientesLoading && searchClientes && (
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" aria-hidden="true" />
+                          <span className="sr-only" aria-live="polite">Buscando clientes...</span>
                         </div>
                       )}
                     </div>
@@ -1064,7 +1065,8 @@ export default function AdminDashboardPage() {
                       />
                       {comprasLoading && searchCompras && (
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" aria-hidden="true" />
+                          <span className="sr-only" aria-live="polite">Buscando compras...</span>
                         </div>
                       )}
                     </div>

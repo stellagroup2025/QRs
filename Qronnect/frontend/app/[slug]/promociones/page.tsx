@@ -10,6 +10,7 @@ import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
 import { ClientNav } from '@/components/ClientNav'
 import { useConfirmDialog } from '@/hooks/use-confirm-dialog'
+import { toast } from 'sonner'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -90,7 +91,9 @@ export default function PromocionesPage() {
     if (!token) return
 
     if (misPuntos < promocion.puntos_requeridos) {
-      alert(`Te faltan ${promocion.puntos_requeridos - misPuntos} puntos para canjear esta promoción`)
+      toast.error('Puntos insuficientes', {
+        description: `Te faltan ${promocion.puntos_requeridos - misPuntos} puntos para canjear esta promoción`
+      })
       return
     }
 
@@ -120,7 +123,9 @@ export default function PromocionesPage() {
         throw new Error(error.message || 'Error al canjear promoción')
       }
 
-      alert('¡Promoción canjeada exitosamente! Encuentra tu cupón en "Mis Canjes"')
+      toast.success('¡Promoción canjeada!', {
+        description: 'Encuentra tu cupón en "Mis Canjes"'
+      })
 
       // Actualizar datos
       fetchData()
@@ -129,7 +134,9 @@ export default function PromocionesPage() {
       router.push(`/${slug}/mis-canjes`)
     } catch (error: any) {
       console.error('Error:', error)
-      alert(error.message || 'Error al canjear promoción')
+      toast.error('Error al canjear', {
+        description: error.message || 'No se pudo canjear la promoción'
+      })
     } finally {
       setCanjeando(null)
     }

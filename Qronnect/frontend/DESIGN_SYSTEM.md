@@ -30,6 +30,19 @@ Esta documentación define los estándares de diseño y UX para todo el proyecto
 --border: oklch(0.922 0 0);           /* Bordes sutiles */
 --input: oklch(0.922 0 0);            /* Fondo de inputs */
 --ring: oklch(0.708 0 0);             /* Focus ring */
+
+/* Status Colors - NUEVO ✨ */
+--success: oklch(0.6 0.15 142);       /* Verde para éxito */
+--success-foreground: oklch(0.98 0 0); /* Texto sobre verde */
+--success-muted: oklch(0.97 0.05 142); /* Fondo verde claro */
+
+--warning: oklch(0.75 0.15 85);       /* Amarillo para advertencias */
+--warning-foreground: oklch(0.2 0 0); /* Texto sobre amarillo */
+--warning-muted: oklch(0.98 0.05 85); /* Fondo amarillo claro */
+
+--info: oklch(0.55 0.18 240);         /* Azul para información */
+--info-foreground: oklch(0.98 0 0);   /* Texto sobre azul */
+--info-muted: oklch(0.97 0.05 240);   /* Fondo azul claro */
 ```
 
 ### Variables CSS (Modo Oscuro) - MEJORADAS ✨
@@ -48,6 +61,19 @@ Esta documentación define los estándares de diseño y UX para todo el proyecto
 --border: oklch(0.32 0 0);            /* Bordes más visibles */
 --input: oklch(0.32 0 0);             /* Inputs más claros */
 --ring: oklch(0.5 0 0);               /* Focus ring más visible */
+
+/* Status Colors - Dark Mode */
+--success: oklch(0.55 0.15 142);      /* Verde más oscuro */
+--success-foreground: oklch(0.98 0 0);
+--success-muted: oklch(0.25 0.08 142); /* Fondo verde oscuro */
+
+--warning: oklch(0.7 0.15 85);        /* Amarillo más oscuro */
+--warning-foreground: oklch(0.98 0 0);
+--warning-muted: oklch(0.3 0.08 85);  /* Fondo amarillo oscuro */
+
+--info: oklch(0.6 0.18 240);          /* Azul más brillante */
+--info-foreground: oklch(0.98 0 0);
+--info-muted: oklch(0.25 0.08 240);   /* Fondo azul oscuro */
 ```
 
 ### Cómo Usar Colores
@@ -64,10 +90,29 @@ Esta documentación define los estándares de diseño y UX para todo el proyecto
 </div>
 ```
 
+**✅ NUEVO** - Variables de estado:
+```tsx
+// Estados de éxito
+<div className="bg-success-muted border-success text-success">
+  ✓ Operación exitosa
+</div>
+
+// Estados de advertencia
+<div className="bg-warning-muted border-warning text-warning-foreground">
+  ⚠ Revisa esta información
+</div>
+
+// Estados de información
+<div className="bg-info-muted border-info text-info-foreground">
+  ℹ Dato importante
+</div>
+```
+
 **⚠️ EVITAR** - Hardcoded colors:
 ```tsx
 // ❌ NO hacer esto
 <div className="bg-blue-500 text-white">...</div>
+<div className="bg-green-100 text-green-700">...</div>
 <div className="bg-gray-100">...</div>
 ```
 

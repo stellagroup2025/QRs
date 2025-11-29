@@ -290,7 +290,7 @@ export default function HomePage() {
                 </div>
 
                 <div className='flex items-center gap-6 pt-2'>
-                  <div className='flex -space-x-2'>
+                  <div className='flex -space-x-2' aria-hidden="true">
                     {[1, 2, 3, 4].map((i) => (
                       <div
                         key={i}

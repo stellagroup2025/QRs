@@ -147,6 +147,8 @@ export function ClientNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-label={`Ir a ${item.label}`}
+                aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   'flex flex-col items-center gap-0.5 py-2 px-1.5 sm:px-3 sm:py-3 text-xs sm:text-sm transition-colors relative flex-1',
                   isActive
