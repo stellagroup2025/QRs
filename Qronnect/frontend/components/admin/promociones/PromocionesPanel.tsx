@@ -285,36 +285,36 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
                       <span>Sin fecha límite</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-center gap-1 sm:gap-0.5">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9"
+                      className="h-11 w-11 sm:h-9 sm:w-9"
                       aria-label="Ver detalle"
                       onClick={() => setDetallePromo(promo)}
                     >
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-5 w-5 sm:h-4 sm:w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9"
+                      className="h-11 w-11 sm:h-9 sm:w-9"
                       aria-label="Editar promoción"
                       onClick={() => {
                         setEditingPromo(promo)
                         setDialogOpen(true)
                       }}
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-5 w-5 sm:h-4 sm:w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 text-red-500 hover:text-red-700"
+                      className="h-11 w-11 sm:h-9 sm:w-9 text-red-500 hover:text-red-700"
                       aria-label="Eliminar promoción"
                       onClick={() => handleDelete(promo.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-5 w-5 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </div>
