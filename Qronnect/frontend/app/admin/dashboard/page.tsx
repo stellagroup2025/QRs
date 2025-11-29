@@ -838,7 +838,7 @@ export default function AdminDashboardPage() {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Buscar clientes..."
-                        className="pl-9 w-full sm:w-48"
+                        className="pl-9 pr-9 w-full sm:w-48"
                         value={searchClientes}
                         onChange={(e) => {
                           setSearchClientes(e.target.value)
@@ -849,15 +849,22 @@ export default function AdminDashboardPage() {
                             fetchClientes(1, searchClientes)
                           }
                         }}
+                        aria-label="Buscar clientes por nombre, email o teléfono"
                       />
+                      {clientesLoading && searchClientes && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                        </div>
+                      )}
                     </div>
                     <Button
                       onClick={() => fetchClientes(1, searchClientes)}
                       style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                       className="text-white"
                       size="sm"
+                      disabled={clientesLoading}
                     >
-                      Buscar
+                      {clientesLoading ? 'Buscando...' : 'Buscar'}
                     </Button>
                   </div>
                 </div>
@@ -1042,7 +1049,7 @@ export default function AdminDashboardPage() {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Buscar por cliente..."
-                        className="pl-9 w-full sm:w-48"
+                        className="pl-9 pr-9 w-full sm:w-48"
                         value={searchCompras}
                         onChange={(e) => {
                           setSearchCompras(e.target.value)
@@ -1053,7 +1060,13 @@ export default function AdminDashboardPage() {
                             fetchCompras(1, searchCompras)
                           }
                         }}
+                        aria-label="Buscar compras por nombre de cliente"
                       />
+                      {comprasLoading && searchCompras && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                        </div>
+                      )}
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -1061,8 +1074,9 @@ export default function AdminDashboardPage() {
                         style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                         className="text-white flex-1 sm:flex-initial"
                         size="sm"
+                        disabled={comprasLoading}
                       >
-                        Buscar
+                        {comprasLoading ? 'Buscando...' : 'Buscar'}
                       </Button>
                       <Button
                         onClick={() => fetchCompras(1, searchCompras)}
