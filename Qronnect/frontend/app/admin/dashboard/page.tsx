@@ -1328,7 +1328,7 @@ export default function AdminDashboardPage() {
         onOpenChange={setRegistrarVentaOpen}
         onSuccess={() => {
           // Recargar todas las métricas del dashboard
-          fetchResumen()
+          fetchDashboard()
 
           // Recargar los listados según el tab activo
           if (activeTab === 'ventas') {

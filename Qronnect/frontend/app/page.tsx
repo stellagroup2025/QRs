@@ -448,7 +448,7 @@ export default function HomePage() {
                     <motion.div
                       key={index}
                       variants={fadeInUp}
-                      className='flex items-start gap-3 p-3 rounded-xl hover:bg-white transition-colors duración-300'
+                      className='flex items-start gap-3 p-3 rounded-xl hover:bg-white transition-colors duration-300'
                     >
                       <div
                         className='w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5'
