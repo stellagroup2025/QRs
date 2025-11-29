@@ -123,3 +123,41 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Touch Target Optimization - WCAG 2.5.5 (AAA) */
+@layer utilities {
+  /* Minimum touch target: 44x44px */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Icon button with proper touch target */
+  .touch-icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+
+  /* Mobile-optimized inputs */
+  .input-mobile {
+    min-height: 44px;
+  }
+
+  /* Responsive touch targets */
+  @media (max-width: 768px) {
+    .touch-sm {
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    /* Icon sizes for better touch on mobile */
+    .icon-touch {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}

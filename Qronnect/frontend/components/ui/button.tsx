@@ -21,12 +21,12 @@ const buttonVariants = cva(
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
-        default: 'h-9 px-4 py-2 has-[>svg]:px-3',
-        sm: 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
-        lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
-        icon: 'size-9',
-        'icon-sm': 'size-8',
-        'icon-lg': 'size-10',
+        default: 'h-10 px-4 py-2 has-[>svg]:px-3 md:h-9',
+        sm: 'h-10 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5 md:h-8',
+        lg: 'h-11 rounded-md px-6 has-[>svg]:px-4 md:h-10',
+        icon: 'size-11 md:size-9',
+        'icon-sm': 'size-11 md:size-8',
+        'icon-lg': 'size-11 md:size-10',
         'icon-touch': 'size-11',
       },
     },
@@ -37,24 +37,64 @@ const buttonVariants = cva(
   },
 )
 
+interface ButtonProps extends React.ComponentProps<'button'>, VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+  loading?: boolean
+  loadingText?: string
+}
+
 function Button({
   className,
   variant,
   size,
   asChild = false,
+  loading = false,
+  loadingText,
+  children,
+  disabled,
   ...props
-}: React.ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
+}: ButtonProps) {
   const Comp = asChild ? Slot : 'button'
+  const isDisabled = disabled || loading
 
   return (
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      disabled={isDisabled}
+      aria-disabled={isDisabled}
+      aria-busy={loading}
       {...props}
-    />
+    >
+      {loading ? (
+        <>
+          <svg
+            className="animate-spin size-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+          <span aria-live="polite">{loadingText || 'Cargando...'}</span>
+        </>
+      ) : (
+        children
+      )}
+    </Comp>
   )
 }
 

@@ -2,13 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { ResponsiveDialog } from '@/components/ui/responsive-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,6 +29,7 @@ import {
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
 import { useToast } from '@/hooks/use-toast'
+import { useMediaQuery } from '@/hooks/use-media-query'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -588,27 +583,29 @@ export function RegistrarVentaDialogMejorado({
     setSuccessData(null)
   }
 
+  // Determinar título y descripción según el paso
+  const getTitle = () => {
+    if (paso === 1) return <><User className="h-5 w-5" /> Paso 1: Buscar Cliente</>
+    if (paso === 2) return <><Gift className="h-5 w-5" /> Paso 2: Promociones Disponibles</>
+    return <><Receipt className="h-5 w-5" /> Paso 3: Confirmar Venta</>
+  }
+
+  const getDescription = () => {
+    if (paso === 1) return 'Busca el cliente por nombre, email o teléfono'
+    if (paso === 2) return `Cliente: ${clienteSeleccionado?.nombre || ''}`
+    return 'Revisa los detalles antes de confirmar'
+  }
+
   return (
-    <Dialog
+    <ResponsiveDialog
       open={open}
       onOpenChange={(open) => {
         if (!open) resetearFormulario()
         onOpenChange(open)
       }}
+      title={getTitle()}
+      description={getDescription()}
     >
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {paso === 1 && <><User className="h-5 w-5" /> Paso 1: Buscar Cliente</>}
-            {paso === 2 && <><Gift className="h-5 w-5" /> Paso 2: Promociones Disponibles</>}
-            {paso === 3 && <><Receipt className="h-5 w-5" /> Paso 3: Confirmar Venta</>}
-          </DialogTitle>
-          <DialogDescription>
-            {paso === 1 && 'Busca el cliente por nombre, email o teléfono'}
-            {paso === 2 && `Cliente: ${clienteSeleccionado?.nombre || ''}`}
-            {paso === 3 && 'Revisa los detalles antes de confirmar'}
-          </DialogDescription>
-        </DialogHeader>
 
         {success && successData ? (
           // Pantalla de éxito
@@ -1167,7 +1164,6 @@ export function RegistrarVentaDialogMejorado({
             </div>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   )
 }

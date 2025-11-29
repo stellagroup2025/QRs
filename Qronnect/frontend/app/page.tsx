@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { useLandingConfig } from '@/hooks/use-landing-config'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Store,
@@ -19,6 +20,7 @@ import {
   Star,
   ArrowRight
 } from 'lucide-react'
+import { VisuallyHidden } from '@/components/ui/visually-hidden'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -93,13 +95,20 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white'>
+      <div
+        className='min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white'
+        role="status"
+        aria-live="polite"
+        aria-label="Cargando página"
+      >
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           className='w-12 h-12 border-4 border-gray-200 border-t-transparent rounded-full'
           style={{ borderTopColor: branding.color_primario }}
+          aria-hidden="true"
         />
+        <VisuallyHidden>Cargando contenido de la página...</VisuallyHidden>
       </div>
     )
   }
@@ -187,8 +196,20 @@ export default function HomePage() {
 
   return (
     <div className='min-h-screen bg-white'>
+      {/* Skip Link para accesibilidad */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        Saltar al contenido principal
+      </a>
+
       {/* Hero Section */}
-      <section className='relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-50'>
+      <section
+        id="main-content"
+        className='relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-50'
+        aria-label="Sección principal del sitio"
+      >
         <div className='absolute inset-0 bg-grid-gray-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]' />
 
         <div className='relative container mx-auto px-4 py-12 md:py-20'>
@@ -206,8 +227,9 @@ export default function HomePage() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.6 }}
                   src={logoSrc}
-                  alt={displayBrandName}
+                  alt={`Logo de ${displayBrandName} - Programa de fidelización con códigos QR`}
                   className='h-14 md:h-16 w-auto object-contain'
+                  role="img"
                   onError={(e) => {
                     // Evitar bucle infinito de onError
                     e.currentTarget.onerror = null
@@ -238,9 +260,13 @@ export default function HomePage() {
                     className='text-base md:text-lg px-6 md:px-8 py-4 md:py-5 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5'
                     style={{ backgroundColor: branding.color_primario }}
                   >
-                    <Link href='/get-qr' className='flex items-center gap-2'>
+                    <Link
+                      href='/get-qr'
+                      className='flex items-center gap-2'
+                      aria-label="Obtener mi código QR de fidelización - Acción principal"
+                    >
                       {config.hero_cta_principal}
-                      <ArrowRight className='w-5 h-5' />
+                      <ArrowRight className='w-5 h-5' aria-hidden="true" />
                     </Link>
                   </Button>
 
@@ -254,7 +280,12 @@ export default function HomePage() {
                       color: branding.color_primario
                     }}
                   >
-                    <Link href='/login'>{config.hero_cta_secundario}</Link>
+                    <Link
+                      href='/login'
+                      aria-label="Iniciar sesión en mi cuenta"
+                    >
+                      {config.hero_cta_secundario}
+                    </Link>
                   </Button>
                 </div>
 
@@ -296,15 +327,15 @@ export default function HomePage() {
 
                   {/* Card */}
                   <div className='relative bg-white rounded-3xl shadow-2xl p-6 border border-gray-100'>
-                    <div className='aspect-square overflow-hidden rounded-2xl flex items-center justify-center'>
-                      <img
+                    <div className='aspect-square overflow-hidden rounded-2xl relative'>
+                      <Image
                         src='/gente-de-negocios-dandose-la-mano-para-saludar.webp'
-                        alt='Gente de negocios saludándose'
-                        className='w-full h-full object-cover'
-                        onError={(e) => {
-                          console.error('❌ Error cargando la imagen del HERO')
-                          e.currentTarget.style.display = 'none'
-                        }}
+                        alt='Dos profesionales estrechándose la mano en un entorno moderno, simbolizando la confianza y colaboración en programas de fidelización'
+                        fill
+                        className='object-cover'
+                        sizes='(max-width: 768px) 100vw, 50vw'
+                        priority={false}
+                        quality={85}
                       />
                     </div>
                   </div>
@@ -316,7 +347,10 @@ export default function HomePage() {
       </section>
 
       {/* Servicios / Soluciones */}
-      <section className='py-12 md:py-16 bg-white'>
+      <section
+        className='py-12 md:py-16 bg-white'
+        aria-labelledby="servicios-heading"
+      >
         <div className='container mx-auto px-4'>
           <motion.div
             initial='initial'
@@ -329,7 +363,7 @@ export default function HomePage() {
               variants={fadeInUp}
               className='text-center mb-10 md:mb-12'
             >
-              <h2 className='text-3xl md:text-4xl font-bold mb-4'>
+              <h2 id="servicios-heading" className='text-3xl md:text-4xl font-bold mb-4'>
                 <span className='text-gray-900'>{config.servicios_titulo.split(' ')[0]} </span>
                 <span style={{ color: branding.color_primario }}>
                   {config.servicios_titulo.split(' ').slice(1).join(' ')}
@@ -343,6 +377,8 @@ export default function HomePage() {
             <motion.div
               variants={stagger}
               className='grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8'
+              role="list"
+              aria-label="Lista de servicios disponibles"
             >
               {services.map((service, index) => (
                 <motion.div
@@ -350,10 +386,13 @@ export default function HomePage() {
                   variants={fadeInUp}
                   whileHover={{ y: -4 }}
                   className='group relative bg-white rounded-2xl p-6 border border-gray-100 hover:border-transparent hover:shadow-2xl transition-all duration-300'
+                  role="listitem"
+                  aria-label={`Servicio: ${service.title}`}
                 >
                   <div
                     className='absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-5 transition-opacity duration-300'
                     style={{ backgroundColor: branding.color_primario }}
+                    aria-hidden="true"
                   />
                   <div className='relative'>
                     <div
@@ -361,10 +400,12 @@ export default function HomePage() {
                       style={{
                         backgroundColor: hexToRgba(branding.color_primario, 0.1)
                       }}
+                      aria-hidden="true"
                     >
                       <service.icon
                         className='w-6 h-6'
                         style={{ color: branding.color_primario }}
+                        aria-hidden="true"
                       />
                     </div>
                     <h3 className='text-lg font-semibold mb-2 text-gray-900'>
@@ -508,13 +549,20 @@ export default function HomePage() {
                   variants={fadeInUp}
                   whileHover={{ y: -4 }}
                   className='bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-300'
+                  role="article"
+                  aria-label={`Testimonio de ${testimonial.name}`}
                 >
-                  <div className='flex gap-1 mb-4'>
+                  <div
+                    className='flex gap-1 mb-4'
+                    role="img"
+                    aria-label={`Calificación: ${testimonial.rating} de 5 estrellas`}
+                  >
                     {Array.from({ length: testimonial.rating }).map((_, i) => (
                       <Star
                         key={i}
-                        className='w-4 h-4 fill-current'
+                        className='w-5 h-5 sm:w-4 sm:h-4 fill-current'
                         style={{ color: branding.color_primario }}
+                        aria-hidden="true"
                       />
                     ))}
                   </div>

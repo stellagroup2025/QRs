@@ -21,6 +21,8 @@ import {
   X,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { CommandMenu } from '@/components/ui/command-menu'
+import { useAnalytics } from '@/hooks/use-analytics'
 
 interface NavItem {
   href: string
@@ -73,20 +75,28 @@ export function AdminNav() {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { trackEvent, trackInteraction } = useAnalytics()
 
   const handleLogout = () => {
+    // Track logout event
+    trackEvent({
+      category: 'Admin',
+      action: 'Logout',
+      label: 'Admin Navigation',
+    })
+
     localStorage.removeItem('admin_token')
     localStorage.removeItem('tenant_domain')
     router.push('/admin/login')
   }
 
   return (
-    <div className="bg-white border-b sticky top-0 z-50">
+    <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo / Brand */}
           <div className="flex items-center gap-2">
-            <Link href="/admin/dashboard" className="font-bold text-xl text-blue-600">
+            <Link href="/admin/dashboard" className="font-bold text-xl text-primary hover:text-primary/80 transition-colors">
               Admin Panel
             </Link>
           </div>
@@ -168,6 +178,7 @@ export function AdminNav() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-2">
+            <CommandMenu />
             <ThemeToggle />
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
@@ -177,17 +188,19 @@ export function AdminNav() {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
+            <CommandMenu />
             <ThemeToggle />
             <Button
               variant="ghost"
-              size="sm"
-              aria-label="Abrir menú"
+              size="icon"
+              aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+              aria-expanded={mobileMenuOpen}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <X className="h-6 w-6" aria-hidden="true" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className="h-6 w-6" aria-hidden="true" />
               )}
             </Button>
           </div>
@@ -211,13 +224,13 @@ export function AdminNav() {
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                      'flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors min-h-[44px]',
                       isActive
                         ? 'bg-blue-50 text-blue-700'
                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
                     )}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-5 w-5" />
                     {item.label}
                     {item.badge && (
                       <span className="ml-auto px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
@@ -243,13 +256,13 @@ export function AdminNav() {
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
-                        'flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                        'flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors min-h-[44px]',
                         isActive
                           ? 'bg-blue-50 text-blue-700'
                           : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
                       )}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-5 w-5" />
                       {item.label}
                       {item.badge && (
                         <span className="ml-auto px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
@@ -268,9 +281,10 @@ export function AdminNav() {
                     setMobileMenuOpen(false)
                     handleLogout()
                   }}
-                  className="flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 w-full transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-red-600 hover:bg-red-50 w-full transition-colors min-h-[44px]"
+                  aria-label="Cerrar sesión"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-5 w-5" />
                   Cerrar Sesión
                 </button>
               </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { useDebounce } from '@/hooks/use-debounce'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -41,19 +42,67 @@ import { BrandLogo } from '@/components/BrandLogo'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
 import { RegistrarVentaDialogMejorado } from '@/components/admin/RegistrarVentaDialogMejorado'
-import { AnalyticsCharts } from '@/components/admin/AnalyticsCharts'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { PromocionesPanel } from '@/components/admin/promociones/PromocionesPanel'
 import { ValidarCanjeDialog } from '@/components/admin/promociones/ValidarCanjeDialog'
-import { CampanasPanel } from '@/components/admin/campanas/CampanasPanel'
-import { CampanasSMSPanel } from '@/components/admin/campanas/CampanasSMSPanel'
-import { IADrawerCampanas } from '@/components/admin/campanas/IADrawer'
-import { IADrawerPromociones } from '@/components/admin/promociones/IADrawer'
-import { PanelIA } from '@/components/admin/ia/PanelIA'
-import { AnalistaKPIs } from '@/components/admin/ia/AnalistaKPIs'
-import { DashboardSkeleton } from '@/components/ui/skeletons'
+import { DashboardSkeleton, CardSkeleton } from '@/components/ui/skeleton'
 import { ErrorRetry } from '@/components/ui/error-retry'
 import { useToast } from '@/hooks/use-toast'
+
+// 🚀 Dynamic imports para code splitting (mejora performance)
+const AnalyticsCharts = dynamic(
+  () => import('@/components/admin/AnalyticsCharts').then(mod => ({ default: mod.AnalyticsCharts })),
+  {
+    loading: () => <CardSkeleton />,
+    ssr: false, // Charts no necesitan SSR
+  }
+)
+
+const PromocionesPanel = dynamic(
+  () => import('@/components/admin/promociones/PromocionesPanel').then(mod => ({ default: mod.PromocionesPanel })),
+  {
+    loading: () => <div className="space-y-4">{Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)}</div>,
+    ssr: false,
+  }
+)
+
+const CampanasPanel = dynamic(
+  () => import('@/components/admin/campanas/CampanasPanel').then(mod => ({ default: mod.CampanasPanel })),
+  {
+    loading: () => <CardSkeleton />,
+    ssr: false,
+  }
+)
+
+const CampanasSMSPanel = dynamic(
+  () => import('@/components/admin/campanas/CampanasSMSPanel').then(mod => ({ default: mod.CampanasSMSPanel })),
+  {
+    loading: () => <CardSkeleton />,
+    ssr: false,
+  }
+)
+
+const IADrawerCampanas = dynamic(
+  () => import('@/components/admin/campanas/IADrawer').then(mod => ({ default: mod.IADrawerCampanas })),
+  { ssr: false }
+)
+
+const IADrawerPromociones = dynamic(
+  () => import('@/components/admin/promociones/IADrawer').then(mod => ({ default: mod.IADrawerPromociones })),
+  { ssr: false }
+)
+
+const PanelIA = dynamic(
+  () => import('@/components/admin/ia/PanelIA').then(mod => ({ default: mod.PanelIA })),
+  {
+    loading: () => <CardSkeleton />,
+    ssr: false,
+  }
+)
+
+const AnalistaKPIs = dynamic(
+  () => import('@/components/admin/ia/AnalistaKPIs').then(mod => ({ default: mod.AnalistaKPIs })),
+  { ssr: false }
+)
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -272,6 +321,23 @@ export default function AdminDashboardPage() {
       setComprasPage(1)
     }
   }, [debouncedSearchCompras])
+
+  // 🚀 Listeners para eventos del CommandMenu (Cmd+K)
+  useEffect(() => {
+    const handleOpenSaleModal = () => setRegistrarVentaOpen(true)
+    const handleOpenPromoModal = () => setActiveTab('promociones')
+    const handleOpenCampaignModal = () => setActiveTab('campanas')
+
+    window.addEventListener('open-sale-modal', handleOpenSaleModal)
+    window.addEventListener('open-promo-modal', handleOpenPromoModal)
+    window.addEventListener('open-campaign-modal', handleOpenCampaignModal)
+
+    return () => {
+      window.removeEventListener('open-sale-modal', handleOpenSaleModal)
+      window.removeEventListener('open-promo-modal', handleOpenPromoModal)
+      window.removeEventListener('open-campaign-modal', handleOpenCampaignModal)
+    }
+  }, [])
 
   const fetchTiendaInfo = async (token: string) => {
     try {
@@ -533,38 +599,42 @@ export default function AdminDashboardPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-8">
-          <Card className="p-2 sm:p-0">
+        <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-8" role="region" aria-label="Estadísticas principales">
+          <Card className="p-2 sm:p-0" role="article" aria-labelledby="stat-clientes">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Clientes</CardTitle>
-              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+              <CardTitle id="stat-clientes" className="text-xs sm:text-sm font-medium">Clientes</CardTitle>
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
             </CardHeader>
             <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
-              <div className="text-lg sm:text-2xl font-bold">{data?.total_clientes || 0}</div>
+              <div className="text-lg sm:text-2xl font-bold" aria-label={`${data?.total_clientes || 0} clientes registrados`}>
+                {data?.total_clientes || 0}
+              </div>
               <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">Registrados</p>
             </CardContent>
           </Card>
 
-          <Card className="p-2 sm:p-0">
+          <Card className="p-2 sm:p-0" role="article" aria-labelledby="stat-compras">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Compras</CardTitle>
-              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+              <CardTitle id="stat-compras" className="text-xs sm:text-sm font-medium">Compras</CardTitle>
+              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
             </CardHeader>
             <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
-              <div className="text-lg sm:text-2xl font-bold">{data?.total_compras || 0}</div>
+              <div className="text-lg sm:text-2xl font-bold" aria-label={`${data?.total_compras || 0} compras totales`}>
+                {data?.total_compras || 0}
+              </div>
               <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
                 Ticket: €{(data?.ticket_medio || 0).toFixed(0)}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="p-2 sm:p-0">
+          <Card className="p-2 sm:p-0" role="article" aria-labelledby="stat-ventas">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Ventas</CardTitle>
-              <Euro className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+              <CardTitle id="stat-ventas" className="text-xs sm:text-sm font-medium">Ventas</CardTitle>
+              <Euro className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
             </CardHeader>
             <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
-              <div className="text-lg sm:text-2xl font-bold">
+              <div className="text-lg sm:text-2xl font-bold" aria-label={`${(data?.ventas_totales || 0).toLocaleString('es-ES')} euros en ventas totales`}>
                 €{(data?.ventas_totales || 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
               </div>
               <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
@@ -577,35 +647,74 @@ export default function AdminDashboardPage() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="relative -mx-4 sm:mx-0">
-            <div className="overflow-x-auto scrollbar-hide px-4 sm:px-0">
+            <div
+              className="overflow-x-auto scrollbar-hide px-4 sm:px-0"
+              role="navigation"
+              aria-label="Navegación principal del panel de administración"
+            >
               <TabsList className="inline-flex w-auto min-w-full sm:w-full justify-start">
-                <TabsTrigger value="qr" className="flex-shrink-0">
-                  <QrCode className="h-4 w-4 sm:mr-2" />
+                <TabsTrigger
+                  value="qr"
+                  className="flex-shrink-0"
+                  aria-label="Ver sección de QR de Registro"
+                >
+                  <QrCode className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                   <span className="hidden sm:inline">QR de Registro</span>
+                  <span className="sr-only sm:hidden">QR</span>
                 </TabsTrigger>
-                <TabsTrigger value="clientes" className="flex-shrink-0">
-                  <Users className="h-4 w-4 sm:mr-2" />
+                <TabsTrigger
+                  value="clientes"
+                  className="flex-shrink-0"
+                  aria-label="Ver lista de clientes"
+                >
+                  <Users className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                   <span className="hidden sm:inline">Clientes</span>
+                  <span className="sr-only sm:hidden">Clientes</span>
                 </TabsTrigger>
-                <TabsTrigger value="ventas" className="flex-shrink-0">
-                  <ShoppingCart className="h-4 w-4 sm:mr-2" />
+                <TabsTrigger
+                  value="ventas"
+                  className="flex-shrink-0"
+                  aria-label="Ver registro de ventas"
+                >
+                  <ShoppingCart className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                   <span className="hidden sm:inline">Ventas</span>
+                  <span className="sr-only sm:hidden">Ventas</span>
                 </TabsTrigger>
-                <TabsTrigger value="promociones" className="flex-shrink-0">
-                  <Gift className="h-4 w-4 sm:mr-2" />
+                <TabsTrigger
+                  value="promociones"
+                  className="flex-shrink-0"
+                  aria-label="Gestionar promociones"
+                >
+                  <Gift className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                   <span className="hidden sm:inline">Promociones</span>
+                  <span className="sr-only sm:hidden">Promociones</span>
                 </TabsTrigger>
-                <TabsTrigger value="campanas" className="flex-shrink-0">
-                  <Mail className="h-4 w-4 sm:mr-2" />
+                <TabsTrigger
+                  value="campanas"
+                  className="flex-shrink-0"
+                  aria-label="Ver campañas de email"
+                >
+                  <Mail className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                   <span className="hidden sm:inline">Campañas</span>
+                  <span className="sr-only sm:hidden">Campañas</span>
                 </TabsTrigger>
-                <TabsTrigger value="analytics" className="flex-shrink-0">
-                  <BarChart3 className="h-4 w-4 sm:mr-2" />
+                <TabsTrigger
+                  value="analytics"
+                  className="flex-shrink-0"
+                  aria-label="Ver analytics y métricas"
+                >
+                  <BarChart3 className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                   <span className="hidden sm:inline">Analytics</span>
+                  <span className="sr-only sm:hidden">Analytics</span>
                 </TabsTrigger>
-                <TabsTrigger value="ia" className="flex-shrink-0">
-                  <Sparkles className="h-4 w-4 sm:mr-2" />
+                <TabsTrigger
+                  value="ia"
+                  className="flex-shrink-0"
+                  aria-label="Herramientas de inteligencia artificial"
+                >
+                  <Sparkles className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                   <span className="hidden sm:inline">IA</span>
+                  <span className="sr-only sm:hidden">IA</span>
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -1202,11 +1311,14 @@ export default function AdminDashboardPage() {
       <div className="fixed bottom-6 right-6 z-50">
         <Button
           size="lg"
-          className="h-14 w-14 rounded-full shadow-lg text-white"
+          className="h-14 w-14 rounded-full shadow-lg text-white hover:scale-110 transition-transform"
           style={{ backgroundColor: hexToRgb(branding.color_primario) }}
           onClick={() => setRegistrarVentaOpen(true)}
+          aria-label="Abrir formulario para registrar nueva venta"
+          title="Registrar venta"
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-6 w-6" aria-hidden="true" />
+          <span className="sr-only">Registrar nueva venta</span>
         </Button>
       </div>
 

@@ -4,13 +4,17 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { WebVitals } from "@/components/web-vitals"
 import { Toaster } from "@/components/ui/toaster"
+import { ThemeProvider } from "@/components/theme-provider"
 import { BrandProvider } from "@/components/BrandProvider"
 import { BrandingProvider } from "@/components/BrandingProvider"
 import { CookieConsentProvider } from "@/components/CookieConsentProvider"
 import { CookieBanner } from "@/components/CookieBanner"
 import { SkipLink } from "@/components/ui/skip-link"
 import { ConfirmDialogProvider } from "@/hooks/use-confirm-dialog"
+import { SimpleLoadingBar } from "@/components/loading-bar"
 import { BRAND } from "@/config/appBrand"
 import "./globals.css"
 
@@ -107,23 +111,33 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className={`font-sans antialiased ${_geist.className}`}>
-        <SkipLink />
-        <BrandingProvider>
-          <CookieConsentProvider>
-            <BrandProvider>
-              <ConfirmDialogProvider>
-                <main id="main-content">
-                  {children}
-                </main>
-                <Toaster />
-                <CookieBanner />
-              </ConfirmDialogProvider>
-            </BrandProvider>
-          </CookieConsentProvider>
-        </BrandingProvider>
-        <Analytics />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SimpleLoadingBar />
+          <SkipLink />
+          <BrandingProvider>
+            <CookieConsentProvider>
+              <BrandProvider>
+                <ConfirmDialogProvider>
+                  <main id="main-content">
+                    {children}
+                  </main>
+                  <Toaster />
+                  <CookieBanner />
+                </ConfirmDialogProvider>
+              </BrandProvider>
+            </CookieConsentProvider>
+          </BrandingProvider>
+          <WebVitals />
+          <Analytics />
+          <SpeedInsights />
+        </ThemeProvider>
       </body>
     </html>
   )
