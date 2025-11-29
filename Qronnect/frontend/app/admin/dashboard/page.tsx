@@ -600,7 +600,15 @@ export default function AdminDashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-8" role="region" aria-label="Estadísticas principales">
-          <Card className="p-2 sm:p-0" role="article" aria-labelledby="stat-clientes">
+          <Card
+            className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+            role="button"
+            tabIndex={0}
+            aria-labelledby="stat-clientes"
+            aria-describedby="stat-clientes-desc"
+            onClick={() => setActiveTab('clientes')}
+            onKeyDown={(e) => e.key === 'Enter' && setActiveTab('clientes')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
               <CardTitle id="stat-clientes" className="text-xs sm:text-sm font-medium">Clientes</CardTitle>
               <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
@@ -609,11 +617,19 @@ export default function AdminDashboardPage() {
               <div className="text-lg sm:text-2xl font-bold" aria-label={`${data?.total_clientes || 0} clientes registrados`}>
                 {data?.total_clientes || 0}
               </div>
-              <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">Registrados</p>
+              <p id="stat-clientes-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">Ver clientes →</p>
             </CardContent>
           </Card>
 
-          <Card className="p-2 sm:p-0" role="article" aria-labelledby="stat-compras">
+          <Card
+            className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+            role="button"
+            tabIndex={0}
+            aria-labelledby="stat-compras"
+            aria-describedby="stat-compras-desc"
+            onClick={() => setActiveTab('ventas')}
+            onKeyDown={(e) => e.key === 'Enter' && setActiveTab('ventas')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
               <CardTitle id="stat-compras" className="text-xs sm:text-sm font-medium">Compras</CardTitle>
               <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
@@ -622,13 +638,21 @@ export default function AdminDashboardPage() {
               <div className="text-lg sm:text-2xl font-bold" aria-label={`${data?.total_compras || 0} compras totales`}>
                 {data?.total_compras || 0}
               </div>
-              <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
-                Ticket: €{(data?.ticket_medio || 0).toFixed(0)}
+              <p id="stat-compras-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
+                Ver ventas →
               </p>
             </CardContent>
           </Card>
 
-          <Card className="p-2 sm:p-0" role="article" aria-labelledby="stat-ventas">
+          <Card
+            className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+            role="button"
+            tabIndex={0}
+            aria-labelledby="stat-ventas"
+            aria-describedby="stat-ventas-desc"
+            onClick={() => setActiveTab('analytics')}
+            onKeyDown={(e) => e.key === 'Enter' && setActiveTab('analytics')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
               <CardTitle id="stat-ventas" className="text-xs sm:text-sm font-medium">Ventas</CardTitle>
               <Euro className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
@@ -637,8 +661,8 @@ export default function AdminDashboardPage() {
               <div className="text-lg sm:text-2xl font-bold" aria-label={`${(data?.ventas_totales || 0).toLocaleString('es-ES')} euros en ventas totales`}>
                 €{(data?.ventas_totales || 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
               </div>
-              <p className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
-                {data?.puntos_otorgados_totales || 0} pts
+              <p id="stat-ventas-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
+                Ver analytics →
               </p>
             </CardContent>
           </Card>
