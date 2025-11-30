@@ -19,6 +19,9 @@ import {
   Globe,
   Menu,
   X,
+  Paintbrush,
+  Coins,
+  Store,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { CommandMenu } from '@/components/ui/command-menu'
@@ -48,8 +51,23 @@ const mainNavItems: NavItem[] = [
 const configNavItems: NavItem[] = [
   {
     href: '/admin/onboarding',
-    label: 'Configuración General',
+    label: 'Configuración Inicial',
     icon: Sparkles,
+  },
+  {
+    href: '/admin/configuracion/branding',
+    label: 'Branding',
+    icon: Paintbrush,
+  },
+  {
+    href: '/admin/configuracion/puntos',
+    label: 'Sistema de Puntos',
+    icon: Coins,
+  },
+  {
+    href: '/admin/configuracion/tienda',
+    label: 'Información de Tienda',
+    icon: Store,
   },
   {
     href: '/admin/configuracion/landing',

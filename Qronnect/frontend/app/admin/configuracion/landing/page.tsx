@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -10,15 +9,15 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Save, Eye, Monitor, Smartphone, Tablet, ArrowLeft } from "lucide-react"
+import { Loader2, Save, Eye, Monitor, Smartphone, Tablet } from "lucide-react"
 import { LandingConfig } from "@/hooks/use-landing-config"
 import { LandingPreview } from "@/components/LandingPreview"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { AdminNav } from "@/components/AdminNav"
 
 const iconOptions = ["Users", "Gift", "TrendingUp", "QrCode", "Shield", "Zap", "Store"]
 
 export default function LandingConfigPage() {
-  const router = useRouter()
   const [config, setConfig] = useState<Partial<LandingConfig>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -118,24 +117,16 @@ export default function LandingConfigPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push('/admin/configuracion')}
-            className="hover:bg-gray-100"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+    <>
+      <AdminNav />
+      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Configuración de Landing Page</h1>
             <p className="text-muted-foreground text-sm">
               Personaliza todos los textos e imágenes de tu página de inicio
             </p>
           </div>
-        </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
             <a href="/" target="_blank" rel="noopener noreferrer">
@@ -616,6 +607,7 @@ export default function LandingConfigPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
