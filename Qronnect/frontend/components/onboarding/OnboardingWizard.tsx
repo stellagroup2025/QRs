@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Sparkles } from 'lucide-react'
+import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Sparkles, X } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Paso1Branding } from './steps/Paso1Branding'
 import { Paso2Puntos } from './steps/Paso2Puntos'
@@ -336,7 +336,16 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="text-center space-y-2">
+        <div className="relative text-center space-y-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => window.location.href = '/admin/dashboard'}
+            className="absolute left-0 top-0 hover:bg-gray-200"
+            title="Salir del onboarding"
+          >
+            <X className="h-5 w-5" />
+          </Button>
           <h1 className="text-3xl font-bold">Configuración Inicial</h1>
           <p className="text-muted-foreground">
             Completa estos 5 pasos para empezar a usar tu programa de fidelización (3-4 min)
