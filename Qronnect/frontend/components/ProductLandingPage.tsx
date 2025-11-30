@@ -42,6 +42,40 @@ const stagger = {
   }
 }
 
+/**
+ * Componente para animar números con count-up
+ */
+function CountUpNumber({ target, duration = 2000 }: { target: number; duration?: number }) {
+  const [count, setCount] = useState(0)
+  const [hasStarted, setHasStarted] = useState(false)
+
+  useEffect(() => {
+    if (!hasStarted) return
+
+    const increment = target / (duration / 16) // 60fps
+    let current = 0
+
+    const timer = setInterval(() => {
+      current += increment
+      if (current >= target) {
+        setCount(target)
+        clearInterval(timer)
+      } else {
+        setCount(Math.floor(current))
+      }
+    }, 16)
+
+    return () => clearInterval(timer)
+  }, [target, duration, hasStarted])
+
+  // Trigger cuando el componente es visible
+  useEffect(() => {
+    setHasStarted(true)
+  }, [])
+
+  return <span>{count}</span>
+}
+
 export function ProductLandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [showNav, setShowNav] = useState(false)
@@ -136,6 +170,24 @@ export function ProductLandingPage() {
                 transition={{ duration: 0.8 }}
                 className='space-y-8'
               >
+                {/* Badge de novedad */}
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className='inline-flex'
+                >
+                  <div className='inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-full shadow-sm hover:shadow-md transition-shadow'>
+                    <span className='relative flex h-3 w-3'>
+                      <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75'></span>
+                      <span className='relative inline-flex rounded-full h-3 w-3 bg-blue-500'></span>
+                    </span>
+                    <span className='text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'>
+                      🚀 Nuevo: IA Generativa para campañas automáticas
+                    </span>
+                  </div>
+                </motion.div>
+
                 {/* Logo */}
                 <motion.img
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -416,6 +468,175 @@ export function ProductLandingPage() {
         </div>
       </section>
 
+      {/* ROI y Beneficios Numéricos */}
+      <section className='py-20 bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative overflow-hidden'>
+        {/* Background decorativo */}
+        <div className='absolute inset-0 opacity-10'>
+          <div className='absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl'></div>
+          <div className='absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl'></div>
+        </div>
+
+        <div className='container mx-auto px-4 relative z-10'>
+          <div className='max-w-6xl mx-auto'>
+            <div className='text-center mb-16'>
+              <h2 className='text-4xl md:text-5xl font-bold mb-4 text-white'>
+                Resultados Medibles desde el Día 1
+              </h2>
+              <p className='text-xl text-blue-100'>
+                Datos reales de comercios usando Qronnect
+              </p>
+            </div>
+
+            {/* Grid de métricas principales */}
+            <div className='grid md:grid-cols-4 gap-6 mb-12'>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className='bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all'
+              >
+                <div className='text-5xl font-bold text-white mb-2'>+42%</div>
+                <div className='text-blue-100 font-medium'>Visitas Repetidas</div>
+                <div className='text-sm text-blue-200 mt-2'>vs clientes sin programa</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className='bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all'
+              >
+                <div className='text-5xl font-bold text-white mb-2'>3.5x</div>
+                <div className='text-blue-100 font-medium'>ROI Promedio</div>
+                <div className='text-sm text-blue-200 mt-2'>primer año de uso</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className='bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all'
+              >
+                <div className='text-5xl font-bold text-white mb-2'>€2,400</div>
+                <div className='text-blue-100 font-medium'>Ingresos Extra/Mes</div>
+                <div className='text-sm text-blue-200 mt-2'>promedio restaurante</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className='bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all'
+              >
+                <div className='text-5xl font-bold text-white mb-2'>15min</div>
+                <div className='text-blue-100 font-medium'>Setup Completo</div>
+                <div className='text-sm text-blue-200 mt-2'>y listo para usar</div>
+              </motion.div>
+            </div>
+
+            {/* Calculadora de ROI simplificada */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className='bg-white rounded-2xl p-8 shadow-2xl'
+            >
+              <div className='text-center mb-6'>
+                <h3 className='text-2xl font-bold text-gray-900 mb-2'>
+                  Calcula tu ROI Estimado
+                </h3>
+                <p className='text-gray-600'>
+                  Resultados conservadores basados en promedios del sector
+                </p>
+              </div>
+
+              <div className='grid md:grid-cols-3 gap-6'>
+                {/* Input simulado */}
+                <div className='bg-gray-50 rounded-xl p-6 border-2 border-gray-200'>
+                  <div className='text-sm font-semibold text-gray-600 mb-2'>Clientes/Mes</div>
+                  <div className='text-4xl font-bold text-gray-900 mb-1'>500</div>
+                  <div className='text-xs text-gray-500'>clientes actuales</div>
+                </div>
+
+                <div className='bg-gray-50 rounded-xl p-6 border-2 border-gray-200'>
+                  <div className='text-sm font-semibold text-gray-600 mb-2'>Ticket Medio</div>
+                  <div className='text-4xl font-bold text-gray-900 mb-1'>€25</div>
+                  <div className='text-xs text-gray-500'>gasto promedio</div>
+                </div>
+
+                <div className='bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 border-2 border-green-400 shadow-lg'>
+                  <div className='text-sm font-semibold text-green-100 mb-2'>Ingresos Extra/Mes</div>
+                  <div className='text-4xl font-bold text-white mb-1'>€2,100</div>
+                  <div className='text-xs text-green-100'>con +42% retención</div>
+                </div>
+              </div>
+
+              <div className='mt-6 pt-6 border-t border-gray-200'>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <p className='text-sm text-gray-600'>Inversión mensual en Qronnect</p>
+                    <p className='text-2xl font-bold text-gray-900'>€29/mes</p>
+                  </div>
+                  <div className='text-right'>
+                    <p className='text-sm text-gray-600'>Tu ROI estimado</p>
+                    <p className='text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent'>
+                      7,141%
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className='mt-6 text-center'>
+                <Button
+                  size='lg'
+                  className='bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all'
+                  onClick={() => {
+                    const element = document.getElementById('pricing')
+                    element?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                >
+                  Ver Planes y Precios
+                </Button>
+                <p className='text-xs text-gray-500 mt-2'>
+                  * Cálculo basado en estadísticas reales de clientes. Resultados individuales pueden variar.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Testimonios de métricas */}
+            <div className='grid md:grid-cols-3 gap-6 mt-12'>
+              <div className='text-center'>
+                <div className='text-3xl mb-2'>📈</div>
+                <p className='text-blue-100 text-sm'>
+                  <span className='font-bold text-white'>"Recuperamos el 38%</span> de clientes inactivos con las campañas automáticas"
+                </p>
+                <p className='text-blue-200 text-xs mt-2'>- Restaurante La Taberna</p>
+              </div>
+
+              <div className='text-center'>
+                <div className='text-3xl mb-2'>💰</div>
+                <p className='text-blue-100 text-sm'>
+                  <span className='font-bold text-white'>"€3,200 extra/mes</span> solo con promociones dirigidas a clientes VIP"
+                </p>
+                <p className='text-blue-200 text-xs mt-2'>- Boutique Moda Clara</p>
+              </div>
+
+              <div className='text-center'>
+                <div className='text-3xl mb-2'>⚡</div>
+                <p className='text-blue-100 text-sm'>
+                  <span className='font-bold text-white'>"Setup en 12 minutos.</span> Primer cliente registrado a los 5 minutos"
+                </p>
+                <p className='text-blue-200 text-xs mt-2'>- Cafetería Espresso</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Características Destacadas */}
       <section className='py-20 bg-white'>
         <div className='container mx-auto px-4'>
@@ -475,6 +696,204 @@ export function ProductLandingPage() {
                   <p className='text-gray-600'>{feature.description}</p>
                 </motion.div>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Integraciones */}
+      <section className='py-20 bg-white border-y border-gray-100'>
+        <div className='container mx-auto px-4'>
+          <div className='max-w-6xl mx-auto'>
+            <div className='text-center mb-16'>
+              <h2 className='text-4xl md:text-5xl font-bold mb-4'>
+                <span className='text-gray-900'>Se integra con </span>
+                <span className='bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'>
+                  tus herramientas
+                </span>
+              </h2>
+              <p className='text-xl text-gray-600'>
+                Conecta Qronnect con las plataformas que ya usas
+              </p>
+            </div>
+
+            {/* Grid de logos de integraciones */}
+            <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-12'>
+              {/* Stripe */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className='bg-white border-2 border-gray-200 rounded-xl p-6 flex items-center justify-center hover:border-blue-400 hover:shadow-lg transition-all group'
+              >
+                <div className='text-center'>
+                  <div className='text-4xl font-bold text-[#635BFF] group-hover:scale-110 transition-transform'>
+                    Stripe
+                  </div>
+                  <p className='text-xs text-gray-500 mt-2'>Pagos</p>
+                </div>
+              </motion.div>
+
+              {/* Shopify */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className='bg-white border-2 border-gray-200 rounded-xl p-6 flex items-center justify-center hover:border-green-400 hover:shadow-lg transition-all group'
+              >
+                <div className='text-center'>
+                  <div className='text-4xl font-bold text-[#96bf48] group-hover:scale-110 transition-transform'>
+                    Shopify
+                  </div>
+                  <p className='text-xs text-gray-500 mt-2'>E-commerce</p>
+                </div>
+              </motion.div>
+
+              {/* WooCommerce */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className='bg-white border-2 border-gray-200 rounded-xl p-6 flex items-center justify-center hover:border-purple-400 hover:shadow-lg transition-all group'
+              >
+                <div className='text-center'>
+                  <div className='text-3xl font-bold text-[#96588a] group-hover:scale-110 transition-transform'>
+                    WooCommerce
+                  </div>
+                  <p className='text-xs text-gray-500 mt-2'>WordPress</p>
+                </div>
+              </motion.div>
+
+              {/* Square */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className='bg-white border-2 border-gray-200 rounded-xl p-6 flex items-center justify-center hover:border-blue-400 hover:shadow-lg transition-all group'
+              >
+                <div className='text-center'>
+                  <div className='text-4xl font-bold text-[#3E4348] group-hover:scale-110 transition-transform'>
+                    Square
+                  </div>
+                  <p className='text-xs text-gray-500 mt-2'>POS</p>
+                </div>
+              </motion.div>
+
+              {/* Mailchimp */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5 }}
+                className='bg-white border-2 border-gray-200 rounded-xl p-6 flex items-center justify-center hover:border-yellow-400 hover:shadow-lg transition-all group'
+              >
+                <div className='text-center'>
+                  <div className='text-3xl font-bold text-[#FFE01B] group-hover:scale-110 transition-transform'>
+                    🐵
+                  </div>
+                  <div className='text-lg font-bold text-gray-800 mt-1'>Mailchimp</div>
+                  <p className='text-xs text-gray-500 mt-1'>Email</p>
+                </div>
+              </motion.div>
+
+              {/* Zapier */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.6 }}
+                className='bg-white border-2 border-gray-200 rounded-xl p-6 flex items-center justify-center hover:border-orange-400 hover:shadow-lg transition-all group'
+              >
+                <div className='text-center'>
+                  <div className='text-4xl font-bold text-[#FF4A00] group-hover:scale-110 transition-transform'>
+                    Zapier
+                  </div>
+                  <p className='text-xs text-gray-500 mt-2'>Automatización</p>
+                </div>
+              </motion.div>
+
+              {/* Google Analytics */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.7 }}
+                className='bg-white border-2 border-gray-200 rounded-xl p-6 flex items-center justify-center hover:border-blue-400 hover:shadow-lg transition-all group'
+              >
+                <div className='text-center'>
+                  <div className='text-3xl font-bold text-[#E37400] group-hover:scale-110 transition-transform'>
+                    📊
+                  </div>
+                  <div className='text-lg font-bold text-gray-800 mt-1'>Analytics</div>
+                  <p className='text-xs text-gray-500 mt-1'>Métricas</p>
+                </div>
+              </motion.div>
+
+              {/* WhatsApp Business */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.8 }}
+                className='bg-white border-2 border-gray-200 rounded-xl p-6 flex items-center justify-center hover:border-green-400 hover:shadow-lg transition-all group'
+              >
+                <div className='text-center'>
+                  <div className='text-4xl font-bold text-[#25D366] group-hover:scale-110 transition-transform'>
+                    WhatsApp
+                  </div>
+                  <p className='text-xs text-gray-500 mt-2'>Mensajería</p>
+                </div>
+              </motion.div>
+
+              {/* Meta (Facebook/Instagram) */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.9 }}
+                className='bg-white border-2 border-gray-200 rounded-xl p-6 flex items-center justify-center hover:border-blue-400 hover:shadow-lg transition-all group'
+              >
+                <div className='text-center'>
+                  <div className='text-4xl font-bold text-[#0668E1] group-hover:scale-110 transition-transform'>
+                    Meta
+                  </div>
+                  <p className='text-xs text-gray-500 mt-2'>Social Media</p>
+                </div>
+              </motion.div>
+
+              {/* Más integraciones */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 1.0 }}
+                className='bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-dashed border-gray-300 rounded-xl p-6 flex items-center justify-center hover:border-blue-400 hover:shadow-lg transition-all'
+              >
+                <div className='text-center'>
+                  <div className='text-3xl mb-2'>✨</div>
+                  <p className='text-sm font-semibold text-gray-700'>Y muchas más...</p>
+                  <p className='text-xs text-gray-500 mt-1'>API disponible</p>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* CTA de integraciones */}
+            <div className='text-center'>
+              <p className='text-gray-600 mb-4'>
+                ¿Usas otra herramienta? Nuestra API REST permite integraciones personalizadas
+              </p>
+              <Button
+                variant='outline'
+                size='lg'
+                onClick={() => (window.location.href = 'mailto:soporte@qronnect.com?subject=Consulta sobre integraciones')}
+                className='border-2 border-blue-600 text-blue-600 hover:bg-blue-50'
+              >
+                Consultar Integraciones
+              </Button>
             </div>
           </div>
         </div>
@@ -848,23 +1267,81 @@ export function ProductLandingPage() {
       {/* CTA Final */}
       <section className='py-20 relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600'>
         <div className='absolute inset-0 bg-grid-white/10' />
+
+        {/* Elementos decorativos animados */}
+        <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+          <div className='absolute top-20 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-pulse'></div>
+          <div className='absolute bottom-20 right-10 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl animate-pulse'></div>
+        </div>
+
         <div className='relative container mx-auto px-4'>
           <div className='max-w-4xl mx-auto text-center space-y-8'>
+            {/* Badge de usuarios activos */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className='inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3 shadow-xl'
+            >
+              <div className='flex -space-x-2'>
+                <div className='w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 border-2 border-white flex items-center justify-center text-xs font-bold'>
+                  👤
+                </div>
+                <div className='w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 border-2 border-white flex items-center justify-center text-xs font-bold'>
+                  👤
+                </div>
+                <div className='w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 border-2 border-white flex items-center justify-center text-xs font-bold'>
+                  👤
+                </div>
+              </div>
+              <div className='text-left'>
+                <div className='flex items-center gap-2'>
+                  <span className='relative flex h-2 w-2'>
+                    <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span>
+                    <span className='relative inline-flex rounded-full h-2 w-2 bg-green-500'></span>
+                  </span>
+                  <span className='text-sm font-bold text-white'>
+                    <CountUpNumber target={523} /> comercios activos
+                  </span>
+                </div>
+                <p className='text-xs text-white/70'>+18 nuevos esta semana</p>
+              </div>
+            </motion.div>
+
             <h2 className='text-4xl md:text-5xl font-bold text-white'>
               ¿Listo para Transformar tu Negocio?
             </h2>
-            <p className='text-xl text-white/90'>
-              Únete a 500+ comercios que ya están aumentando sus ventas con Qronnect
+
+            <p className='text-xl text-white/90 max-w-2xl mx-auto'>
+              Únete a <span className='font-bold text-white'><CountUpNumber target={523} />+ comercios</span> que ya están aumentando sus ventas con Qronnect
             </p>
+
+            {/* Stats rápidos */}
+            <div className='grid grid-cols-3 gap-6 max-w-2xl mx-auto pt-4'>
+              <div className='bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20'>
+                <div className='text-3xl font-bold text-white mb-1'>
+                  <CountUpNumber target={52} />K+
+                </div>
+                <div className='text-sm text-white/80'>Clientes Activos</div>
+              </div>
+              <div className='bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20'>
+                <div className='text-3xl font-bold text-white mb-1'>98%</div>
+                <div className='text-sm text-white/80'>Satisfacción</div>
+              </div>
+              <div className='bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20'>
+                <div className='text-3xl font-bold text-white mb-1'>3.5x</div>
+                <div className='text-sm text-white/80'>ROI Promedio</div>
+              </div>
+            </div>
 
             <div className='flex flex-col sm:flex-row gap-4 justify-center pt-4'>
               <Button
                 asChild
                 size='lg'
-                className='text-lg px-10 py-6 bg-white text-blue-600 hover:bg-gray-50 shadow-2xl'
+                className='text-lg px-10 py-6 bg-white text-blue-600 hover:bg-gray-50 shadow-2xl hover:shadow-3xl transition-all hover:scale-105'
               >
                 <Link href='/get-qr' className='flex items-center gap-2'>
-                  Empezar Gratis
+                  Empezar Gratis Ahora
                   <ArrowRight className='w-5 h-5' />
                 </Link>
               </Button>
@@ -873,7 +1350,7 @@ export function ProductLandingPage() {
                 asChild
                 size='lg'
                 variant='outline'
-                className='text-lg px-10 py-6 border-2 border-white text-white hover:bg-white/10'
+                className='text-lg px-10 py-6 border-2 border-white text-white hover:bg-white/10 transition-all'
               >
                 <Link href='mailto:sales@qronnect.com'>
                   Hablar con Ventas
@@ -882,8 +1359,16 @@ export function ProductLandingPage() {
             </div>
 
             <p className='text-white/80 text-sm pt-4'>
-              Sin tarjeta de crédito • Setup en 15 minutos • Cancela cuando quieras
+              ✓ Sin tarjeta de crédito • ✓ Setup en 15 minutos • ✓ Cancela cuando quieras
             </p>
+
+            {/* Urgencia sutil */}
+            <div className='inline-flex items-center gap-2 bg-yellow-500/20 border border-yellow-400/30 rounded-full px-4 py-2 mt-4'>
+              <span className='text-yellow-300 text-sm'>⚡</span>
+              <span className='text-sm text-yellow-100 font-medium'>
+                Oferta de lanzamiento: 3 meses gratis en plan Professional
+              </span>
+            </div>
           </div>
         </div>
       </section>
