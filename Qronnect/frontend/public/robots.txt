@@ -9,7 +9,7 @@ Disallow: /_next/
 Disallow: /static/
 
 # Sitemap
-Sitemap: https://qronnect.es/sitemap.xml
+Sitemap: https://www.qronnect.es/sitemap.xml
 
 # Crawl-delay para bots amigables
 User-agent: Googlebot

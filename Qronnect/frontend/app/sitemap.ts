@@ -5,7 +5,7 @@ import { MetadataRoute } from 'next'
  * Se genera automáticamente en /sitemap.xml
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://qronnect.es'
+  const baseUrl = 'https://www.qronnect.es'
 
   return [
     {
