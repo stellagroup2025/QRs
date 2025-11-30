@@ -27,6 +27,12 @@ import {
   BarChart3,
   MessageSquare,
 } from 'lucide-react'
+import {
+  OrganizationSchema,
+  SoftwareApplicationSchema,
+  FAQSchema,
+  ProductSchema,
+} from '@/components/seo/StructuredData'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -97,8 +103,42 @@ export function ProductLandingPage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // FAQ data para Schema.org
+  const faqData = [
+    {
+      question: '¿Necesito una app móvil?',
+      answer: 'No. Todo funciona desde el navegador web. Tus clientes solo necesitan escanear el QR y ya pueden empezar a acumular puntos.'
+    },
+    {
+      question: '¿Cuánto tiempo tarda el setup?',
+      answer: 'Aproximadamente 15 minutos. Configuras tu branding, sistema de puntos, y listo. No requiere conocimientos técnicos.'
+    },
+    {
+      question: '¿Puedo cancelar en cualquier momento?',
+      answer: 'Sí, sin penalizaciones ni costes ocultos. Si cancelas, mantienes acceso hasta el final del período pagado.'
+    },
+    {
+      question: '¿Cómo funcionan las promociones automáticas?',
+      answer: 'El sistema envía ofertas personalizadas por email/SMS según el comportamiento del cliente. Configuras las reglas una vez y se ejecutan automáticamente.'
+    },
+    {
+      question: '¿Qué datos de los clientes se almacenan?',
+      answer: 'Solo los necesarios: nombre, email/teléfono, historial de compras y puntos. Todo cumple con GDPR europeo.'
+    },
+    {
+      question: '¿Hay costes ocultos?',
+      answer: 'No. Los planes son transparentes. El plan gratuito es 100% gratuito. Los planes de pago no tienen costes extra.'
+    },
+  ]
+
   return (
     <div className='min-h-screen bg-white'>
+      {/* SEO - Structured Data (JSON-LD) */}
+      <OrganizationSchema />
+      <SoftwareApplicationSchema />
+      <ProductSchema />
+      <FAQSchema questions={faqData} />
+
       {/* Sticky Navigation */}
       <motion.nav
         initial={{ y: -100 }}

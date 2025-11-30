@@ -23,14 +23,55 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 // Base sin metadataBase (lo añadimos dinámico en generateMetadata)
 const baseMetadata: Metadata = {
-  title: `${BRAND.copy.companyName} - Programa de Fidelización`,
+  title: {
+    default: `${BRAND.copy.companyName} - Programa de Fidelización con QR`,
+    template: `%s | ${BRAND.copy.companyName}`,
+  },
   description:
-    (BRAND.copy.tagline || "Únete a nuestro programa de fidelización y obtén recompensas") ?? undefined,
+    "Sistema de fidelización inteligente con códigos QR. Sin app, sin complicaciones. Aumenta tus ventas un 40% con Qronnect. Prueba gratis.",
+  keywords: [
+    'programa de fidelización',
+    'código QR',
+    'tarjeta de fidelización',
+    'fidelización clientes',
+    'loyalty program',
+    'marketing local',
+    'aumentar ventas',
+    'retención clientes',
+    'CRM pequeñas empresas',
+    'Qronnect',
+  ],
+  authors: [{ name: 'StellaGroup', url: 'https://stellagroup.es' }],
+  creator: 'StellaGroup',
+  publisher: 'Qronnect',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
-    title: `${BRAND.copy.companyName} - Programa de Fidelización`,
-    description: (BRAND.copy.tagline || "Únete a nuestro programa de fidelización") ?? undefined,
-    images: BRAND.assets.ogImage ? [{ url: BRAND.assets.ogImage }] : undefined,
+    title: `${BRAND.copy.companyName} - Fidelización Inteligente con QR`,
+    description: "Sistema de fidelización sin app. Aumenta tus ventas un 40%. Sin complicaciones, resultados en 30 días.",
+    images: BRAND.assets.ogImage ? [{
+      url: BRAND.assets.ogImage,
+      width: 1200,
+      height: 630,
+      alt: 'Qronnect - Programa de Fidelización con QR'
+    }] : undefined,
     type: "website",
+    siteName: BRAND.copy.companyName,
+    locale: 'es_ES',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@qronnect',
+    creator: '@stellagroup',
   },
   icons: {
     icon: [
@@ -42,7 +83,13 @@ const baseMetadata: Metadata = {
     ],
   },
   manifest: '/manifest.json',
-  generator: "v0.app",
+  generator: "Next.js",
+  applicationName: 'Qronnect',
+  referrer: 'origin-when-cross-origin',
+  category: 'business',
+  alternates: {
+    canonical: '/',
+  },
 }
 
 // Función helper para obtener branding del tenant (si existe)
@@ -87,6 +134,9 @@ export async function generateMetadata(): Promise<Metadata> {
     ...baseMetadata,
     title,
     metadataBase: base,
+    alternates: {
+      canonical: base.toString(),
+    },
     icons: tenantBranding?.favicon_url ? {
       icon: [
         { url: tenantBranding.favicon_url, type: 'image/x-icon' }
@@ -95,14 +145,26 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       ...(baseMetadata.openGraph ?? {}),
       url: base.toString(),
-      images: ogImage ? [{ url: ogImage }] : (baseMetadata.openGraph as any)?.images,
+      images: ogImage ? [{
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: title as string,
+      }] : (baseMetadata.openGraph as any)?.images,
       title: title as string,
+      siteName: tenantBranding?.nombre_comercial || 'Qronnect',
+      locale: 'es_ES',
     },
     twitter: {
       card: "summary_large_image",
       title: title as string,
       description: (baseMetadata.description ?? undefined) as string | undefined,
-      images: ogImage ? [ogImage] : (baseMetadata.openGraph as any)?.images,
+      images: ogImage ? [{
+        url: ogImage,
+        alt: title as string,
+      }] : (baseMetadata.openGraph as any)?.images,
+      site: '@qronnect',
+      creator: '@stellagroup',
     },
   }
 }

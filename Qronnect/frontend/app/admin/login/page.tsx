@@ -118,8 +118,15 @@ export default function AdminLoginPage() {
                   required
                   disabled={loading}
                   className="pl-10"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? "email-error" : undefined}
                 />
               </div>
+              {error && (
+                <p id="email-error" className="text-xs text-destructive flex items-center gap-1" role="alert">
+                  <span className="font-medium">Error:</span> Verifica tu email
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -136,11 +143,18 @@ export default function AdminLoginPage() {
                   disabled={loading}
                   maxLength={6}
                   className="pl-10"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? "pin-error" : "pin-help"}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p id="pin-help" className="text-xs text-muted-foreground">
                 PIN de 4-6 dígitos proporcionado por el administrador
               </p>
+              {error && (
+                <p id="pin-error" className="text-xs text-destructive flex items-center gap-1" role="alert">
+                  <span className="font-medium">Error:</span> Verifica tu PIN
+                </p>
+              )}
             </div>
 
             <Button type="submit" className="w-full text-white" style={{ backgroundColor: hexToRgb(branding.color_primario) }} disabled={loading}>
