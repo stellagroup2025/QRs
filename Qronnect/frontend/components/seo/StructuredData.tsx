@@ -245,3 +245,102 @@ export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {
     />
   )
 }
+
+interface VideoSchemaProps {
+  name: string
+  description: string
+  thumbnailUrl: string
+  uploadDate?: string
+  duration?: string
+  contentUrl?: string
+}
+
+export function VideoSchema({
+  name = 'Qronnect - Demo del Sistema',
+  description = 'Descubre cómo configurar tu programa de fidelización con Qronnect en menos de 15 minutos',
+  thumbnailUrl = 'https://qronnect.es/video-thumbnail.jpg',
+  uploadDate = '2025-01-15',
+  duration = 'PT2M',
+  contentUrl = 'https://qronnect.es/demo-video',
+}: Partial<VideoSchemaProps> = {}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name,
+    description,
+    thumbnailUrl,
+    uploadDate,
+    duration,
+    contentUrl,
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  )
+}
+
+interface LocalBusinessSchemaProps {
+  name: string
+  description?: string
+  url?: string
+  telephone?: string
+  email?: string
+  address?: {
+    streetAddress?: string
+    addressLocality?: string
+    addressRegion?: string
+    postalCode?: string
+    addressCountry?: string
+  }
+  geo?: {
+    latitude?: number
+    longitude?: number
+  }
+  openingHours?: string[]
+  priceRange?: string
+}
+
+export function LocalBusinessSchema({
+  name = 'Qronnect',
+  description = 'Sistema de fidelización con QR para comercios locales',
+  url = 'https://qronnect.es',
+  telephone = '+34 900 000 000',
+  email = 'soporte@qronnect.com',
+  address = {
+    addressCountry: 'ES',
+    addressLocality: 'España',
+  },
+  openingHours = ['Mo-Fr 09:00-18:00'],
+  priceRange = '€€',
+}: Partial<LocalBusinessSchemaProps> = {}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name,
+    description,
+    url,
+    telephone,
+    email,
+    address: {
+      '@type': 'PostalAddress',
+      ...address,
+    },
+    openingHoursSpecification: openingHours.map((hours) => ({
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: hours.split(' ')[0],
+      opens: hours.split(' ')[1]?.split('-')[0],
+      closes: hours.split(' ')[1]?.split('-')[1],
+    })),
+    priceRange,
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  )
+}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import {
   QrCode,
@@ -32,6 +33,9 @@ import {
   SoftwareApplicationSchema,
   FAQSchema,
   ProductSchema,
+  VideoSchema,
+  LocalBusinessSchema,
+  BreadcrumbSchema,
 } from '@/components/seo/StructuredData'
 
 const fadeInUp = {
@@ -138,6 +142,14 @@ export function ProductLandingPage() {
       <SoftwareApplicationSchema />
       <ProductSchema />
       <FAQSchema questions={faqData} />
+      <VideoSchema />
+      <LocalBusinessSchema />
+      <BreadcrumbSchema
+        items={[
+          { name: 'Inicio', url: 'https://qronnect.es' },
+          { name: 'Producto', url: 'https://qronnect.es#demo' },
+        ]}
+      />
 
       {/* Sticky Navigation */}
       <motion.nav
@@ -590,10 +602,14 @@ export function ProductLandingPage() {
                   </div>
 
                   {/* Screenshot/Thumbnail del video (placeholder) */}
-                  <img
+                  <Image
                     src='https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&h=675&fit=crop'
                     alt='Qronnect Dashboard Preview'
-                    className='w-full h-full object-cover opacity-30'
+                    fill
+                    className='object-cover opacity-30'
+                    loading='lazy'
+                    quality={75}
+                    sizes='(max-width: 768px) 100vw, 50vw'
                   />
 
                   {/* Overlay hover */}
@@ -727,10 +743,14 @@ export function ProductLandingPage() {
                 >
                   {/* Imagen de fondo con overlay */}
                   <div className='relative h-48 overflow-hidden'>
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.industry}
-                      className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-500'
+                      fill
+                      className='object-cover group-hover:scale-110 transition-transform duration-500'
+                      loading='lazy'
+                      quality={80}
+                      sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
                     />
                     <div className='absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/50 to-transparent'></div>
 
@@ -1527,11 +1547,15 @@ export function ProductLandingPage() {
 
                   {/* Foto del cliente */}
                   <div className='flex items-start gap-4 mb-4'>
-                    <div className='relative'>
-                      <img
+                    <div className='relative w-16 h-16'>
+                      <Image
                         src={testimonial.image}
                         alt={testimonial.name}
-                        className='w-16 h-16 rounded-full object-cover border-4 border-blue-100 shadow-md'
+                        width={64}
+                        height={64}
+                        className='rounded-full object-cover border-4 border-blue-100 shadow-md'
+                        loading='lazy'
+                        quality={85}
                       />
                       {/* Indicador de negocio */}
                       <div className='absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-white'>
