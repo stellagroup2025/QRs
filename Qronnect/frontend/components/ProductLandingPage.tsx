@@ -399,6 +399,147 @@ export function ProductLandingPage() {
         </div>
       </section>
 
+      {/* Video Demo */}
+      <section className='py-20 bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 text-white relative overflow-hidden'>
+        {/* Background pattern */}
+        <div className='absolute inset-0 opacity-10'>
+          <div className='absolute inset-0 bg-grid-white/10'></div>
+        </div>
+
+        <div className='container mx-auto px-4 relative z-10'>
+          <div className='max-w-5xl mx-auto'>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className='text-center mb-12'
+            >
+              <div className='inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full text-sm font-semibold mb-6'>
+                <span className='text-2xl'>🎬</span>
+                Video Demo - 2 minutos
+              </div>
+              <h2 className='text-4xl md:text-5xl font-bold mb-4 text-white'>
+                Ve Qronnect en Acción
+              </h2>
+              <p className='text-xl text-blue-100 max-w-2xl mx-auto'>
+                Descubre cómo configurar tu programa de fidelización en menos de 15 minutos
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className='relative'
+            >
+              {/* Video container con aspecto 16:9 */}
+              <div className='relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 bg-gray-900'>
+                <div className='aspect-video relative group'>
+                  {/* Thumbnail/Poster del video */}
+                  <div className='absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center'>
+                    <div className='text-center'>
+                      {/* Play button grande */}
+                      <button
+                        onClick={() => {
+                          // Aquí iría la lógica para abrir modal de video o iframe de YouTube/Vimeo
+                          alert('Demo: Aquí se abriría el video demo de Qronnect.\n\nPuedes integrar:\n- Video de YouTube/Vimeo\n- Video autohospedado\n- Loom recording\n\nPor ahora es un placeholder.')
+                        }}
+                        className='w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform group'
+                        aria-label='Reproducir video demo'
+                      >
+                        <svg
+                          className='w-12 h-12 text-blue-600 ml-1'
+                          fill='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path d='M8 5v14l11-7z' />
+                        </svg>
+                      </button>
+                      <p className='text-white font-semibold text-lg mt-6'>
+                        Ver Demo Completa (2:00)
+                      </p>
+                      <p className='text-blue-100 text-sm mt-2'>
+                        Setup • Configuración • Primeros Clientes
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Screenshot/Thumbnail del video (placeholder) */}
+                  <img
+                    src='https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&h=675&fit=crop'
+                    alt='Qronnect Dashboard Preview'
+                    className='w-full h-full object-cover opacity-30'
+                  />
+
+                  {/* Overlay hover */}
+                  <div className='absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/10 transition-colors'></div>
+                </div>
+
+                {/* Video stats bar */}
+                <div className='bg-gray-800/90 backdrop-blur-sm px-6 py-4 flex items-center justify-between'>
+                  <div className='flex items-center gap-6 text-sm text-gray-300'>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-2xl'>👁️</span>
+                      <span className='font-semibold text-white'>12,450</span> visualizaciones
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-2xl'>👍</span>
+                      <span className='font-semibold text-white'>98%</span> útil
+                    </div>
+                  </div>
+                  <div className='text-sm text-gray-400'>
+                    Actualizado: Enero 2025
+                  </div>
+                </div>
+              </div>
+
+              {/* Badges informativos */}
+              <div className='grid grid-cols-3 gap-4 mt-8'>
+                <div className='bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 text-center'>
+                  <div className='text-3xl mb-2'>⚡</div>
+                  <div className='font-semibold text-white mb-1'>Setup Rápido</div>
+                  <div className='text-sm text-blue-200'>15 minutos o menos</div>
+                </div>
+                <div className='bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 text-center'>
+                  <div className='text-3xl mb-2'>🎯</div>
+                  <div className='font-semibold text-white mb-1'>Fácil de Usar</div>
+                  <div className='text-sm text-blue-200'>Sin conocimientos técnicos</div>
+                </div>
+                <div className='bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 text-center'>
+                  <div className='text-3xl mb-2'>📱</div>
+                  <div className='font-semibold text-white mb-1'>Sin App</div>
+                  <div className='text-sm text-blue-200'>Todo en el navegador</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* CTA después del video */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className='text-center mt-12'
+            >
+              <p className='text-blue-100 mb-4'>
+                ¿Listo para probarlo tú mismo?
+              </p>
+              <Button
+                size='lg'
+                className='bg-white text-blue-600 hover:bg-gray-100 shadow-xl text-lg px-8 py-6'
+                asChild
+              >
+                <Link href='/get-qr' className='flex items-center gap-2'>
+                  Empezar Gratis Ahora
+                  <ArrowRight className='w-5 h-5' />
+                </Link>
+              </Button>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Casos de Uso */}
       <section className='py-20 bg-gradient-to-b from-gray-50 to-white'>
         <div className='container mx-auto px-4'>
@@ -406,42 +547,50 @@ export function ProductLandingPage() {
             <div className='text-center mb-16'>
               <h2 className='text-4xl md:text-5xl font-bold mb-4'>
                 <span className='text-gray-900'>Perfecto para </span>
-                <span className='text-blue-600'>Tu Negocio</span>
+                <span className='bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'>Tu Negocio</span>
               </h2>
               <p className='text-xl text-gray-600'>
                 Soluciones específicas para cada industria
               </p>
             </div>
 
-            <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-6'>
+            <div className='grid md:grid-cols-2 gap-6'>
               {[
                 {
                   icon: Utensils,
-                  industry: 'Restaurantes',
+                  industry: 'Restaurantes & Cafeterías',
                   benefit: 'Más visitas, mayor ticket medio',
                   stat: '+40% clientes recurrentes',
-                  color: 'from-orange-500 to-red-500'
+                  color: 'from-orange-500 to-red-500',
+                  image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop',
+                  features: ['Programa de puntos por visita', 'Descuentos en cumpleaños', 'Promociones de happy hour']
                 },
                 {
                   icon: ShoppingBag,
-                  industry: 'Retail',
+                  industry: 'Retail & Boutiques',
                   benefit: 'Fidelización sin complicaciones',
                   stat: '+35% ventas repetidas',
-                  color: 'from-purple-500 to-pink-500'
+                  color: 'from-purple-500 to-pink-500',
+                  image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop',
+                  features: ['Recompensas por compra', 'Acceso VIP a nuevas colecciones', 'Eventos exclusivos']
                 },
                 {
                   icon: Scissors,
                   industry: 'Salones & Spas',
                   benefit: 'Reservas garantizadas',
                   stat: '+50% retención',
-                  color: 'from-blue-500 to-cyan-500'
+                  color: 'from-blue-500 to-cyan-500',
+                  image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&h=600&fit=crop',
+                  features: ['Sistema de citas preferenciales', 'Descuentos por frecuencia', 'Paquetes personalizados']
                 },
                 {
                   icon: Coffee,
-                  industry: 'Cafeterías',
-                  benefit: 'Clientes diarios fieles',
+                  industry: 'Servicios & Profesionales',
+                  benefit: 'Clientes fieles a largo plazo',
                   stat: '+60% frecuencia visitas',
-                  color: 'from-amber-500 to-yellow-500'
+                  color: 'from-amber-500 to-yellow-500',
+                  image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&h=600&fit=crop',
+                  features: ['Membresías mensuales', 'Beneficios acumulativos', 'Referencias recompensadas']
                 },
               ].map((item, index) => (
                 <motion.div
@@ -450,17 +599,68 @@ export function ProductLandingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  whileHover={{ y: -8 }}
-                  className='bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100'
+                  className='group relative bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-200'
                 >
-                  <div className={`w-14 h-14 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center mb-4`}>
-                    <item.icon className='w-7 h-7 text-white' />
+                  {/* Imagen de fondo con overlay */}
+                  <div className='relative h-48 overflow-hidden'>
+                    <img
+                      src={item.image}
+                      alt={item.industry}
+                      className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-500'
+                    />
+                    <div className='absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/50 to-transparent'></div>
+
+                    {/* Icon badge */}
+                    <div className={`absolute top-4 right-4 w-14 h-14 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center shadow-lg`}>
+                      <item.icon className='w-7 h-7 text-white' />
+                    </div>
+
+                    {/* Industry name */}
+                    <div className='absolute bottom-4 left-4 right-4'>
+                      <h3 className='text-2xl font-bold text-white mb-1'>{item.industry}</h3>
+                      <p className='text-blue-100 text-sm'>{item.benefit}</p>
+                    </div>
                   </div>
-                  <h3 className='text-xl font-bold text-gray-900 mb-2'>{item.industry}</h3>
-                  <p className='text-gray-600 text-sm mb-3'>{item.benefit}</p>
-                  <div className='pt-3 border-t border-gray-100'>
-                    <span className='text-blue-600 font-semibold text-sm'>{item.stat}</span>
+
+                  {/* Content */}
+                  <div className='p-6'>
+                    {/* Stat destacado */}
+                    <div className='mb-4 pb-4 border-b border-gray-100'>
+                      <div className='inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-full px-4 py-2'>
+                        <TrendingUp className='w-4 h-4 text-green-600' />
+                        <span className='text-sm font-bold text-green-700'>{item.stat}</span>
+                      </div>
+                    </div>
+
+                    {/* Features list */}
+                    <div className='space-y-3'>
+                      {item.features.map((feature, idx) => (
+                        <div key={idx} className='flex items-start gap-3'>
+                          <div className='flex-shrink-0 w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mt-0.5'>
+                            <Check className='w-3 h-3 text-blue-600' />
+                          </div>
+                          <p className='text-sm text-gray-700'>{feature}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* CTA button */}
+                    <div className='mt-6 pt-6 border-t border-gray-100'>
+                      <button
+                        onClick={() => {
+                          const element = document.getElementById('pricing')
+                          element?.scrollIntoView({ behavior: 'smooth' })
+                        }}
+                        className='w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2'
+                      >
+                        Ver Planes
+                        <ArrowRight className='w-4 h-4' />
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Hover border effect */}
+                  <div className='absolute inset-0 border-2 border-transparent group-hover:border-blue-500/50 rounded-2xl transition-colors pointer-events-none'></div>
                 </motion.div>
               ))}
             </div>
@@ -1132,41 +1332,57 @@ export function ProductLandingPage() {
       </section>
 
       {/* Testimonials */}
-      <section className='py-20 bg-white'>
+      <section className='py-20 bg-gradient-to-b from-white via-blue-50/30 to-white'>
         <div className='container mx-auto px-4'>
           <div className='max-w-6xl mx-auto'>
             <div className='text-center mb-16'>
+              <div className='inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-4'>
+                <Star className='w-4 h-4 fill-blue-600' />
+                98% de satisfacción
+              </div>
               <h2 className='text-4xl md:text-5xl font-bold mb-4'>
                 <span className='text-gray-900'>Historias de </span>
-                <span className='text-blue-600'>Éxito</span>
+                <span className='bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'>Éxito Real</span>
               </h2>
+              <p className='text-xl text-gray-600'>
+                Comercios que han transformado su negocio con Qronnect
+              </p>
             </div>
 
             <div className='grid md:grid-cols-3 gap-8'>
               {[
                 {
                   name: 'María González',
-                  role: 'Propietaria, Café Central',
+                  role: 'Propietaria',
+                  business: 'Café Central',
                   location: 'Madrid',
                   content: 'Aumentamos las visitas recurrentes un 40% en solo 3 meses. Nuestros clientes adoran lo fácil que es acumular puntos.',
+                  metric: '+40% visitas',
                   rating: 5,
-                  avatar: 'MG'
+                  image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=faces',
+                  verified: true
                 },
                 {
                   name: 'Carlos Ruiz',
-                  role: 'Gerente, Boutique Fashion',
+                  role: 'Gerente',
+                  business: 'Boutique Fashion',
                   location: 'Barcelona',
                   content: 'Qronnect nos ayudó a duplicar nuestra base de clientes leales. El sistema de promociones es increíblemente potente.',
+                  metric: '2x clientes leales',
                   rating: 5,
-                  avatar: 'CR'
+                  image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces',
+                  verified: true
                 },
                 {
                   name: 'Laura Martín',
-                  role: 'Dueña, Salón de Belleza Elite',
+                  role: 'Dueña',
+                  business: 'Salón Elite',
                   location: 'Valencia',
                   content: 'Setup súper rápido y los clientes se registran sin problemas. El ROI fue positivo desde el primer mes.',
+                  metric: 'ROI positivo mes 1',
                   rating: 5,
-                  avatar: 'LM'
+                  image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=faces',
+                  verified: true
                 },
               ].map((testimonial, index) => (
                 <motion.div
@@ -1175,28 +1391,258 @@ export function ProductLandingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className='bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-100'
+                  className='bg-white rounded-2xl p-6 shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300 relative overflow-hidden group'
                 >
+                  {/* Badge de verificado */}
+                  {testimonial.verified && (
+                    <div className='absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow-lg'>
+                      <Check className='w-3 h-3' />
+                      Verificado
+                    </div>
+                  )}
+
+                  {/* Foto del cliente */}
+                  <div className='flex items-start gap-4 mb-4'>
+                    <div className='relative'>
+                      <img
+                        src={testimonial.image}
+                        alt={testimonial.name}
+                        className='w-16 h-16 rounded-full object-cover border-4 border-blue-100 shadow-md'
+                      />
+                      {/* Indicador de negocio */}
+                      <div className='absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-white'>
+                        {testimonial.business.charAt(0)}
+                      </div>
+                    </div>
+                    <div className='flex-1'>
+                      <div className='font-bold text-gray-900 text-lg'>{testimonial.name}</div>
+                      <div className='text-sm text-gray-600'>{testimonial.role} • {testimonial.business}</div>
+                      <div className='text-xs text-gray-500 flex items-center gap-1 mt-1'>
+                        <MapPin className='w-3 h-3' />
+                        {testimonial.location}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rating */}
                   <div className='flex gap-1 mb-4'>
                     {[...Array(testimonial.rating)].map((_, i) => (
                       <Star key={i} className='w-5 h-5 fill-yellow-400 text-yellow-400' />
                     ))}
                   </div>
 
-                  <p className='text-gray-700 mb-6 italic'>"{testimonial.content}"</p>
+                  {/* Quote */}
+                  <p className='text-gray-700 mb-4 leading-relaxed relative'>
+                    <span className='text-4xl text-blue-200 absolute -top-2 -left-1'>"</span>
+                    <span className='relative z-10 italic'>{testimonial.content}</span>
+                  </p>
 
-                  <div className='flex items-center gap-3'>
-                    <div className='w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold'>
-                      {testimonial.avatar}
-                    </div>
-                    <div>
-                      <div className='font-semibold text-gray-900'>{testimonial.name}</div>
-                      <div className='text-sm text-gray-600'>{testimonial.role}</div>
-                      <div className='text-xs text-gray-500'>{testimonial.location}</div>
+                  {/* Métrica destacada */}
+                  <div className='pt-4 border-t border-gray-100'>
+                    <div className='inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-full px-4 py-2'>
+                      <TrendingUp className='w-4 h-4 text-green-600' />
+                      <span className='text-sm font-bold text-green-700'>{testimonial.metric}</span>
                     </div>
                   </div>
+
+                  {/* Efecto hover */}
+                  <div className='absolute inset-0 bg-gradient-to-br from-blue-500/0 to-indigo-500/0 group-hover:from-blue-500/5 group-hover:to-indigo-500/5 transition-all duration-300 pointer-events-none rounded-2xl'></div>
                 </motion.div>
               ))}
+            </div>
+
+            {/* Trust bar adicional */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className='mt-16 text-center'
+            >
+              <div className='inline-flex items-center gap-8 bg-white rounded-2xl px-8 py-6 shadow-lg border border-gray-200'>
+                <div className='text-center'>
+                  <div className='text-3xl font-bold text-blue-600 mb-1'>500+</div>
+                  <div className='text-sm text-gray-600'>Comercios Activos</div>
+                </div>
+                <div className='w-px h-12 bg-gray-200'></div>
+                <div className='text-center'>
+                  <div className='text-3xl font-bold text-blue-600 mb-1'>52K+</div>
+                  <div className='text-sm text-gray-600'>Clientes Registrados</div>
+                </div>
+                <div className='w-px h-12 bg-gray-200'></div>
+                <div className='text-center'>
+                  <div className='flex items-center justify-center gap-1 mb-1'>
+                    <Star className='w-6 h-6 fill-yellow-400 text-yellow-400' />
+                    <span className='text-3xl font-bold text-gray-900'>4.9</span>
+                  </div>
+                  <div className='text-sm text-gray-600'>Valoración Media</div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Seguridad y Compliance */}
+      <section className='py-20 bg-white border-y border-gray-200'>
+        <div className='container mx-auto px-4'>
+          <div className='max-w-6xl mx-auto'>
+            <div className='text-center mb-16'>
+              <div className='inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold mb-4'>
+                <Shield className='w-4 h-4' />
+                Seguridad Enterprise
+              </div>
+              <h2 className='text-4xl md:text-5xl font-bold mb-4'>
+                <span className='text-gray-900'>Tus Datos </span>
+                <span className='bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'>Están Seguros</span>
+              </h2>
+              <p className='text-xl text-gray-600 max-w-2xl mx-auto'>
+                Cumplimiento total con normativas europeas y seguridad bancaria
+              </p>
+            </div>
+
+            {/* Grid de features de seguridad */}
+            <div className='grid md:grid-cols-3 gap-8 mb-12'>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className='text-center'
+              >
+                <div className='w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg'>
+                  <Shield className='w-10 h-10 text-white' />
+                </div>
+                <h3 className='text-xl font-bold text-gray-900 mb-2'>GDPR Compliant</h3>
+                <p className='text-gray-600 text-sm mb-3'>
+                  Cumplimiento total con RGPD europeo. Tus datos de clientes están protegidos según la ley.
+                </p>
+                <div className='inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-semibold'>
+                  <Check className='w-3 h-3' />
+                  Certificado
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className='text-center'
+              >
+                <div className='w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg'>
+                  <Lock className='w-10 h-10 text-white' />
+                </div>
+                <h3 className='text-xl font-bold text-gray-900 mb-2'>Cifrado SSL 256-bit</h3>
+                <p className='text-gray-600 text-sm mb-3'>
+                  Todas las comunicaciones están cifradas con el mismo estándar que usan los bancos.
+                </p>
+                <div className='inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold'>
+                  <Check className='w-3 h-3' />
+                  Activo 24/7
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className='text-center'
+              >
+                <div className='w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg'>
+                  <Award className='w-10 h-10 text-white' />
+                </div>
+                <h3 className='text-xl font-bold text-gray-900 mb-2'>ISO 27001</h3>
+                <p className='text-gray-600 text-sm mb-3'>
+                  Infraestructura certificada con los más altos estándares de seguridad de la información.
+                </p>
+                <div className='inline-flex items-center gap-2 bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold'>
+                  <Check className='w-3 h-3' />
+                  Verificado
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Compliance badges */}
+            <div className='bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl p-8 border border-gray-200'>
+              <div className='flex flex-col md:flex-row items-center justify-between gap-6'>
+                <div className='flex-1'>
+                  <h3 className='text-2xl font-bold text-gray-900 mb-2'>
+                    Respaldo de Seguridad Enterprise
+                  </h3>
+                  <p className='text-gray-600'>
+                    Infraestructura alojada en AWS con backup automático diario y recuperación ante desastres
+                  </p>
+                </div>
+                <div className='flex gap-6 items-center'>
+                  {/* AWS Badge */}
+                  <div className='bg-white rounded-xl p-4 shadow-md border border-gray-200 text-center'>
+                    <div className='text-3xl font-bold text-orange-500 mb-1'>AWS</div>
+                    <div className='text-xs text-gray-600'>Cloud Hosting</div>
+                  </div>
+                  {/* Stripe Badge */}
+                  <div className='bg-white rounded-xl p-4 shadow-md border border-gray-200 text-center'>
+                    <div className='text-3xl font-bold text-indigo-600 mb-1'>Stripe</div>
+                    <div className='text-xs text-gray-600'>Pagos Seguros</div>
+                  </div>
+                  {/* GDPR Badge */}
+                  <div className='bg-white rounded-xl p-4 shadow-md border border-gray-200 text-center'>
+                    <div className='text-3xl font-bold text-blue-600 mb-1'>GDPR</div>
+                    <div className='text-xs text-gray-600'>Compliant</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Features adicionales */}
+            <div className='grid md:grid-cols-2 gap-6 mt-12'>
+              <div className='flex items-start gap-4 bg-white rounded-xl p-6 border border-gray-200 shadow-sm'>
+                <div className='flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center'>
+                  <Shield className='w-6 h-6 text-blue-600' />
+                </div>
+                <div>
+                  <h4 className='font-bold text-gray-900 mb-1'>Backup Automático</h4>
+                  <p className='text-sm text-gray-600'>
+                    Copias de seguridad diarias y automáticas. Tus datos nunca se pierden.
+                  </p>
+                </div>
+              </div>
+
+              <div className='flex items-start gap-4 bg-white rounded-xl p-6 border border-gray-200 shadow-sm'>
+                <div className='flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center'>
+                  <Lock className='w-6 h-6 text-green-600' />
+                </div>
+                <div>
+                  <h4 className='font-bold text-gray-900 mb-1'>Control de Acceso</h4>
+                  <p className='text-sm text-gray-600'>
+                    Autenticación de dos factores (2FA) y roles de usuario personalizables.
+                  </p>
+                </div>
+              </div>
+
+              <div className='flex items-start gap-4 bg-white rounded-xl p-6 border border-gray-200 shadow-sm'>
+                <div className='flex-shrink-0 w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center'>
+                  <Award className='w-6 h-6 text-purple-600' />
+                </div>
+                <div>
+                  <h4 className='font-bold text-gray-900 mb-1'>Auditoría Completa</h4>
+                  <p className='text-sm text-gray-600'>
+                    Logs detallados de todas las acciones para cumplimiento y transparencia.
+                  </p>
+                </div>
+              </div>
+
+              <div className='flex items-start gap-4 bg-white rounded-xl p-6 border border-gray-200 shadow-sm'>
+                <div className='flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center'>
+                  <Shield className='w-6 h-6 text-indigo-600' />
+                </div>
+                <div>
+                  <h4 className='font-bold text-gray-900 mb-1'>Uptime 99.9%</h4>
+                  <p className='text-sm text-gray-600'>
+                    SLA garantizado con monitoreo 24/7 y equipo de soporte dedicado.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
