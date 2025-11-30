@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -44,9 +44,73 @@ const stagger = {
 
 export function ProductLandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [showNav, setShowNav] = useState(false)
+  const [showFloatingCTA, setShowFloatingCTA] = useState(false)
+
+  // Detectar scroll para mostrar sticky nav y floating CTA
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY
+      setShowNav(scrollY > 100)
+      // Mostrar floating CTA después de hero section (aprox 600px)
+      // Ocultarlo en la sección de CTA final
+      const windowHeight = window.innerHeight
+      const documentHeight = document.documentElement.scrollHeight
+      const isNearBottom = scrollY + windowHeight > documentHeight - 800
+      setShowFloatingCTA(scrollY > 600 && !isNearBottom)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
     <div className='min-h-screen bg-white'>
+      {/* Sticky Navigation */}
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: showNav ? 0 : -100 }}
+        transition={{ duration: 0.3 }}
+        className='fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-b border-gray-200 shadow-sm'
+      >
+        <div className='container mx-auto px-4'>
+          <div className='flex items-center justify-between h-16'>
+            <div className='flex items-center gap-2'>
+              <img
+                src='/LogoQronnect.png'
+                alt='Qronnect'
+                className='h-8 w-auto'
+              />
+            </div>
+
+            <div className='hidden md:flex items-center gap-6'>
+              <a href='#demo' className='text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors'>
+                Cómo Funciona
+              </a>
+              <a href='#pricing' className='text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors'>
+                Precios
+              </a>
+              <a href='#faq' className='text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors'>
+                FAQ
+              </a>
+              <Button asChild size='sm' className='bg-blue-600 hover:bg-blue-700 text-white'>
+                <Link href='/get-qr'>
+                  Empezar Gratis
+                </Link>
+              </Button>
+            </div>
+
+            {/* Mobile CTA */}
+            <div className='md:hidden'>
+              <Button asChild size='sm' className='bg-blue-600 hover:bg-blue-700 text-white'>
+                <Link href='/get-qr'>
+                  Empezar
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </motion.nav>
+
       {/* Skip Link */}
       <a
         href="#main-content"
@@ -546,6 +610,87 @@ export function ProductLandingPage() {
               </motion.div>
             </div>
 
+            {/* Tabla Comparativa */}
+            <div className='mt-16'>
+              <h3 className='text-2xl font-bold text-center mb-8 text-gray-900'>
+                Comparativa Detallada
+              </h3>
+              <div className='overflow-x-auto'>
+                <table className='w-full border-collapse bg-white rounded-xl overflow-hidden shadow-lg'>
+                  <thead>
+                    <tr className='bg-gray-50'>
+                      <th className='text-left p-4 font-semibold text-gray-900'>Característica</th>
+                      <th className='text-center p-4 font-semibold text-gray-900'>Starter</th>
+                      <th className='text-center p-4 font-semibold bg-blue-50 text-blue-900'>Professional</th>
+                      <th className='text-center p-4 font-semibold text-gray-900'>Enterprise</th>
+                    </tr>
+                  </thead>
+                  <tbody className='divide-y divide-gray-100'>
+                    <tr>
+                      <td className='p-4 text-gray-700'>Clientes activos</td>
+                      <td className='p-4 text-center text-gray-600'>100</td>
+                      <td className='p-4 text-center bg-blue-50 font-semibold text-blue-900'>Ilimitados</td>
+                      <td className='p-4 text-center font-semibold text-gray-900'>Ilimitados</td>
+                    </tr>
+                    <tr>
+                      <td className='p-4 text-gray-700'>Códigos QR</td>
+                      <td className='p-4 text-center'><Check className='w-5 h-5 text-green-500 mx-auto' /></td>
+                      <td className='p-4 text-center bg-blue-50'><Check className='w-5 h-5 text-green-500 mx-auto' /></td>
+                      <td className='p-4 text-center'><Check className='w-5 h-5 text-green-500 mx-auto' /></td>
+                    </tr>
+                    <tr>
+                      <td className='p-4 text-gray-700'>Campañas Email</td>
+                      <td className='p-4 text-center text-gray-600'>Básico</td>
+                      <td className='p-4 text-center bg-blue-50'><Check className='w-5 h-5 text-green-500 mx-auto' /></td>
+                      <td className='p-4 text-center'><Check className='w-5 h-5 text-green-500 mx-auto' /></td>
+                    </tr>
+                    <tr>
+                      <td className='p-4 text-gray-700'>Campañas SMS</td>
+                      <td className='p-4 text-center text-gray-400'>—</td>
+                      <td className='p-4 text-center bg-blue-50'><Check className='w-5 h-5 text-green-500 mx-auto' /></td>
+                      <td className='p-4 text-center'><Check className='w-5 h-5 text-green-500 mx-auto' /></td>
+                    </tr>
+                    <tr>
+                      <td className='p-4 text-gray-700'>Analytics</td>
+                      <td className='p-4 text-center text-gray-600'>Básico</td>
+                      <td className='p-4 text-center bg-blue-50 text-blue-900 font-semibold'>Avanzado</td>
+                      <td className='p-4 text-center text-gray-900 font-semibold'>Avanzado + Custom</td>
+                    </tr>
+                    <tr>
+                      <td className='p-4 text-gray-700'>Integraciones API</td>
+                      <td className='p-4 text-center text-gray-400'>—</td>
+                      <td className='p-4 text-center bg-blue-50'><Check className='w-5 h-5 text-green-500 mx-auto' /></td>
+                      <td className='p-4 text-center'><Check className='w-5 h-5 text-green-500 mx-auto' /></td>
+                    </tr>
+                    <tr>
+                      <td className='p-4 text-gray-700'>Multi-tienda</td>
+                      <td className='p-4 text-center text-gray-400'>—</td>
+                      <td className='p-4 text-center bg-blue-50 text-gray-400'>—</td>
+                      <td className='p-4 text-center'><Check className='w-5 h-5 text-green-500 mx-auto' /></td>
+                    </tr>
+                    <tr>
+                      <td className='p-4 text-gray-700'>White Label</td>
+                      <td className='p-4 text-center text-gray-400'>—</td>
+                      <td className='p-4 text-center bg-blue-50 text-gray-400'>—</td>
+                      <td className='p-4 text-center'><Check className='w-5 h-5 text-green-500 mx-auto' /></td>
+                    </tr>
+                    <tr>
+                      <td className='p-4 text-gray-700'>Soporte</td>
+                      <td className='p-4 text-center text-gray-600'>Email</td>
+                      <td className='p-4 text-center bg-blue-50 text-blue-900 font-semibold'>Email + Chat</td>
+                      <td className='p-4 text-center text-gray-900 font-semibold'>Dedicado</td>
+                    </tr>
+                    <tr>
+                      <td className='p-4 text-gray-700'>SLA</td>
+                      <td className='p-4 text-center text-gray-600'>99%</td>
+                      <td className='p-4 text-center bg-blue-50 text-gray-600'>99.5%</td>
+                      <td className='p-4 text-center text-gray-900 font-semibold'>99.9%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             {/* Trust badges debajo de pricing */}
             <div className='mt-16 pt-12 border-t border-gray-200'>
               <div className='flex flex-wrap justify-center items-center gap-8'>
@@ -639,7 +784,7 @@ export function ProductLandingPage() {
       </section>
 
       {/* FAQ */}
-      <section className='py-20 bg-gray-50'>
+      <section id="faq" className='py-20 bg-gray-50'>
         <div className='container mx-auto px-4'>
           <div className='max-w-3xl mx-auto'>
             <div className='text-center mb-16'>
@@ -824,6 +969,28 @@ export function ProductLandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Floating CTA Button */}
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{
+          scale: showFloatingCTA ? 1 : 0,
+          opacity: showFloatingCTA ? 1 : 0
+        }}
+        transition={{ duration: 0.3, type: 'spring' }}
+        className='fixed bottom-8 right-8 z-40'
+      >
+        <Button
+          asChild
+          size='lg'
+          className='bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-2xl hover:shadow-3xl transition-all duration-300 px-8 py-6 text-lg'
+        >
+          <Link href='/get-qr' className='flex items-center gap-2'>
+            Empezar Gratis
+            <ArrowRight className='w-5 h-5' />
+          </Link>
+        </Button>
+      </motion.div>
     </div>
   )
 }
