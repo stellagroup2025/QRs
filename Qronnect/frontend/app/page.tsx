@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { isRootDomain } from '@/lib/tenant'
+import { ProductLandingPage } from '@/components/ProductLandingPage'
 import { Button } from '@/components/ui/button'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { useLandingConfig } from '@/hooks/use-landing-config'
@@ -37,6 +39,23 @@ const stagger = {
 }
 
 export default function HomePage() {
+  const [isRoot, setIsRoot] = useState(false)
+
+  // Detectar si es dominio raíz en el cliente
+  useEffect(() => {
+    setIsRoot(isRootDomain())
+  }, [])
+
+  // Si es dominio raíz de Qronnect, mostrar landing de producto
+  if (isRoot) {
+    return <ProductLandingPage />
+  }
+
+  // Si no, es un tenant - mostrar landing personalizada
+  return <TenantLandingPage />
+}
+
+function TenantLandingPage() {
   const { branding, loading: brandingLoading } = useBrandingContext()
   const { config, loading: configLoading } = useLandingConfig()
 

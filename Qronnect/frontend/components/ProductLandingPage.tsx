@@ -1,0 +1,829 @@
+'use client'
+
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import {
+  QrCode,
+  Zap,
+  Users,
+  TrendingUp,
+  Check,
+  Star,
+  ArrowRight,
+  ShoppingBag,
+  Utensils,
+  Scissors,
+  Coffee,
+  ChevronDown,
+  Mail,
+  Phone,
+  MapPin,
+  Shield,
+  Lock,
+  Award,
+  Smartphone,
+  BarChart3,
+  MessageSquare,
+} from 'lucide-react'
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 60 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, ease: 'easeOut' }
+}
+
+const stagger = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+export function ProductLandingPage() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
+
+  return (
+    <div className='min-h-screen bg-white'>
+      {/* Skip Link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-md focus:shadow-lg"
+      >
+        Saltar al contenido principal
+      </a>
+
+      {/* Hero Section */}
+      <section
+        id="main-content"
+        className='relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50'
+      >
+        <div className='absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]' />
+
+        <div className='relative container mx-auto px-4 py-16 md:py-24'>
+          <div className='max-w-7xl mx-auto'>
+            <div className='grid lg:grid-cols-2 gap-12 items-center'>
+              {/* Left Column */}
+              <motion.div
+                initial={{ opacity: 0, x: -60 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                className='space-y-8'
+              >
+                {/* Logo */}
+                <motion.img
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6 }}
+                  src='/LogoQronnect.png'
+                  alt='Qronnect - Fidelización Inteligente'
+                  className='h-16 md:h-20 w-auto object-contain'
+                />
+
+                {/* Headline */}
+                <div className='space-y-4'>
+                  <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold leading-tight'>
+                    <span className='bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent'>
+                      Convierte Clientes Ocasionales en
+                    </span>
+                    <br />
+                    <span className='bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'>
+                      Fans Leales
+                    </span>
+                  </h1>
+
+                  <p className='text-xl md:text-2xl text-gray-600 leading-relaxed'>
+                    Programa de fidelización con QR<br />
+                    <span className='font-semibold text-gray-800'>Sin app. Sin complicaciones. Resultados en 30 días.</span>
+                  </p>
+                </div>
+
+                {/* Stats */}
+                <div className='grid grid-cols-3 gap-4 pt-4'>
+                  <div className='text-center'>
+                    <div className='text-3xl md:text-4xl font-bold text-blue-600'>500+</div>
+                    <div className='text-sm text-gray-600'>Comercios</div>
+                  </div>
+                  <div className='text-center'>
+                    <div className='text-3xl md:text-4xl font-bold text-blue-600'>50K+</div>
+                    <div className='text-sm text-gray-600'>Clientes</div>
+                  </div>
+                  <div className='text-center'>
+                    <div className='text-3xl md:text-4xl font-bold text-blue-600'>98%</div>
+                    <div className='text-sm text-gray-600'>Satisfacción</div>
+                  </div>
+                </div>
+
+                {/* CTAs */}
+                <div className='flex flex-col sm:flex-row gap-4 pt-2'>
+                  <Button
+                    asChild
+                    size='lg'
+                    className='text-lg px-8 py-6 bg-blue-600 hover:bg-blue-700 text-white shadow-xl hover:shadow-2xl transition-all'
+                  >
+                    <Link href='/get-qr' className='flex items-center gap-2'>
+                      Empezar Gratis
+                      <ArrowRight className='w-5 h-5' />
+                    </Link>
+                  </Button>
+
+                  <Button
+                    asChild
+                    size='lg'
+                    variant='outline'
+                    className='text-lg px-8 py-6 border-2 border-blue-600 text-blue-600 hover:bg-blue-50'
+                  >
+                    <Link href='#demo'>
+                      Ver Demo
+                    </Link>
+                  </Button>
+                </div>
+
+                {/* Trust Badge */}
+                <div className='flex items-center gap-2 text-sm text-gray-600 pt-2'>
+                  <Check className='w-5 h-5 text-green-500' />
+                  <span>Sin tarjeta de crédito • Setup en 15 minutos</span>
+                </div>
+              </motion.div>
+
+              {/* Right Column - Visual */}
+              <motion.div
+                initial={{ opacity: 0, x: 60 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className='hidden lg:block'
+              >
+                <div className='relative'>
+                  <div className='absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-3xl blur-3xl opacity-20' />
+                  <div className='relative bg-white rounded-3xl shadow-2xl p-8 border border-gray-100'>
+                    <div className='space-y-6'>
+                      {/* Mock Dashboard Preview */}
+                      <div className='bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6'>
+                        <div className='flex items-center gap-3 mb-4'>
+                          <div className='w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center'>
+                            <QrCode className='w-6 h-6 text-white' />
+                          </div>
+                          <div>
+                            <div className='font-bold text-gray-900'>Tu Código QR</div>
+                            <div className='text-sm text-gray-600'>Listo para usar</div>
+                          </div>
+                        </div>
+                        <div className='aspect-square bg-white rounded-xl flex items-center justify-center'>
+                          <QrCode className='w-32 h-32 text-blue-600' />
+                        </div>
+                      </div>
+
+                      {/* Stats Preview */}
+                      <div className='grid grid-cols-2 gap-4'>
+                        <div className='bg-green-50 rounded-xl p-4'>
+                          <div className='text-2xl font-bold text-green-600'>+35%</div>
+                          <div className='text-xs text-gray-600'>Visitas recurrentes</div>
+                        </div>
+                        <div className='bg-purple-50 rounded-xl p-4'>
+                          <div className='text-2xl font-bold text-purple-600'>+28%</div>
+                          <div className='text-xs text-gray-600'>Ticket medio</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Logos Bar - Trust */}
+      <section className='py-8 bg-gray-50 border-y border-gray-200'>
+        <div className='container mx-auto px-4'>
+          <p className='text-center text-sm text-gray-600 mb-6'>Confiado por comercios líderes en España</p>
+          <div className='flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-60'>
+            {['Retail', 'Restaurantes', 'Salones', 'Cafeterías', 'Servicios'].map((type) => (
+              <div key={type} className='text-2xl font-bold text-gray-400'>
+                {type}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Cómo Funciona */}
+      <section id="demo" className='py-20 bg-white'>
+        <div className='container mx-auto px-4'>
+          <motion.div
+            initial='initial'
+            whileInView='animate'
+            viewport={{ once: true }}
+            variants={stagger}
+            className='max-w-6xl mx-auto'
+          >
+            <motion.div variants={fadeInUp} className='text-center mb-16'>
+              <h2 className='text-4xl md:text-5xl font-bold mb-4'>
+                <span className='text-gray-900'>Así de </span>
+                <span className='text-blue-600'>Simple</span>
+              </h2>
+              <p className='text-xl text-gray-600'>
+                Tu programa de fidelización funcionando en 4 pasos
+              </p>
+            </motion.div>
+
+            <div className='grid md:grid-cols-4 gap-8'>
+              {[
+                {
+                  step: '1',
+                  icon: QrCode,
+                  title: 'Cliente Escanea',
+                  description: 'Tu cliente escanea el código QR en tu local'
+                },
+                {
+                  step: '2',
+                  icon: Smartphone,
+                  title: 'Registro Rápido',
+                  description: 'Se registra en 30 segundos con email o teléfono'
+                },
+                {
+                  step: '3',
+                  icon: TrendingUp,
+                  title: 'Acumula Puntos',
+                  description: 'Gana puntos automáticamente en cada compra'
+                },
+                {
+                  step: '4',
+                  icon: Star,
+                  title: 'Canjea Recompensas',
+                  description: 'Usa sus puntos para obtener premios y descuentos'
+                },
+              ].map((item, index) => (
+                <motion.div
+                  key={index}
+                  variants={fadeInUp}
+                  className='relative'
+                >
+                  <div className='text-center space-y-4'>
+                    <div className='relative inline-block'>
+                      <div className='w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto'>
+                        <item.icon className='w-8 h-8 text-blue-600' />
+                      </div>
+                      <div className='absolute -top-2 -right-2 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm'>
+                        {item.step}
+                      </div>
+                    </div>
+                    <h3 className='text-lg font-semibold text-gray-900'>{item.title}</h3>
+                    <p className='text-gray-600 text-sm'>{item.description}</p>
+                  </div>
+                  {index < 3 && (
+                    <div className='hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-blue-200 to-transparent -ml-4' />
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Casos de Uso */}
+      <section className='py-20 bg-gradient-to-b from-gray-50 to-white'>
+        <div className='container mx-auto px-4'>
+          <div className='max-w-6xl mx-auto'>
+            <div className='text-center mb-16'>
+              <h2 className='text-4xl md:text-5xl font-bold mb-4'>
+                <span className='text-gray-900'>Perfecto para </span>
+                <span className='text-blue-600'>Tu Negocio</span>
+              </h2>
+              <p className='text-xl text-gray-600'>
+                Soluciones específicas para cada industria
+              </p>
+            </div>
+
+            <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-6'>
+              {[
+                {
+                  icon: Utensils,
+                  industry: 'Restaurantes',
+                  benefit: 'Más visitas, mayor ticket medio',
+                  stat: '+40% clientes recurrentes',
+                  color: 'from-orange-500 to-red-500'
+                },
+                {
+                  icon: ShoppingBag,
+                  industry: 'Retail',
+                  benefit: 'Fidelización sin complicaciones',
+                  stat: '+35% ventas repetidas',
+                  color: 'from-purple-500 to-pink-500'
+                },
+                {
+                  icon: Scissors,
+                  industry: 'Salones & Spas',
+                  benefit: 'Reservas garantizadas',
+                  stat: '+50% retención',
+                  color: 'from-blue-500 to-cyan-500'
+                },
+                {
+                  icon: Coffee,
+                  industry: 'Cafeterías',
+                  benefit: 'Clientes diarios fieles',
+                  stat: '+60% frecuencia visitas',
+                  color: 'from-amber-500 to-yellow-500'
+                },
+              ].map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -8 }}
+                  className='bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100'
+                >
+                  <div className={`w-14 h-14 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center mb-4`}>
+                    <item.icon className='w-7 h-7 text-white' />
+                  </div>
+                  <h3 className='text-xl font-bold text-gray-900 mb-2'>{item.industry}</h3>
+                  <p className='text-gray-600 text-sm mb-3'>{item.benefit}</p>
+                  <div className='pt-3 border-t border-gray-100'>
+                    <span className='text-blue-600 font-semibold text-sm'>{item.stat}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Características Destacadas */}
+      <section className='py-20 bg-white'>
+        <div className='container mx-auto px-4'>
+          <div className='max-w-6xl mx-auto'>
+            <div className='text-center mb-16'>
+              <h2 className='text-4xl md:text-5xl font-bold mb-4'>
+                <span className='text-gray-900'>Todo lo que </span>
+                <span className='text-blue-600'>Necesitas</span>
+              </h2>
+            </div>
+
+            <div className='grid md:grid-cols-3 gap-8'>
+              {[
+                {
+                  icon: Zap,
+                  title: 'Setup Instantáneo',
+                  description: 'Configura tu programa en 15 minutos. Sin instalaciones complicadas.'
+                },
+                {
+                  icon: MessageSquare,
+                  title: 'Campañas Automáticas',
+                  description: 'Email y SMS automáticos para recuperar clientes inactivos.'
+                },
+                {
+                  icon: BarChart3,
+                  title: 'Analytics en Tiempo Real',
+                  description: 'Métricas claras de retención, engagement y ROI.'
+                },
+                {
+                  icon: Users,
+                  title: 'Sin App Necesaria',
+                  description: 'Tus clientes no instalan nada. Todo funciona desde el navegador.'
+                },
+                {
+                  icon: Shield,
+                  title: 'Seguro y Confiable',
+                  description: 'GDPR compliant. Datos encriptados en servidores EU.'
+                },
+                {
+                  icon: Smartphone,
+                  title: 'Multi-dispositivo',
+                  description: 'Funciona perfectamente en móvil, tablet y desktop.'
+                },
+              ].map((feature, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className='space-y-3'
+                >
+                  <div className='w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center'>
+                    <feature.icon className='w-6 h-6 text-blue-600' />
+                  </div>
+                  <h3 className='text-lg font-semibold text-gray-900'>{feature.title}</h3>
+                  <p className='text-gray-600'>{feature.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className='py-20 bg-gradient-to-b from-gray-50 to-white'>
+        <div className='container mx-auto px-4'>
+          <div className='max-w-6xl mx-auto'>
+            <div className='text-center mb-16'>
+              <h2 className='text-4xl md:text-5xl font-bold mb-4'>
+                <span className='text-gray-900'>Precios </span>
+                <span className='text-blue-600'>Transparentes</span>
+              </h2>
+              <p className='text-xl text-gray-600'>
+                Sin costes ocultos. Cancela cuando quieras.
+              </p>
+            </div>
+
+            <div className='grid md:grid-cols-3 gap-8'>
+              {/* Starter */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className='bg-white rounded-2xl p-8 shadow-lg border border-gray-200'
+              >
+                <div className='mb-6'>
+                  <h3 className='text-2xl font-bold text-gray-900 mb-2'>Starter</h3>
+                  <div className='flex items-baseline gap-2'>
+                    <span className='text-4xl font-bold text-gray-900'>Gratis</span>
+                  </div>
+                  <p className='text-gray-600 mt-2'>Perfecto para empezar</p>
+                </div>
+
+                <ul className='space-y-4 mb-8'>
+                  {[
+                    'Hasta 100 clientes',
+                    'QR ilimitado',
+                    'Email básico',
+                    'Dashboard básico',
+                    'Soporte por email',
+                  ].map((feature, i) => (
+                    <li key={i} className='flex items-start gap-3'>
+                      <Check className='w-5 h-5 text-green-500 flex-shrink-0 mt-0.5' />
+                      <span className='text-gray-700'>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button asChild className='w-full bg-gray-900 hover:bg-gray-800'>
+                  <Link href='/get-qr'>Empezar Gratis</Link>
+                </Button>
+              </motion.div>
+
+              {/* Professional - DESTACADO */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className='bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 shadow-2xl transform scale-105 relative'
+              >
+                <div className='absolute top-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1 rounded-bl-2xl rounded-tr-2xl text-sm font-semibold'>
+                  Popular
+                </div>
+
+                <div className='mb-6'>
+                  <h3 className='text-2xl font-bold text-white mb-2'>Professional</h3>
+                  <div className='flex items-baseline gap-2'>
+                    <span className='text-4xl font-bold text-white'>29€</span>
+                    <span className='text-white/80'>/mes</span>
+                  </div>
+                  <p className='text-white/90 mt-2'>Para negocios en crecimiento</p>
+                </div>
+
+                <ul className='space-y-4 mb-8'>
+                  {[
+                    'Clientes ilimitados',
+                    'SMS + Email',
+                    'Analytics avanzados',
+                    'Promociones personalizadas',
+                    'Integraciones API',
+                    'Soporte prioritario',
+                  ].map((feature, i) => (
+                    <li key={i} className='flex items-start gap-3'>
+                      <Check className='w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5' />
+                      <span className='text-white'>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button asChild className='w-full bg-white text-blue-600 hover:bg-gray-50'>
+                  <Link href='/get-qr?plan=professional'>Empezar Ahora</Link>
+                </Button>
+              </motion.div>
+
+              {/* Enterprise */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className='bg-white rounded-2xl p-8 shadow-lg border border-gray-200'
+              >
+                <div className='mb-6'>
+                  <h3 className='text-2xl font-bold text-gray-900 mb-2'>Enterprise</h3>
+                  <div className='flex items-baseline gap-2'>
+                    <span className='text-4xl font-bold text-gray-900'>Custom</span>
+                  </div>
+                  <p className='text-gray-600 mt-2'>Para cadenas y franquicias</p>
+                </div>
+
+                <ul className='space-y-4 mb-8'>
+                  {[
+                    'Multi-tienda',
+                    'White label',
+                    'API dedicada',
+                    'Integraciones custom',
+                    'Account manager',
+                    'SLA 99.9%',
+                  ].map((feature, i) => (
+                    <li key={i} className='flex items-start gap-3'>
+                      <Check className='w-5 h-5 text-green-500 flex-shrink-0 mt-0.5' />
+                      <span className='text-gray-700'>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button asChild variant='outline' className='w-full border-2 border-blue-600 text-blue-600'>
+                  <Link href='mailto:sales@qronnect.com'>Contactar Ventas</Link>
+                </Button>
+              </motion.div>
+            </div>
+
+            {/* Trust badges debajo de pricing */}
+            <div className='mt-16 pt-12 border-t border-gray-200'>
+              <div className='flex flex-wrap justify-center items-center gap-8'>
+                <div className='flex items-center gap-2 text-gray-600'>
+                  <Shield className='w-6 h-6 text-green-500' />
+                  <span className='font-medium'>GDPR Compliant</span>
+                </div>
+                <div className='flex items-center gap-2 text-gray-600'>
+                  <Lock className='w-6 h-6 text-blue-500' />
+                  <span className='font-medium'>SSL Encriptado</span>
+                </div>
+                <div className='flex items-center gap-2 text-gray-600'>
+                  <Award className='w-6 h-6 text-purple-500' />
+                  <span className='font-medium'>Datos en EU</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className='py-20 bg-white'>
+        <div className='container mx-auto px-4'>
+          <div className='max-w-6xl mx-auto'>
+            <div className='text-center mb-16'>
+              <h2 className='text-4xl md:text-5xl font-bold mb-4'>
+                <span className='text-gray-900'>Historias de </span>
+                <span className='text-blue-600'>Éxito</span>
+              </h2>
+            </div>
+
+            <div className='grid md:grid-cols-3 gap-8'>
+              {[
+                {
+                  name: 'María González',
+                  role: 'Propietaria, Café Central',
+                  location: 'Madrid',
+                  content: 'Aumentamos las visitas recurrentes un 40% en solo 3 meses. Nuestros clientes adoran lo fácil que es acumular puntos.',
+                  rating: 5,
+                  avatar: 'MG'
+                },
+                {
+                  name: 'Carlos Ruiz',
+                  role: 'Gerente, Boutique Fashion',
+                  location: 'Barcelona',
+                  content: 'Qronnect nos ayudó a duplicar nuestra base de clientes leales. El sistema de promociones es increíblemente potente.',
+                  rating: 5,
+                  avatar: 'CR'
+                },
+                {
+                  name: 'Laura Martín',
+                  role: 'Dueña, Salón de Belleza Elite',
+                  location: 'Valencia',
+                  content: 'Setup súper rápido y los clientes se registran sin problemas. El ROI fue positivo desde el primer mes.',
+                  rating: 5,
+                  avatar: 'LM'
+                },
+              ].map((testimonial, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className='bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 shadow-lg border border-gray-100'
+                >
+                  <div className='flex gap-1 mb-4'>
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className='w-5 h-5 fill-yellow-400 text-yellow-400' />
+                    ))}
+                  </div>
+
+                  <p className='text-gray-700 mb-6 italic'>"{testimonial.content}"</p>
+
+                  <div className='flex items-center gap-3'>
+                    <div className='w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold'>
+                      {testimonial.avatar}
+                    </div>
+                    <div>
+                      <div className='font-semibold text-gray-900'>{testimonial.name}</div>
+                      <div className='text-sm text-gray-600'>{testimonial.role}</div>
+                      <div className='text-xs text-gray-500'>{testimonial.location}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className='py-20 bg-gray-50'>
+        <div className='container mx-auto px-4'>
+          <div className='max-w-3xl mx-auto'>
+            <div className='text-center mb-16'>
+              <h2 className='text-4xl md:text-5xl font-bold mb-4'>
+                <span className='text-gray-900'>Preguntas </span>
+                <span className='text-blue-600'>Frecuentes</span>
+              </h2>
+            </div>
+
+            <div className='space-y-4'>
+              {[
+                {
+                  question: '¿Necesito una app móvil?',
+                  answer: 'No. Todo funciona desde el navegador web. Tus clientes solo necesitan escanear el QR y ya pueden empezar a acumular puntos.'
+                },
+                {
+                  question: '¿Cuánto tiempo tarda el setup?',
+                  answer: 'Aproximadamente 15 minutos. Configuras tu branding, sistema de puntos, y listo. No requiere conocimientos técnicos.'
+                },
+                {
+                  question: '¿Puedo cancelar en cualquier momento?',
+                  answer: 'Sí, sin penalizaciones ni costes ocultos. Si cancelas, mantienes acceso hasta el final del período pagado.'
+                },
+                {
+                  question: '¿Qué métodos de pago aceptan?',
+                  answer: 'Tarjeta de crédito/débito, transferencia bancaria, y PayPal. Facturación mensual o anual (con 2 meses gratis).'
+                },
+                {
+                  question: '¿Los datos están seguros?',
+                  answer: 'Absolutamente. Cumplimos GDPR, datos encriptados, servidores en EU, y auditorías regulares de seguridad.'
+                },
+                {
+                  question: '¿Ofrecen soporte en español?',
+                  answer: 'Sí, soporte completo en español por email, chat y teléfono. Tiempo de respuesta < 2 horas en plan Professional.'
+                },
+              ].map((faq, index) => (
+                <div key={index} className='bg-white rounded-xl border border-gray-200 overflow-hidden'>
+                  <button
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                    className='w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors'
+                  >
+                    <span className='font-semibold text-gray-900 pr-4'>{faq.question}</span>
+                    <ChevronDown
+                      className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 ${
+                        openFaq === index ? 'transform rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  {openFaq === index && (
+                    <div className='px-6 pb-6 text-gray-600'>
+                      {faq.answer}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Final */}
+      <section className='py-20 relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600'>
+        <div className='absolute inset-0 bg-grid-white/10' />
+        <div className='relative container mx-auto px-4'>
+          <div className='max-w-4xl mx-auto text-center space-y-8'>
+            <h2 className='text-4xl md:text-5xl font-bold text-white'>
+              ¿Listo para Transformar tu Negocio?
+            </h2>
+            <p className='text-xl text-white/90'>
+              Únete a 500+ comercios que ya están aumentando sus ventas con Qronnect
+            </p>
+
+            <div className='flex flex-col sm:flex-row gap-4 justify-center pt-4'>
+              <Button
+                asChild
+                size='lg'
+                className='text-lg px-10 py-6 bg-white text-blue-600 hover:bg-gray-50 shadow-2xl'
+              >
+                <Link href='/get-qr' className='flex items-center gap-2'>
+                  Empezar Gratis
+                  <ArrowRight className='w-5 h-5' />
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                size='lg'
+                variant='outline'
+                className='text-lg px-10 py-6 border-2 border-white text-white hover:bg-white/10'
+              >
+                <Link href='mailto:sales@qronnect.com'>
+                  Hablar con Ventas
+                </Link>
+              </Button>
+            </div>
+
+            <p className='text-white/80 text-sm pt-4'>
+              Sin tarjeta de crédito • Setup en 15 minutos • Cancela cuando quieras
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className='bg-gray-900 text-white py-16'>
+        <div className='container mx-auto px-4'>
+          <div className='max-w-6xl mx-auto'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 mb-12'>
+              {/* Brand */}
+              <div className='space-y-4'>
+                <img
+                  src='/LogoQronnect.png'
+                  alt='Qronnect'
+                  className='h-10 w-auto object-contain brightness-0 invert'
+                />
+                <p className='text-gray-400 text-sm'>
+                  Fidelización inteligente para tu negocio
+                </p>
+              </div>
+
+              {/* Producto */}
+              <div>
+                <h3 className='font-semibold mb-4 text-white'>Producto</h3>
+                <ul className='space-y-3 text-gray-400 text-sm'>
+                  <li><Link href='#' className='hover:text-white transition-colors'>Características</Link></li>
+                  <li><Link href='#pricing' className='hover:text-white transition-colors'>Precios</Link></li>
+                  <li><Link href='#demo' className='hover:text-white transition-colors'>Demo</Link></li>
+                  <li><Link href='/get-qr' className='hover:text-white transition-colors'>Empezar</Link></li>
+                </ul>
+              </div>
+
+              {/* Empresa */}
+              <div>
+                <h3 className='font-semibold mb-4 text-white'>Empresa</h3>
+                <ul className='space-y-3 text-gray-400 text-sm'>
+                  <li><Link href='https://stellagroup.es' target='_blank' className='hover:text-white transition-colors'>Sobre StellaGroup</Link></li>
+                  <li><Link href='mailto:sales@qronnect.com' className='hover:text-white transition-colors'>Contacto</Link></li>
+                  <li><Link href='#' className='hover:text-white transition-colors'>Blog</Link></li>
+                  <li><Link href='/admin/login' className='hover:text-white transition-colors'>Admin</Link></li>
+                </ul>
+              </div>
+
+              {/* Contacto */}
+              <div>
+                <h3 className='font-semibold mb-4 text-white'>Contacto</h3>
+                <ul className='space-y-3 text-gray-400 text-sm'>
+                  <li className='flex items-start gap-2'>
+                    <Mail className='w-4 h-4 mt-0.5 flex-shrink-0' />
+                    <a href='mailto:soporte@qronnect.com' className='hover:text-white transition-colors'>
+                      soporte@qronnect.com
+                    </a>
+                  </li>
+                  <li className='flex items-start gap-2'>
+                    <Phone className='w-4 h-4 mt-0.5 flex-shrink-0' />
+                    <span>+34 900 123 456</span>
+                  </li>
+                  <li className='flex items-start gap-2'>
+                    <MapPin className='w-4 h-4 mt-0.5 flex-shrink-0' />
+                    <span>Madrid, España</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Bottom */}
+            <div className='border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400'>
+              <p>
+                &copy; {new Date().getFullYear()} Qronnect. Todos los derechos reservados.
+              </p>
+              <p>
+                Desarrollado por{' '}
+                <a
+                  href='https://stellagroup.es'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-blue-400 hover:text-blue-300 underline'
+                >
+                  StellaGroup
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
