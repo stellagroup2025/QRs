@@ -166,21 +166,21 @@ export function CommandMenu() {
   const helpItems: CommandItem[] = [
     {
       icon: FileText,
-      label: 'Documentación',
+      label: 'Contactar Soporte',
       action: () => {
-        window.open('https://docs.qronnect.com', '_blank')
+        window.location.href = 'mailto:soporte@qronnect.com?subject=Ayuda con Qronnect'
         setOpen(false)
       },
-      keywords: ['ayuda', 'docs', 'documentacion', 'manual'],
+      keywords: ['ayuda', 'soporte', 'contacto', 'support'],
     },
     {
-      icon: Search,
-      label: 'Buscar en Ayuda',
+      icon: Settings,
+      label: 'Ver Configuración',
       action: () => {
-        window.open('https://docs.qronnect.com/search', '_blank')
+        router.push('/admin/configuracion/tienda')
         setOpen(false)
       },
-      keywords: ['ayuda', 'soporte', 'help', 'support'],
+      keywords: ['ayuda', 'configuracion', 'ajustes', 'info'],
     },
   ]
 
@@ -211,7 +211,7 @@ export function CommandMenu() {
             {navigationItems.map((item) => (
               <CommandItem
                 key={item.label}
-                onSelect={item.action}
+                onSelect={() => item.action()}
                 className="cursor-pointer"
               >
                 <item.icon className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -231,7 +231,7 @@ export function CommandMenu() {
             {actionItems.map((item) => (
               <CommandItem
                 key={item.label}
-                onSelect={item.action}
+                onSelect={() => item.action()}
                 className="cursor-pointer"
               >
                 <item.icon className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -251,7 +251,7 @@ export function CommandMenu() {
             {helpItems.map((item) => (
               <CommandItem
                 key={item.label}
-                onSelect={item.action}
+                onSelect={() => item.action()}
                 className="cursor-pointer"
               >
                 <item.icon className="mr-2 h-4 w-4" aria-hidden="true" />
