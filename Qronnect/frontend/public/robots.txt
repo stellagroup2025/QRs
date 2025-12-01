@@ -1,24 +1,43 @@
 # robots.txt para Qronnect
-# https://qronnect.es/robots.txt
+# https://www.qronnect.es/robots.txt
 
 User-agent: *
 Allow: /
+
+# Bloquear áreas privadas y funcionales (no indexar)
 Disallow: /admin/
+Disallow: /superadmin/
 Disallow: /api/
+Disallow: /login
+Disallow: /recuperar
+Disallow: /registro
+Disallow: /validar-email
+Disallow: /validacion-pendiente
+Disallow: /staff
 Disallow: /_next/
 Disallow: /static/
 
-# Sitemap
+# Bloquear rutas dinámicas de tenants (solo landing de tenants es pública)
+Disallow: /*/mi-qr
+Disallow: /*/mi-perfil
+Disallow: /*/mis-cupones
+Disallow: /*/mis-canjes
+Disallow: /*/mis-referidos
+
+# Sitemap oficial (dominio con www)
 Sitemap: https://www.qronnect.es/sitemap.xml
 
-# Crawl-delay para bots amigables
+# Optimización para bots principales
 User-agent: Googlebot
 Crawl-delay: 0
+Allow: /
+Disallow: /admin/
+Disallow: /api/
 
 User-agent: Bingbot
 Crawl-delay: 0
 
-# Bloquear bots maliciosos
+# Bloquear bots de scraping/auditoría
 User-agent: AhrefsBot
 Disallow: /
 
@@ -26,4 +45,7 @@ User-agent: SemrushBot
 Disallow: /
 
 User-agent: DotBot
+Disallow: /
+
+User-agent: MJ12bot
 Disallow: /
