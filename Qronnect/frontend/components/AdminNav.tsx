@@ -22,6 +22,7 @@ import {
   Paintbrush,
   Coins,
   Store,
+  Package,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { CommandMenu } from '@/components/ui/command-menu'
@@ -51,7 +52,7 @@ const mainNavItems: NavItem[] = [
 const configNavItems: NavItem[] = [
   {
     href: '/admin/onboarding',
-    label: 'Configuración Inicial',
+    label: 'Configuracion Inicial',
     icon: Sparkles,
   },
   {
@@ -65,8 +66,14 @@ const configNavItems: NavItem[] = [
     icon: Coins,
   },
   {
+    href: '/admin/configuracion/productos',
+    label: 'Productos y Servicios',
+    icon: Package,
+    badge: 'Nuevo',
+  },
+  {
     href: '/admin/configuracion/tienda',
-    label: 'Información de Tienda',
+    label: 'Informacion de Tienda',
     icon: Store,
   },
   {
@@ -78,13 +85,11 @@ const configNavItems: NavItem[] = [
     href: '/admin/configuracion/regalos',
     label: 'Regalos Bienvenida',
     icon: Gift,
-    badge: 'Nuevo',
   },
   {
     href: '/admin/configuracion/ia',
-    label: 'Configuración IA',
+    label: 'Configuracion IA',
     icon: Brain,
-    badge: 'Nuevo',
   },
 ]
 

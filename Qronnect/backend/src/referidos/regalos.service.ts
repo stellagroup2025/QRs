@@ -72,6 +72,76 @@ export class RegalosService {
   }
 
   /**
+   * Actualiza un regalo del catálogo
+   */
+  async actualizarRegalo(tiendaId: string, regaloId: string, regaloData: any) {
+    const client = this.supabase.getAdminClient();
+
+    // Verificar que el regalo pertenece a la tienda
+    const { data: existente, error: checkError } = await client
+      .from('regalos_catalogo')
+      .select('id')
+      .eq('id', regaloId)
+      .eq('id_tienda', tiendaId)
+      .single();
+
+    if (checkError || !existente) {
+      throw new BadRequestException('Regalo no encontrado o no pertenece a esta tienda');
+    }
+
+    const { data, error } = await client
+      .from('regalos_catalogo')
+      .update({
+        ...regaloData,
+        actualizado_en: new Date().toISOString(),
+      })
+      .eq('id', regaloId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error actualizando regalo:', error);
+      throw new BadRequestException('Error al actualizar regalo');
+    }
+
+    console.log(`✅ Regalo actualizado: ${data.nombre}`);
+    return data;
+  }
+
+  /**
+   * Elimina (desactiva) un regalo del catálogo
+   */
+  async eliminarRegalo(tiendaId: string, regaloId: string) {
+    const client = this.supabase.getAdminClient();
+
+    // Verificar que el regalo pertenece a la tienda
+    const { data: existente, error: checkError } = await client
+      .from('regalos_catalogo')
+      .select('id, nombre')
+      .eq('id', regaloId)
+      .eq('id_tienda', tiendaId)
+      .single();
+
+    if (checkError || !existente) {
+      throw new BadRequestException('Regalo no encontrado o no pertenece a esta tienda');
+    }
+
+    // Soft delete - solo desactivar
+    const { error } = await client
+      .from('regalos_catalogo')
+      .update({ activo: false, actualizado_en: new Date().toISOString() })
+      .eq('id', regaloId);
+
+    if (error) {
+      console.error('Error eliminando regalo:', error);
+      throw new BadRequestException('Error al eliminar regalo');
+    }
+
+    console.log(`✅ Regalo eliminado: ${existente.nombre}`);
+    return { mensaje: 'Regalo eliminado correctamente' };
+  }
+
+  /**
    * Obtiene cupones de un cliente
    */
   async getCuponesCliente(clienteId: string, soloDisponibles = false) {

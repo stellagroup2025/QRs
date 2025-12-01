@@ -31,9 +31,9 @@ export class RegalosController {
    * Obtiene el catálogo de regalos de una tienda (público)
    * Útil para mostrar los regalos en landing page
    */
-  @Get('catalogo/:tiendaId')
-  @ApiOperation({ summary: 'Obtener catálogo de regalos de una tienda' })
-  async getCatalogo(
+  @Get('catalogo/tienda/:tiendaId')
+  @ApiOperation({ summary: 'Obtener catálogo de regalos de una tienda (público)' })
+  async getCatalogoPublico(
     @Param('tiendaId') tiendaId: string,
     @Query('soloActivos') soloActivos?: string,
   ) {
@@ -130,6 +130,23 @@ export class RegalosController {
   // ============================================
 
   /**
+   * Obtiene el catálogo de regalos de la tienda del admin autenticado
+   */
+  @Get('catalogo')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener catálogo de regalos (Admin)' })
+  async getCatalogoAdmin(@Req() req: any, @Query('soloActivos') soloActivos?: string) {
+    const tiendaId = req.user?.id_tienda;
+    if (!tiendaId) {
+      throw new BadRequestException('Admin sin tienda asignada');
+    }
+
+    const activos = soloActivos === 'false' ? false : true;
+    return this.regalosService.getCatalogo(tiendaId, activos);
+  }
+
+  /**
    * Crea un nuevo regalo en el catálogo
    */
   @Post('catalogo')
@@ -143,6 +160,42 @@ export class RegalosController {
     }
 
     return this.regalosService.crearRegalo(tiendaId, regaloData);
+  }
+
+  /**
+   * Actualiza un regalo del catálogo
+   */
+  @Put('catalogo/:regaloId')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar regalo en catálogo (Admin)' })
+  async actualizarRegalo(
+    @Req() req: any,
+    @Param('regaloId') regaloId: string,
+    @Body() regaloData: any,
+  ) {
+    const tiendaId = req.user?.id_tienda;
+    if (!tiendaId) {
+      throw new BadRequestException('Admin sin tienda asignada');
+    }
+
+    return this.regalosService.actualizarRegalo(tiendaId, regaloId, regaloData);
+  }
+
+  /**
+   * Elimina un regalo del catálogo
+   */
+  @Put('catalogo/:regaloId/delete')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Eliminar regalo del catálogo (Admin)' })
+  async eliminarRegalo(@Req() req: any, @Param('regaloId') regaloId: string) {
+    const tiendaId = req.user?.id_tienda;
+    if (!tiendaId) {
+      throw new BadRequestException('Admin sin tienda asignada');
+    }
+
+    return this.regalosService.eliminarRegalo(tiendaId, regaloId);
   }
 
   /**
