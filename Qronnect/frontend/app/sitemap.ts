@@ -3,39 +3,41 @@ import { MetadataRoute } from 'next'
 /**
  * Sitemap dinámico para Qronnect
  * Se genera automáticamente en /sitemap.xml
+ * Optimizado para Google Search Console
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://www.qronnect.es'
+  const currentDate = new Date()
 
   return [
     {
       url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
+      lastModified: currentDate,
+      changeFrequency: 'daily' as const,
       priority: 1.0,
     },
     {
       url: `${baseUrl}/get-qr`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
     {
       url: `${baseUrl}/login`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
       priority: 0.8,
     },
     {
       url: `${baseUrl}/admin/login`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
       priority: 0.7,
     },
     {
       url: `${baseUrl}/recuperar`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
       priority: 0.5,
     },
   ]
