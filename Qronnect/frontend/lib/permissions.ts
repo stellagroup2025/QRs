@@ -13,9 +13,9 @@ export function canEditBranding(role: StaffRole): boolean {
 }
 
 export function canOperatePOS(role: StaffRole): boolean {
-  return role === "admin" || role === "comercial"
+  return role === "admin" || role === "empleado" || role === "comercial"
 }
 
 export function canViewClients(role: StaffRole): boolean {
-  return role === "admin" || role === "comercial"
+  return role === "admin" || role === "empleado" || role === "comercial"
 }

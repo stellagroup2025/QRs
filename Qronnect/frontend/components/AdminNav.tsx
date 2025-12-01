@@ -23,6 +23,7 @@ import {
   Coins,
   Store,
   Package,
+  User,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { CommandMenu } from '@/components/ui/command-menu'
@@ -90,6 +91,11 @@ const configNavItems: NavItem[] = [
     href: '/admin/configuracion/ia',
     label: 'Configuracion IA',
     icon: Brain,
+  },
+  {
+    href: '/admin/configuracion/cuenta',
+    label: 'Mi Cuenta',
+    icon: User,
   },
 ]
 

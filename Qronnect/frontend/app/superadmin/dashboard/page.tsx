@@ -61,6 +61,14 @@ export default function SuperAdminDashboard() {
         },
       })
 
+      if (response.status === 401) {
+        localStorage.removeItem('superadmin_token')
+        localStorage.removeItem('superadmin_refresh_token')
+        localStorage.removeItem('superadmin_user')
+        router.push('/superadmin/login')
+        return
+      }
+
       if (!response.ok) {
         throw new Error('Error al cargar dashboard')
       }
@@ -107,7 +115,7 @@ export default function SuperAdminDashboard() {
               </div>
               <div className="min-w-0">
                 <h1 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white truncate">
-                  SuperAdmin
+                  Panel de Gestión
                 </h1>
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">
                   {user?.nombre || 'Admin'}
@@ -289,7 +297,7 @@ export default function SuperAdminDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center">
               <TrendingUp className="h-5 w-5 mr-2 text-purple-500" />
-              Panel SuperAdmin
+              Panel de Gestión
             </CardTitle>
             <CardDescription>
               Gestión centralizada de todas las tiendas del sistema Qronnect

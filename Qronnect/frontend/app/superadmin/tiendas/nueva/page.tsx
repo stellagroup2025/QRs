@@ -34,7 +34,6 @@ export default function NuevaTiendaPage() {
     email: '',
     logo_url: '',
     plan: 'basico',
-    puntos_por_euro: '1',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,10 +57,6 @@ export default function NuevaTiendaPage() {
         email: formData.email || undefined,
         logo_url: formData.logo_url || undefined,
         plan: formData.plan,
-        configuracion: {
-          puntos_por_euro: parseFloat(formData.puntos_por_euro) || 1,
-          moneda: 'EUR',
-        },
       }
 
       const response = await fetch(`${API_URL}/api/superadmin/tiendas`, {
@@ -72,6 +67,14 @@ export default function NuevaTiendaPage() {
         },
         body: JSON.stringify(payload),
       })
+
+      if (response.status === 401) {
+        localStorage.removeItem('superadmin_token')
+        localStorage.removeItem('superadmin_refresh_token')
+        localStorage.removeItem('superadmin_user')
+        router.push('/superadmin/login')
+        return
+      }
 
       const data = await response.json()
 
@@ -259,34 +262,6 @@ export default function NuevaTiendaPage() {
                   onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
                   placeholder="https://ejemplo.com/logo.png"
                 />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuración</CardTitle>
-              <CardDescription>
-                Parámetros del programa de fidelización
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="puntos_por_euro">
-                  Puntos por Euro
-                </Label>
-                <Input
-                  id="puntos_por_euro"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  value={formData.puntos_por_euro}
-                  onChange={(e) => setFormData({ ...formData, puntos_por_euro: e.target.value })}
-                  placeholder="1"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Cuántos puntos se otorgan por cada euro gastado
-                </p>
               </div>
             </CardContent>
           </Card>

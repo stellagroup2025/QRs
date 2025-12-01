@@ -36,7 +36,7 @@ interface UsuarioTienda {
   nombre: string
   email: string
   telefono?: string
-  rol: 'owner' | 'comercial'
+  rol: 'owner' | 'empleado' | 'comercial' // comercial es legacy
   sms_2fa_activo: boolean
   sms_2fa_telefono?: string
   activo: boolean
@@ -64,7 +64,7 @@ export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) 
     email: '',
     telefono: '',
     pin: '',
-    rol: 'comercial' as 'owner' | 'comercial',
+    rol: 'empleado' as 'owner' | 'empleado',
     sms_2fa_activo: false,
     sms_2fa_telefono: '',
     activo: true,
@@ -117,7 +117,7 @@ export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) 
         email: '',
         telefono: '',
         pin: '',
-        rol: 'comercial',
+        rol: 'empleado',
         sms_2fa_activo: false,
         sms_2fa_telefono: '',
         activo: true,
@@ -320,12 +320,12 @@ export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) 
                       {usuario.rol === 'owner' ? (
                         <>
                           <ShieldCheck className="h-3 w-3 mr-1" />
-                          Owner
+                          Admin
                         </>
                       ) : (
                         <>
                           <Shield className="h-3 w-3 mr-1" />
-                          Comercial
+                          Empleado
                         </>
                       )}
                     </Badge>
@@ -460,7 +460,7 @@ export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) 
               <Label htmlFor="rol">Rol *</Label>
               <Select
                 value={formData.rol}
-                onValueChange={(value: 'owner' | 'comercial') =>
+                onValueChange={(value: 'owner' | 'empleado') =>
                   setFormData({ ...formData, rol: value })
                 }
               >
@@ -471,21 +471,21 @@ export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) 
                   <SelectItem value="owner">
                     <div className="flex items-center">
                       <ShieldCheck className="h-4 w-4 mr-2" />
-                      Owner (Admin completo)
+                      Admin (Acceso completo)
                     </div>
                   </SelectItem>
-                  <SelectItem value="comercial">
+                  <SelectItem value="empleado">
                     <div className="flex items-center">
                       <Shield className="h-4 w-4 mr-2" />
-                      Comercial (Trabajador)
+                      Empleado (Acceso limitado)
                     </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
                 {formData.rol === 'owner'
-                  ? 'Acceso total a todas las funciones'
-                  : 'Acceso limitado para operaciones diarias'}
+                  ? 'Acceso total: configuraciones, informes y gestión completa'
+                  : 'Acceso limitado: registrar ventas y consultar clientes'}
               </p>
             </div>
 

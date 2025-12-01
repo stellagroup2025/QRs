@@ -189,6 +189,7 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [qrUrl, setQrUrl] = useState('')
+  const [adminUser, setAdminUser] = useState<{ nombre: string; email: string; rol: string } | null>(null)
 
   // Estado para clientes
   const [clientes, setClientes] = useState<ClientesResponse | null>(null)
@@ -262,6 +263,7 @@ export default function AdminDashboardPage() {
 
     const adminToken = localStorage.getItem('admin_token')
     const tiendaData = localStorage.getItem('admin_tienda')
+    const adminUserData = localStorage.getItem('admin_user')
 
     if (!adminToken || !tiendaData) {
       router.push('/admin/login')
@@ -270,6 +272,9 @@ export default function AdminDashboardPage() {
 
     setToken(adminToken)
     setTienda(JSON.parse(tiendaData))
+    if (adminUserData) {
+      setAdminUser(JSON.parse(adminUserData))
+    }
     fetchDashboard(adminToken)
 
     // Generar URL del QR con subdominio del tenant
@@ -584,14 +589,31 @@ export default function AdminDashboardPage() {
       {/* Header - Logo y Info */}
       <header className="bg-white dark:bg-slate-800 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center space-x-4">
-            <BrandLogo width={120} height={40} />
-            <div>
-              <h1 className="text-xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>{branding.nombre_comercial}</h1>
-              <p className="text-sm text-muted-foreground">
-                Panel de administración
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <BrandLogo width={120} height={40} />
+              <div>
+                <h1 className="text-xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>{branding.nombre_comercial}</h1>
+                <p className="text-sm text-muted-foreground">
+                  Panel de administración
+                </p>
+              </div>
             </div>
+            {adminUser && (
+              <div className="hidden sm:flex items-center space-x-3 text-right">
+                <div>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                    {adminUser.nombre}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {adminUser.rol === 'owner' ? 'Admin' : adminUser.rol === 'empleado' ? 'Empleado' : 'Empleado'}
+                  </p>
+                </div>
+                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold text-sm">
+                  {adminUser.nombre.charAt(0).toUpperCase()}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
