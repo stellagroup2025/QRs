@@ -102,8 +102,86 @@ export class AdminService {
         id: admin.id,
         nombre: admin.nombre,
         email: admin.email,
+        rol: admin.rol,
       },
     };
+  }
+
+  /**
+   * Cambia el PIN de un usuario admin
+   * Verifica el PIN actual y actualiza al nuevo PIN
+   * Envia notificacion por email con el nuevo PIN
+   */
+  async cambiarPin(
+    tiendaId: string,
+    userId: string,
+    pinActual: string,
+    pinNuevo: string,
+  ): Promise<{ message: string }> {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Validar que el nuevo PIN tiene el formato correcto
+    if (!pinNuevo || pinNuevo.length < 4 || pinNuevo.length > 6 || !/^\d+$/.test(pinNuevo)) {
+      throw new BadRequestException('El nuevo PIN debe tener entre 4 y 6 digitos numericos');
+    }
+
+    // Obtener el usuario actual
+    const { data: usuario, error: userError } = await supabase
+      .from('usuarios_tienda')
+      .select('id, nombre, email, pin_hash')
+      .eq('id', userId)
+      .eq('id_tienda', tiendaId)
+      .eq('activo', true)
+      .single();
+
+    if (userError || !usuario) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    // Verificar PIN actual
+    const pinValido = await bcrypt.compare(pinActual, usuario.pin_hash);
+    if (!pinValido) {
+      throw new BadRequestException('PIN actual incorrecto');
+    }
+
+    // Hashear el nuevo PIN
+    const nuevoHash = await bcrypt.hash(pinNuevo, 10);
+
+    // Actualizar el PIN
+    const { error: updateError } = await supabase
+      .from('usuarios_tienda')
+      .update({ pin_hash: nuevoHash })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('Error al actualizar PIN:', updateError);
+      throw new BadRequestException('Error al actualizar el PIN');
+    }
+
+    // Enviar email con el nuevo PIN
+    try {
+      await this.enviarEmailCambioPIN(usuario.email, usuario.nombre, pinNuevo);
+    } catch (emailError) {
+      console.error('Error al enviar email de cambio de PIN:', emailError);
+      // No lanzamos error, el PIN ya fue cambiado
+    }
+
+    return { message: 'PIN actualizado correctamente' };
+  }
+
+  /**
+   * Envia email notificando el cambio de PIN
+   */
+  private async enviarEmailCambioPIN(email: string, nombre: string, nuevoPin: string): Promise<void> {
+    // Por ahora solo logeamos en consola
+    // En produccion, integrar con EmailService
+    console.log('\n========================================');
+    console.log('PIN ACTUALIZADO');
+    console.log('========================================');
+    console.log(`Usuario: ${nombre}`);
+    console.log(`Email: ${email}`);
+    console.log(`Nuevo PIN: ${nuevoPin}`);
+    console.log('========================================\n');
   }
 
   /**

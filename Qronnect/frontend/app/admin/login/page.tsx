@@ -136,9 +136,11 @@ export default function AdminLoginPage() {
                 <Input
                   id="pin"
                   type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   placeholder="****"
                   value={pin}
-                  onChange={(e) => setPin(e.target.value)}
+                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
                   required
                   disabled={loading}
                   maxLength={6}

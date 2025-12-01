@@ -19,8 +19,8 @@ export class CreateUsuarioTiendaDto {
   @Matches(/^\d{4,6}$/, { message: 'El PIN debe ser de 4-6 dígitos numéricos' })
   pin: string;
 
-  @IsEnum(['owner', 'comercial'])
-  rol: 'owner' | 'comercial';
+  @IsEnum(['owner', 'empleado', 'comercial']) // comercial es legacy, usar empleado
+  rol: 'owner' | 'empleado' | 'comercial';
 
   @IsOptional()
   @IsBoolean()

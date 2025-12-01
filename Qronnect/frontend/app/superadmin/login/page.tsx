@@ -103,9 +103,9 @@ export default function SuperAdminLoginPage() {
               <Shield className="h-8 w-8 text-purple-500" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">SuperAdmin</CardTitle>
+          <CardTitle className="text-2xl font-bold">Panel de Gestión</CardTitle>
           <CardDescription>
-            Panel de administración global de Qronnect
+            Administración central de tiendas Qronnect
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -124,7 +124,7 @@ export default function SuperAdminLoginPage() {
           {step === 'email' ? (
             <form onSubmit={handleSendCode} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email de SuperAdmin</Label>
+                <Label htmlFor="email">Email de administrador</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -170,6 +170,8 @@ export default function SuperAdminLoginPage() {
                 <Input
                   id="code"
                   type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   placeholder="123456"
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}

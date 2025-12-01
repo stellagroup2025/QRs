@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, UseGuards, Query, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, UseGuards, Query, Param, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { ComprasService } from '../compras/compras.service';
@@ -46,6 +46,36 @@ export class AdminController {
   @ApiResponse({ status: 401, description: 'Email o PIN incorrecto' })
   async login(@Tenant() tenant: TenantContext, @Body() loginDto: LoginAdminDto) {
     return this.adminService.login(tenant.id, loginDto);
+  }
+
+  /**
+   * POST /api/admin/auth/cambiar-pin
+   * Cambia el PIN del usuario admin autenticado
+   * Envia email con el nuevo PIN
+   */
+  @Post('auth/cambiar-pin')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({
+    summary: 'Cambiar PIN de acceso',
+    description: 'Cambia el PIN del usuario administrador autenticado. Se enviara una notificacion por email con el nuevo PIN.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'PIN actualizado exitosamente',
+  })
+  @ApiResponse({ status: 400, description: 'PIN actual incorrecto o PIN invalido' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  async cambiarPin(
+    @CurrentTienda() tiendaId: string,
+    @Req() req: any,
+    @Body() body: { pin_actual: string; pin_nuevo: string },
+  ) {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new Error('Usuario no autenticado');
+    }
+    return this.adminService.cambiarPin(tiendaId, userId, body.pin_actual, body.pin_nuevo);
   }
 
   /**

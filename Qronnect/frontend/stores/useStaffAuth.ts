@@ -22,8 +22,8 @@ export const useStaffAuth = create<StaffAuthStore>((set, get) => ({
 
     if (pin === COMERCIO.pins.admin) {
       role = "admin"
-    } else if (pin === COMERCIO.pins.comercial) {
-      role = "comercial"
+    } else if (pin === COMERCIO.pins.empleado) {
+      role = "empleado"
     }
 
     if (role) {

@@ -16,6 +16,7 @@ import { UpdateSenderIdDto } from './dto/update-sender-id.dto';
 import { ConfigureIaDto } from './dto/configure-ia.dto';
 import { InformesService } from '../informes/informes.service';
 import { FormatoInforme } from '../informes/dto/generar-informe.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SuperAdminService {
@@ -353,13 +354,182 @@ export class SuperAdminService {
       throw new BadRequestException(`Error al crear tienda: ${error.message}`);
     }
 
+    // Si se proporcionó un email, crear usuario admin y enviar credenciales
+    let usuarioAdmin = null;
+    let pinGenerado = null;
+    if (createDto.email) {
+      try {
+        // Generar PIN aleatorio de 6 dígitos
+        pinGenerado = Math.floor(100000 + Math.random() * 900000).toString();
+        const pin_hash = await bcrypt.hash(pinGenerado, 10);
+
+        // Crear usuario admin para la tienda
+        const { data: usuario, error: userError } = await supabase
+          .from('usuarios_tienda')
+          .insert({
+            id_tienda: tienda.id,
+            nombre: createDto.nombre,
+            email: createDto.email,
+            telefono: createDto.telefono || null,
+            pin_hash: pin_hash,
+            rol: 'owner',
+            sms_2fa_activo: false,
+            activo: true,
+          })
+          .select()
+          .single();
+
+        if (userError) {
+          console.error('Error al crear usuario admin:', userError);
+        } else {
+          usuarioAdmin = usuario;
+          // Enviar email con credenciales
+          await this.enviarEmailBienvenidaTienda(
+            createDto.email,
+            createDto.nombre,
+            tienda.dominio,
+            pinGenerado,
+          );
+        }
+      } catch (emailError) {
+        console.error('Error al enviar email de bienvenida:', emailError);
+        // No lanzamos error, la tienda ya está creada
+      }
+    }
+
     // Registrar en audit log
     await this.registrarAuditLog(superadminId, 'crear_tienda', 'tienda', tienda.id, {
       tienda_nombre: tienda.nombre,
       dominio: tienda.dominio,
+      usuario_admin_creado: !!usuarioAdmin,
     });
 
-    return tienda;
+    return {
+      ...tienda,
+      usuario_admin_creado: !!usuarioAdmin,
+      credenciales_enviadas: !!usuarioAdmin && !!pinGenerado,
+    };
+  }
+
+  /**
+   * Enviar email de bienvenida con credenciales a nueva tienda
+   */
+  private async enviarEmailBienvenidaTienda(
+    email: string,
+    nombreTienda: string,
+    dominio: string,
+    pin: string,
+  ): Promise<void> {
+    const urlAcceso = `https://${dominio}.qronnect.com/admin`;
+
+    const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenido a Qronnect</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); padding: 40px 20px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">Bienvenido a Qronnect</h1>
+              <p style="color: #e0e7ff; margin: 10px 0 0 0; font-size: 16px;">Tu programa de fidelización está listo</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                Hola <strong>${nombreTienda}</strong>,
+              </p>
+
+              <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">
+                Tu tienda ha sido creada correctamente en <strong>Qronnect</strong>. A continuación encontrarás tus credenciales de acceso al panel de administración.
+              </p>
+
+              <!-- Credenciales -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 30px;">
+                <tr>
+                  <td style="padding: 20px;">
+                    <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 16px;">Tus credenciales de acceso</h3>
+
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Email:</td>
+                        <td style="padding: 8px 0; color: #374151; font-size: 14px; font-weight: bold;">${email}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">PIN de acceso:</td>
+                        <td style="padding: 8px 0;">
+                          <span style="background-color: #8b5cf6; color: #ffffff; padding: 4px 12px; border-radius: 4px; font-family: monospace; font-size: 18px; font-weight: bold; letter-spacing: 2px;">${pin}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">URL de acceso:</td>
+                        <td style="padding: 8px 0;">
+                          <a href="${urlAcceso}" style="color: #8b5cf6; text-decoration: none; font-size: 14px;">${urlAcceso}</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Botón de acceso -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding: 20px 0;">
+                    <a href="${urlAcceso}" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: bold;">
+                      Acceder al Panel de Admin
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <div style="margin: 30px 0 0 0; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; margin: 0;">
+                  <strong>Importante:</strong> Te recomendamos cambiar tu PIN desde el panel de configuración una vez que accedas. Guarda estas credenciales en un lugar seguro.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; font-size: 12px; margin: 0; line-height: 1.6;">
+                <strong>Qronnect</strong> - Sistema de Fidelización con QR<br>
+                © ${new Date().getFullYear()} Qronnect. Todos los derechos reservados.<br>
+                Este es un mensaje automático, por favor no respondas a este email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
+
+    try {
+      await this.emailService.sendEmail({
+        to: email,
+        subject: `Bienvenido a Qronnect - Credenciales de acceso para ${nombreTienda}`,
+        html: emailHtml,
+      });
+      console.log(`Email de bienvenida enviado a ${email}`);
+    } catch (error) {
+      console.error('Error al enviar email de bienvenida:', error);
+      throw error;
+    }
   }
 
   /**

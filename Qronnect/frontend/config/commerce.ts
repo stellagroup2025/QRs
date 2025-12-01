@@ -40,7 +40,7 @@ export const COMERCIO = {
   // ⚠️ IMPORTANTE: Cambia este PIN para cada comercio
   pins: {
     admin: "1234", // PIN para administrador (acceso completo)
-    comercial: "5678", // PIN para comercial (solo operaciones con clientes)
+    empleado: "5678", // PIN para empleado (solo operaciones con clientes)
   },
 
   // ========== PROGRAMAS DE FIDELIZACIÓN ==========
