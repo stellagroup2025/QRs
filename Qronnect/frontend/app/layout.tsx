@@ -24,7 +24,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 // Base sin metadataBase (lo añadimos dinámico en generateMetadata)
 const baseMetadata: Metadata = {
   title: {
-    default: `${BRAND.copy.companyName} - Programa de Fidelización con QR`,
+    default: `${BRAND.copy.companyName} - Fidelización con QR`,
     template: `%s | ${BRAND.copy.companyName}`,
   },
   description:
@@ -56,7 +56,7 @@ const baseMetadata: Metadata = {
     },
   },
   openGraph: {
-    title: `${BRAND.copy.companyName} - Fidelización Inteligente con QR`,
+    title: `${BRAND.copy.companyName} - Fidelización con QR`,
     description: "Sistema de fidelización sin app. Aumenta tus ventas un 40%. Sin complicaciones, resultados en 30 días.",
     images: BRAND.assets.ogImage ? [{
       url: BRAND.assets.ogImage,
