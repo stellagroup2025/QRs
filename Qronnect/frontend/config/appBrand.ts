@@ -60,10 +60,10 @@ export const BRAND: AppBrand = {
   },
 
   copy: {
-    companyName: "Tu Comercio",
-    tagline: "Tarjeta digital de fidelización con QR",
+    companyName: "Qronnect",
+    tagline: "Fidelización con QR",
     city: "Madrid",
-    footerNote: "© Tu Comercio. Todos los derechos reservados.",
+    footerNote: "© Qronnect. Todos los derechos reservados.",
     ctaGetQR: "Obtener mi QR",
     ctaRecover: "¿Ya tienes QR? Recupéralo",
   },

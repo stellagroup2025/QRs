@@ -120,7 +120,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
   // Intentar obtener subdomain para branding específico del tenant
   const subdomain = host.split('.')[0]
-  const tenantDomain = subdomain !== 'localhost:3000' && subdomain !== 'qronnect' ? subdomain : undefined
+  const isRootDomain = subdomain === 'localhost:3000' || subdomain === 'qronnect' || subdomain === 'www'
+  const tenantDomain = !isRootDomain ? subdomain : undefined
   const tenantBranding = await getTenantBranding(tenantDomain)
 
   // Usar branding del tenant si está disponible, sino usar logo de Qronnect
