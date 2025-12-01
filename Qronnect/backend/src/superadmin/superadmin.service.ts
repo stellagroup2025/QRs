@@ -357,8 +357,13 @@ export class SuperAdminService {
     // Si se proporcionó un email, crear usuario admin y enviar credenciales
     let usuarioAdmin = null;
     let pinGenerado = null;
+    let errorUsuario = null;
+    let errorEmail = null;
+
     if (createDto.email) {
       try {
+        console.log(`📧 Creando usuario admin para tienda ${tienda.nombre} con email ${createDto.email}`);
+
         // Generar PIN aleatorio de 6 dígitos
         pinGenerado = Math.floor(100000 + Math.random() * 900000).toString();
         const pin_hash = await bcrypt.hash(pinGenerado, 10);
@@ -380,20 +385,28 @@ export class SuperAdminService {
           .single();
 
         if (userError) {
-          console.error('Error al crear usuario admin:', userError);
+          console.error('❌ Error al crear usuario admin:', userError);
+          errorUsuario = userError.message || 'Error desconocido al crear usuario';
         } else {
+          console.log(`✅ Usuario admin creado: ${usuario.id}`);
           usuarioAdmin = usuario;
+
           // Enviar email con credenciales
-          await this.enviarEmailBienvenidaTienda(
-            createDto.email,
-            createDto.nombre,
-            tienda.dominio,
-            pinGenerado,
-          );
+          try {
+            await this.enviarEmailBienvenidaTienda(
+              createDto.email,
+              createDto.nombre,
+              tienda.dominio,
+              pinGenerado,
+            );
+          } catch (emailErr: any) {
+            console.error('❌ Error al enviar email de bienvenida:', emailErr);
+            errorEmail = emailErr.message || 'Error al enviar email';
+          }
         }
-      } catch (emailError) {
-        console.error('Error al enviar email de bienvenida:', emailError);
-        // No lanzamos error, la tienda ya está creada
+      } catch (err: any) {
+        console.error('❌ Error general al crear usuario/enviar email:', err);
+        errorUsuario = err.message || 'Error general';
       }
     }
 
@@ -407,7 +420,9 @@ export class SuperAdminService {
     return {
       ...tienda,
       usuario_admin_creado: !!usuarioAdmin,
-      credenciales_enviadas: !!usuarioAdmin && !!pinGenerado,
+      credenciales_enviadas: !!usuarioAdmin && !!pinGenerado && !errorEmail,
+      error_usuario: errorUsuario,
+      error_email: errorEmail,
     };
   }
 
@@ -520,12 +535,18 @@ export class SuperAdminService {
     `;
 
     try {
-      await this.emailService.sendEmail({
+      const resultado = await this.emailService.sendEmail({
         to: email,
         subject: `Bienvenido a Qronnect - Credenciales de acceso para ${nombreTienda}`,
         html: emailHtml,
       });
-      console.log(`Email de bienvenida enviado a ${email}`);
+
+      if (resultado.success) {
+        console.log(`✅ Email de bienvenida enviado a ${email} (ID: ${resultado.messageId})`);
+      } else {
+        console.error(`❌ Error al enviar email de bienvenida a ${email}: ${resultado.error}`);
+        throw new Error(resultado.error || 'Error desconocido al enviar email');
+      }
     } catch (error) {
       console.error('Error al enviar email de bienvenida:', error);
       throw error;
