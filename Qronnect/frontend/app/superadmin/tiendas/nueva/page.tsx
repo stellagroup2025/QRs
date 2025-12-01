@@ -82,6 +82,17 @@ export default function NuevaTiendaPage() {
         throw new Error(data.message || 'Error al crear tienda')
       }
 
+      // Mostrar información sobre usuario admin y email
+      if (data.error_usuario) {
+        console.error('Error al crear usuario admin:', data.error_usuario)
+        setError(`Tienda creada, pero error al crear usuario admin: ${data.error_usuario}`)
+      } else if (data.error_email) {
+        console.error('Error al enviar email:', data.error_email)
+        setError(`Tienda y usuario creados, pero error al enviar email: ${data.error_email}`)
+      } else if (data.credenciales_enviadas) {
+        console.log('✅ Tienda, usuario y email enviado correctamente')
+      }
+
       setSuccess(true)
       setTimeout(() => {
         router.push('/superadmin/tiendas')
