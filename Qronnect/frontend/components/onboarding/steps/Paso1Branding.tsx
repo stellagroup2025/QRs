@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { Paintbrush, Upload, Store } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Paintbrush, Upload, Store, X, Loader2, ImageIcon } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
 interface Paso1BrandingProps {
   datosIniciales?: {
@@ -18,20 +20,127 @@ interface Paso1BrandingProps {
 }
 
 export function Paso1Branding({ datosIniciales, onChange }: Paso1BrandingProps) {
+  const { toast } = useToast()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const [nombre, setNombre] = useState(datosIniciales?.nombre_comercial || '')
+  const [logoUrl, setLogoUrl] = useState(datosIniciales?.logo_url || '')
   const [colorPrimario, setColorPrimario] = useState(datosIniciales?.color_primario || '#0ea5e9')
   const [colorSecundario, setColorSecundario] = useState(datosIniciales?.color_secundario || '#6366f1')
   const [colorAccento, setColorAccento] = useState(datosIniciales?.color_acento || '#22c55e')
+  const [uploading, setUploading] = useState(false)
+  const [dragActive, setDragActive] = useState(false)
 
   // Notificar cambios al padre
   useEffect(() => {
     onChange({
       nombre_comercial: nombre,
+      logo_url: logoUrl,
       color_primario: colorPrimario,
       color_secundario: colorSecundario,
       color_acento: colorAccento,
     })
-  }, [nombre, colorPrimario, colorSecundario, colorAccento])
+  }, [nombre, logoUrl, colorPrimario, colorSecundario, colorAccento])
+
+  const handleFileUpload = async (file: File) => {
+    // Validar tipo de archivo
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: 'Tipo de archivo no v\u00e1lido',
+        description: 'Solo se permiten archivos PNG, JPG, SVG o WebP',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Validar tama\u00f1o (m\u00e1x 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: 'Archivo muy grande',
+        description: 'El tama\u00f1o m\u00e1ximo es 2MB',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setUploading(true)
+
+    try {
+      const domain = window.location.hostname.split('.')[0]
+      const token = localStorage.getItem(`admin_token_${domain}`) || localStorage.getItem('admin_token')
+
+      if (!token) {
+        throw new Error('No autorizado')
+      }
+
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'logo')
+
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${API_URL}/api/config/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-Tenant-Domain': domain,
+        },
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Error al subir el archivo')
+      }
+
+      const data = await response.json()
+      setLogoUrl(data.url)
+
+      toast({
+        title: 'Logo subido',
+        description: 'Tu logo se ha subido correctamente',
+      })
+    } catch (error: any) {
+      console.error('Error uploading file:', error)
+      toast({
+        title: 'Error al subir',
+        description: error.message || 'No se pudo subir el archivo',
+        variant: 'destructive',
+      })
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setDragActive(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileUpload(e.dataTransfer.files[0])
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFileUpload(e.target.files[0])
+    }
+  }
+
+  const removeLogo = () => {
+    setLogoUrl('')
+  }
 
   return (
     <div className="space-y-6">
@@ -61,22 +170,92 @@ export function Paso1Branding({ datosIniciales, onChange }: Paso1BrandingProps) 
         </p>
       </div>
 
-      {/* Logo Upload (placeholder) */}
+      {/* Logo Upload */}
       <div className="space-y-2">
         <Label>Logo (opcional)</Label>
-        <Card className="border-2 border-dashed p-8">
-          <div className="text-center space-y-2">
-            <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Arrastra tu logo aquí o haz clic para subir
-            </p>
-            <p className="text-xs text-muted-foreground">
-              PNG, JPG o SVG (máx. 2MB)
-            </p>
-          </div>
-        </Card>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+          onChange={handleInputChange}
+          className="hidden"
+        />
+
+        {logoUrl ? (
+          // Logo subido - mostrar preview
+          <Card className="border-2 p-4">
+            <div className="flex items-center gap-4">
+              <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                <img
+                  src={logoUrl}
+                  alt="Logo"
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-green-600">Logo subido correctamente</p>
+                <p className="text-xs text-muted-foreground">
+                  Haz clic en el boton para cambiar
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  Cambiar
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={removeLogo}
+                  disabled={uploading}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ) : (
+          // Sin logo - mostrar zona de drop
+          <Card
+            className={`border-2 border-dashed p-8 cursor-pointer transition-colors ${
+              dragActive
+                ? 'border-primary bg-primary/5'
+                : 'hover:border-primary/50 hover:bg-gray-50'
+            } ${uploading ? 'pointer-events-none opacity-50' : ''}`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            onClick={() => !uploading && fileInputRef.current?.click()}
+          >
+            <div className="text-center space-y-2">
+              {uploading ? (
+                <>
+                  <Loader2 className="h-8 w-8 mx-auto text-primary animate-spin" />
+                  <p className="text-sm text-muted-foreground">Subiendo...</p>
+                </>
+              ) : (
+                <>
+                  <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Arrastra tu logo aqui o haz clic para subir
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    PNG, JPG, SVG o WebP (max. 2MB)
+                  </p>
+                </>
+              )}
+            </div>
+          </Card>
+        )}
         <p className="text-xs text-muted-foreground">
-          💡 Puedes configurar tu logo más tarde desde Configuración → Branding
+          Puedes configurar tu logo mas tarde desde Configuracion - Branding
         </p>
       </div>
 

@@ -1,5 +1,6 @@
-import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Put, Post, Body, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { BrandingService } from './branding.service';
 import { LandingService } from './landing.service';
 import { Tenant } from '../tenant/decorators/tenant.decorator';
@@ -97,5 +98,63 @@ export class BrandingController {
     @Body() updates: Record<string, any>,
   ) {
     return this.landingService.updateLandingConfig(idTienda, updates);
+  }
+
+  @Post('upload')
+  @UseGuards(AdminAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiBearerAuth('JWT')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Subir imagen de branding (logo, favicon, og_image)',
+    description: 'Endpoint protegido para subir imagenes de la tienda a Supabase Storage',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Archivo de imagen (PNG, JPG, SVG, WebP)',
+        },
+        type: {
+          type: 'string',
+          enum: ['logo', 'favicon', 'og_image'],
+          description: 'Tipo de imagen a subir',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Imagen subida exitosamente',
+    schema: {
+      example: { url: 'https://supabase.co/storage/v1/object/public/branding/tiendas/xxx/logo.png' },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Error de validacion (tipo no permitido, tamano excedido)',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'No autenticado',
+  })
+  async uploadFile(
+    @Tenant('id') idTienda: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('type') type: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No se proporciono ningun archivo');
+    }
+
+    const validTypes = ['logo', 'favicon', 'og_image'];
+    if (!type || !validTypes.includes(type)) {
+      throw new BadRequestException(`Tipo invalido. Debe ser: ${validTypes.join(', ')}`);
+    }
+
+    return this.brandingService.uploadFile(idTienda, file, type as 'logo' | 'favicon' | 'og_image');
   }
 }

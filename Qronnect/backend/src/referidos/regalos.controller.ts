@@ -31,9 +31,9 @@ export class RegalosController {
    * Obtiene el catálogo de regalos de una tienda (público)
    * Útil para mostrar los regalos en landing page
    */
-  @Get('catalogo/:tiendaId')
-  @ApiOperation({ summary: 'Obtener catálogo de regalos de una tienda' })
-  async getCatalogo(
+  @Get('catalogo/tienda/:tiendaId')
+  @ApiOperation({ summary: 'Obtener catálogo de regalos de una tienda (público)' })
+  async getCatalogoPublico(
     @Param('tiendaId') tiendaId: string,
     @Query('soloActivos') soloActivos?: string,
   ) {
@@ -128,6 +128,23 @@ export class RegalosController {
   // ============================================
   // ENDPOINTS DE ADMINISTRACIÓN (Requieren auth de admin)
   // ============================================
+
+  /**
+   * Obtiene el catálogo de regalos de la tienda del admin autenticado
+   */
+  @Get('catalogo')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener catálogo de regalos (Admin)' })
+  async getCatalogoAdmin(@Req() req: any, @Query('soloActivos') soloActivos?: string) {
+    const tiendaId = req.user?.id_tienda;
+    if (!tiendaId) {
+      throw new BadRequestException('Admin sin tienda asignada');
+    }
+
+    const activos = soloActivos === 'false' ? false : true;
+    return this.regalosService.getCatalogo(tiendaId, activos);
+  }
 
   /**
    * Crea un nuevo regalo en el catálogo

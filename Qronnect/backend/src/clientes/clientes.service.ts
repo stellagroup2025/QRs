@@ -1222,7 +1222,7 @@ export class ClientesService {
           }
 
         } else if (tipo === 'puntos' && tienda.regalo_bienvenida_puntos > 0) {
-          // ACTUAL: Otorgar puntos de bienvenida
+          // Otorgar puntos de bienvenida
           console.log(`  - Otorgando ${tienda.regalo_bienvenida_puntos} puntos de bienvenida`);
 
           const { error: puntosError } = await supabase
@@ -1237,6 +1237,11 @@ export class ClientesService {
           } else {
             console.error('  ❌ Error otorgando puntos:', puntosError);
           }
+        } else if (tipo === 'cupon') {
+          // Otorgar cupon de descuento
+          console.log(`  - Regalo tipo cupon configurado (pendiente implementacion completa)`);
+          // TODO: Implementar creacion de cupon de descuento
+          // Por ahora solo logueamos que esta configurado
         }
       } else {
         console.log('  - Regalo de bienvenida NO activo');
