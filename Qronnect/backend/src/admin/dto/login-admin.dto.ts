@@ -5,7 +5,7 @@ export class LoginAdminDto {
   email: string;
 
   @IsString({ message: 'El PIN es requerido' })
-  @Length(4, 4, { message: 'El PIN debe tener exactamente 4 dígitos' })
-  @Matches(/^\d{4}$/, { message: 'El PIN debe contener solo números' })
+  @Length(6, 6, { message: 'El PIN debe tener exactamente 6 dígitos' })
+  @Matches(/^\d{6}$/, { message: 'El PIN debe contener solo números' })
   pin: string;
 }
