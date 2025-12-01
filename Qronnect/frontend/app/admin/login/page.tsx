@@ -138,7 +138,7 @@ export default function AdminLoginPage() {
                   type="password"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  placeholder="****"
+                  placeholder="******"
                   value={pin}
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
                   required
@@ -150,7 +150,7 @@ export default function AdminLoginPage() {
                 />
               </div>
               <p id="pin-help" className="text-xs text-muted-foreground">
-                PIN de 4-6 dígitos proporcionado por el administrador
+                PIN de 6 dígitos enviado a tu email
               </p>
               {error && (
                 <p id="pin-error" className="text-xs text-destructive flex items-center gap-1" role="alert">
