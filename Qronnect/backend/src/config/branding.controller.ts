@@ -5,6 +5,7 @@ import { BrandingService } from './branding.service';
 import { LandingService } from './landing.service';
 import { Tenant } from '../tenant/decorators/tenant.decorator';
 import { AdminAuthGuard } from '../auth/guards/admin-auth.guard';
+import { Multer } from 'multer';
 
 @ApiTags('Config')
 @Controller('config')
@@ -143,7 +144,7 @@ export class BrandingController {
   })
   async uploadFile(
     @Tenant('id') idTienda: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Multer.File,
     @Body('type') type: string,
   ) {
     if (!file) {
