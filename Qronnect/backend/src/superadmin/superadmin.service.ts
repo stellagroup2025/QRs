@@ -435,7 +435,7 @@ export class SuperAdminService {
     dominio: string,
     pin: string,
   ): Promise<void> {
-    const urlAcceso = `https://${dominio}.qronnect.com/admin`;
+    const urlAcceso = `https://${dominio}.qronnect.es/admin`;
 
     const emailHtml = `
 <!DOCTYPE html>
