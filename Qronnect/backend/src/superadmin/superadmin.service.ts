@@ -520,12 +520,18 @@ export class SuperAdminService {
     `;
 
     try {
-      await this.emailService.sendEmail({
+      const resultado = await this.emailService.sendEmail({
         to: email,
         subject: `Bienvenido a Qronnect - Credenciales de acceso para ${nombreTienda}`,
         html: emailHtml,
       });
-      console.log(`Email de bienvenida enviado a ${email}`);
+
+      if (resultado.success) {
+        console.log(`✅ Email de bienvenida enviado a ${email} (ID: ${resultado.messageId})`);
+      } else {
+        console.error(`❌ Error al enviar email de bienvenida a ${email}: ${resultado.error}`);
+        throw new Error(resultado.error || 'Error desconocido al enviar email');
+      }
     } catch (error) {
       console.error('Error al enviar email de bienvenida:', error);
       throw error;
