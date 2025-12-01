@@ -163,6 +163,42 @@ export class RegalosController {
   }
 
   /**
+   * Actualiza un regalo del catálogo
+   */
+  @Put('catalogo/:regaloId')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar regalo en catálogo (Admin)' })
+  async actualizarRegalo(
+    @Req() req: any,
+    @Param('regaloId') regaloId: string,
+    @Body() regaloData: any,
+  ) {
+    const tiendaId = req.user?.id_tienda;
+    if (!tiendaId) {
+      throw new BadRequestException('Admin sin tienda asignada');
+    }
+
+    return this.regalosService.actualizarRegalo(tiendaId, regaloId, regaloData);
+  }
+
+  /**
+   * Elimina un regalo del catálogo
+   */
+  @Put('catalogo/:regaloId/delete')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Eliminar regalo del catálogo (Admin)' })
+  async eliminarRegalo(@Req() req: any, @Param('regaloId') regaloId: string) {
+    const tiendaId = req.user?.id_tienda;
+    if (!tiendaId) {
+      throw new BadRequestException('Admin sin tienda asignada');
+    }
+
+    return this.regalosService.eliminarRegalo(tiendaId, regaloId);
+  }
+
+  /**
    * Crea un nuevo milestone de referidos
    */
   @Post('milestones')

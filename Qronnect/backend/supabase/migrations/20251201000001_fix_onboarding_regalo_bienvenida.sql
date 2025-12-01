@@ -1,10 +1,11 @@
 -- ============================================
--- FIX: Onboarding actualiza regalo de bienvenida en tiendas
+-- FIX: Onboarding actualiza regalo de bienvenida y referidos en tiendas
 -- ============================================
 -- Date: 2025-12-01
 -- Description: Modifica la función actualizar_progreso_onboarding para que
 --              cuando se complete el paso 4, actualice la configuración de
---              regalo de bienvenida en la tabla tiendas.
+--              regalo de bienvenida en la tabla tiendas y también configure
+--              el programa de referidos con sus milestones.
 --              También añade campo regalo_bienvenida_puntos para simplificar lecturas.
 
 -- ============================================
@@ -16,7 +17,15 @@ ALTER TABLE public.tiendas
 COMMENT ON COLUMN public.tiendas.regalo_bienvenida_puntos IS 'Cantidad de puntos de bienvenida (para tipo puntos)';
 
 -- ============================================
--- 2. Actualizar función actualizar_progreso_onboarding
+-- 2. Añadir campo puntos_referido a programas_referidos
+-- ============================================
+ALTER TABLE public.programas_referidos
+  ADD COLUMN IF NOT EXISTS puntos_referido INTEGER DEFAULT 0;
+
+COMMENT ON COLUMN public.programas_referidos.puntos_referido IS 'Puntos que recibe el cliente referido';
+
+-- ============================================
+-- 3. Actualizar función actualizar_progreso_onboarding
 -- ============================================
 CREATE OR REPLACE FUNCTION actualizar_progreso_onboarding(
   p_id_tienda UUID,
@@ -35,6 +44,14 @@ DECLARE
   v_tipo_regalo TEXT;
   v_cantidad_puntos INTEGER;
   v_descuento_porcentaje INTEGER;
+  -- Variables para referidos
+  v_referidos_activo BOOLEAN;
+  v_puntos_referidor INTEGER;
+  v_puntos_referido INTEGER;
+  v_milestones JSONB;
+  v_programa_id UUID;
+  v_milestone JSONB;
+  v_milestone_orden INTEGER;
 BEGIN
   -- Marcar paso como completado y guardar datos
   CASE p_paso
@@ -128,6 +145,88 @@ BEGIN
           regalo_bienvenida_puntos = 0,
           regalo_bienvenida_id_regalo = COALESCE((p_data->>'id_regalo')::UUID, regalo_bienvenida_id_regalo)
         WHERE id = p_id_tienda;
+      END IF;
+
+      -- ============================================
+      -- CONFIGURACIÓN DE REFERIDOS (Step 4 también incluye referidos)
+      -- ============================================
+      v_referidos_activo := COALESCE((p_data->>'referidos_activo')::BOOLEAN, FALSE);
+      v_puntos_referidor := COALESCE((p_data->>'puntos_referidor')::INTEGER, 0);
+      v_puntos_referido := COALESCE((p_data->>'puntos_referido')::INTEGER, 0);
+      v_milestones := COALESCE(p_data->'milestones', '[]'::JSONB);
+
+      -- Crear o actualizar programa de referidos
+      IF v_referidos_activo THEN
+        -- Buscar programa existente
+        SELECT id INTO v_programa_id
+        FROM public.programas_referidos
+        WHERE id_tienda = p_id_tienda AND activo = TRUE
+        LIMIT 1;
+
+        IF v_programa_id IS NULL THEN
+          -- Crear nuevo programa
+          INSERT INTO public.programas_referidos (
+            id_tienda,
+            activo,
+            nombre,
+            descripcion,
+            puntos_por_referido,
+            puntos_referido
+          ) VALUES (
+            p_id_tienda,
+            TRUE,
+            'Programa de Referidos',
+            'Invita a tus amigos y gana recompensas',
+            v_puntos_referidor,
+            v_puntos_referido
+          )
+          RETURNING id INTO v_programa_id;
+        ELSE
+          -- Actualizar programa existente
+          UPDATE public.programas_referidos
+          SET
+            puntos_por_referido = v_puntos_referidor,
+            puntos_referido = v_puntos_referido,
+            actualizado_en = NOW()
+          WHERE id = v_programa_id;
+        END IF;
+
+        -- Eliminar milestones anteriores de este tienda (para recrear)
+        DELETE FROM public.milestones_referidos
+        WHERE id_tienda = p_id_tienda;
+
+        -- Crear los nuevos milestones
+        v_milestone_orden := 1;
+        FOR v_milestone IN SELECT * FROM jsonb_array_elements(v_milestones)
+        LOOP
+          INSERT INTO public.milestones_referidos (
+            id_tienda,
+            nombre,
+            descripcion,
+            cantidad_referidos,
+            tipo_recompensa,
+            id_regalo,
+            puntos,
+            orden,
+            activo
+          ) VALUES (
+            p_id_tienda,
+            COALESCE(v_milestone->>'nombre', 'Milestone ' || v_milestone_orden),
+            v_milestone->>'descripcion',
+            COALESCE((v_milestone->>'cantidad_referidos')::INTEGER, v_milestone_orden * 3),
+            COALESCE(v_milestone->>'tipo_recompensa', 'puntos')::TEXT,
+            NULLIF(v_milestone->>'id_regalo', '')::UUID,
+            COALESCE((v_milestone->>'puntos')::INTEGER, 0),
+            v_milestone_orden,
+            TRUE
+          );
+          v_milestone_orden := v_milestone_orden + 1;
+        END LOOP;
+      ELSE
+        -- Desactivar programa de referidos si existe
+        UPDATE public.programas_referidos
+        SET activo = FALSE, actualizado_en = NOW()
+        WHERE id_tienda = p_id_tienda AND activo = TRUE;
       END IF;
 
     WHEN 5 THEN
