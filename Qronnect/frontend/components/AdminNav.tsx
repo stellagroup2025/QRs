@@ -134,6 +134,13 @@ export function AdminNav() {
           {/* Logo / Brand */}
           <div className="flex items-center gap-3">
             <Link href="/admin/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              {branding.logo_url && !branding.logo_url.includes('/brand/qronnect/') ? (
+                <img
+                  src={branding.logo_url}
+                  alt={branding.nombre_comercial || 'Logo'}
+                  className="h-10 w-auto max-w-[120px] object-contain"
+                />
+              ) : null}
               <div className="flex flex-col">
                 <span
                   className="font-bold text-xl bg-clip-text text-transparent"
