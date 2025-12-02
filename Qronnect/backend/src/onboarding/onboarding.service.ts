@@ -230,6 +230,16 @@ export class OnboardingService {
         } else {
           this.logger.log(`👥 Referidos desactivados`);
         }
+
+        // IMPORTANTE: También crear/actualizar el programa de referidos en la tabla programas_referidos
+        // porque el sistema de referidos usa esa tabla para verificar si está activo
+        await this.crearOActualizarProgramaReferidos(
+          supabase,
+          idTienda,
+          data.referidos_activo,
+          data.puntos_referidor || 100,
+          data.milestones || [],
+        );
       }
     }
 
@@ -502,5 +512,79 @@ export class OnboardingService {
     }
 
     this.logger.log(`✅ Progreso reiniciado correctamente`);
+  }
+
+  /**
+   * Crea o actualiza el programa de referidos en la tabla programas_referidos
+   * Esta tabla es la que usa el sistema de referidos para verificar si está activo
+   */
+  private async crearOActualizarProgramaReferidos(
+    supabase: any,
+    idTienda: string,
+    activo: boolean,
+    puntosPorReferido: number,
+    milestones: Array<{
+      nombre: string;
+      cantidad_referidos: number;
+      tipo_recompensa: string;
+      puntos: number;
+      id_regalo?: string;
+    }>,
+  ): Promise<void> {
+    try {
+      // Convertir milestones del formato del frontend al formato de la BD
+      const recompensas = milestones.map((m) => ({
+        objetivo: m.cantidad_referidos,
+        tipo: m.tipo_recompensa === 'regalo_concreto' ? 'promocion' : 'puntos',
+        valor: m.puntos,
+        descripcion: m.nombre,
+        id_regalo: m.id_regalo,
+      }));
+
+      // Buscar si ya existe un programa de referidos para esta tienda
+      const { data: programaExistente } = await supabase
+        .from('programas_referidos')
+        .select('id')
+        .eq('id_tienda', idTienda)
+        .single();
+
+      if (programaExistente) {
+        // Actualizar el programa existente
+        const { error: updateError } = await supabase
+          .from('programas_referidos')
+          .update({
+            activo: activo,
+            puntos_por_referido: puntosPorReferido,
+            recompensas: recompensas,
+            actualizado_en: new Date().toISOString(),
+          })
+          .eq('id', programaExistente.id);
+
+        if (updateError) {
+          this.logger.error(`❌ Error actualizando programa de referidos: ${updateError.message}`);
+        } else {
+          this.logger.log(`✅ Programa de referidos actualizado (activo: ${activo})`);
+        }
+      } else {
+        // Crear nuevo programa de referidos
+        const { error: insertError } = await supabase.from('programas_referidos').insert({
+          id_tienda: idTienda,
+          nombre: 'Programa de Referidos',
+          descripcion: 'Gana puntos por cada amigo que invites a registrarse',
+          activo: activo,
+          puntos_por_referido: puntosPorReferido,
+          recompensas: recompensas,
+          vigencia_desde: new Date().toISOString(),
+        });
+
+        if (insertError) {
+          this.logger.error(`❌ Error creando programa de referidos: ${insertError.message}`);
+        } else {
+          this.logger.log(`✅ Programa de referidos creado (activo: ${activo})`);
+        }
+      }
+    } catch (error) {
+      this.logger.error(`❌ Error en crearOActualizarProgramaReferidos: ${error.message}`);
+    }
   }
 }
