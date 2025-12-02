@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsObject, MinLength, Matches } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsObject, MinLength, Matches, IsEmail } from 'class-validator';
 
 export class CreateTiendaDto {
   @ApiProperty({
@@ -115,4 +115,33 @@ export class CreateTiendaDto {
   @IsOptional()
   @IsObject()
   configuracion?: Record<string, any>;
+
+  // ====================================
+  // Datos del administrador/responsable
+  // ====================================
+
+  @ApiProperty({
+    description: 'Nombre completo del administrador/responsable',
+    example: 'Juan García López',
+  })
+  @IsString()
+  @MinLength(3, { message: 'El nombre del administrador debe tener al menos 3 caracteres' })
+  admin_nombre: string;
+
+  @ApiProperty({
+    description: 'Email del administrador (para credenciales de acceso)',
+    example: 'juan@cafeteriaaroma.com',
+  })
+  @IsEmail({}, { message: 'El email del administrador no es válido' })
+  admin_email: string;
+
+  @ApiProperty({
+    description: 'Rol del administrador en la tienda',
+    enum: ['propietario', 'gerente', 'administrador', 'encargado'],
+    example: 'propietario',
+  })
+  @IsEnum(['propietario', 'gerente', 'administrador', 'encargado'], {
+    message: 'El rol debe ser: propietario, gerente, administrador o encargado',
+  })
+  admin_rol: string;
 }
