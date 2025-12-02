@@ -126,6 +126,9 @@ export class OnboardingService {
       throw new Error(`Error al actualizar progreso: ${error.message}`);
     }
 
+    // Aplicar configuración a la tienda según el paso
+    await this.aplicarConfiguracionTienda(supabase, idTienda, paso, data);
+
     const progresoActualizado = {
       paso_actual: nuevoPasoActual,
       porcentaje_completado: porcentajeCompletado,
@@ -141,6 +144,73 @@ export class OnboardingService {
     }
 
     return progresoActualizado;
+  }
+
+  /**
+   * Aplica la configuración del onboarding a la tabla tiendas
+   */
+  private async aplicarConfiguracionTienda(
+    supabase: any,
+    idTienda: string,
+    paso: number,
+    data: Record<string, any>,
+  ): Promise<void> {
+    const updateData: Record<string, any> = {};
+
+    // Paso 2: Puntos por euro
+    if (paso === 2 && data.puntos_por_euro) {
+      updateData.configuracion = { puntos_por_euro: data.puntos_por_euro };
+      this.logger.log(`🔧 Aplicando puntos_por_euro: ${data.puntos_por_euro}`);
+    }
+
+    // Paso 4: Regalo de bienvenida y referidos
+    if (paso === 4) {
+      // Regalo de bienvenida
+      if (data.tipo_regalo && data.tipo_regalo !== 'ninguno') {
+        updateData.regalo_bienvenida_activo = true;
+
+        if (data.tipo_regalo === 'puntos') {
+          updateData.regalo_bienvenida_tipo = 'puntos';
+          updateData.regalo_bienvenida_puntos = data.cantidad_puntos || 100;
+          this.logger.log(`🎁 Configurando regalo: ${data.cantidad_puntos} puntos de bienvenida`);
+        } else if (data.tipo_regalo === 'regalo') {
+          updateData.regalo_bienvenida_tipo = 'regalo_concreto';
+          updateData.regalo_bienvenida_id_regalo = data.id_regalo;
+          this.logger.log(`🎁 Configurando regalo concreto: ${data.id_regalo}`);
+        } else if (data.tipo_regalo === 'descuento') {
+          updateData.regalo_bienvenida_tipo = 'cupon';
+          updateData.regalo_bienvenida_puntos = data.descuento_porcentaje; // Usar para guardar el %
+          this.logger.log(`🎁 Configurando descuento: ${data.descuento_porcentaje}%`);
+        }
+      } else {
+        updateData.regalo_bienvenida_activo = false;
+        this.logger.log(`🎁 Regalo de bienvenida desactivado`);
+      }
+
+      // Referidos
+      if (data.referidos_activo !== undefined) {
+        updateData.referidos_activo = data.referidos_activo;
+        if (data.referidos_activo) {
+          updateData.puntos_referidor = data.puntos_referidor || 100;
+          updateData.puntos_referido = data.puntos_referido || 50;
+          this.logger.log(`👥 Referidos activados: ${data.puntos_referidor}/${data.puntos_referido} pts`);
+        }
+      }
+    }
+
+    // Si hay algo que actualizar, hacerlo
+    if (Object.keys(updateData).length > 0) {
+      const { error: updateError } = await supabase
+        .from('tiendas')
+        .update(updateData)
+        .eq('id', idTienda);
+
+      if (updateError) {
+        this.logger.error(`❌ Error aplicando config a tienda: ${updateError.message}`);
+      } else {
+        this.logger.log(`✅ Configuración aplicada a tienda`);
+      }
+    }
   }
 
   /**

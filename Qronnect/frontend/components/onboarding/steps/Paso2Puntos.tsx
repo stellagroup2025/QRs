@@ -9,21 +9,18 @@ import { Coins, TrendingUp } from 'lucide-react'
 interface Paso2PuntosProps {
   datosIniciales?: {
     puntos_por_euro?: number
-    puntos_bienvenida?: number
   }
   onChange: (data: any) => void
 }
 
 export function Paso2Puntos({ datosIniciales, onChange }: Paso2PuntosProps) {
   const [puntosPorEuro, setPuntosPorEuro] = useState(datosIniciales?.puntos_por_euro || 10)
-  const [puntosBienvenida, setPuntosBienvenida] = useState(datosIniciales?.puntos_bienvenida || 100)
 
   useEffect(() => {
     onChange({
       puntos_por_euro: puntosPorEuro,
-      puntos_bienvenida: puntosBienvenida,
     })
-  }, [puntosPorEuro, puntosBienvenida])
+  }, [puntosPorEuro])
 
   // Cálculos de ejemplo
   const compra20Euros = puntosPorEuro * 20
@@ -62,26 +59,6 @@ export function Paso2Puntos({ datosIniciales, onChange }: Paso2PuntosProps) {
         </p>
       </div>
 
-      {/* Puntos de Bienvenida */}
-      <div className="space-y-2">
-        <Label htmlFor="puntos-bienvenida">Puntos de bienvenida (regalo inicial)</Label>
-        <div className="flex items-center gap-4">
-          <Input
-            id="puntos-bienvenida"
-            type="number"
-            min="0"
-            step="50"
-            value={puntosBienvenida}
-            onChange={(e) => setPuntosBienvenida(Number(e.target.value))}
-            className="text-lg font-semibold"
-          />
-          <span className="text-sm text-muted-foreground">puntos</span>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Puntos que reciben los clientes al registrarse
-        </p>
-      </div>
-
       {/* Ejemplos */}
       <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
         <div className="space-y-3">
@@ -91,10 +68,6 @@ export function Paso2Puntos({ datosIniciales, onChange }: Paso2PuntosProps) {
           </div>
 
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between items-center p-3 bg-white rounded-lg">
-              <span className="text-gray-700">Cliente nuevo se registra:</span>
-              <span className="font-bold text-green-600">+{puntosBienvenida} pts</span>
-            </div>
             <div className="flex justify-between items-center p-3 bg-white rounded-lg">
               <span className="text-gray-700">Compra de 20€:</span>
               <span className="font-bold text-green-600">+{compra20Euros} pts</span>
