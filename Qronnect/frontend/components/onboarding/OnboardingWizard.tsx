@@ -9,8 +9,9 @@ import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Sparkles, X } from 'l
 import { useToast } from '@/hooks/use-toast'
 import { Paso1Branding } from './steps/Paso1Branding'
 import { Paso2Puntos } from './steps/Paso2Puntos'
-import { Paso4Regalo as Paso3Regalo } from './steps/Paso4Regalo'
-import { Paso5QR as Paso4QR } from './steps/Paso5QR'
+import { Paso3Regalo } from './steps/Paso3Regalo'
+import { Paso4Referidos } from './steps/Paso4Referidos'
+import { Paso5QR } from './steps/Paso5QR'
 
 // Tipos
 interface ProgresoOnboarding {
@@ -22,7 +23,8 @@ interface ProgresoOnboarding {
   paso_1_branding: boolean
   paso_2_puntos: boolean
   paso_3_regalo: boolean
-  paso_4_qr: boolean
+  paso_4_referidos: boolean
+  paso_5_qr: boolean
   wizard_data: Record<string, any>
   fecha_inicio: string
   fecha_completado: string | null
@@ -59,35 +61,42 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
     setDatosPaso((prev) => ({ ...prev, ...data }))
   }
 
-  // Configuración de pasos (4 pasos en total)
+  // Configuración de pasos (5 pasos en total)
   const pasos: PasoWizard[] = [
     {
       numero: 1,
       titulo: 'Branding',
-      descripcion: 'Logo, colores y nombre de tu marca',
+      descripcion: 'Logo, colores y nombre',
       icono: <Sparkles className="h-6 w-6" />,
       completado: progreso?.paso_1_branding || false,
     },
     {
       numero: 2,
       titulo: 'Puntos',
-      descripcion: 'Configura tu sistema de fidelización',
+      descripcion: 'Sistema de fidelización',
       icono: <Sparkles className="h-6 w-6" />,
       completado: progreso?.paso_2_puntos || false,
     },
     {
       numero: 3,
       titulo: 'Regalo',
-      descripcion: 'Configura el regalo de bienvenida',
+      descripcion: 'Regalo de bienvenida',
       icono: <Sparkles className="h-6 w-6" />,
       completado: progreso?.paso_3_regalo || false,
     },
     {
       numero: 4,
-      titulo: 'QR',
-      descripcion: 'Descarga tu código QR',
+      titulo: 'Referidos',
+      descripcion: 'Programa de referidos',
       icono: <Sparkles className="h-6 w-6" />,
-      completado: progreso?.paso_4_qr || false,
+      completado: progreso?.paso_4_referidos || false,
+    },
+    {
+      numero: 5,
+      titulo: 'QR',
+      descripcion: 'Descarga tu código',
+      icono: <Sparkles className="h-6 w-6" />,
+      completado: progreso?.paso_5_qr || false,
     },
   ]
 
@@ -125,7 +134,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
 
       const data = await response.json()
       setProgreso(data)
-      setPasoActual(data.completado ? 4 : data.paso_actual)
+      setPasoActual(data.completado ? 5 : data.paso_actual)
 
       // Mostrar celebración si está completado
       if (data.completado && !mostrarCelebracion) {
@@ -168,7 +177,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
 
       // Actualizar progreso localmente (sin recargar para evitar loop)
       if (progreso) {
-        const camposPaso = ['paso_1_branding', 'paso_2_puntos', 'paso_3_regalo', 'paso_4_qr']
+        const camposPaso = ['paso_1_branding', 'paso_2_puntos', 'paso_3_regalo', 'paso_4_referidos', 'paso_5_qr']
         const progresoActualizado: ProgresoOnboarding = {
           ...progreso,
           paso_actual: resultado.paso_actual,
@@ -226,13 +235,13 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
       })
 
       // Avanzar al siguiente paso sin marcar como completado
-      setPasoActual(Math.min(paso + 1, 4))
+      setPasoActual(Math.min(paso + 1, 5))
 
       // Actualizar progreso localmente
       if (progreso) {
         setProgreso({
           ...progreso,
-          paso_actual: Math.min(paso + 1, 4),
+          paso_actual: Math.min(paso + 1, 5),
           pasos_omitidos: [...(progreso.pasos_omitidos || []), `paso_${paso}`],
         })
       }
@@ -341,7 +350,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
           </Button>
           <h1 className="text-3xl font-bold">Configuración Inicial</h1>
           <p className="text-muted-foreground">
-            Completa estos 4 pasos para empezar a usar tu programa de fidelización (2-3 min)
+            Completa estos 5 pasos para empezar a usar tu programa de fidelización (3-4 min)
           </p>
         </div>
 
@@ -444,7 +453,13 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
                   />
                 )}
                 {pasoActual === 4 && (
-                  <Paso4QR onChange={handlePasoChange} />
+                  <Paso4Referidos
+                    datosIniciales={progreso?.wizard_data}
+                    onChange={handlePasoChange}
+                  />
+                )}
+                {pasoActual === 5 && (
+                  <Paso5QR onChange={handlePasoChange} />
                 )}
               </motion.div>
             </AnimatePresence>
@@ -474,7 +489,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
                 onClick={() => {
                   if (pasos[pasoActual - 1].completado) {
                     // Si ya está completado, solo avanzar al siguiente paso
-                    setPasoActual(Math.min(pasoActual + 1, 4))
+                    setPasoActual(Math.min(pasoActual + 1, 5))
                   } else {
                     // Si no está completado, guardar
                     guardarPaso(pasoActual, datosPaso)
@@ -489,7 +504,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
                   </>
                 ) : (
                   <>
-                    {pasoActual === 4 ? 'Finalizar' : 'Siguiente'}
+                    {pasoActual === 5 ? 'Finalizar' : 'Siguiente'}
                     <ChevronRight className="h-4 w-4 ml-2" />
                   </>
                 )}

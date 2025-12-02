@@ -59,11 +59,17 @@ export class OnboardingService {
       .single();
 
     this.logger.log(
-      `✅ Progreso obtenido: ${data.porcentaje_completado}% (paso ${data.paso_actual}/4)`,
+      `✅ Progreso obtenido: ${data.porcentaje_completado}% (paso ${data.paso_actual}/5)`,
     );
 
+    // Transformar nombres de columnas de BD a nombres del frontend
+    // BD tiene: paso_3_promo, paso_4_regalo, paso_5_qr
+    // Frontend espera: paso_3_regalo, paso_4_referidos, paso_5_qr
     return {
       ...data,
+      paso_3_regalo: data.paso_4_regalo,     // Mapear paso_4_regalo → paso_3_regalo
+      paso_4_referidos: data.paso_3_promo,   // Mapear paso_3_promo → paso_4_referidos
+      paso_5_qr: data.paso_5_qr,             // paso_5_qr se mantiene igual
       nombre_tienda: tienda?.nombre || undefined,
     } as ProgresoResponseDto;
   }
@@ -84,12 +90,14 @@ export class OnboardingService {
     // Asegurarse de que el registro existe (auto-crear si no existe)
     const progresoActual = await this.getProgreso(idTienda);
 
-    // Mapeo de pasos a campos (4 pasos: branding, puntos, regalo, qr)
+    // Mapeo de pasos a campos de la BD (5 pasos)
+    // Usamos las columnas existentes en la BD
     const camposPaso: Record<number, string> = {
       1: 'paso_1_branding',
       2: 'paso_2_puntos',
-      3: 'paso_3_regalo',
-      4: 'paso_4_qr',
+      3: 'paso_4_regalo',  // Paso 3 (regalo) usa columna paso_4_regalo
+      4: 'paso_3_promo',   // Paso 4 (referidos) usa columna paso_3_promo (reutilizada)
+      5: 'paso_5_qr',      // Paso 5 (QR) usa columna paso_5_qr
     };
 
     const campoPaso = camposPaso[paso];
@@ -97,18 +105,20 @@ export class OnboardingService {
       throw new Error(`Paso inválido: ${paso}`);
     }
 
-    // Calcular nuevo porcentaje y paso actual
+    // Calcular nuevo porcentaje y paso actual (5 pasos)
+    // Leemos de las columnas existentes en la BD
     const pasosCompletados = [
       paso === 1 ? true : progresoActual.paso_1_branding,
       paso === 2 ? true : progresoActual.paso_2_puntos,
-      paso === 3 ? true : progresoActual.paso_3_regalo,
-      paso === 4 ? true : progresoActual.paso_4_qr,
+      paso === 3 ? true : (progresoActual as any).paso_4_regalo,
+      paso === 4 ? true : (progresoActual as any).paso_3_promo,
+      paso === 5 ? true : (progresoActual as any).paso_5_qr,
     ];
 
     const cantidadCompletados = pasosCompletados.filter(Boolean).length;
-    const porcentajeCompletado = Math.round((cantidadCompletados / 4) * 100);
-    const completado = cantidadCompletados === 4;
-    const nuevoPasoActual = completado ? 4 : Math.min(paso + 1, 4);
+    const porcentajeCompletado = Math.round((cantidadCompletados / 5) * 100);
+    const completado = cantidadCompletados === 5;
+    const nuevoPasoActual = completado ? 5 : Math.min(paso + 1, 5);
 
     // Merge de wizard_data
     const wizardDataActualizado = {
@@ -171,9 +181,8 @@ export class OnboardingService {
       this.logger.log(`🔧 Aplicando puntos_por_euro: ${data.puntos_por_euro}`);
     }
 
-    // Paso 3: Regalo de bienvenida y referidos (antes era paso 4)
+    // Paso 3: Regalo de bienvenida
     if (paso === 3) {
-      // Regalo de bienvenida
       if (data.tipo_regalo && data.tipo_regalo !== 'ninguno') {
         updateData.regalo_bienvenida_activo = true;
 
@@ -194,14 +203,18 @@ export class OnboardingService {
         updateData.regalo_bienvenida_activo = false;
         this.logger.log(`🎁 Regalo de bienvenida desactivado`);
       }
+    }
 
-      // Referidos
+    // Paso 4: Referidos
+    if (paso === 4) {
       if (data.referidos_activo !== undefined) {
         updateData.referidos_activo = data.referidos_activo;
         if (data.referidos_activo) {
           updateData.puntos_referidor = data.puntos_referidor || 100;
           updateData.puntos_referido = data.puntos_referido || 50;
           this.logger.log(`👥 Referidos activados: ${data.puntos_referidor}/${data.puntos_referido} pts`);
+        } else {
+          this.logger.log(`👥 Referidos desactivados`);
         }
       }
     }

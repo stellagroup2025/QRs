@@ -25,8 +25,11 @@ export class ProgresoResponseDto {
   @ApiProperty({ description: 'Si se completó el paso 3 (regalo)' })
   paso_3_regalo: boolean;
 
-  @ApiProperty({ description: 'Si se completó el paso 4 (QR)' })
-  paso_4_qr: boolean;
+  @ApiProperty({ description: 'Si se completó el paso 4 (referidos)' })
+  paso_4_referidos: boolean;
+
+  @ApiProperty({ description: 'Si se completó el paso 5 (QR)' })
+  paso_5_qr: boolean;
 
   @ApiProperty({ description: 'Datos del wizard', type: 'object' })
   wizard_data: Record<string, any>;
