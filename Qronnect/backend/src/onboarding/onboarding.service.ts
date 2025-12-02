@@ -175,6 +175,30 @@ export class OnboardingService {
   ): Promise<void> {
     const updateData: Record<string, any> = {};
 
+    // Paso 1: Branding (nombre, logo, colores)
+    if (paso === 1) {
+      if (data.nombre_comercial) {
+        updateData.nombre_comercial = data.nombre_comercial;
+        this.logger.log(`🎨 Aplicando nombre_comercial: ${data.nombre_comercial}`);
+      }
+      if (data.logo_url) {
+        updateData.logo_url = data.logo_url;
+        this.logger.log(`🎨 Aplicando logo_url: ${data.logo_url}`);
+      }
+      if (data.color_primario) {
+        updateData.color_primario = data.color_primario;
+        this.logger.log(`🎨 Aplicando color_primario: ${data.color_primario}`);
+      }
+      if (data.color_secundario) {
+        updateData.color_secundario = data.color_secundario;
+        this.logger.log(`🎨 Aplicando color_secundario: ${data.color_secundario}`);
+      }
+      if (data.color_acento) {
+        updateData.color_acento = data.color_acento;
+        this.logger.log(`🎨 Aplicando color_acento: ${data.color_acento}`);
+      }
+    }
+
     // Paso 2: Puntos por euro
     if (paso === 2 && data.puntos_por_euro) {
       updateData.configuracion = { puntos_por_euro: data.puntos_por_euro };
