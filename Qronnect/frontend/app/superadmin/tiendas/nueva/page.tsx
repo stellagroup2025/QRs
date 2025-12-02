@@ -36,6 +36,40 @@ export default function NuevaTiendaPage() {
     plan: 'basico',
   })
 
+  // Estado para saber si el usuario ha editado manualmente el dominio
+  const [dominioEditadoManualmente, setDominioEditadoManualmente] = useState(false)
+
+  // Función para generar dominio a partir del nombre
+  const generarDominio = (nombre: string): string => {
+    return nombre
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
+      .replace(/[^a-z0-9\s-]/g, '') // Solo letras, números, espacios y guiones
+      .trim()
+      .replace(/\s+/g, '-') // Reemplazar espacios con guiones
+      .replace(/-+/g, '-') // Eliminar guiones duplicados
+  }
+
+  // Handler para el cambio del nombre
+  const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nuevoNombre = e.target.value
+    const nuevosDatos: typeof formData = { ...formData, nombre: nuevoNombre }
+
+    // Solo auto-rellenar dominio si el usuario no lo ha editado manualmente
+    if (!dominioEditadoManualmente) {
+      nuevosDatos.dominio = generarDominio(nuevoNombre)
+    }
+
+    setFormData(nuevosDatos)
+  }
+
+  // Handler para el cambio del dominio (marca como editado manualmente)
+  const handleDominioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDominioEditadoManualmente(true)
+    setFormData({ ...formData, dominio: e.target.value })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -159,7 +193,7 @@ export default function NuevaTiendaPage() {
                   <Input
                     id="nombre"
                     value={formData.nombre}
-                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                    onChange={handleNombreChange}
                     placeholder="Ej: Cafetería El Sol"
                     required
                   />
@@ -173,7 +207,7 @@ export default function NuevaTiendaPage() {
                     <Input
                       id="dominio"
                       value={formData.dominio}
-                      onChange={(e) => setFormData({ ...formData, dominio: e.target.value })}
+                      onChange={handleDominioChange}
                       placeholder="cafeteria-el-sol"
                       required
                       className="rounded-r-none"
@@ -183,7 +217,7 @@ export default function NuevaTiendaPage() {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Solo letras, números y guiones
+                    Solo letras, números y guiones. Se genera automáticamente del nombre.
                   </p>
                 </div>
               </div>
