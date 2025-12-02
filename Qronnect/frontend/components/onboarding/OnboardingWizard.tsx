@@ -469,17 +469,27 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
                 Anterior
               </Button>
 
-              <Button
-                variant="ghost"
-                onClick={() => omitirPaso(pasoActual)}
-                disabled={guardando || pasos[pasoActual - 1].completado}
-              >
-                Omitir por ahora
-              </Button>
+              {!pasos[pasoActual - 1].completado && (
+                <Button
+                  variant="ghost"
+                  onClick={() => omitirPaso(pasoActual)}
+                  disabled={guardando}
+                >
+                  Omitir por ahora
+                </Button>
+              )}
 
               <Button
-                onClick={() => guardarPaso(pasoActual, datosPaso)}
-                disabled={guardando || pasos[pasoActual - 1].completado}
+                onClick={() => {
+                  if (pasos[pasoActual - 1].completado) {
+                    // Si ya está completado, solo avanzar al siguiente paso
+                    setPasoActual(Math.min(pasoActual + 1, 5))
+                  } else {
+                    // Si no está completado, guardar
+                    guardarPaso(pasoActual, datosPaso)
+                  }
+                }}
+                disabled={guardando}
               >
                 {guardando ? (
                   <>
