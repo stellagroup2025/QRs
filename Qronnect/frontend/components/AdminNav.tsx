@@ -28,6 +28,7 @@ import {
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { CommandMenu } from '@/components/ui/command-menu'
 import { useAnalytics } from '@/hooks/use-analytics'
+import { OnboardingBanner } from '@/components/OnboardingBanner'
 
 interface NavItem {
   href: string
@@ -119,6 +120,7 @@ export function AdminNav() {
   }
 
   return (
+    <>
     <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
@@ -345,5 +347,7 @@ export function AdminNav() {
 
       </div>
     </div>
+    <OnboardingBanner />
+    </>
   )
 }

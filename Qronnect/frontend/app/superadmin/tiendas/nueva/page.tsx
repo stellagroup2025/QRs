@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ArrowLeft, Loader2, Store, CheckCircle, MapPin } from 'lucide-react'
+import { ArrowLeft, Loader2, Store, CheckCircle, MapPin, User } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -33,6 +33,10 @@ export default function NuevaTiendaPage() {
     email: '',
     logo_url: '',
     plan: 'basico',
+    // Datos del administrador/responsable
+    admin_nombre: '',
+    admin_email: '',
+    admin_rol: 'propietario',
   })
 
   // Estado para saber si el usuario ha editado manualmente el dominio
@@ -143,6 +147,10 @@ export default function NuevaTiendaPage() {
         email: formData.email || undefined,
         logo_url: formData.logo_url || undefined,
         plan: formData.plan,
+        // Datos del administrador
+        admin_nombre: formData.admin_nombre,
+        admin_email: formData.admin_email,
+        admin_rol: formData.admin_rol,
       }
 
       const response = await fetch(`${API_URL}/api/superadmin/tiendas`, {
@@ -288,6 +296,71 @@ export default function NuevaTiendaPage() {
                     <SelectItem value="enterprise">Enterprise</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Administrador de la Tienda
+              </CardTitle>
+              <CardDescription>
+                Persona responsable que tendrá acceso al panel de administración
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="admin_nombre">
+                    Nombre completo <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="admin_nombre"
+                    value={formData.admin_nombre}
+                    onChange={(e) => setFormData({ ...formData, admin_nombre: e.target.value })}
+                    placeholder="Ej: Juan García López"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="admin_rol">
+                    Rol <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={formData.admin_rol}
+                    onValueChange={(value) => setFormData({ ...formData, admin_rol: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="propietario">Propietario</SelectItem>
+                      <SelectItem value="gerente">Gerente</SelectItem>
+                      <SelectItem value="administrador">Administrador</SelectItem>
+                      <SelectItem value="encargado">Encargado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="admin_email">
+                  Email del administrador <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="admin_email"
+                  type="email"
+                  value={formData.admin_email}
+                  onChange={(e) => setFormData({ ...formData, admin_email: e.target.value })}
+                  placeholder="juan@cafeteria.com"
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Se enviará un email con las credenciales de acceso a esta dirección
+                </p>
               </div>
             </CardContent>
           </Card>

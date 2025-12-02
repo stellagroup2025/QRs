@@ -354,60 +354,70 @@ export class SuperAdminService {
       throw new BadRequestException(`Error al crear tienda: ${error.message}`);
     }
 
-    // Si se proporcionó un email, crear usuario admin y enviar credenciales
+    // Crear usuario admin con los datos del responsable
     let usuarioAdmin = null;
     let pinGenerado = null;
     let errorUsuario = null;
     let errorEmail = null;
 
-    if (createDto.email) {
-      try {
-        console.log(`📧 Creando usuario admin para tienda ${tienda.nombre} con email ${createDto.email}`);
+    // Mapeo de rol del formulario a rol de la base de datos
+    const rolMapping: Record<string, string> = {
+      propietario: 'owner',
+      gerente: 'admin',
+      administrador: 'admin',
+      encargado: 'staff',
+    };
 
-        // Generar PIN aleatorio de 6 dígitos
-        pinGenerado = Math.floor(100000 + Math.random() * 900000).toString();
-        const pin_hash = await bcrypt.hash(pinGenerado, 10);
+    try {
+      console.log(`📧 Creando usuario admin para tienda ${tienda.nombre}`);
+      console.log(`   - Nombre: ${createDto.admin_nombre}`);
+      console.log(`   - Email: ${createDto.admin_email}`);
+      console.log(`   - Rol: ${createDto.admin_rol}`);
 
-        // Crear usuario admin para la tienda
-        const { data: usuario, error: userError } = await supabase
-          .from('usuarios_tienda')
-          .insert({
-            id_tienda: tienda.id,
-            nombre: createDto.nombre,
-            email: createDto.email,
-            telefono: createDto.telefono || null,
-            pin_hash: pin_hash,
-            rol: 'owner',
-            sms_2fa_activo: false,
-            activo: true,
-          })
-          .select()
-          .single();
+      // Generar PIN aleatorio de 6 dígitos
+      pinGenerado = Math.floor(100000 + Math.random() * 900000).toString();
+      const pin_hash = await bcrypt.hash(pinGenerado, 10);
 
-        if (userError) {
-          console.error('❌ Error al crear usuario admin:', userError);
-          errorUsuario = userError.message || 'Error desconocido al crear usuario';
-        } else {
-          console.log(`✅ Usuario admin creado: ${usuario.id}`);
-          usuarioAdmin = usuario;
+      // Crear usuario admin para la tienda con los datos del responsable
+      const { data: usuario, error: userError } = await supabase
+        .from('usuarios_tienda')
+        .insert({
+          id_tienda: tienda.id,
+          nombre: createDto.admin_nombre,
+          email: createDto.admin_email,
+          telefono: createDto.telefono || null,
+          pin_hash: pin_hash,
+          rol: rolMapping[createDto.admin_rol] || 'owner',
+          sms_2fa_activo: false,
+          activo: true,
+        })
+        .select()
+        .single();
 
-          // Enviar email con credenciales
-          try {
-            await this.enviarEmailBienvenidaTienda(
-              createDto.email,
-              createDto.nombre,
-              tienda.dominio,
-              pinGenerado,
-            );
-          } catch (emailErr: any) {
-            console.error('❌ Error al enviar email de bienvenida:', emailErr);
-            errorEmail = emailErr.message || 'Error al enviar email';
-          }
+      if (userError) {
+        console.error('❌ Error al crear usuario admin:', userError);
+        errorUsuario = userError.message || 'Error desconocido al crear usuario';
+      } else {
+        console.log(`✅ Usuario admin creado: ${usuario.id}`);
+        usuarioAdmin = usuario;
+
+        // Enviar email con credenciales
+        try {
+          await this.enviarEmailBienvenidaTienda(
+            createDto.admin_email,
+            createDto.admin_nombre,
+            tienda.dominio,
+            pinGenerado,
+            createDto.admin_rol,
+          );
+        } catch (emailErr: any) {
+          console.error('❌ Error al enviar email de bienvenida:', emailErr);
+          errorEmail = emailErr.message || 'Error al enviar email';
         }
-      } catch (err: any) {
-        console.error('❌ Error general al crear usuario/enviar email:', err);
-        errorUsuario = err.message || 'Error general';
       }
+    } catch (err: any) {
+      console.error('❌ Error general al crear usuario/enviar email:', err);
+      errorUsuario = err.message || 'Error general';
     }
 
     // Registrar en audit log
@@ -431,11 +441,20 @@ export class SuperAdminService {
    */
   private async enviarEmailBienvenidaTienda(
     email: string,
-    nombreTienda: string,
+    nombreAdmin: string,
     dominio: string,
     pin: string,
+    rolAdmin: string = 'propietario',
   ): Promise<void> {
     const urlAcceso = `https://${dominio}.qronnect.es/admin`;
+
+    // Mapeo de roles a texto legible
+    const rolTexto: Record<string, string> = {
+      propietario: 'Propietario',
+      gerente: 'Gerente',
+      administrador: 'Administrador',
+      encargado: 'Encargado',
+    };
 
     const emailHtml = `
 <!DOCTYPE html>
@@ -462,11 +481,11 @@ export class SuperAdminService {
           <tr>
             <td style="padding: 40px 30px;">
               <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                Hola <strong>${nombreTienda}</strong>,
+                Hola <strong>${nombreAdmin}</strong>,
               </p>
 
               <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">
-                Tu tienda ha sido creada correctamente en <strong>Qronnect</strong>. A continuación encontrarás tus credenciales de acceso al panel de administración.
+                Has sido registrado como <strong>${rolTexto[rolAdmin] || 'Administrador'}</strong> en <strong>Qronnect</strong>. A continuación encontrarás tus credenciales de acceso al panel de administración.
               </p>
 
               <!-- Credenciales -->
