@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Paintbrush, Upload, Store, X, Loader2, ImageIcon } from 'lucide-react'
+import { Paintbrush, Upload, Store, X, Loader2, ImageIcon, Wand2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface Paso1BrandingProps {
@@ -19,6 +19,64 @@ interface Paso1BrandingProps {
   onChange: (data: any) => void
 }
 
+// Función para extraer colores dominantes de una imagen
+const extractColorsFromImage = (imageUrl: string): Promise<string[]> => {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.crossOrigin = 'Anonymous'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        resolve(['#0ea5e9', '#6366f1', '#22c55e'])
+        return
+      }
+
+      // Escalar imagen para análisis más rápido
+      const size = 50
+      canvas.width = size
+      canvas.height = size
+      ctx.drawImage(img, 0, 0, size, size)
+
+      const imageData = ctx.getImageData(0, 0, size, size).data
+      const colorCounts: Record<string, number> = {}
+
+      // Contar colores (agrupando similares)
+      for (let i = 0; i < imageData.length; i += 4) {
+        const r = Math.round(imageData[i] / 32) * 32
+        const g = Math.round(imageData[i + 1] / 32) * 32
+        const b = Math.round(imageData[i + 2] / 32) * 32
+        const a = imageData[i + 3]
+
+        // Ignorar transparentes y casi blancos/negros
+        if (a < 128) continue
+        if (r > 240 && g > 240 && b > 240) continue
+        if (r < 15 && g < 15 && b < 15) continue
+
+        const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+        colorCounts[hex] = (colorCounts[hex] || 0) + 1
+      }
+
+      // Ordenar por frecuencia y tomar los 3 más comunes
+      const sortedColors = Object.entries(colorCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3)
+        .map(([color]) => color)
+
+      // Asegurar que tengamos 3 colores
+      while (sortedColors.length < 3) {
+        sortedColors.push(['#0ea5e9', '#6366f1', '#22c55e'][sortedColors.length])
+      }
+
+      resolve(sortedColors)
+    }
+    img.onerror = () => {
+      resolve(['#0ea5e9', '#6366f1', '#22c55e'])
+    }
+    img.src = imageUrl
+  })
+}
+
 export function Paso1Branding({ datosIniciales, onChange }: Paso1BrandingProps) {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -30,6 +88,31 @@ export function Paso1Branding({ datosIniciales, onChange }: Paso1BrandingProps) 
   const [colorAccento, setColorAccento] = useState(datosIniciales?.color_acento || '#22c55e')
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
+  const [coloresExtraidos, setColoresExtraidos] = useState(false)
+
+  // Cargar nombre de la tienda si no viene en datosIniciales
+  useEffect(() => {
+    const cargarNombreTienda = async () => {
+      if (nombre) return // Ya tiene nombre
+
+      try {
+        const domain = window.location.hostname.split('.')[0]
+        const token = localStorage.getItem(`admin_token_${domain}`) || localStorage.getItem('admin_token')
+        const tiendaStr = localStorage.getItem('admin_tienda')
+
+        if (tiendaStr) {
+          const tienda = JSON.parse(tiendaStr)
+          if (tienda.nombre || tienda.nombre_comercial) {
+            setNombre(tienda.nombre_comercial || tienda.nombre)
+          }
+        }
+      } catch (error) {
+        console.error('Error cargando nombre de tienda:', error)
+      }
+    }
+
+    cargarNombreTienda()
+  }, [])
 
   // Notificar cambios al padre
   useEffect(() => {
@@ -96,10 +179,24 @@ export function Paso1Branding({ datosIniciales, onChange }: Paso1BrandingProps) 
       const data = await response.json()
       setLogoUrl(data.url)
 
-      toast({
-        title: 'Logo subido',
-        description: 'Tu logo se ha subido correctamente',
-      })
+      // Extraer colores del logo automáticamente
+      try {
+        const colors = await extractColorsFromImage(data.url)
+        setColorPrimario(colors[0])
+        setColorSecundario(colors[1])
+        setColorAccento(colors[2])
+        setColoresExtraidos(true)
+
+        toast({
+          title: 'Logo subido',
+          description: 'Hemos detectado los colores de tu logo. Puedes ajustarlos si lo deseas.',
+        })
+      } catch {
+        toast({
+          title: 'Logo subido',
+          description: 'Tu logo se ha subido correctamente',
+        })
+      }
     } catch (error: any) {
       console.error('Error uploading file:', error)
       toast({
@@ -261,9 +358,17 @@ export function Paso1Branding({ datosIniciales, onChange }: Paso1BrandingProps) 
 
       {/* Colores de Marca */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Paintbrush className="h-5 w-5 text-muted-foreground" />
-          <Label>Colores de tu marca</Label>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Paintbrush className="h-5 w-5 text-muted-foreground" />
+            <Label>Colores de tu marca</Label>
+          </div>
+          {coloresExtraidos && (
+            <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+              <Wand2 className="h-3 w-3" />
+              Detectados del logo
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

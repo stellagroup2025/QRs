@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ArrowLeft, Loader2, Store, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Loader2, Store, CheckCircle, MapPin } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -63,6 +63,72 @@ export default function NuevaTiendaPage() {
   const handleDominioChange = (dominio: string) => {
     setDominioEditadoManualmente(true)
     setFormData(prev => ({ ...prev, dominio }))
+  }
+
+  // Estado para geolocalización
+  const [obteniendoUbicacion, setObteniendoUbicacion] = useState(false)
+
+  // Función para obtener ubicación actual
+  const obtenerUbicacion = async () => {
+    if (!navigator.geolocation) {
+      setError('Tu navegador no soporta geolocalización')
+      return
+    }
+
+    setObteniendoUbicacion(true)
+    setError('')
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        })
+      })
+
+      const { latitude, longitude } = position.coords
+
+      // Usar Nominatim (OpenStreetMap) para geocoding inverso
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+        {
+          headers: {
+            'Accept-Language': 'es',
+          },
+        }
+      )
+
+      if (response.ok) {
+        const data = await response.json()
+        const address = data.address
+
+        // Construir dirección legible
+        const partes = []
+        if (address.road) partes.push(address.road)
+        if (address.house_number) partes[0] = `${address.road} ${address.house_number}`
+        if (address.city || address.town || address.village) {
+          partes.push(address.city || address.town || address.village)
+        }
+        if (address.postcode) partes.push(address.postcode)
+        if (address.state) partes.push(address.state)
+
+        const direccionCompleta = partes.join(', ')
+        setFormData(prev => ({ ...prev, direccion: direccionCompleta }))
+      }
+    } catch (err: any) {
+      if (err.code === 1) {
+        setError('Permiso de ubicación denegado. Por favor, actívalo en tu navegador.')
+      } else if (err.code === 2) {
+        setError('No se pudo obtener la ubicación. Intenta de nuevo.')
+      } else if (err.code === 3) {
+        setError('Tiempo de espera agotado. Intenta de nuevo.')
+      } else {
+        setError('Error al obtener ubicación')
+      }
+    } finally {
+      setObteniendoUbicacion(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -259,7 +325,29 @@ export default function NuevaTiendaPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="direccion">Dirección</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="direccion">Dirección</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={obtenerUbicacion}
+                    disabled={obteniendoUbicacion}
+                    className="gap-1"
+                  >
+                    {obteniendoUbicacion ? (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        Obteniendo...
+                      </>
+                    ) : (
+                      <>
+                        <MapPin className="h-3 w-3" />
+                        Usar mi ubicación
+                      </>
+                    )}
+                  </Button>
+                </div>
                 <Textarea
                   id="direccion"
                   value={formData.direccion}
