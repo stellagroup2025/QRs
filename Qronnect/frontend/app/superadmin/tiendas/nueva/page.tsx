@@ -187,6 +187,8 @@ export default function NuevaTiendaPage() {
       }
 
       setSuccess(true)
+      // Scroll al inicio para que el usuario vea el mensaje de éxito
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       setTimeout(() => {
         router.push('/superadmin/tiendas')
       }, 2000)

@@ -9,9 +9,8 @@ import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Sparkles, X } from 'l
 import { useToast } from '@/hooks/use-toast'
 import { Paso1Branding } from './steps/Paso1Branding'
 import { Paso2Puntos } from './steps/Paso2Puntos'
-import { Paso3Promocion } from './steps/Paso3Promocion'
-import { Paso4Regalo } from './steps/Paso4Regalo'
-import { Paso5QR } from './steps/Paso5QR'
+import { Paso4Regalo as Paso3Regalo } from './steps/Paso4Regalo'
+import { Paso5QR as Paso4QR } from './steps/Paso5QR'
 
 // Tipos
 interface ProgresoOnboarding {
@@ -22,14 +21,15 @@ interface ProgresoOnboarding {
   porcentaje_completado: number
   paso_1_branding: boolean
   paso_2_puntos: boolean
-  paso_3_promo: boolean
-  paso_4_regalo: boolean
-  paso_5_qr: boolean
+  paso_3_regalo: boolean
+  paso_4_qr: boolean
   wizard_data: Record<string, any>
   fecha_inicio: string
   fecha_completado: string | null
   tiempo_total_segundos: number | null
   pasos_omitidos: string[]
+  // Datos de la tienda
+  nombre_tienda?: string
 }
 
 interface PasoWizard {
@@ -59,7 +59,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
     setDatosPaso((prev) => ({ ...prev, ...data }))
   }
 
-  // Configuración de pasos
+  // Configuración de pasos (4 pasos en total)
   const pasos: PasoWizard[] = [
     {
       numero: 1,
@@ -77,24 +77,17 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
     },
     {
       numero: 3,
-      titulo: 'Promoción',
-      descripcion: 'Crea tu primera campaña',
-      icono: <Sparkles className="h-6 w-6" />,
-      completado: progreso?.paso_3_promo || false,
-    },
-    {
-      numero: 4,
       titulo: 'Regalo',
       descripcion: 'Configura el regalo de bienvenida',
       icono: <Sparkles className="h-6 w-6" />,
-      completado: progreso?.paso_4_regalo || false,
+      completado: progreso?.paso_3_regalo || false,
     },
     {
-      numero: 5,
+      numero: 4,
       titulo: 'QR',
       descripcion: 'Descarga tu código QR',
       icono: <Sparkles className="h-6 w-6" />,
-      completado: progreso?.paso_5_qr || false,
+      completado: progreso?.paso_4_qr || false,
     },
   ]
 
@@ -132,7 +125,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
 
       const data = await response.json()
       setProgreso(data)
-      setPasoActual(data.completado ? 5 : data.paso_actual)
+      setPasoActual(data.completado ? 4 : data.paso_actual)
 
       // Mostrar celebración si está completado
       if (data.completado && !mostrarCelebracion) {
@@ -175,7 +168,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
 
       // Actualizar progreso localmente (sin recargar para evitar loop)
       if (progreso) {
-        const camposPaso = ['paso_1_branding', 'paso_2_puntos', 'paso_3_promo', 'paso_4_regalo', 'paso_5_qr']
+        const camposPaso = ['paso_1_branding', 'paso_2_puntos', 'paso_3_regalo', 'paso_4_qr']
         const progresoActualizado: ProgresoOnboarding = {
           ...progreso,
           paso_actual: resultado.paso_actual,
@@ -233,13 +226,13 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
       })
 
       // Avanzar al siguiente paso sin marcar como completado
-      setPasoActual(Math.min(paso + 1, 5))
+      setPasoActual(Math.min(paso + 1, 4))
 
       // Actualizar progreso localmente
       if (progreso) {
         setProgreso({
           ...progreso,
-          paso_actual: Math.min(paso + 1, 5),
+          paso_actual: Math.min(paso + 1, 4),
           pasos_omitidos: [...(progreso.pasos_omitidos || []), `paso_${paso}`],
         })
       }
@@ -348,7 +341,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
           </Button>
           <h1 className="text-3xl font-bold">Configuración Inicial</h1>
           <p className="text-muted-foreground">
-            Completa estos 5 pasos para empezar a usar tu programa de fidelización (3-4 min)
+            Completa estos 4 pasos para empezar a usar tu programa de fidelización (2-3 min)
           </p>
         </div>
 
@@ -434,6 +427,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
                 {pasoActual === 1 && (
                   <Paso1Branding
                     datosIniciales={progreso?.wizard_data}
+                    nombreTienda={progreso?.nombre_tienda}
                     onChange={handlePasoChange}
                   />
                 )}
@@ -444,16 +438,13 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
                   />
                 )}
                 {pasoActual === 3 && (
-                  <Paso3Promocion onChange={handlePasoChange} />
-                )}
-                {pasoActual === 4 && (
-                  <Paso4Regalo
+                  <Paso3Regalo
                     datosIniciales={progreso?.wizard_data}
                     onChange={handlePasoChange}
                   />
                 )}
-                {pasoActual === 5 && (
-                  <Paso5QR onChange={handlePasoChange} />
+                {pasoActual === 4 && (
+                  <Paso4QR onChange={handlePasoChange} />
                 )}
               </motion.div>
             </AnimatePresence>
@@ -483,7 +474,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
                 onClick={() => {
                   if (pasos[pasoActual - 1].completado) {
                     // Si ya está completado, solo avanzar al siguiente paso
-                    setPasoActual(Math.min(pasoActual + 1, 5))
+                    setPasoActual(Math.min(pasoActual + 1, 4))
                   } else {
                     // Si no está completado, guardar
                     guardarPaso(pasoActual, datosPaso)
@@ -498,7 +489,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
                   </>
                 ) : (
                   <>
-                    {pasoActual === 5 ? 'Finalizar' : 'Siguiente'}
+                    {pasoActual === 4 ? 'Finalizar' : 'Siguiente'}
                     <ChevronRight className="h-4 w-4 ml-2" />
                   </>
                 )}

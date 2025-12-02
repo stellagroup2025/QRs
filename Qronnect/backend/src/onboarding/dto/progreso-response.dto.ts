@@ -22,14 +22,11 @@ export class ProgresoResponseDto {
   @ApiProperty({ description: 'Si se completó el paso 2 (puntos)' })
   paso_2_puntos: boolean;
 
-  @ApiProperty({ description: 'Si se completó el paso 3 (promo)' })
-  paso_3_promo: boolean;
+  @ApiProperty({ description: 'Si se completó el paso 3 (regalo)' })
+  paso_3_regalo: boolean;
 
-  @ApiProperty({ description: 'Si se completó el paso 4 (regalo)' })
-  paso_4_regalo: boolean;
-
-  @ApiProperty({ description: 'Si se completó el paso 5 (QR)' })
-  paso_5_qr: boolean;
+  @ApiProperty({ description: 'Si se completó el paso 4 (QR)' })
+  paso_4_qr: boolean;
 
   @ApiProperty({ description: 'Datos del wizard', type: 'object' })
   wizard_data: Record<string, any>;
@@ -45,4 +42,7 @@ export class ProgresoResponseDto {
 
   @ApiProperty({ description: 'Pasos omitidos', type: [String] })
   pasos_omitidos: string[];
+
+  @ApiProperty({ description: 'Nombre de la tienda', required: false })
+  nombre_tienda?: string;
 }
