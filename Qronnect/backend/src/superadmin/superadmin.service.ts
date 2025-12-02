@@ -500,9 +500,10 @@ export class SuperAdminService {
                         <td style="padding: 8px 0; color: #374151; font-size: 14px; font-weight: bold;">${email}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">PIN de acceso:</td>
+                        <td style="padding: 8px 0; color: #6b7280; font-size: 14px; vertical-align: top;">PIN de acceso:</td>
                         <td style="padding: 8px 0;">
-                          <span style="background-color: #8b5cf6; color: #ffffff; padding: 4px 12px; border-radius: 4px; font-family: monospace; font-size: 18px; font-weight: bold; letter-spacing: 2px;">${pin}</span>
+                          <div style="background-color: #1f2937; color: #ffffff; padding: 12px 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 28px; font-weight: bold; letter-spacing: 8px; text-align: center; display: inline-block; user-select: all; -webkit-user-select: all;">${pin}</div>
+                          <p style="color: #9ca3af; font-size: 11px; margin: 6px 0 0 0;">Selecciona el PIN y copia (Ctrl+C / Cmd+C)</p>
                         </td>
                       </tr>
                       <tr>

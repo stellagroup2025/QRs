@@ -51,11 +51,21 @@ export class OnboardingService {
       );
     }
 
+    // Obtener el nombre de la tienda para pre-rellenar en el wizard
+    const { data: tienda } = await supabase
+      .from('tiendas')
+      .select('nombre')
+      .eq('id', idTienda)
+      .single();
+
     this.logger.log(
-      `✅ Progreso obtenido: ${data.porcentaje_completado}% (paso ${data.paso_actual}/5)`,
+      `✅ Progreso obtenido: ${data.porcentaje_completado}% (paso ${data.paso_actual}/4)`,
     );
 
-    return data as ProgresoResponseDto;
+    return {
+      ...data,
+      nombre_tienda: tienda?.nombre || undefined,
+    } as ProgresoResponseDto;
   }
 
   /**
@@ -74,13 +84,12 @@ export class OnboardingService {
     // Asegurarse de que el registro existe (auto-crear si no existe)
     const progresoActual = await this.getProgreso(idTienda);
 
-    // Mapeo de pasos a campos
+    // Mapeo de pasos a campos (4 pasos: branding, puntos, regalo, qr)
     const camposPaso: Record<number, string> = {
       1: 'paso_1_branding',
       2: 'paso_2_puntos',
-      3: 'paso_3_promo',
-      4: 'paso_4_regalo',
-      5: 'paso_5_qr',
+      3: 'paso_3_regalo',
+      4: 'paso_4_qr',
     };
 
     const campoPaso = camposPaso[paso];
@@ -92,15 +101,14 @@ export class OnboardingService {
     const pasosCompletados = [
       paso === 1 ? true : progresoActual.paso_1_branding,
       paso === 2 ? true : progresoActual.paso_2_puntos,
-      paso === 3 ? true : progresoActual.paso_3_promo,
-      paso === 4 ? true : progresoActual.paso_4_regalo,
-      paso === 5 ? true : progresoActual.paso_5_qr,
+      paso === 3 ? true : progresoActual.paso_3_regalo,
+      paso === 4 ? true : progresoActual.paso_4_qr,
     ];
 
     const cantidadCompletados = pasosCompletados.filter(Boolean).length;
-    const porcentajeCompletado = Math.round((cantidadCompletados / 5) * 100);
-    const completado = cantidadCompletados === 5;
-    const nuevoPasoActual = completado ? 5 : Math.min(paso + 1, 5);
+    const porcentajeCompletado = Math.round((cantidadCompletados / 4) * 100);
+    const completado = cantidadCompletados === 4;
+    const nuevoPasoActual = completado ? 4 : Math.min(paso + 1, 4);
 
     // Merge de wizard_data
     const wizardDataActualizado = {
@@ -136,7 +144,7 @@ export class OnboardingService {
     };
 
     this.logger.log(
-      `✅ Progreso actualizado: ${progresoActualizado.porcentaje_completado}% (paso ${progresoActualizado.paso_actual}/5)`,
+      `✅ Progreso actualizado: ${progresoActualizado.porcentaje_completado}% (paso ${progresoActualizado.paso_actual}/4)`,
     );
 
     if (progresoActualizado.completado) {

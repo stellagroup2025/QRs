@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Paintbrush, Upload, Store, X, Loader2, ImageIcon } from 'lucide-react'
+import { Paintbrush, Upload, Store, X, Loader2, ImageIcon, Wand2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface Paso1BrandingProps {
@@ -16,20 +16,115 @@ interface Paso1BrandingProps {
     color_secundario?: string
     color_acento?: string
   }
+  nombreTienda?: string
   onChange: (data: any) => void
 }
 
-export function Paso1Branding({ datosIniciales, onChange }: Paso1BrandingProps) {
+export function Paso1Branding({ datosIniciales, nombreTienda, onChange }: Paso1BrandingProps) {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [nombre, setNombre] = useState(datosIniciales?.nombre_comercial || '')
+  // Pre-rellenar con nombre_comercial del wizard, o el nombre de la tienda
+  const [nombre, setNombre] = useState(datosIniciales?.nombre_comercial || nombreTienda || '')
   const [logoUrl, setLogoUrl] = useState(datosIniciales?.logo_url || '')
   const [colorPrimario, setColorPrimario] = useState(datosIniciales?.color_primario || '#0ea5e9')
   const [colorSecundario, setColorSecundario] = useState(datosIniciales?.color_secundario || '#6366f1')
   const [colorAccento, setColorAccento] = useState(datosIniciales?.color_acento || '#22c55e')
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
+  const [extrayendoColores, setExtrayendoColores] = useState(false)
+
+  // Función para extraer colores dominantes de una imagen
+  const extraerColoresDeImagen = async (imageUrl: string) => {
+    setExtrayendoColores(true)
+    try {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve()
+        img.onerror = () => reject(new Error('No se pudo cargar la imagen'))
+        img.src = imageUrl
+      })
+
+      // Crear canvas para analizar la imagen
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      if (!ctx) throw new Error('No se pudo crear el contexto del canvas')
+
+      // Escalar la imagen para análisis más rápido
+      const maxSize = 100
+      const scale = Math.min(maxSize / img.width, maxSize / img.height)
+      canvas.width = img.width * scale
+      canvas.height = img.height * scale
+
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      const data = imageData.data
+
+      // Contar colores (excluyendo blancos, negros y transparentes)
+      const colorCounts: Record<string, number> = {}
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i]
+        const g = data[i + 1]
+        const b = data[i + 2]
+        const a = data[i + 3]
+
+        // Ignorar pixeles transparentes
+        if (a < 128) continue
+
+        // Ignorar colores muy claros (casi blancos) o muy oscuros (casi negros)
+        const brightness = (r + g + b) / 3
+        if (brightness > 240 || brightness < 15) continue
+
+        // Cuantizar colores para agrupar similares
+        const qr = Math.round(r / 32) * 32
+        const qg = Math.round(g / 32) * 32
+        const qb = Math.round(b / 32) * 32
+
+        const key = `${qr},${qg},${qb}`
+        colorCounts[key] = (colorCounts[key] || 0) + 1
+      }
+
+      // Ordenar por frecuencia
+      const sortedColors = Object.entries(colorCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([color]) => {
+          const [r, g, b] = color.split(',').map(Number)
+          return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+        })
+
+      if (sortedColors.length >= 1) {
+        setColorPrimario(sortedColors[0])
+        if (sortedColors.length >= 2) {
+          setColorSecundario(sortedColors[1])
+        }
+        if (sortedColors.length >= 3) {
+          setColorAccento(sortedColors[2])
+        }
+        toast({
+          title: 'Colores detectados',
+          description: `Se encontraron ${sortedColors.length} color${sortedColors.length > 1 ? 'es' : ''} en tu logo`,
+        })
+      } else {
+        toast({
+          title: 'Sin colores detectados',
+          description: 'No se encontraron colores significativos en el logo. Configura los colores manualmente.',
+        })
+      }
+    } catch (error) {
+      console.error('Error extrayendo colores:', error)
+      toast({
+        title: 'Error al detectar colores',
+        description: 'No se pudieron extraer colores del logo. Configúralos manualmente.',
+        variant: 'destructive',
+      })
+    } finally {
+      setExtrayendoColores(false)
+    }
+  }
 
   // Notificar cambios al padre
   useEffect(() => {
@@ -98,8 +193,11 @@ export function Paso1Branding({ datosIniciales, onChange }: Paso1BrandingProps) 
 
       toast({
         title: 'Logo subido',
-        description: 'Tu logo se ha subido correctamente',
+        description: 'Analizando colores del logo...',
       })
+
+      // Extraer colores del logo automáticamente
+      await extraerColoresDeImagen(data.url)
     } catch (error: any) {
       console.error('Error uploading file:', error)
       toast({
@@ -199,6 +297,20 @@ export function Paso1Branding({ datosIniciales, onChange }: Paso1BrandingProps) 
                 </p>
               </div>
               <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => extraerColoresDeImagen(logoUrl)}
+                  disabled={uploading || extrayendoColores}
+                  title="Detectar colores del logo"
+                >
+                  {extrayendoColores ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Wand2 className="h-4 w-4" />
+                  )}
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
