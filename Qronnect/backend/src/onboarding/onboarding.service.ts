@@ -72,22 +72,65 @@ export class OnboardingService {
     const supabase = this.supabaseService.getAdminClient();
 
     // Asegurarse de que el registro existe (auto-crear si no existe)
-    await this.getProgreso(idTienda);
+    const progresoActual = await this.getProgreso(idTienda);
 
-    // Llamar a la función PostgreSQL actualizar_progreso_onboarding
-    const { data: result, error } = await supabase.rpc('actualizar_progreso_onboarding', {
-      p_id_tienda: idTienda,
-      p_paso: paso,
-      p_data: data,
-    });
+    // Mapeo de pasos a campos
+    const camposPaso: Record<number, string> = {
+      1: 'paso_1_branding',
+      2: 'paso_2_puntos',
+      3: 'paso_3_promo',
+      4: 'paso_4_regalo',
+      5: 'paso_5_qr',
+    };
+
+    const campoPaso = camposPaso[paso];
+    if (!campoPaso) {
+      throw new Error(`Paso inválido: ${paso}`);
+    }
+
+    // Calcular nuevo porcentaje y paso actual
+    const pasosCompletados = [
+      paso === 1 ? true : progresoActual.paso_1_branding,
+      paso === 2 ? true : progresoActual.paso_2_puntos,
+      paso === 3 ? true : progresoActual.paso_3_promo,
+      paso === 4 ? true : progresoActual.paso_4_regalo,
+      paso === 5 ? true : progresoActual.paso_5_qr,
+    ];
+
+    const cantidadCompletados = pasosCompletados.filter(Boolean).length;
+    const porcentajeCompletado = Math.round((cantidadCompletados / 5) * 100);
+    const completado = cantidadCompletados === 5;
+    const nuevoPasoActual = completado ? 5 : Math.min(paso + 1, 5);
+
+    // Merge de wizard_data
+    const wizardDataActualizado = {
+      ...(progresoActual.wizard_data || {}),
+      ...data,
+    };
+
+    // Update directo en la tabla
+    const { error } = await supabase
+      .from('onboarding_progress')
+      .update({
+        [campoPaso]: true,
+        paso_actual: nuevoPasoActual,
+        porcentaje_completado: porcentajeCompletado,
+        completado: completado,
+        wizard_data: wizardDataActualizado,
+        fecha_completado: completado ? new Date().toISOString() : null,
+      })
+      .eq('id_tienda', idTienda);
 
     if (error) {
       this.logger.error(`❌ Error al actualizar progreso: ${error.message}`);
       throw new Error(`Error al actualizar progreso: ${error.message}`);
     }
 
-    // La función retorna una tabla con una fila, extraemos el primer elemento
-    const progresoActualizado = Array.isArray(result) ? result[0] : result;
+    const progresoActualizado = {
+      paso_actual: nuevoPasoActual,
+      porcentaje_completado: porcentajeCompletado,
+      completado: completado,
+    };
 
     this.logger.log(
       `✅ Progreso actualizado: ${progresoActualizado.porcentaje_completado}% (paso ${progresoActualizado.paso_actual}/5)`,
@@ -95,7 +138,6 @@ export class OnboardingService {
 
     if (progresoActualizado.completado) {
       this.logger.log(`🎉 ¡Onboarding completado para tienda ${idTienda}!`);
-      // Aquí podríamos enviar un email de felicitación, registrar analytics, etc.
     }
 
     return progresoActualizado;
@@ -109,11 +151,26 @@ export class OnboardingService {
 
     const supabase = this.supabaseService.getAdminClient();
 
-    // Llamar a la función PostgreSQL omitir_paso_onboarding
-    const { error } = await supabase.rpc('omitir_paso_onboarding', {
-      p_id_tienda: idTienda,
-      p_paso: paso,
-    });
+    // Obtener progreso actual
+    const progresoActual = await this.getProgreso(idTienda);
+
+    // Agregar paso a la lista de omitidos
+    const pasosOmitidos = progresoActual.pasos_omitidos || [];
+    const pasoKey = `paso_${paso}`;
+    if (!pasosOmitidos.includes(pasoKey)) {
+      pasosOmitidos.push(pasoKey);
+    }
+
+    // Actualizar paso actual sin marcar como completado
+    const nuevoPasoActual = Math.min(paso + 1, 5);
+
+    const { error } = await supabase
+      .from('onboarding_progress')
+      .update({
+        paso_actual: nuevoPasoActual,
+        pasos_omitidos: pasosOmitidos,
+      })
+      .eq('id_tienda', idTienda);
 
     if (error) {
       this.logger.error(`❌ Error al omitir paso: ${error.message}`);
