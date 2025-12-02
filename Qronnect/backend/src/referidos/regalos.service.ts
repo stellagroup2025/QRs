@@ -370,7 +370,7 @@ export class RegalosService {
     // Obtener datos del cliente
     const { data: cliente } = await client
       .from('clientes')
-      .select('nombre, email')
+      .select('nombre, email, id_tienda')
       .eq('id', clienteId)
       .single();
 
@@ -378,37 +378,70 @@ export class RegalosService {
       return;
     }
 
+    // Obtener branding de la tienda
+    const { data: tienda } = await client
+      .from('tiendas')
+      .select('nombre_comercial, nombre, logo_url, color_primario, color_secundario, color_acento')
+      .eq('id', cliente.id_tienda)
+      .single();
+
+    const colorPrimario = tienda?.color_primario || '#3b82f6';
+    const colorSecundario = tienda?.color_secundario || '#6366f1';
+    const colorAcento = tienda?.color_acento || '#22c55e';
+    const nombreTienda = tienda?.nombre_comercial || tienda?.nombre || 'Tu tienda';
+    const logoUrl = tienda?.logo_url;
+
     // Generar HTML del email
     const milestonesList = milestones.map((m) => `
-      <li style="margin-bottom: 15px;">
-        <strong style="color: #059669;">${m.nombre}</strong>
-        <p style="margin: 5px 0; color: #666;">${m.descripcion}</p>
-        ${m.puntos ? `<p style="margin: 0; font-size: 14px;">🎁 +${m.puntos} puntos</p>` : ''}
-        ${m.cupon_id ? `<p style="margin: 0; font-size: 14px;">✅ Cupón otorgado</p>` : ''}
-      </li>
+      <div style="background: #f8f9fa; border-left: 4px solid ${colorAcento}; padding: 15px; margin-bottom: 15px; border-radius: 0 8px 8px 0;">
+        <strong style="color: ${colorPrimario}; font-size: 16px;">${m.nombre}</strong>
+        <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">${m.descripcion}</p>
+        ${m.puntos ? `<p style="margin: 8px 0 0 0; font-size: 14px; color: ${colorAcento};">🎁 +${m.puntos} puntos</p>` : ''}
+        ${m.cupon_id ? `<p style="margin: 8px 0 0 0; font-size: 14px; color: ${colorAcento};">✅ Cupón otorgado</p>` : ''}
+      </div>
     `).join('');
 
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #059669;">🎉 ¡Felicitaciones ${cliente.nombre}!</h2>
-        <p style="font-size: 16px; color: #333;">
-          Has alcanzado nuevos objetivos en nuestro programa de referidos:
-        </p>
-        <ul style="list-style: none; padding: 0;">
-          ${milestonesList}
-        </ul>
-        <p style="margin-top: 30px; color: #666;">
-          Revisa tu perfil para ver tus cupones y recompensas.
-        </p>
-        <p style="margin-top: 20px; font-size: 14px; color: #999;">
-          ¡Sigue invitando amigos y desbloquea más recompensas!
-        </p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+        <!-- Header con branding -->
+        <div style="background: linear-gradient(135deg, ${colorPrimario}, ${colorSecundario}); padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0;">
+          ${logoUrl ? `<img src="${logoUrl}" alt="${nombreTienda}" style="max-height: 60px; max-width: 200px; margin-bottom: 10px;" />` : ''}
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${nombreTienda}</h1>
+        </div>
+
+        <div style="padding: 30px 20px;">
+          <h2 style="color: ${colorPrimario}; margin-top: 0;">🎉 ¡Felicitaciones ${cliente.nombre}!</h2>
+          <p style="font-size: 16px; color: #333;">
+            Has alcanzado nuevos objetivos en nuestro programa de referidos:
+          </p>
+
+          <div style="margin: 25px 0;">
+            ${milestonesList}
+          </div>
+
+          <div style="background: linear-gradient(135deg, ${colorAcento}15, ${colorPrimario}15); border: 2px solid ${colorAcento}; padding: 20px; border-radius: 12px; text-align: center; margin: 25px 0;">
+            <p style="margin: 0; font-size: 16px; color: #333;">
+              🚀 ¡Sigue invitando amigos y desbloquea más recompensas!
+            </p>
+          </div>
+
+          <p style="color: #666; font-size: 14px;">
+            Revisa tu perfil para ver tus cupones y recompensas disponibles.
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 10px 10px;">
+          <p style="margin: 0; font-size: 12px; color: #999;">
+            Este email fue enviado por ${nombreTienda}
+          </p>
+        </div>
       </div>
     `;
 
     await this.emailService.sendEmail({
       to: cliente.email,
-      subject: '🎉 ¡Has desbloqueado nuevas recompensas!',
+      subject: `🎉 ${nombreTienda} - ¡Has desbloqueado nuevas recompensas!`,
       html,
     });
 
@@ -431,10 +464,10 @@ export class RegalosService {
       throw new NotFoundException('Cupón no encontrado');
     }
 
-    // Obtener email del cliente
+    // Obtener email del cliente y su tienda
     const { data: cliente } = await client
       .from('clientes')
-      .select('nombre, email')
+      .select('nombre, email, id_tienda')
       .eq('id', cupon.id_cliente)
       .single();
 
@@ -442,33 +475,67 @@ export class RegalosService {
       throw new BadRequestException('Cliente sin email');
     }
 
+    // Obtener branding de la tienda
+    const { data: tienda } = await client
+      .from('tiendas')
+      .select('nombre_comercial, nombre, logo_url, color_primario, color_secundario, color_acento')
+      .eq('id', cliente.id_tienda)
+      .single();
+
+    const colorPrimario = tienda?.color_primario || '#3b82f6';
+    const colorSecundario = tienda?.color_secundario || '#6366f1';
+    const colorAcento = tienda?.color_acento || '#22c55e';
+    const nombreTienda = tienda?.nombre_comercial || tienda?.nombre || 'Tu tienda';
+    const logoUrl = tienda?.logo_url;
+
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #3b82f6;">🎁 ¡Tienes un regalo!</h2>
-        <p>Hola ${cliente.nombre},</p>
-        <p style="font-size: 16px; color: #333;">
-          ${cupon.regalo_descripcion || cupon.regalo_nombre}
-        </p>
-        <div style="background: #f3f4f6; padding: 20px; border-radius: 10px; margin: 20px 0;">
-          <p style="margin: 0; font-size: 14px; color: #666;">Tu código:</p>
-          <p style="margin: 10px 0; font-size: 24px; font-weight: bold; color: #3b82f6; letter-spacing: 2px;">
-            ${cupon.codigo}
-          </p>
-          ${cupon.fecha_expiracion ? `
-            <p style="margin: 0; font-size: 14px; color: #ef4444;">
-              Válido hasta: ${new Date(cupon.fecha_expiracion).toLocaleDateString('es-ES')}
-            </p>
-          ` : ''}
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+        <!-- Header con branding -->
+        <div style="background: linear-gradient(135deg, ${colorPrimario}, ${colorSecundario}); padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0;">
+          ${logoUrl ? `<img src="${logoUrl}" alt="${nombreTienda}" style="max-height: 60px; max-width: 200px; margin-bottom: 10px;" />` : ''}
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${nombreTienda}</h1>
         </div>
-        <p style="font-size: 14px; color: #666;">
-          ${cupon.instrucciones_canje || 'Presenta este cupón en el establecimiento para canjearlo.'}
-        </p>
+
+        <div style="padding: 30px 20px;">
+          <h2 style="color: ${colorPrimario}; margin-top: 0;">🎁 ¡Tienes un regalo!</h2>
+          <p style="font-size: 16px; color: #333;">Hola ${cliente.nombre},</p>
+          <p style="font-size: 16px; color: #333;">
+            ${cupon.regalo_descripcion || cupon.regalo_nombre}
+          </p>
+
+          <!-- Código del cupón -->
+          <div style="background: linear-gradient(135deg, ${colorPrimario}15, ${colorSecundario}15); border: 2px solid ${colorPrimario}; padding: 25px; border-radius: 12px; margin: 25px 0; text-align: center;">
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Tu código de cupón:</p>
+            <p style="margin: 0; font-size: 32px; font-weight: bold; color: ${colorPrimario}; letter-spacing: 3px; font-family: monospace;">
+              ${cupon.codigo}
+            </p>
+            ${cupon.fecha_expiracion ? `
+              <p style="margin: 15px 0 0 0; font-size: 14px; color: #ef4444;">
+                ⏰ Válido hasta: ${new Date(cupon.fecha_expiracion).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            ` : ''}
+          </div>
+
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 14px; color: #666;">
+              <strong>📋 Cómo canjear:</strong><br/>
+              ${cupon.instrucciones_canje || 'Presenta este cupón en el establecimiento para canjearlo.'}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 10px 10px;">
+          <p style="margin: 0; font-size: 12px; color: #999;">
+            Este email fue enviado por ${nombreTienda}
+          </p>
+        </div>
       </div>
     `;
 
     await this.emailService.sendEmail({
       to: cliente.email,
-      subject: `🎁 ¡Tienes un regalo: ${cupon.regalo_nombre}!`,
+      subject: `🎁 ${nombreTienda} - ¡Tienes un regalo: ${cupon.regalo_nombre}!`,
       html,
     });
 
