@@ -29,6 +29,8 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { CommandMenu } from '@/components/ui/command-menu'
 import { useAnalytics } from '@/hooks/use-analytics'
 import { OnboardingBanner } from '@/components/OnboardingBanner'
+import { useBrandingContext } from '@/components/BrandingProvider'
+import { hexToRgb } from '@/lib/brand-colors'
 
 interface NavItem {
   href: string
@@ -105,6 +107,11 @@ export function AdminNav() {
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { trackEvent, trackInteraction } = useAnalytics()
+  const { branding } = useBrandingContext()
+
+  // Colores de marca para usar en estilos inline
+  const primaryColor = hexToRgb(branding.color_primario)
+  const secondaryColor = hexToRgb(branding.color_secundario)
 
   const handleLogout = () => {
     // Track logout event
@@ -128,11 +135,16 @@ export function AdminNav() {
           <div className="flex items-center gap-3">
             <Link href="/admin/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="flex flex-col">
-                <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Qronnect
+                <span
+                  className="font-bold text-xl bg-clip-text text-transparent"
+                  style={{
+                    backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+                  }}
+                >
+                  {branding.nombre_comercial || 'Qronnect'}
                 </span>
                 <span className="text-[10px] text-muted-foreground font-medium -mt-1">
-                  Fidelización Inteligente
+                  Panel de Administración
                 </span>
               </div>
             </Link>
@@ -150,10 +162,12 @@ export function AdminNav() {
                   href={item.href}
                   className={cn(
                     'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                    !isActive && 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
                   )}
+                  style={isActive ? {
+                    backgroundColor: `${primaryColor}15`,
+                    color: primaryColor,
+                  } : undefined}
                 >
                   <Icon className="h-4 w-4" />
                   {item.label}
@@ -171,17 +185,19 @@ export function AdminNav() {
               <button
                 className={cn(
                   'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                  pathname.startsWith('/admin/configuracion')
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                  !pathname.startsWith('/admin/configuracion') && 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
                 )}
+                style={pathname.startsWith('/admin/configuracion') ? {
+                  backgroundColor: `${primaryColor}15`,
+                  color: primaryColor,
+                } : undefined}
               >
                 <Settings className="h-4 w-4" />
                 Configuración
               </button>
 
               {/* Dropdown */}
-              <div className="absolute left-0 mt-2 w-56 bg-white border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <div className="absolute left-0 mt-2 w-56 bg-white dark:bg-gray-900 border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                 <div className="py-2">
                   {configNavItems.map((item) => {
                     const Icon = item.icon
@@ -193,10 +209,12 @@ export function AdminNav() {
                         href={item.href}
                         className={cn(
                           'flex items-center gap-3 px-4 py-2 text-sm transition-colors',
-                          isActive
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'text-gray-700 hover:bg-gray-50',
+                          !isActive && 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800',
                         )}
+                        style={isActive ? {
+                          backgroundColor: `${primaryColor}15`,
+                          color: primaryColor,
+                        } : undefined}
                       >
                         <Icon className="h-4 w-4" />
                         {item.label}
@@ -259,10 +277,12 @@ export function AdminNav() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors min-h-[44px]',
-                  pathname === '/admin/onboarding'
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                  pathname !== '/admin/onboarding' && 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
                 )}
+                style={pathname === '/admin/onboarding' ? {
+                  backgroundColor: `${primaryColor}15`,
+                  color: primaryColor,
+                } : undefined}
               >
                 <Sparkles className="h-5 w-5" />
                 Configuración General
@@ -279,10 +299,12 @@ export function AdminNav() {
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
                       'flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors min-h-[44px]',
-                      isActive
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                      !isActive && 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
                     )}
+                    style={isActive ? {
+                      backgroundColor: `${primaryColor}15`,
+                      color: primaryColor,
+                    } : undefined}
                   >
                     <Icon className="h-5 w-5" />
                     {item.label}
@@ -311,10 +333,12 @@ export function AdminNav() {
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
                         'flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors min-h-[44px]',
-                        isActive
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                        !isActive && 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
                       )}
+                      style={isActive ? {
+                        backgroundColor: `${primaryColor}15`,
+                        color: primaryColor,
+                      } : undefined}
                     >
                       <Icon className="h-5 w-5" />
                       {item.label}

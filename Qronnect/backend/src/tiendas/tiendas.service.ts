@@ -28,6 +28,84 @@ export class TiendasService {
   }
 
   /**
+   * Obtiene la configuración de branding de una tienda
+   */
+  async getBranding(tiendaId: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const { data, error } = await supabase
+      .from('tiendas')
+      .select('nombre_comercial, nombre, logo_url, color_primario, color_secundario, color_acento')
+      .eq('id', tiendaId)
+      .single();
+
+    if (error) {
+      console.error('Error obteniendo branding:', error);
+      throw new BadRequestException('Error al obtener branding');
+    }
+
+    return {
+      nombre_comercial: data.nombre_comercial || data.nombre || '',
+      logo_url: data.logo_url || null,
+      color_primario: data.color_primario || '#0ea5e9',
+      color_secundario: data.color_secundario || '#6366f1',
+      color_acento: data.color_acento || '#22c55e',
+    };
+  }
+
+  /**
+   * Actualiza la configuración de branding de una tienda
+   */
+  async updateBranding(
+    tiendaId: string,
+    dto: { nombre_comercial?: string; color_primario?: string; color_secundario?: string; color_acento?: string; logo_url?: string },
+  ) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const updateData: Record<string, any> = {};
+
+    if (dto.nombre_comercial !== undefined) {
+      updateData.nombre_comercial = dto.nombre_comercial;
+    }
+    if (dto.color_primario !== undefined) {
+      updateData.color_primario = dto.color_primario;
+    }
+    if (dto.color_secundario !== undefined) {
+      updateData.color_secundario = dto.color_secundario;
+    }
+    if (dto.color_acento !== undefined) {
+      updateData.color_acento = dto.color_acento;
+    }
+    if (dto.logo_url !== undefined) {
+      updateData.logo_url = dto.logo_url;
+    }
+
+    const { data, error } = await supabase
+      .from('tiendas')
+      .update(updateData)
+      .eq('id', tiendaId)
+      .select('nombre_comercial, nombre, logo_url, color_primario, color_secundario, color_acento')
+      .single();
+
+    if (error) {
+      console.error('Error actualizando branding:', error);
+      throw new BadRequestException('Error al actualizar branding');
+    }
+
+    return {
+      success: true,
+      message: 'Branding actualizado correctamente',
+      branding: {
+        nombre_comercial: data.nombre_comercial || data.nombre || '',
+        logo_url: data.logo_url || null,
+        color_primario: data.color_primario || '#0ea5e9',
+        color_secundario: data.color_secundario || '#6366f1',
+        color_acento: data.color_acento || '#22c55e',
+      },
+    };
+  }
+
+  /**
    * Configura el sistema de regalos de bienvenida para una tienda
    */
   async configurarRegaloBienvenida(tiendaId: string, dto: ConfigurarRegaloBienvenidaDto) {

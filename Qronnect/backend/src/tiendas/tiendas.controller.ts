@@ -14,6 +14,24 @@ import { CurrentTienda } from '../auth/decorators/current-tienda.decorator';
 export class TiendasController {
   constructor(private readonly tiendasService: TiendasService) {}
 
+  @Get('branding')
+  @ApiOperation({ summary: 'Obtener configuración de branding de la tienda' })
+  @ApiResponse({ status: 200, description: 'Branding obtenido' })
+  getBranding(@CurrentTienda() tiendaId: string) {
+    return this.tiendasService.getBranding(tiendaId);
+  }
+
+  @Put('config/branding')
+  @ApiOperation({ summary: 'Actualizar configuración de branding de la tienda' })
+  @ApiResponse({ status: 200, description: 'Branding actualizado' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  updateBranding(
+    @CurrentTienda() tiendaId: string,
+    @Body() dto: { nombre_comercial?: string; color_primario?: string; color_secundario?: string; color_acento?: string; logo_url?: string },
+  ) {
+    return this.tiendasService.updateBranding(tiendaId, dto);
+  }
+
   @Put('config/regalo-bienvenida')
   @ApiOperation({ summary: 'Configurar sistema de regalos de bienvenida' })
   @ApiResponse({ status: 200, description: 'Configuración actualizada' })
