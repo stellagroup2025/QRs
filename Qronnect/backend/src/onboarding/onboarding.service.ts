@@ -15,7 +15,7 @@ export class OnboardingService {
   async getProgreso(idTienda: string): Promise<ProgresoResponseDto> {
     this.logger.log(`📊 Obteniendo progreso de onboarding para tienda: ${idTienda}`);
 
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     let { data, error } = await supabase
       .from('onboarding_progress')
@@ -69,7 +69,7 @@ export class OnboardingService {
     this.logger.log(`🔄 Actualizando progreso - Tienda: ${idTienda}, Paso: ${paso}`);
     this.logger.debug(`Datos del paso: ${JSON.stringify(data)}`);
 
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     // Asegurarse de que el registro existe (auto-crear si no existe)
     await this.getProgreso(idTienda);
@@ -107,7 +107,7 @@ export class OnboardingService {
   async omitirPaso(idTienda: string, paso: number): Promise<void> {
     this.logger.log(`⏭️ Omitiendo paso ${paso} - Tienda: ${idTienda}`);
 
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     // Llamar a la función PostgreSQL omitir_paso_onboarding
     const { error } = await supabase.rpc('omitir_paso_onboarding', {
@@ -135,7 +135,7 @@ export class OnboardingService {
       `📋 Obteniendo plantillas - Categoría: ${categoria || 'todas'}, Tipo: ${tipoNegocio || 'todos'}`,
     );
 
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     let query = supabase
       .from('plantillas_promociones')
@@ -169,7 +169,7 @@ export class OnboardingService {
   async getPlantillaById(id: string): Promise<PlantillaResponseDto> {
     this.logger.log(`🔍 Obteniendo plantilla por ID: ${id}`);
 
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { data, error } = await supabase
       .from('plantillas_promociones')
@@ -193,7 +193,7 @@ export class OnboardingService {
   async incrementarUsoPlantilla(id: string): Promise<void> {
     this.logger.log(`📈 Incrementando contador de uso para plantilla: ${id}`);
 
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { error } = await supabase.rpc('increment', {
       table_name: 'plantillas_promociones',
@@ -226,7 +226,7 @@ export class OnboardingService {
   async getAnalytics() {
     this.logger.log(`📊 Obteniendo analytics de onboarding`);
 
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { data, error } = await supabase.from('onboarding_analytics').select('*').single();
 
@@ -246,7 +246,7 @@ export class OnboardingService {
   async reiniciarProgreso(idTienda: string): Promise<void> {
     this.logger.warn(`⚠️ Reiniciando progreso de onboarding para tienda: ${idTienda}`);
 
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { error } = await supabase
       .from('onboarding_progress')
