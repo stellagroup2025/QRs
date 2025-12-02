@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ArrowLeft, Loader2, Store, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Loader2, Store, CheckCircle, MapPin } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -28,7 +28,6 @@ export default function NuevaTiendaPage() {
   const [formData, setFormData] = useState({
     nombre: '',
     dominio: '',
-    dominio_personalizado: '',
     direccion: '',
     telefono: '',
     email: '',
@@ -38,6 +37,8 @@ export default function NuevaTiendaPage() {
 
   // Estado para saber si el usuario ha editado manualmente el dominio
   const [dominioEditadoManualmente, setDominioEditadoManualmente] = useState(false)
+  // Estado para la geolocalización
+  const [obteniendoUbicacion, setObteniendoUbicacion] = useState(false)
 
   // Función para generar dominio a partir del nombre
   const generarDominio = (nombre: string): string => {
@@ -70,6 +71,58 @@ export default function NuevaTiendaPage() {
     setFormData({ ...formData, dominio: e.target.value })
   }
 
+  // Función para obtener dirección desde geolocalización
+  const obtenerUbicacion = async () => {
+    if (!navigator.geolocation) {
+      setError('Tu navegador no soporta geolocalización')
+      return
+    }
+
+    setObteniendoUbicacion(true)
+    setError('')
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords
+          // Usar API de geocodificación inversa (Nominatim - OpenStreetMap)
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+            { headers: { 'Accept-Language': 'es' } }
+          )
+          const data = await response.json()
+
+          if (data.display_name) {
+            setFormData({ ...formData, direccion: data.display_name })
+          } else {
+            setError('No se pudo obtener la dirección')
+          }
+        } catch (err) {
+          setError('Error al obtener la dirección')
+        } finally {
+          setObteniendoUbicacion(false)
+        }
+      },
+      (err) => {
+        setObteniendoUbicacion(false)
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            setError('Permiso de ubicación denegado')
+            break
+          case err.POSITION_UNAVAILABLE:
+            setError('Ubicación no disponible')
+            break
+          case err.TIMEOUT:
+            setError('Tiempo de espera agotado')
+            break
+          default:
+            setError('Error al obtener ubicación')
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -85,7 +138,6 @@ export default function NuevaTiendaPage() {
       const payload = {
         nombre: formData.nombre,
         dominio: formData.dominio.toLowerCase().replace(/\s+/g, '-'),
-        dominio_personalizado: formData.dominio_personalizado || undefined,
         direccion: formData.direccion || undefined,
         telefono: formData.telefono || undefined,
         email: formData.email || undefined,
@@ -223,21 +275,6 @@ export default function NuevaTiendaPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dominio_personalizado">
-                  Dominio Personalizado (opcional)
-                </Label>
-                <Input
-                  id="dominio_personalizado"
-                  value={formData.dominio_personalizado}
-                  onChange={(e) => setFormData({ ...formData, dominio_personalizado: e.target.value })}
-                  placeholder="www.cafeteriaelsol.com"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Dominio propio del cliente (requiere configuración DNS)
-                </p>
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="plan">
                   Plan <span className="text-red-500">*</span>
                 </Label>
@@ -264,7 +301,23 @@ export default function NuevaTiendaPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="direccion">Dirección</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="direccion">Dirección</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={obtenerUbicacion}
+                    disabled={obteniendoUbicacion}
+                  >
+                    {obteniendoUbicacion ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <MapPin className="mr-2 h-4 w-4" />
+                    )}
+                    {obteniendoUbicacion ? 'Obteniendo...' : 'Usar mi ubicación'}
+                  </Button>
+                </div>
                 <Textarea
                   id="direccion"
                   value={formData.direccion}
