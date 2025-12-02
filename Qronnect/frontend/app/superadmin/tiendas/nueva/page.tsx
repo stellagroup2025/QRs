@@ -24,6 +24,7 @@ export default function NuevaTiendaPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [dominioEditadoManualmente, setDominioEditadoManualmente] = useState(false)
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -35,6 +36,34 @@ export default function NuevaTiendaPage() {
     logo_url: '',
     plan: 'basico',
   })
+
+  // Función para generar dominio desde el nombre
+  const generarDominio = (nombre: string): string => {
+    return nombre
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Quitar acentos
+      .replace(/[^a-z0-9\s-]/g, '') // Solo letras, números, espacios y guiones
+      .replace(/\s+/g, '-') // Espacios a guiones
+      .replace(/-+/g, '-') // Múltiples guiones a uno solo
+      .replace(/^-|-$/g, '') // Quitar guiones al inicio y final
+  }
+
+  // Handler para cambio de nombre
+  const handleNombreChange = (nombre: string) => {
+    setFormData(prev => ({
+      ...prev,
+      nombre,
+      // Solo auto-generar dominio si no ha sido editado manualmente
+      dominio: dominioEditadoManualmente ? prev.dominio : generarDominio(nombre),
+    }))
+  }
+
+  // Handler para cambio de dominio (marca como editado manualmente)
+  const handleDominioChange = (dominio: string) => {
+    setDominioEditadoManualmente(true)
+    setFormData(prev => ({ ...prev, dominio }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -159,7 +188,7 @@ export default function NuevaTiendaPage() {
                   <Input
                     id="nombre"
                     value={formData.nombre}
-                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                    onChange={(e) => handleNombreChange(e.target.value)}
                     placeholder="Ej: Cafetería El Sol"
                     required
                   />
@@ -173,17 +202,17 @@ export default function NuevaTiendaPage() {
                     <Input
                       id="dominio"
                       value={formData.dominio}
-                      onChange={(e) => setFormData({ ...formData, dominio: e.target.value })}
+                      onChange={(e) => handleDominioChange(e.target.value)}
                       placeholder="cafeteria-el-sol"
                       required
                       className="rounded-r-none"
                     />
                     <div className="flex items-center px-3 bg-slate-100 dark:bg-slate-800 border border-l-0 rounded-r-md text-sm text-muted-foreground">
-                      .qronnect.com
+                      .qronnect.es
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Solo letras, números y guiones
+                    Se genera automáticamente del nombre. Puedes editarlo si lo deseas.
                   </p>
                 </div>
               </div>
