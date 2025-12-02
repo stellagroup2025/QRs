@@ -556,7 +556,7 @@ export class SuperAdminService {
     try {
       const resultado = await this.emailService.sendEmail({
         to: email,
-        subject: `Bienvenido a Qronnect - Credenciales de acceso para ${nombreTienda}`,
+        subject: `Bienvenido a Qronnect - Credenciales de acceso para ${nombreAdmin}`,
         html: emailHtml,
       });
 
