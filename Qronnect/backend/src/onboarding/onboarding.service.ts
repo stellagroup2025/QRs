@@ -171,8 +171,8 @@ export class OnboardingService {
       this.logger.log(`🔧 Aplicando puntos_por_euro: ${data.puntos_por_euro}`);
     }
 
-    // Paso 4: Regalo de bienvenida y referidos
-    if (paso === 4) {
+    // Paso 3: Regalo de bienvenida y referidos (antes era paso 4)
+    if (paso === 3) {
       // Regalo de bienvenida
       if (data.tipo_regalo && data.tipo_regalo !== 'ninguno') {
         updateData.regalo_bienvenida_activo = true;
