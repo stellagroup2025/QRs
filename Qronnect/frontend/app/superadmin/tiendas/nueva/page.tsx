@@ -30,7 +30,6 @@ export default function NuevaTiendaPage() {
     dominio: '',
     direccion: '',
     telefono: '',
-    email: '',
     logo_url: '',
     plan: 'basico',
     // Datos del administrador/responsable
@@ -144,7 +143,7 @@ export default function NuevaTiendaPage() {
         dominio: formData.dominio.toLowerCase().replace(/\s+/g, '-'),
         direccion: formData.direccion || undefined,
         telefono: formData.telefono || undefined,
-        email: formData.email || undefined,
+        email: formData.admin_email, // El email del admin es también el email de la tienda
         logo_url: formData.logo_url || undefined,
         plan: formData.plan,
         // Datos del administrador
@@ -400,28 +399,15 @@ export default function NuevaTiendaPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="telefono">Teléfono</Label>
-                  <Input
-                    id="telefono"
-                    type="tel"
-                    value={formData.telefono}
-                    onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                    placeholder="+34 912 345 678"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="info@cafeteria.com"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="telefono">Teléfono</Label>
+                <Input
+                  id="telefono"
+                  type="tel"
+                  value={formData.telefono}
+                  onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                  placeholder="+34 912 345 678"
+                />
               </div>
 
               <div className="space-y-2">
