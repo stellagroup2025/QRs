@@ -57,7 +57,6 @@ export function SegmentacionClientes({
   onClientesSeleccionados,
   initialFiltros,
 }: SegmentacionClientesProps) {
-  const { branding } = useBrandingContext()
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [loading, setLoading] = useState(true)
   const [clientesSeleccionados, setClientesSeleccionados] = useState<Set<string>>(new Set())
