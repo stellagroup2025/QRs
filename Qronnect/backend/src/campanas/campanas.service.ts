@@ -20,7 +20,8 @@ export class CampanasService {
    * Crea una nueva campaña de email
    */
   async create(tiendaId: string, adminUserId: string, createDto: CreateCampanaDto) {
-    const client = this.supabase.getClient();
+    // Usar getAdminClient para evitar problemas de RLS
+    const client = this.supabase.getAdminClient();
 
     console.log('[CREATE CAMPAÑA]', {
       tiendaId,
@@ -143,7 +144,7 @@ export class CampanasService {
    * Obtiene una campaña específica por ID
    */
   async findOne(tiendaId: string, campanaId: string) {
-    const client = this.supabase.getClient();
+    const client = this.supabase.getAdminClient();
 
     const { data, error } = await client
       .from('campanas_email')
@@ -163,7 +164,8 @@ export class CampanasService {
    * Actualiza una campaña existente
    */
   async update(tiendaId: string, campanaId: string, updateDto: UpdateCampanaDto) {
-    const client = this.supabase.getClient();
+    // Usar getAdminClient para evitar problemas de RLS
+    const client = this.supabase.getAdminClient();
 
     // Verificar que la campaña existe y pertenece a la tienda
     const campanaAnterior = await this.findOne(tiendaId, campanaId);
@@ -445,7 +447,8 @@ export class CampanasService {
    * Envía la campaña a todos los destinatarios
    */
   private async enviarCampana(tiendaId: string, campanaId: string) {
-    const client = this.supabase.getClient();
+    // Usar getAdminClient para evitar problemas de RLS al acceder a destinatarios
+    const client = this.supabase.getAdminClient();
 
     console.log('[ENVIAR CAMPAÑA] Iniciando envío para campaña:', campanaId);
 
