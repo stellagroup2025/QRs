@@ -7,19 +7,8 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Users, Filter, CheckSquare, Square, Loader2, Lightbulb, Sparkles } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { hexToRgb } from '@/lib/brand-colors'
-import { useBrandingContext } from '@/components/BrandingProvider'
+import { Users, Filter, Loader2, Lightbulb, Sparkles } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -250,314 +239,160 @@ export function SegmentacionClientes({
   })
 
   return (
-    <div className="space-y-6">
-      {/* Sugerencias de Filtros */}
+    <div className="space-y-3">
+      {/* Sugerencias de Filtros - Compacto */}
       {sugerencias.length > 0 && (
-        <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-900">
-              <Sparkles className="h-5 w-5" />
-              Sugerencias de Segmentación
+        <Card className="border border-blue-200 bg-blue-50/50">
+          <CardHeader className="py-2 px-3">
+            <CardTitle className="flex items-center gap-2 text-blue-900 text-sm">
+              <Sparkles className="h-4 w-4" />
+              Segmentación rápida
             </CardTitle>
-            <CardDescription>
-              Aplica filtros predefinidos con un solo clic para segmentar rápidamente tu audiencia
-            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {sugerencias.map((sugerencia, idx) => (
-                <Card key={idx} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => aplicarSugerencia(sugerencia)}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Lightbulb className="h-4 w-4 text-amber-500" />
-                      {sugerencia.nombre}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-xs text-muted-foreground mb-2">{sugerencia.descripcion}</p>
-                    <div className="flex flex-wrap gap-1">
-                      {Object.entries(sugerencia.filtros).map(([key, value]: [string, any]) => {
-                        if (value !== undefined) {
-                          const labels: Record<string, string> = {
-                            ticket_medio_min: 'Ticket ≥',
-                            ticket_medio_max: 'Ticket ≤',
-                            num_visitas_min: 'Visitas ≥',
-                            num_visitas_max: 'Visitas ≤',
-                            edad_min: 'Edad ≥',
-                            edad_max: 'Edad ≤',
-                            dias_desde_ultima_visita_min: 'Días ≥',
-                            dias_desde_ultima_visita_max: 'Días ≤',
-                            puntos_min: 'Puntos ≥',
-                            puntos_max: 'Puntos ≤',
-                          }
-                          return (
-                            <Badge key={key} variant="secondary" className="text-xs">
-                              {labels[key]} {value}
-                            </Badge>
-                          )
-                        }
-                        return null
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
+          <CardContent className="px-3 pb-2">
+            <div className="flex flex-wrap gap-1.5">
+              {sugerencias.slice(0, 4).map((sugerencia, idx) => (
+                <Button
+                  key={idx}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-7 bg-white"
+                  onClick={() => aplicarSugerencia(sugerencia)}
+                >
+                  <Lightbulb className="h-3 w-3 mr-1 text-amber-500" />
+                  {sugerencia.nombre}
+                </Button>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Filtros Manuales */}
+      {/* Filtros Manuales - Compacto */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtros Personalizados
+        <CardHeader className="py-2 px-3">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Filter className="h-4 w-4" />
+            Filtros
           </CardTitle>
-          <CardDescription>
-            Ajusta manualmente los filtros para segmentar tu audiencia. Los clientes que cumplan los criterios se seleccionarán automáticamente.
-          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+        <CardContent className="px-3 pb-2">
+          <div className="grid gap-2 grid-cols-2 sm:grid-cols-3">
             {/* Ticket Medio */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Ticket Medio (€)</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={filtros.ticket_medio_min || ''}
-                  onChange={(e) => setFiltros({ ...filtros, ticket_medio_min: e.target.value ? parseFloat(e.target.value) : undefined })}
-                />
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={filtros.ticket_medio_max || ''}
-                  onChange={(e) => setFiltros({ ...filtros, ticket_medio_max: e.target.value ? parseFloat(e.target.value) : undefined })}
-                />
+            <div className="space-y-1">
+              <Label className="text-xs">Ticket (€)</Label>
+              <div className="flex gap-1">
+                <Input type="number" placeholder="Min" className="h-7 text-xs" value={filtros.ticket_medio_min || ''} onChange={(e) => setFiltros({ ...filtros, ticket_medio_min: e.target.value ? parseFloat(e.target.value) : undefined })} />
+                <Input type="number" placeholder="Max" className="h-7 text-xs" value={filtros.ticket_medio_max || ''} onChange={(e) => setFiltros({ ...filtros, ticket_medio_max: e.target.value ? parseFloat(e.target.value) : undefined })} />
               </div>
             </div>
 
             {/* Número de Compras */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Número de Compras</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={filtros.num_visitas_min || ''}
-                  onChange={(e) => setFiltros({ ...filtros, num_visitas_min: e.target.value ? parseInt(e.target.value) : undefined })}
-                />
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={filtros.num_visitas_max || ''}
-                  onChange={(e) => setFiltros({ ...filtros, num_visitas_max: e.target.value ? parseInt(e.target.value) : undefined })}
-                />
+            <div className="space-y-1">
+              <Label className="text-xs">Compras</Label>
+              <div className="flex gap-1">
+                <Input type="number" placeholder="Min" className="h-7 text-xs" value={filtros.num_visitas_min || ''} onChange={(e) => setFiltros({ ...filtros, num_visitas_min: e.target.value ? parseInt(e.target.value) : undefined })} />
+                <Input type="number" placeholder="Max" className="h-7 text-xs" value={filtros.num_visitas_max || ''} onChange={(e) => setFiltros({ ...filtros, num_visitas_max: e.target.value ? parseInt(e.target.value) : undefined })} />
               </div>
             </div>
 
             {/* Puntos */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Puntos</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={filtros.puntos_min || ''}
-                  onChange={(e) => setFiltros({ ...filtros, puntos_min: e.target.value ? parseInt(e.target.value) : undefined })}
-                />
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={filtros.puntos_max || ''}
-                  onChange={(e) => setFiltros({ ...filtros, puntos_max: e.target.value ? parseInt(e.target.value) : undefined })}
-                />
+            <div className="space-y-1">
+              <Label className="text-xs">Puntos</Label>
+              <div className="flex gap-1">
+                <Input type="number" placeholder="Min" className="h-7 text-xs" value={filtros.puntos_min || ''} onChange={(e) => setFiltros({ ...filtros, puntos_min: e.target.value ? parseInt(e.target.value) : undefined })} />
+                <Input type="number" placeholder="Max" className="h-7 text-xs" value={filtros.puntos_max || ''} onChange={(e) => setFiltros({ ...filtros, puntos_max: e.target.value ? parseInt(e.target.value) : undefined })} />
               </div>
             </div>
 
             {/* Edad */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Edad (años)</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={filtros.edad_min || ''}
-                  onChange={(e) => setFiltros({ ...filtros, edad_min: e.target.value ? parseInt(e.target.value) : undefined })}
-                />
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={filtros.edad_max || ''}
-                  onChange={(e) => setFiltros({ ...filtros, edad_max: e.target.value ? parseInt(e.target.value) : undefined })}
-                />
+            <div className="space-y-1">
+              <Label className="text-xs">Edad</Label>
+              <div className="flex gap-1">
+                <Input type="number" placeholder="Min" className="h-7 text-xs" value={filtros.edad_min || ''} onChange={(e) => setFiltros({ ...filtros, edad_min: e.target.value ? parseInt(e.target.value) : undefined })} />
+                <Input type="number" placeholder="Max" className="h-7 text-xs" value={filtros.edad_max || ''} onChange={(e) => setFiltros({ ...filtros, edad_max: e.target.value ? parseInt(e.target.value) : undefined })} />
               </div>
             </div>
 
-            {/* Días desde última visita */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Días sin venir</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={filtros.dias_desde_ultima_visita_min || ''}
-                  onChange={(e) => setFiltros({ ...filtros, dias_desde_ultima_visita_min: e.target.value ? parseInt(e.target.value) : undefined })}
-                />
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={filtros.dias_desde_ultima_visita_max || ''}
-                  onChange={(e) => setFiltros({ ...filtros, dias_desde_ultima_visita_max: e.target.value ? parseInt(e.target.value) : undefined })}
-                />
+            {/* Días sin venir */}
+            <div className="space-y-1">
+              <Label className="text-xs">Días sin venir</Label>
+              <div className="flex gap-1">
+                <Input type="number" placeholder="Min" className="h-7 text-xs" value={filtros.dias_desde_ultima_visita_min || ''} onChange={(e) => setFiltros({ ...filtros, dias_desde_ultima_visita_min: e.target.value ? parseInt(e.target.value) : undefined })} />
+                <Input type="number" placeholder="Max" className="h-7 text-xs" value={filtros.dias_desde_ultima_visita_max || ''} onChange={(e) => setFiltros({ ...filtros, dias_desde_ultima_visita_max: e.target.value ? parseInt(e.target.value) : undefined })} />
               </div>
             </div>
 
             {/* Género */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Género</Label>
-              <Select
-                value={filtros.genero || 'todos'}
-                onValueChange={(v) => setFiltros({ ...filtros, genero: v === 'todos' ? undefined : v })}
-              >
-                <SelectTrigger>
+            <div className="space-y-1">
+              <Label className="text-xs">Género</Label>
+              <Select value={filtros.genero || 'todos'} onValueChange={(v) => setFiltros({ ...filtros, genero: v === 'todos' ? undefined : v })}>
+                <SelectTrigger className="h-7 text-xs">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="masculino">Masculino</SelectItem>
-                  <SelectItem value="femenino">Femenino</SelectItem>
+                  <SelectItem value="masculino">M</SelectItem>
+                  <SelectItem value="femenino">F</SelectItem>
                   <SelectItem value="otro">Otro</SelectItem>
-                  <SelectItem value="prefiero_no_decir">Prefiero no decir</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Días desde última campaña */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Días desde última campaña</Label>
-              <Input
-                type="number"
-                placeholder="Mínimo de días"
-                value={filtros.dias_desde_ultima_campana_min || ''}
-                onChange={(e) => setFiltros({ ...filtros, dias_desde_ultima_campana_min: e.target.value ? parseInt(e.target.value) : undefined })}
-              />
-              <p className="text-xs text-muted-foreground">
-                Clientes que no recibieron campañas en X días
-              </p>
-            </div>
-
-            {/* Solo sin campañas */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Historial de campañas</Label>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  checked={filtros.solo_sin_campanas || false}
-                  onCheckedChange={(checked) => setFiltros({ ...filtros, solo_sin_campanas: checked as boolean })}
-                />
-                <Label className="text-sm font-normal cursor-pointer">
-                  Solo clientes sin campañas previas
-                </Label>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Incluir solo clientes nuevos para campañas
-              </p>
-            </div>
           </div>
 
-          <div className="flex gap-2 mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setFiltros({})}
-            >
-              Limpiar Filtros
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" className="mt-2 text-xs h-6" onClick={() => setFiltros({})}>
+            Limpiar
+          </Button>
         </CardContent>
       </Card>
 
-      {/* Lista de Clientes */}
+      {/* Lista de Clientes - Compacta */}
       <Card>
-        <CardHeader>
+        <CardHeader className="py-2 px-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Clientes Destinatarios
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Users className="h-4 w-4" />
+                Destinatarios
               </CardTitle>
-              <CardDescription>
-                {clientesSeleccionados.size} de {clientesFiltrados.length} clientes seleccionados
+              <CardDescription className="text-xs">
+                {clientesSeleccionados.size}/{clientesFiltrados.length} seleccionados
               </CardDescription>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleTodos}
-              className="flex items-center gap-2"
-            >
-              {clientesFiltrados.every(c => clientesSeleccionados.has(c.id)) ? (
-                <>
-                  <Square className="h-4 w-4" />
-                  Deseleccionar Todos
-                </>
-              ) : (
-                <>
-                  <CheckSquare className="h-4 w-4" />
-                  Seleccionar Todos
-                </>
-              )}
+            <Button variant="outline" size="sm" onClick={toggleTodos} className="text-xs h-7">
+              {clientesFiltrados.every(c => clientesSeleccionados.has(c.id)) ? 'Ninguno' : 'Todos'}
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 pb-2">
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
           ) : clientesFiltrados.length === 0 ? (
-            <Alert>
-              <AlertDescription>
-                No hay clientes que cumplan los criterios de filtrado. Ajusta los filtros para ver más resultados.
-              </AlertDescription>
-            </Alert>
+            <p className="text-xs text-muted-foreground text-center py-2">No hay clientes con estos filtros</p>
           ) : (
-            <div className="border rounded-lg max-h-96 overflow-y-auto">
-              <Table>
-                <TableHeader className="sticky top-0 bg-background">
-                  <TableRow>
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead className="text-right">Puntos</TableHead>
-                    <TableHead className="text-right">Compras</TableHead>
-                    <TableHead className="text-right">Ticket Medio</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {clientesFiltrados.map((cliente) => (
-                    <TableRow key={cliente.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={clientesSeleccionados.has(cliente.id)}
-                          onCheckedChange={() => toggleCliente(cliente.id)}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">{cliente.nombre}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{cliente.email}</TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant="outline">{cliente.puntos_totales}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">{cliente.total_compras || 0}</TableCell>
-                      <TableCell className="text-right">
-                        {cliente.ticket_medio ? `${cliente.ticket_medio.toFixed(2)} €` : '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="border rounded-lg max-h-40 overflow-y-auto divide-y">
+              {clientesFiltrados.map((cliente) => (
+                <div
+                  key={cliente.id}
+                  className="flex items-center gap-2 p-1.5 hover:bg-muted/50 cursor-pointer"
+                  onClick={() => toggleCliente(cliente.id)}
+                >
+                  <Checkbox
+                    checked={clientesSeleccionados.has(cliente.id)}
+                    onCheckedChange={() => toggleCliente(cliente.id)}
+                    className="h-4 w-4"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate">{cliente.nombre}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{cliente.email}</p>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] h-5 shrink-0">
+                    {cliente.puntos_totales}
+                  </Badge>
+                </div>
+              ))}
             </div>
           )}
         </CardContent>

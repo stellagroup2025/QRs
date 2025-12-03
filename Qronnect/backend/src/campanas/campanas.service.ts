@@ -473,7 +473,7 @@ export class CampanasService {
 
     console.log('[ENVIAR CAMPAÑA] Email remitente:', fromEmail);
 
-    // Obtener destinatarios de la campaña
+    // Obtener destinatarios de la campaña con todos los datos del cliente
     const { data: destinatarios, error: destError } = await client
       .from('campanas_destinatarios')
       .select(
@@ -484,6 +484,7 @@ export class CampanasService {
           id,
           nombre,
           email,
+          puntos_totales,
           unsubscribe_token
         )
       `,
@@ -519,10 +520,16 @@ export class CampanasService {
         continue;
       }
 
-      // Personalizar HTML con variables
+      // Personalizar HTML con variables (soporta espacios opcionales: {{nombre}} o {{ nombre }})
       let htmlPersonalizado = campana.contenido_html;
-      htmlPersonalizado = htmlPersonalizado.replace(/\{\{nombre\}\}/g, cliente.nombre || '');
-      htmlPersonalizado = htmlPersonalizado.replace(/\{\{email\}\}/g, cliente.email || '');
+
+      // Log para debug
+      console.log(`[ENVIAR CAMPAÑA] Personalizando para: ${cliente.nombre} <${cliente.email}>`);
+
+      // Reemplazar variables con regex que soporta espacios opcionales
+      htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*nombre\s*\}\}/gi, cliente.nombre || '');
+      htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*email\s*\}\}/gi, cliente.email || '');
+      htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*puntos\s*\}\}/gi, String(cliente.puntos_totales || 0));
 
       // Añadir enlace de baja (unsubscribe) al final del HTML
       const baseUrl = this.configService.get('FRONTEND_URL') || 'https://qronnect.es';
