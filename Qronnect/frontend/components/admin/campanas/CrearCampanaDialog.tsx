@@ -306,23 +306,23 @@ export function CrearCampanaDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] lg:max-w-7xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>
-            {isEditMode ? 'Editar Campaña de Email' : 'Crear Nueva Campaña de Email'}
+          <DialogTitle className="text-base sm:text-lg">
+            {isEditMode ? 'Editar Campaña' : 'Nueva Campaña'}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             {isEditMode
-              ? 'Modifica los datos de tu campaña de email'
-              : 'Configura tu campaña de email marketing con segmentación avanzada'}
+              ? 'Modifica los datos de tu campaña'
+              : 'Configura tu campaña de email marketing'}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-center gap-2 py-4">
-          <div className="flex items-center gap-2">
+        {/* Progress Steps - Compacto en móvil */}
+        <div className="flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-4">
+          <div className="flex items-center gap-1 sm:gap-2">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+              className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
                 step === 'datos'
                   ? 'bg-primary text-white'
                   : 'bg-green-500 text-white'
@@ -330,12 +330,12 @@ export function CrearCampanaDialog({
             >
               1
             </div>
-            <span className="text-sm font-medium">Datos Básicos</span>
+            <span className="text-xs sm:text-sm font-medium hidden sm:inline">Datos</span>
           </div>
-          <div className="w-12 h-0.5 bg-gray-300" />
-          <div className="flex items-center gap-2">
+          <div className="w-4 sm:w-12 h-0.5 bg-gray-300" />
+          <div className="flex items-center gap-1 sm:gap-2">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+              className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
                 step === 'filtros'
                   ? 'bg-primary text-white'
                   : step === 'preview'
@@ -345,12 +345,12 @@ export function CrearCampanaDialog({
             >
               2
             </div>
-            <span className="text-sm font-medium">Segmentación</span>
+            <span className="text-xs sm:text-sm font-medium hidden sm:inline">Destinatarios</span>
           </div>
-          <div className="w-12 h-0.5 bg-gray-300" />
-          <div className="flex items-center gap-2">
+          <div className="w-4 sm:w-12 h-0.5 bg-gray-300" />
+          <div className="flex items-center gap-1 sm:gap-2">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+              className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
                 step === 'preview'
                   ? 'bg-primary text-white'
                   : 'bg-gray-300 text-gray-600'
@@ -358,7 +358,7 @@ export function CrearCampanaDialog({
             >
               3
             </div>
-            <span className="text-sm font-medium">Preview</span>
+            <span className="text-xs sm:text-sm font-medium hidden sm:inline">Confirmar</span>
           </div>
         </div>
 
