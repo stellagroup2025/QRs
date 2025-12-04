@@ -139,6 +139,11 @@ export function AdminNav() {
                   src={branding.logo_url}
                   alt={branding.nombre_comercial || 'Logo'}
                   className="h-10 w-auto max-w-[120px] object-contain"
+                  onError={(e) => {
+                    // Hide image on error
+                    (e.target as HTMLImageElement).style.display = 'none'
+                    console.error('Error loading logo:', branding.logo_url)
+                  }}
                 />
               ) : null}
               <div className="flex flex-col">
