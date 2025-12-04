@@ -33,6 +33,7 @@ export function Paso1Branding({ datosIniciales, nombreTienda, onChange }: Paso1B
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [extrayendoColores, setExtrayendoColores] = useState(false)
+  const [logoError, setLogoError] = useState(false)
 
   // Función para extraer colores dominantes de una imagen
   const extraerColoresDeImagen = async (imageUrl: string) => {
@@ -190,6 +191,7 @@ export function Paso1Branding({ datosIniciales, nombreTienda, onChange }: Paso1B
 
       const data = await response.json()
       setLogoUrl(data.url)
+      setLogoError(false) // Reset error state on new upload
 
       toast({
         title: 'Logo subido',
@@ -284,11 +286,23 @@ export function Paso1Branding({ datosIniciales, nombreTienda, onChange }: Paso1B
           <Card className="border-2 p-4">
             <div className="flex items-center gap-4">
               <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                <img
-                  src={logoUrl}
-                  alt="Logo"
-                  className="max-w-full max-h-full object-contain"
-                />
+                {logoError ? (
+                  <div className="flex flex-col items-center text-gray-400">
+                    <ImageIcon className="h-8 w-8" />
+                    <span className="text-xs">Error</span>
+                  </div>
+                ) : (
+                  <img
+                    src={logoUrl}
+                    alt="Logo"
+                    className="max-w-full max-h-full object-contain"
+                    onError={(e) => {
+                      console.error('Error loading logo:', logoUrl)
+                      setLogoError(true)
+                    }}
+                    onLoad={() => setLogoError(false)}
+                  />
+                )}
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-green-600">Logo subido correctamente</p>
