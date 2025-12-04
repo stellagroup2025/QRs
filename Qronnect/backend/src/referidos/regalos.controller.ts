@@ -137,7 +137,7 @@ export class RegalosController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Obtener catálogo de regalos (Admin)' })
   async getCatalogoAdmin(@Req() req: any, @Query('soloActivos') soloActivos?: string) {
-    const tiendaId = req.user?.id_tienda;
+    const tiendaId = req.user?.tienda_id;
     if (!tiendaId) {
       throw new BadRequestException('Admin sin tienda asignada');
     }
@@ -154,7 +154,7 @@ export class RegalosController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Crear regalo en catálogo (Admin)' })
   async crearRegalo(@Req() req: any, @Body() regaloData: any) {
-    const tiendaId = req.user?.id_tienda;
+    const tiendaId = req.user?.tienda_id;
     if (!tiendaId) {
       throw new BadRequestException('Admin sin tienda asignada');
     }
@@ -174,7 +174,7 @@ export class RegalosController {
     @Param('regaloId') regaloId: string,
     @Body() regaloData: any,
   ) {
-    const tiendaId = req.user?.id_tienda;
+    const tiendaId = req.user?.tienda_id;
     if (!tiendaId) {
       throw new BadRequestException('Admin sin tienda asignada');
     }
@@ -190,7 +190,7 @@ export class RegalosController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Eliminar regalo del catálogo (Admin)' })
   async eliminarRegalo(@Req() req: any, @Param('regaloId') regaloId: string) {
-    const tiendaId = req.user?.id_tienda;
+    const tiendaId = req.user?.tienda_id;
     if (!tiendaId) {
       throw new BadRequestException('Admin sin tienda asignada');
     }
@@ -206,7 +206,7 @@ export class RegalosController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Crear milestone de referidos (Admin)' })
   async crearMilestone(@Req() req: any, @Body() milestoneData: any) {
-    const tiendaId = req.user?.id_tienda;
+    const tiendaId = req.user?.tienda_id;
     if (!tiendaId) {
       throw new BadRequestException('Admin sin tienda asignada');
     }
