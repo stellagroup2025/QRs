@@ -404,7 +404,7 @@ export class CampanasService {
    * Lista todos los templates de email disponibles
    */
   async getTemplates(tiendaId: string) {
-    const client = this.supabase.getClient();
+    const client = this.supabase.getAdminClient();
 
     // Obtener templates del sistema (id_tienda = null) y de la tienda
     const { data, error } = await client
@@ -427,7 +427,7 @@ export class CampanasService {
    * Obtiene un template específico
    */
   async getTemplate(tiendaId: string, templateId: string) {
-    const client = this.supabase.getClient();
+    const client = this.supabase.getAdminClient();
 
     const { data, error } = await client
       .from('email_templates')
