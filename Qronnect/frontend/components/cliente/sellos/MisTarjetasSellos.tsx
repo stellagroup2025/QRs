@@ -30,11 +30,42 @@ export function MisTarjetasSellos({ idCliente, token, slug }: MisTarjetasSellosP
       setLoading(true);
       const data = await obtenerTarjetasCliente(idCliente, token, slug, false);
       setTarjetas(data);
+
+      // Si no hay tarjetas, intentar inicializarlas
+      if (data.length === 0) {
+        await inicializarTarjetas();
+      }
     } catch (error) {
       console.error('Error al cargar tarjetas:', error);
       toast.error('Error al cargar tus tarjetas de sellos');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const inicializarTarjetas = async () => {
+    try {
+      // Llamar al endpoint que crea tarjetas automáticamente
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/sellos/clientes/${idCliente}/inicializar`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-Tenant-Domain': slug,
+        },
+      });
+
+      if (response.ok) {
+        // Recargar tarjetas si se crearon algunas
+        const tarjetasNuevas = await obtenerTarjetasCliente(idCliente, token, slug, false);
+        if (tarjetasNuevas.length > 0) {
+          setTarjetas(tarjetasNuevas);
+          toast.success('¡Tarjetas de sellos inicializadas!');
+        }
+      }
+    } catch (error) {
+      console.error('Error al inicializar tarjetas:', error);
+      // No mostramos error al usuario, es una operación silenciosa
     }
   };
 

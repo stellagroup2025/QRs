@@ -247,6 +247,70 @@ export class SellosService {
   }
 
   /**
+   * Inicializar tarjetas de sellos para un cliente
+   * Crea tarjetas automáticamente para todos los programas activos y visibles
+   */
+  async inicializarTarjetasCliente(
+    idCliente: string,
+    idTienda: string,
+  ): Promise<{ tarjetas_creadas: number; tarjetas: TarjetaSelloCliente[] }> {
+    this.logger.log(
+      `Inicializando tarjetas para cliente ${idCliente} en tienda ${idTienda}`,
+    );
+
+    // Obtener programas activos y visibles
+    const programas = await this.obtenerProgramas(idTienda, true);
+
+    if (programas.length === 0) {
+      this.logger.log('No hay programas activos para inicializar');
+      return { tarjetas_creadas: 0, tarjetas: [] };
+    }
+
+    // Verificar qué tarjetas ya existen
+    const tarjetasExistentes = await this.getSupabase()
+      .from('tarjetas_sellos_clientes')
+      .select('id_programa')
+      .eq('id_cliente', idCliente)
+      .eq('id_tienda', idTienda);
+
+    const programasConTarjeta = new Set(
+      (tarjetasExistentes.data || []).map((t) => t.id_programa),
+    );
+
+    // Crear tarjetas para programas que no tienen tarjeta
+    const tarjetasACrear = programas
+      .filter((p) => !programasConTarjeta.has(p.id))
+      .map((p) => ({
+        id_cliente: idCliente,
+        id_tienda: idTienda,
+        id_programa: p.id,
+        sellos_actuales: 0,
+        estado: 'activa',
+      }));
+
+    if (tarjetasACrear.length === 0) {
+      this.logger.log('Todas las tarjetas ya existen');
+      return { tarjetas_creadas: 0, tarjetas: [] };
+    }
+
+    // Insertar las nuevas tarjetas
+    const { data, error } = await this.getSupabase()
+      .from('tarjetas_sellos_clientes')
+      .insert(tarjetasACrear)
+      .select();
+
+    if (error) {
+      this.logger.error('Error al crear tarjetas', error);
+      throw new BadRequestException(
+        `Error al crear tarjetas: ${error.message}`,
+      );
+    }
+
+    this.logger.log(`Creadas ${data.length} tarjetas nuevas`);
+    return { tarjetas_creadas: data.length, tarjetas: data };
+  }
+
+  /**
    * Obtener todas las tarjetas de una tienda (dashboard admin)
    */
   async obtenerTarjetasTienda(

@@ -146,6 +146,17 @@ export class SellosController {
   // TARJETAS DE CLIENTES
   // ============================================
 
+  @Post('clientes/:idCliente/inicializar')
+  @ApiOperation({ summary: 'Inicializar tarjetas de sellos para un cliente' })
+  @ApiResponse({ status: 201, description: 'Tarjetas inicializadas' })
+  async inicializarTarjetasCliente(
+    @Request() req,
+    @Param('idCliente') idCliente: string,
+  ) {
+    const idTienda = req.user.tienda_id;
+    return this.sellosService.inicializarTarjetasCliente(idCliente, idTienda);
+  }
+
   @Get('clientes/:idCliente/tarjetas')
   @ApiOperation({ summary: 'Obtener tarjetas de sellos de un cliente' })
   @ApiQuery({ name: 'solo_activas', required: false, type: Boolean })
