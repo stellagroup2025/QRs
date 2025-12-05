@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Store, Clock, Phone, Globe, MapPin, Share2, Save } from 'lucide-react';
+import { Store, Clock, Phone, Globe, MapPin, Share2, Save, Star } from 'lucide-react';
 import { AdminNav } from '@/components/AdminNav';
 
 interface HorarioDia {
@@ -40,6 +40,7 @@ interface InfoTienda {
   sitio_web?: string;
   whatsapp?: string;
   ubicacion_maps?: string;
+  google_reviews_url?: string;
   horarios?: Horarios;
   redes_sociales?: RedesSociales;
 }
@@ -63,6 +64,7 @@ export default function ConfiguracionTiendaPage() {
     sitio_web: '',
     whatsapp: '',
     ubicacion_maps: '',
+    google_reviews_url: '',
     horarios: {
       lunes: { abierto: true, apertura: '09:00', cierre: '20:00' },
       martes: { abierto: true, apertura: '09:00', cierre: '20:00' },
@@ -105,6 +107,7 @@ export default function ConfiguracionTiendaPage() {
           sitio_web: data.sitio_web || '',
           whatsapp: data.whatsapp || '',
           ubicacion_maps: data.ubicacion_maps || '',
+          google_reviews_url: data.google_reviews_url || '',
           horarios: data.horarios || info.horarios,
           redes_sociales: data.redes_sociales || info.redes_sociales,
         });
@@ -298,6 +301,22 @@ export default function ConfiguracionTiendaPage() {
               />
               <p className="text-sm text-muted-foreground mt-1">
                 URL de tu ubicación en Google Maps
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="google_reviews_url" className="flex items-center gap-2">
+                <Star className="h-4 w-4" />
+                Google Reviews
+              </Label>
+              <Input
+                id="google_reviews_url"
+                type="url"
+                placeholder="https://g.page/r/XXXXXXXXXX/review"
+                value={info.google_reviews_url}
+                onChange={(e) => setInfo({ ...info, google_reviews_url: e.target.value })}
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                URL para que los clientes dejen reseñas en Google (se incluirá en el email post-compra)
               </p>
             </div>
           </CardContent>

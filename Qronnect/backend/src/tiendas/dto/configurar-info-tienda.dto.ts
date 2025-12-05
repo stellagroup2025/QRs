@@ -167,6 +167,14 @@ export class ConfigurarInfoTiendaDto {
   ubicacion_maps?: string;
 
   @ApiPropertyOptional({
+    description: 'URL de Google Reviews para solicitar reseñas a clientes',
+    example: 'https://g.page/r/XXXXXXXXXX/review',
+  })
+  @IsOptional()
+  @IsUrl()
+  google_reviews_url?: string;
+
+  @ApiPropertyOptional({
     description: 'Horarios de apertura y cierre por día de la semana',
     type: HorariosDto,
   })

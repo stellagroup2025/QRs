@@ -290,6 +290,10 @@ export class TiendasService {
       updateData.ubicacion_maps = dto.ubicacion_maps;
     }
 
+    if (dto.google_reviews_url !== undefined) {
+      updateData.google_reviews_url = dto.google_reviews_url;
+    }
+
     if (dto.horarios !== undefined) {
       updateData.horarios = dto.horarios;
     }
@@ -333,7 +337,7 @@ export class TiendasService {
     const { data, error } = await supabase
       .from('tiendas')
       .select(
-        'nombre, descripcion, direccion, telefono, email, sitio_web, whatsapp, ubicacion_maps, horarios, redes_sociales, logo_url, color_primario, color_secundario, color_acento',
+        'nombre, descripcion, direccion, telefono, email, sitio_web, whatsapp, ubicacion_maps, google_reviews_url, horarios, redes_sociales, logo_url, color_primario, color_secundario, color_acento',
       )
       .eq('id', tiendaId)
       .single();
