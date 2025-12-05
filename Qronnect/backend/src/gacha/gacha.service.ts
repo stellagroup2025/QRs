@@ -74,10 +74,17 @@ export class GachaService {
         throw new BadRequestException('Error al crear configuración del gacha');
       }
 
-      // Insertar premios por defecto
+      // Obtener sector de la tienda
+      const { data: tienda } = await supabase
+        .from('tiendas')
+        .select('sector')
+        .eq('id', idTienda)
+        .single();
+
+      // Insertar premios por defecto según el sector
       await supabase.rpc('insertar_premios_gacha_defecto', {
         p_id_tienda: idTienda,
-        p_sector: 'general',
+        p_sector: tienda?.sector || 'general',
       });
 
       return data;
@@ -172,6 +179,31 @@ export class GachaService {
       console.error('Error eliminando premio gacha:', error);
       throw new BadRequestException('Error al eliminar premio del gacha');
     }
+  }
+
+  async insertarPremiosPredefinidos(idTienda: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Obtener sector de la tienda
+    const { data: tienda } = await supabase
+      .from('tiendas')
+      .select('sector')
+      .eq('id', idTienda)
+      .single();
+
+    // Insertar premios predefinidos según el sector
+    const { error } = await supabase.rpc('insertar_premios_gacha_defecto', {
+      p_id_tienda: idTienda,
+      p_sector: tienda?.sector || 'general',
+    });
+
+    if (error) {
+      console.error('Error insertando premios predefinidos:', error);
+      throw new BadRequestException('Error al insertar premios predefinidos');
+    }
+
+    // Retornar los premios recién insertados
+    return this.obtenerPremios(idTienda);
   }
 
   // ===================================

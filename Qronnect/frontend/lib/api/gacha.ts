@@ -135,6 +135,25 @@ export async function eliminarPremio(token: string, domain: string, id: string):
   }
 }
 
+export async function insertarPremiosPredefinidos(
+  token: string,
+  domain: string
+): Promise<PremioGacha[]> {
+  const res = await fetch(`${API_URL}/api/gacha/premios/insertar-predefinidos`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('Error al insertar premios predefinidos');
+  }
+
+  return res.json();
+}
+
 // ===================================
 // ADMIN - Estadísticas
 // ===================================

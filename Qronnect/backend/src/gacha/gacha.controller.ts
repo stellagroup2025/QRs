@@ -95,6 +95,15 @@ export class GachaController {
     await this.gachaService.eliminarPremio(id, idTienda);
   }
 
+  @UseGuards(AdminAuthGuard)
+  @Post('premios/insertar-predefinidos')
+  @ApiOperation({ summary: 'Insertar premios predefinidos según sector de la tienda' })
+  @ApiResponse({ status: 201, description: 'Premios predefinidos insertados' })
+  async insertarPremiosPredefinidos(@Request() req) {
+    const idTienda = req.user.tienda_id;
+    return this.gachaService.insertarPremiosPredefinidos(idTienda);
+  }
+
   // ============================================
   // JUGAR GACHA (Cliente)
   // ============================================

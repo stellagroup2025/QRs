@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Sparkles, Plus, Edit, Trash2, Package, TrendingUp } from 'lucide-react';
 import { AdminNav } from '@/components/AdminNav';
-import { obtenerPremios, eliminarPremio } from '@/lib/api/gacha';
+import { obtenerPremios, eliminarPremio, insertarPremiosPredefinidos } from '@/lib/api/gacha';
 import { PremioGacha, getRarezaColor, getRarezaLabel, formatearPremio, getTipoLabel } from '@/types/gacha';
 import { FormularioPremioGacha } from '@/components/admin/gacha/FormularioPremioGacha';
 import {
@@ -93,6 +93,31 @@ export default function GestionPremiosPage() {
     }
   };
 
+  const handleInsertarPredefinidos = async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const domain = window.location.hostname.split('.')[0];
+      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
+
+      if (!token) return;
+
+      await insertarPremiosPredefinidos(token, tenant);
+
+      toast({
+        title: 'Premios insertados',
+        description: 'Los premios predefinidos se han añadido correctamente',
+      });
+
+      await cargarPremios();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'No se pudieron insertar los premios predefinidos',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const calcularProbabilidad = (premio: PremioGacha): number => {
     const totalPeso = premios
       .filter((p) => p.activo && (!p.stock_limitado || (p.stock_actual && p.stock_actual > 0)))
@@ -134,9 +159,16 @@ export default function GestionPremiosPage() {
               Configura los premios disponibles y sus probabilidades
             </p>
           </div>
-          <Button onClick={handleCrear} size="lg">
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Premio
+          <div className="flex gap-2">
+            {premios.length === 0 && (
+              <Button onClick={handleInsertarPredefinidos} size="lg" variant="outline">
+                <Package className="h-4 w-4 mr-2" />
+                Insertar Premios Predefinidos
+              </Button>
+            )}
+            <Button onClick={handleCrear} size="lg">
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Premio
           </Button>
         </div>
 
