@@ -285,6 +285,7 @@ export class SellosService {
         id_tienda: idTienda,
         id_programa: p.id,
         sellos_actuales: 0,
+        sellos_objetivo: p.sellos_requeridos,
         estado: 'activa',
       }));
 
