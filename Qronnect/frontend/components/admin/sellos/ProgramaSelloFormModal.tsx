@@ -19,11 +19,12 @@ import { toast } from 'sonner';
 
 interface ProgramaSelloFormModalProps {
   programa: ProgramaSellos | null;
+  programaDesdePlantilla?: any | null;
   token: string;
   onClose: (actualizado: boolean) => void;
 }
 
-export function ProgramaSelloFormModal({ programa, token, onClose }: ProgramaSelloFormModalProps) {
+export function ProgramaSelloFormModal({ programa, programaDesdePlantilla, token, onClose }: ProgramaSelloFormModalProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CrearProgramaSellosRequest>({
     nombre: '',
@@ -41,9 +42,10 @@ export function ProgramaSelloFormModal({ programa, token, onClose }: ProgramaSel
     visible_cliente: true,
   });
 
-  // Cargar datos si es edición
+  // Cargar datos si es edición o plantilla
   useEffect(() => {
     if (programa) {
+      // Modo edición - cargar programa existente
       setFormData({
         nombre: programa.nombre,
         descripcion: programa.descripcion,
@@ -60,8 +62,14 @@ export function ProgramaSelloFormModal({ programa, token, onClose }: ProgramaSel
         activo: programa.activo,
         visible_cliente: programa.visible_cliente,
       });
+    } else if (programaDesdePlantilla) {
+      // Modo plantilla - pre-rellenar con datos de la plantilla
+      setFormData({
+        ...formData,
+        ...programaDesdePlantilla,
+      });
     }
-  }, [programa]);
+  }, [programa, programaDesdePlantilla]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

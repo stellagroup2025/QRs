@@ -13,14 +13,13 @@ import {
   obtenerSectores,
   obtenerPlantillasPorSector,
   PlantillaSello,
-  aplicarPlantilla,
+  plantillaAFormulario,
 } from '@/lib/plantillas-sellos';
-import { CrearProgramaSellosRequest } from '@/types/sellos';
 
 interface PlantillasSelectorModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSeleccionarPlantilla: (programa: CrearProgramaSellosRequest) => void;
+  onSeleccionarPlantilla: (programa: any) => void;
 }
 
 export function PlantillasSelectorModal({
@@ -48,21 +47,23 @@ export function PlantillasSelectorModal({
   });
 
   const handleSeleccionarPlantilla = (plantilla: PlantillaSello) => {
-    const programaBase = aplicarPlantilla(plantilla);
-    onSeleccionarPlantilla(programaBase);
+    const programaFormulario = plantillaAFormulario(plantilla);
+    onSeleccionarPlantilla(programaFormulario);
     onOpenChange(false);
   };
 
   const obtenerBadgeTipoPremio = (tipo: string) => {
     switch (tipo) {
-      case 'descuento':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Descuento</Badge>;
-      case 'producto_gratis':
+      case 'producto':
         return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Producto Gratis</Badge>;
-      case 'servicio_gratis':
-        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">Servicio Gratis</Badge>;
+      case 'descuento_porcentaje':
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Descuento %</Badge>;
+      case 'descuento_fijo':
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Descuento €</Badge>;
       case 'puntos':
         return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">Puntos Extra</Badge>;
+      case 'texto':
+        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">Otro</Badge>;
       default:
         return <Badge variant="outline">Otro</Badge>;
     }
@@ -121,7 +122,7 @@ export function PlantillasSelectorModal({
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="text-3xl">{plantilla.icono}</span>
+                            <span className="text-3xl">{plantilla.icono_emoji}</span>
                             <div>
                               <CardTitle className="text-base">{plantilla.nombre}</CardTitle>
                               <p className="text-xs text-muted-foreground mt-1">{plantilla.sector}</p>
@@ -134,23 +135,23 @@ export function PlantillasSelectorModal({
 
                         <div className="flex flex-wrap gap-2 items-center">
                           <Badge variant="secondary" className="font-mono">
-                            {plantilla.config.num_sellos} sellos
+                            {plantilla.sellos_requeridos} sellos
                           </Badge>
-                          {obtenerBadgeTipoPremio(plantilla.config.tipo_premio)}
+                          {obtenerBadgeTipoPremio(plantilla.tipo_premio)}
                         </div>
 
                         <div className="pt-2 border-t">
                           <p className="text-sm font-medium text-slate-700">
-                            🎁 {plantilla.config.descripcion_premio}
+                            🎁 {plantilla.premio_detalles.nombre || plantilla.premio_detalles.descripcion || 'Premio incluido'}
                           </p>
-                          {plantilla.config.tipo_premio === 'descuento' && plantilla.config.valor_descuento && (
+                          {plantilla.tipo_premio === 'descuento_porcentaje' && plantilla.premio_detalles.porcentaje && (
                             <p className="text-xs text-muted-foreground mt-1">
-                              {plantilla.config.valor_descuento}% de descuento
+                              {plantilla.premio_detalles.porcentaje}% de descuento
                             </p>
                           )}
-                          {plantilla.config.tipo_premio === 'puntos' && plantilla.config.valor_puntos && (
+                          {plantilla.tipo_premio === 'puntos' && plantilla.premio_detalles.puntos && (
                             <p className="text-xs text-muted-foreground mt-1">
-                              {plantilla.config.valor_puntos} puntos
+                              {plantilla.premio_detalles.puntos} puntos
                             </p>
                           )}
                         </div>
