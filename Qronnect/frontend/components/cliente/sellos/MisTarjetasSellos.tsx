@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Loader2, Stamp } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface MisTarjetasSel losProps {
+interface MisTarjetasSellosProps {
   idCliente: string;
   token: string;
 }
