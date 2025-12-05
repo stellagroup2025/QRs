@@ -358,14 +358,26 @@ export default function AdminDashboardPage() {
       // Decodificar el token para obtener el tienda_id
       const payload = JSON.parse(atob(token))
 
+      // Para superadmin, el token tiene el dominio de la tienda
+      // Para admin normal, obtenerlo del hostname o del token
+      let domain = payload.dominio || payload.tienda_dominio
+
+      if (!domain) {
+        // Fallback: extraer de hostname (puede ser incorrecto en Vercel)
+        domain = window.location.hostname.split('.')[0]
+      }
+
       // Obtener datos reales de la tienda desde el backend
       const response = await fetch(`${API_URL}/api/admin/tienda`, {
         headers: {
           'Authorization': `Bearer ${token}`,
+          'X-Tenant-Domain': domain,
         },
       })
 
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Error response:', errorText)
         throw new Error('Error al obtener datos de la tienda')
       }
 
