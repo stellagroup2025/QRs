@@ -563,13 +563,21 @@ export function RegistrarVentaDialogMejorado({
       setSuccess(true)
 
       // Otorgar sello si hay programa seleccionado
+      console.log('🔍 Verificando condiciones para otorgar sello:', {
+        programaSelloSeleccionado,
+        importeNum,
+        condicionCumplida: !!(programaSelloSeleccionado && importeNum > 0),
+        dataId: data.id,
+        dataCompraId: data.compra_id,
+      })
+
       let selloOtorgado = false
       if (programaSelloSeleccionado && importeNum > 0) {
         try {
           console.log('🎯 Intentando otorgar sello:', {
             id_cliente: clienteSeleccionado.id,
             id_programa: programaSelloSeleccionado,
-            id_compra: data.id,
+            id_compra: data.compra_id || data.id,
             monto_compra: importeNum,
           })
 
@@ -583,7 +591,7 @@ export function RegistrarVentaDialogMejorado({
             body: JSON.stringify({
               id_cliente: clienteSeleccionado.id,
               id_programa: programaSelloSeleccionado,
-              id_compra: data.id, // Cambio de id_venta a id_compra
+              id_compra: data.compra_id || data.id, // Usar el campo correcto
               monto_compra: importeNum,
             }),
           })
