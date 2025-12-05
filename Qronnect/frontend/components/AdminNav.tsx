@@ -24,6 +24,7 @@ import {
   Store,
   Package,
   User,
+  Dices,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { CommandMenu } from '@/components/ui/command-menu'
@@ -89,6 +90,12 @@ const configNavItems: NavItem[] = [
     href: '/admin/configuracion/regalos',
     label: 'Regalos Bienvenida',
     icon: Gift,
+  },
+  {
+    href: '/admin/configuracion/gacha',
+    label: 'Gacha - Premios Aleatorios',
+    icon: Dices,
+    badge: 'Nuevo',
   },
   {
     href: '/admin/configuracion/ia',

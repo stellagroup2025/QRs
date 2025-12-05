@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
-import { Gift, Ticket, QrCode, User, Users, CreditCard } from 'lucide-react'
+import { Gift, Ticket, QrCode, User, Users, CreditCard, Dices } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useBrandingContext } from './BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
@@ -105,7 +105,12 @@ export function ClientNav() {
 
   if (!slug) return null
 
-  const navItems = [
+  const navItems: Array<{
+    href: string;
+    label: string;
+    icon: any;
+    badge?: string;
+  }> = [
     {
       href: `/${slug}/mi-perfil`,
       label: 'Mi Cuenta',
@@ -115,6 +120,12 @@ export function ClientNav() {
       href: `/${slug}/promociones`,
       label: 'Promociones',
       icon: Gift,
+    },
+    {
+      href: `/${slug}/gacha`,
+      label: 'Gacha',
+      icon: Dices,
+      badge: 'Nuevo',
     },
     {
       href: `/${slug}/mis-sellos`,
@@ -177,6 +188,14 @@ export function ClientNav() {
                       style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                     >
                       {badgeCount}
+                    </Badge>
+                  )}
+                  {item.badge && (
+                    <Badge
+                      className="absolute -top-1 -right-3 text-[8px] px-1 h-3"
+                      variant="destructive"
+                    >
+                      {item.badge}
                     </Badge>
                   )}
                 </div>
