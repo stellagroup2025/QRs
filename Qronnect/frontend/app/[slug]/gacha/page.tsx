@@ -118,6 +118,7 @@ export default function GachaPage() {
               config={config}
               puntosActuales={puntosActuales}
               onTiradaRealizada={cargarDatos}
+              slug={slug}
             />
 
             {/* Información adicional */}

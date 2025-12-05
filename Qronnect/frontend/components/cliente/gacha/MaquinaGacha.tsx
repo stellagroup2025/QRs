@@ -26,9 +26,10 @@ interface MaquinaGachaProps {
   config: GachaConfig;
   puntosActuales: number;
   onTiradaRealizada: () => void;
+  slug: string;
 }
 
-export function MaquinaGacha({ config, puntosActuales, onTiradaRealizada }: MaquinaGachaProps) {
+export function MaquinaGacha({ config, puntosActuales, onTiradaRealizada, slug }: MaquinaGachaProps) {
   const [tirando, setTirando] = useState(false);
   const [resultado, setResultado] = useState<ResultadoTirada | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -59,10 +60,10 @@ export function MaquinaGacha({ config, puntosActuales, onTiradaRealizada }: Maqu
     setTirando(true);
 
     try {
-      const token = localStorage.getItem('client_token');
-      const tenant = localStorage.getItem('tenant_domain');
+      const token = localStorage.getItem(`client_token_${slug}`) || localStorage.getItem('client_token');
+      const tenant = slug;
 
-      if (!token || !tenant) {
+      if (!token) {
         throw new Error('No autenticado');
       }
 
