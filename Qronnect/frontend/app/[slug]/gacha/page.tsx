@@ -26,11 +26,11 @@ export default function GachaPage() {
 
   const cargarDatos = async () => {
     try {
-      const token = localStorage.getItem('client_token');
-      const tenant = localStorage.getItem('tenant_domain');
+      const token = localStorage.getItem(`client_token_${slug}`) || localStorage.getItem('client_token');
+      const tenant = slug;
 
-      if (!token || !tenant) {
-        window.location.href = `/${slug}/login`;
+      if (!token) {
+        window.location.href = `/recuperar`;
         return;
       }
 
@@ -53,7 +53,7 @@ export default function GachaPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-        <ClientNav slug={slug} />
+        <ClientNav />
         <div className="flex items-center justify-center h-screen">
           <p>Cargando...</p>
         </div>
@@ -64,7 +64,7 @@ export default function GachaPage() {
   if (!config || !config.activo) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-        <ClientNav slug={slug} />
+        <ClientNav />
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <Card>
             <CardContent className="py-12">
@@ -87,7 +87,7 @@ export default function GachaPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <ClientNav slug={slug} />
+      <ClientNav />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
