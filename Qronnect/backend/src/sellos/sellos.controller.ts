@@ -18,10 +18,12 @@ import { CreateProgramaSellosDto } from './dto/create-programa-sellos.dto';
 import { UpdateProgramaSellosDto } from './dto/update-programa-sellos.dto';
 import { OtorgarSelloDto } from './dto/otorgar-sello.dto';
 import { CanjearCuponSelloDto } from './dto/canjear-cupon-sello.dto';
+import { AdminAuthGuard } from '../auth/guards/admin-auth.guard';
 
 @ApiTags('Sellos')
 @Controller('sellos')
 @ApiBearerAuth()
+@UseGuards(AdminAuthGuard)
 export class SellosController {
   constructor(private readonly sellosService: SellosService) {}
 
