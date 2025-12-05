@@ -566,6 +566,13 @@ export function RegistrarVentaDialogMejorado({
       let selloOtorgado = false
       if (programaSelloSeleccionado && importeNum > 0) {
         try {
+          console.log('🎯 Intentando otorgar sello:', {
+            id_cliente: clienteSeleccionado.id,
+            id_programa: programaSelloSeleccionado,
+            id_compra: data.id,
+            monto_compra: importeNum,
+          })
+
           const selloResponse = await fetch(`${API_URL}/api/sellos/otorgar`, {
             method: 'POST',
             headers: {
@@ -576,17 +583,28 @@ export function RegistrarVentaDialogMejorado({
             body: JSON.stringify({
               id_cliente: clienteSeleccionado.id,
               id_programa: programaSelloSeleccionado,
-              id_venta: data.venta?.id || null,
+              id_compra: data.id, // Cambio de id_venta a id_compra
+              monto_compra: importeNum,
             }),
           })
 
-          if (selloResponse.ok) {
-            const selloData = await selloResponse.json()
-            selloOtorgado = true
-            console.log('✓ Sello otorgado:', selloData)
+          if (!selloResponse.ok) {
+            const errorData = await selloResponse.json()
+            console.error('❌ Error al otorgar sello (status ' + selloResponse.status + '):', errorData)
+            throw new Error(errorData.message || 'Error al otorgar sello')
           }
+
+          const selloData = await selloResponse.json()
+          selloOtorgado = true
+          console.log('✅ Sello otorgado exitosamente:', selloData)
         } catch (err) {
-          console.error('Error al otorgar sello:', err)
+          console.error('❌ Error al otorgar sello:', err)
+          // Mostrar error al usuario
+          toast({
+            title: 'Advertencia',
+            description: 'La venta se registró correctamente, pero hubo un problema al otorgar el sello. Por favor, otórgalo manualmente.',
+            variant: 'destructive',
+          })
         }
       }
 
