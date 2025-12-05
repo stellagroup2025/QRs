@@ -71,18 +71,18 @@ export function PlantillasSelectorModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto p-6">
+      <DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Sparkles className="h-6 w-6 text-yellow-500" />
+          <DialogTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />
             Plantillas de Programas de Sellos
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             Selecciona una plantilla predefinida para tu sector y personalizala según tus necesidades
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-x-hidden">
           {/* Buscador */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -96,10 +96,10 @@ export function PlantillasSelectorModal({
 
           {/* Tabs por sector */}
           <Tabs value={sectorActivo} onValueChange={setSectorActivo} className="w-full">
-            <div className="overflow-x-auto pb-2">
+            <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
               <TabsList className="inline-flex w-auto min-w-full">
                 {sectores.map((sector) => (
-                  <TabsTrigger key={sector} value={sector} className="whitespace-nowrap">
+                  <TabsTrigger key={sector} value={sector} className="whitespace-nowrap text-xs sm:text-sm">
                     {sector}
                   </TabsTrigger>
                 ))}
@@ -112,36 +112,36 @@ export function PlantillasSelectorModal({
                   <p>No se encontraron plantillas que coincidan con tu búsqueda</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {plantillasFiltradas.map((plantilla) => (
                     <Card
                       key={plantilla.id}
-                      className="hover:shadow-lg transition-shadow cursor-pointer"
+                      className="hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
                       onClick={() => handleSeleccionarPlantilla(plantilla)}
                     >
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-3xl">{plantilla.icono_emoji}</span>
-                            <div>
-                              <CardTitle className="text-base">{plantilla.nombre}</CardTitle>
-                              <p className="text-xs text-muted-foreground mt-1">{plantilla.sector}</p>
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <span className="text-2xl sm:text-3xl flex-shrink-0">{plantilla.icono_emoji}</span>
+                            <div className="min-w-0 flex-1">
+                              <CardTitle className="text-sm sm:text-base truncate">{plantilla.nombre}</CardTitle>
+                              <p className="text-xs text-muted-foreground mt-1 truncate">{plantilla.sector}</p>
                             </div>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3">
-                        <CardDescription className="text-sm">{plantilla.descripcion}</CardDescription>
+                        <CardDescription className="text-xs sm:text-sm line-clamp-2">{plantilla.descripcion}</CardDescription>
 
                         <div className="flex flex-wrap gap-2 items-center">
-                          <Badge variant="secondary" className="font-mono">
+                          <Badge variant="secondary" className="font-mono text-xs">
                             {plantilla.sellos_requeridos} sellos
                           </Badge>
                           {obtenerBadgeTipoPremio(plantilla.tipo_premio)}
                         </div>
 
                         <div className="pt-2 border-t">
-                          <p className="text-sm font-medium text-slate-700">
+                          <p className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 line-clamp-2">
                             🎁 {plantilla.premio_detalles.nombre || plantilla.premio_detalles.descripcion || 'Premio incluido'}
                           </p>
                           {plantilla.tipo_premio === 'descuento_porcentaje' && plantilla.premio_detalles.porcentaje && (
