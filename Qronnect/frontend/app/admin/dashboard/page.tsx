@@ -37,6 +37,7 @@ import {
   Ticket,
   Mail,
   Sparkles,
+  CreditCard,
 } from 'lucide-react'
 import { BrandLogo } from '@/components/BrandLogo'
 import { useBrandingContext } from '@/components/BrandingProvider'
@@ -102,6 +103,14 @@ const PanelIA = dynamic(
 const AnalistaKPIs = dynamic(
   () => import('@/components/admin/ia/AnalistaKPIs').then(mod => ({ default: mod.AnalistaKPIs })),
   { ssr: false }
+)
+
+const ProgramasSellosPanel = dynamic(
+  () => import('@/components/admin/sellos/ProgramasSellosPanel').then(mod => ({ default: mod.ProgramasSellosPanel })),
+  {
+    loading: () => <CardSkeleton />,
+    ssr: false,
+  }
 )
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
@@ -736,6 +745,15 @@ export default function AdminDashboardPage() {
                   <span className="sr-only sm:hidden">Promociones</span>
                 </TabsTrigger>
                 <TabsTrigger
+                  value="sellos"
+                  className="flex-shrink-0"
+                  aria-label="Gestionar programas de sellos"
+                >
+                  <CreditCard className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                  <span className="hidden sm:inline">Sellos</span>
+                  <span className="sr-only sm:hidden">Sellos</span>
+                </TabsTrigger>
+                <TabsTrigger
                   value="campanas"
                   className="flex-shrink-0"
                   aria-label="Ver campañas de email"
@@ -1296,6 +1314,20 @@ export default function AdminDashboardPage() {
               adminToken={token || ''}
               tenantDomain={tienda?.dominio || ''}
             />
+          </TabsContent>
+
+          {/* Sellos Tab */}
+          <TabsContent value="sellos" className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div className="min-w-0">
+                <h2 className="text-xl sm:text-2xl font-bold">Programas de Sellos</h2>
+                <p className="text-sm text-muted-foreground">
+                  Gestiona las tarjetas de sellos y recompensas
+                </p>
+              </div>
+            </div>
+
+            <ProgramasSellosPanel token={token || ''} />
           </TabsContent>
 
           {/* Tab de Campañas */}
