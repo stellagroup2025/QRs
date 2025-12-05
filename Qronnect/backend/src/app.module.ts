@@ -23,6 +23,7 @@ import { ReferidosModule } from './referidos/referidos.module';
 import { UsuariosTiendaModule } from './usuarios-tienda/usuarios-tienda.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { InformesModule } from './informes/informes.module';
+import { SellosModule } from './sellos/sellos.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { InformesModule } from './informes/informes.module';
     UsuariosTiendaModule,
     OnboardingModule,
     InformesModule,
+    SellosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
