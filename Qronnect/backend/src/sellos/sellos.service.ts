@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseService } from '../supabase/supabase.service';
 import { CreateProgramaSellosDto } from './dto/create-programa-sellos.dto';
 import { UpdateProgramaSellosDto } from './dto/update-programa-sellos.dto';
 import { OtorgarSelloDto } from './dto/otorgar-sello.dto';
@@ -17,8 +18,11 @@ import {
 @Injectable()
 export class SellosService {
   private readonly logger = new Logger(SellosService.name);
+  private readonly supabase: SupabaseClient;
 
-  constructor(private readonly supabase: SupabaseClient) {}
+  constructor(private readonly supabaseService: SupabaseService) {
+    this.supabase = this.supabaseService.getAdminClient();
+  }
 
   /**
    * Crear un nuevo programa de sellos
