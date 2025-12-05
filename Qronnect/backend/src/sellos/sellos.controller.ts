@@ -120,7 +120,9 @@ export class SellosController {
   @ApiResponse({ status: 400, description: 'Error al otorgar sello' })
   async otorgarSello(@Request() req, @Body() otorgarDto: OtorgarSelloDto) {
     const idTienda = req.user.tienda_id;
-    const idUsuarioStaff = req.user.id;
+    // Si es superadmin, no pasar el ID (será NULL)
+    // Si es admin normal, pasar el ID del usuario
+    const idUsuarioStaff = req.user.superadmin_access ? null : req.user.id;
     return this.sellosService.otorgarSello(idTienda, idUsuarioStaff, otorgarDto);
   }
 
@@ -139,7 +141,8 @@ export class SellosController {
     @Body() canjearDto: CanjearCuponSelloDto,
   ) {
     const idTienda = req.user.tienda_id;
-    const idUsuarioStaff = req.user.id;
+    // Si es superadmin, no pasar el ID (será NULL)
+    const idUsuarioStaff = req.user.superadmin_access ? null : req.user.id;
     return this.sellosService.canjearCupon(idTienda, idUsuarioStaff, canjearDto);
   }
 
