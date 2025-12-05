@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../supabase/supabase.service';
+import { EmailService } from '../email/email.service';
 import { TenantContext } from '../tenant/entities/tenant-context.entity';
 import { RegistrarCompraDto } from './dto/registrar-compra.dto';
 import { CompraResponseDto } from './dto/compra-response.dto';
@@ -12,6 +13,7 @@ export class ComprasService {
   constructor(
     private supabaseService: SupabaseService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   /**
@@ -222,7 +224,20 @@ export class ComprasService {
       // En producción, considera usar transacciones o mecanismos de retry
     }
 
-    // 6. Devolver respuesta
+    // 6. Enviar email de agradecimiento
+    // Esto se hace de forma asíncrona sin bloquear la respuesta
+    this.emailService.sendPurchaseThankYouEmail({
+      clienteEmail: cliente.email,
+      clienteNombre: cliente.nombre,
+      tiendaNombre: tenant.nombre,
+      importeCompra: parseFloat(compra.importe),
+      puntosGanados: puntosOtorgados,
+    }).catch(error => {
+      console.error('Error al enviar email de agradecimiento:', error);
+      // No fallar la compra si el email falla
+    });
+
+    // 7. Devolver respuesta
     return {
       compra_id: compra.id,
       cliente: {

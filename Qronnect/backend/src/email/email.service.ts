@@ -146,4 +146,131 @@ export class EmailService {
       errors,
     };
   }
+
+  /**
+   * Envía email de agradecimiento después de una compra
+   */
+  async sendPurchaseThankYouEmail(params: {
+    clienteEmail: string;
+    clienteNombre: string;
+    tiendaNombre: string;
+    importeCompra: number;
+    puntosGanados: number;
+    sellosGanados?: number;
+    programaSelloNombre?: string;
+    sellosActuales?: number;
+    sellosObjetivo?: number;
+  }): Promise<{ success: boolean; error?: string }> {
+    const {
+      clienteEmail,
+      clienteNombre,
+      tiendaNombre,
+      importeCompra,
+      puntosGanados,
+      sellosGanados,
+      programaSelloNombre,
+      sellosActuales,
+      sellosObjetivo,
+    } = params;
+
+    const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¡Gracias por tu compra!</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f5f5f5; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table cellpadding="0" cellspacing="0" border="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">
+                ¡Gracias por tu compra!
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="margin: 0 0 20px; color: #333333; font-size: 16px; line-height: 1.6;">
+                Hola <strong>${clienteNombre}</strong>,
+              </p>
+
+              <p style="margin: 0 0 30px; color: #666666; font-size: 16px; line-height: 1.6;">
+                Queremos agradecerte por tu visita a <strong>${tiendaNombre}</strong>. Tu compra de <strong>${importeCompra.toFixed(2)}€</strong> ha sido registrada exitosamente.
+              </p>
+
+              <!-- Rewards Box -->
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f8f9fa; border-radius: 8px; margin-bottom: 30px;">
+                <tr>
+                  <td style="padding: 20px;">
+                    <p style="margin: 0 0 15px; color: #333333; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                      🎁 Recompensas obtenidas
+                    </p>
+
+                    <div style="margin-bottom: 12px;">
+                      <span style="display: inline-block; background-color: #10b981; color: #ffffff; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600;">
+                        +${puntosGanados} puntos
+                      </span>
+                    </div>
+
+                    ${sellosGanados && programaSelloNombre ? `
+                    <div style="margin-top: 12px;">
+                      <span style="display: inline-block; background-color: #3b82f6; color: #ffffff; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600;">
+                        +${sellosGanados} sello${sellosGanados > 1 ? 's' : ''} en "${programaSelloNombre}"
+                      </span>
+                    </div>
+                    ${sellosActuales !== undefined && sellosObjetivo ? `
+                    <p style="margin: 12px 0 0; color: #666666; font-size: 13px;">
+                      Llevas <strong>${sellosActuales} de ${sellosObjetivo} sellos</strong>
+                    </p>
+                    ` : ''}
+                    ` : ''}
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0 0 20px; color: #666666; font-size: 14px; line-height: 1.6;">
+                Sigue acumulando puntos${sellosGanados ? ' y sellos' : ''} en cada visita para obtener recompensas exclusivas.
+              </p>
+
+              <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                ¡Te esperamos pronto en ${tiendaNombre}!
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0; color: #999999; font-size: 12px; line-height: 1.5;">
+                Este es un correo automático, por favor no respondas a este mensaje.
+              </p>
+              <p style="margin: 10px 0 0; color: #999999; font-size: 12px;">
+                ${tiendaNombre} • Sistema de fidelización
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
+
+    return this.sendEmail({
+      to: clienteEmail,
+      subject: `¡Gracias por tu compra en ${tiendaNombre}! 🎉`,
+      html,
+    });
+  }
 }
