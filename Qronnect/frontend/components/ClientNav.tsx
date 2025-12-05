@@ -163,6 +163,7 @@ export function ClientNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 aria-label={`Ir a ${item.label}`}
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(

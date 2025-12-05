@@ -65,6 +65,9 @@ export default function PromocionesPage() {
       if (promosResponse.ok) {
         const promosData = await promosResponse.json()
         setPromociones(promosData)
+      } else {
+        console.error('Error al cargar promociones:', promosResponse.status)
+        toast.error('Error al cargar promociones')
       }
 
       // Obtener mis puntos
@@ -78,9 +81,14 @@ export default function PromocionesPage() {
       if (puntosResponse.ok) {
         const puntosData = await puntosResponse.json()
         setMisPuntos(puntosData.puntos_totales)
+      } else {
+        console.error('Error al cargar puntos:', puntosResponse.status)
       }
     } catch (error) {
       console.error('Error:', error)
+      toast.error('Error de conexión', {
+        description: 'No se pudo conectar con el servidor'
+      })
     } finally {
       setLoading(false)
     }
