@@ -38,7 +38,7 @@ export class SellosController {
     @Request() req,
     @Body() createDto: CreateProgramaSellosDto,
   ) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     return this.sellosService.crearPrograma(idTienda, createDto);
   }
 
@@ -50,7 +50,7 @@ export class SellosController {
     @Request() req,
     @Query('solo_activos') soloActivos?: string | boolean,
   ) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     return this.sellosService.obtenerProgramas(
       idTienda,
       soloActivos === true || soloActivos === 'true',
@@ -62,7 +62,7 @@ export class SellosController {
   @ApiResponse({ status: 200, description: 'Programa encontrado' })
   @ApiResponse({ status: 404, description: 'Programa no encontrado' })
   async obtenerPrograma(@Request() req, @Param('id') id: string) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     return this.sellosService.obtenerPrograma(id, idTienda);
   }
 
@@ -75,7 +75,7 @@ export class SellosController {
     @Param('id') id: string,
     @Body() updateDto: UpdateProgramaSellosDto,
   ) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     return this.sellosService.actualizarPrograma(id, idTienda, updateDto);
   }
 
@@ -84,7 +84,7 @@ export class SellosController {
   @ApiOperation({ summary: 'Eliminar (desactivar) un programa de sellos' })
   @ApiResponse({ status: 204, description: 'Programa eliminado' })
   async eliminarPrograma(@Request() req, @Param('id') id: string) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     await this.sellosService.eliminarPrograma(id, idTienda);
   }
 
@@ -92,7 +92,7 @@ export class SellosController {
   @ApiOperation({ summary: 'Obtener estadísticas de un programa' })
   @ApiResponse({ status: 200, description: 'Estadísticas del programa' })
   async obtenerEstadisticasPrograma(@Request() req, @Param('id') id: string) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     // Primero verificar que existe
     await this.sellosService.obtenerPrograma(id, idTienda);
 
@@ -110,7 +110,7 @@ export class SellosController {
   @ApiResponse({ status: 201, description: 'Sello otorgado exitosamente' })
   @ApiResponse({ status: 400, description: 'Error al otorgar sello' })
   async otorgarSello(@Request() req, @Body() otorgarDto: OtorgarSelloDto) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     const idUsuarioStaff = req.user.id;
     return this.sellosService.otorgarSello(idTienda, idUsuarioStaff, otorgarDto);
   }
@@ -128,7 +128,7 @@ export class SellosController {
     @Request() req,
     @Body() canjearDto: CanjearCuponSelloDto,
   ) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     const idUsuarioStaff = req.user.id;
     return this.sellosService.canjearCupon(idTienda, idUsuarioStaff, canjearDto);
   }
@@ -138,7 +138,7 @@ export class SellosController {
   @ApiResponse({ status: 200, description: 'Información del cupón' })
   @ApiResponse({ status: 404, description: 'Cupón no encontrado' })
   async verificarCupon(@Request() req, @Param('codigo') codigo: string) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     return this.sellosService.verificarCupon(codigo, idTienda);
   }
 
@@ -155,7 +155,7 @@ export class SellosController {
     @Param('idCliente') idCliente: string,
     @Query('solo_activas') soloActivas?: string | boolean,
   ) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     return this.sellosService.obtenerTarjetasCliente(
       idCliente,
       idTienda,
@@ -171,7 +171,7 @@ export class SellosController {
     @Request() req,
     @Query('estado') estado?: string,
   ) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     return this.sellosService.obtenerTarjetasTienda(idTienda, estado);
   }
 
@@ -180,7 +180,7 @@ export class SellosController {
   @ApiResponse({ status: 200, description: 'Detalle de la tarjeta' })
   @ApiResponse({ status: 404, description: 'Tarjeta no encontrada' })
   async obtenerDetalleTarjeta(@Request() req, @Param('id') id: string) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     return this.sellosService.obtenerDetalleTarjeta(id, idTienda);
   }
 
@@ -188,7 +188,7 @@ export class SellosController {
   @ApiOperation({ summary: 'Obtener todos los sellos de una tarjeta' })
   @ApiResponse({ status: 200, description: 'Lista de sellos' })
   async obtenerSellosTarjeta(@Request() req, @Param('id') id: string) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     return this.sellosService.obtenerSellosTarjeta(id, idTienda);
   }
 
@@ -197,7 +197,7 @@ export class SellosController {
   @ApiOperation({ summary: 'Cancelar una tarjeta de sellos' })
   @ApiResponse({ status: 204, description: 'Tarjeta cancelada' })
   async cancelarTarjeta(@Request() req, @Param('id') id: string) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     await this.sellosService.cancelarTarjeta(id, idTienda);
   }
 
@@ -209,7 +209,7 @@ export class SellosController {
   @ApiOperation({ summary: 'Obtener estadísticas de todos los programas de sellos' })
   @ApiResponse({ status: 200, description: 'Estadísticas generales' })
   async obtenerEstadisticas(@Request() req) {
-    const idTienda = req.user.id_tienda;
+    const idTienda = req.user.tienda_id;
     return this.sellosService.obtenerEstadisticas(idTienda);
   }
 }
