@@ -82,13 +82,6 @@ export default function MisSellosPage() {
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <ClientNav slug={slug} />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Mis Tarjetas de Sellos</h1>
-          <p className="text-gray-600 mt-2">
-            Acumula sellos con tus compras y consigue premios
-          </p>
-        </div>
-
         <MisTarjetasSellos idCliente={clienteId} token={token} slug={slug} />
       </div>
     </div>

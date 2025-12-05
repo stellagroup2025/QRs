@@ -1,12 +1,13 @@
 'use client';
 
-import { TarjetaSelloConProgreso, EstadoTarjetaSello, calcularDiasRestantes, estaExpirado } from '@/types/sellos';
+import { TarjetaSelloConProgreso, EstadoTarjetaSello, calcularDiasRestantes, estaExpirado, formatearPremio } from '@/types/sellos';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Clock, Gift, CheckCircle2, XCircle, Calendar } from 'lucide-react';
+import { Clock, Gift, CheckCircle2, XCircle, Calendar, Info, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 interface TarjetaSelloCardProps {
   tarjeta: TarjetaSelloConProgreso;
@@ -16,6 +17,7 @@ interface TarjetaSelloCardProps {
 export function TarjetaSelloCard({ tarjeta, onVerDetalle }: TarjetaSelloCardProps) {
   const {
     programa_nombre,
+    programa_descripcion,
     programa_color,
     programa_icono,
     sellos_actuales,
@@ -26,6 +28,9 @@ export function TarjetaSelloCard({ tarjeta, onVerDetalle }: TarjetaSelloCardProp
     puede_canjear,
     fecha_completada,
     fecha_expiracion,
+    tipo_premio,
+    premio_detalles,
+    instrucciones_canje,
   } = tarjeta;
 
   const diasRestantes = calcularDiasRestantes(fecha_expiracion);
@@ -106,17 +111,42 @@ export function TarjetaSelloCard({ tarjeta, onVerDetalle }: TarjetaSelloCardProp
 
       {/* Header */}
       <div className="flex justify-between items-start mb-4 mt-2">
-        <div>
+        <div className="flex-1">
           <h3 className="text-lg font-bold">{programa_nombre}</h3>
-          <p className="text-sm text-muted-foreground">
-            {sellos_actuales} de {sellos_objetivo} sellos
-          </p>
+          {programa_descripcion && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {programa_descripcion}
+            </p>
+          )}
         </div>
         {getEstadoBadge()}
       </div>
 
+      {/* Información del premio */}
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-lg p-3 mb-4 border border-amber-200 dark:border-amber-800">
+        <div className="flex items-start gap-2">
+          <Award className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-xs font-semibold text-amber-900 dark:text-amber-100 uppercase tracking-wide mb-1">
+              Premio al completar
+            </p>
+            <p className="text-sm font-bold text-amber-800 dark:text-amber-200">
+              {formatearPremio(tipo_premio, premio_detalles)}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Barra de progreso */}
       <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <p className="text-sm font-medium text-muted-foreground">
+            Progreso
+          </p>
+          <p className="text-sm font-bold">
+            {sellos_actuales} de {sellos_objetivo} sellos
+          </p>
+        </div>
         <Progress
           value={porcentaje_completado}
           className="h-2"
@@ -158,6 +188,23 @@ export function TarjetaSelloCard({ tarjeta, onVerDetalle }: TarjetaSelloCardProp
           <p className="text-xs text-muted-foreground text-center mt-2">
             Presenta este código en el establecimiento para canjear tu premio
           </p>
+        </div>
+      )}
+
+      {/* Instrucciones de canje */}
+      {instrucciones_canje && estado === EstadoTarjetaSello.COMPLETADA && (
+        <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-3 mb-4 border border-blue-200 dark:border-blue-800">
+          <div className="flex items-start gap-2">
+            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 uppercase tracking-wide mb-1">
+                Cómo canjear
+              </p>
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                {instrucciones_canje}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
