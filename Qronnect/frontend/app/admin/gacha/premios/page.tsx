@@ -36,9 +36,10 @@ export default function GestionPremiosPage() {
   const cargarPremios = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-      const tenant = localStorage.getItem('tenant_domain');
+      const domain = window.location.hostname.split('.')[0];
+      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
 
-      if (!token || !tenant) return;
+      if (!token) return;
 
       const data = await obtenerPremios(token, tenant);
       setPremios(data);
@@ -69,9 +70,10 @@ export default function GestionPremiosPage() {
 
     try {
       const token = localStorage.getItem('admin_token');
-      const tenant = localStorage.getItem('tenant_domain');
+      const domain = window.location.hostname.split('.')[0];
+      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
 
-      if (!token || !tenant) return;
+      if (!token) return;
 
       await eliminarPremio(token, tenant, premioEliminar.id);
 

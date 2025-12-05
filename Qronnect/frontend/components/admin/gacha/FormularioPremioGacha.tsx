@@ -42,9 +42,10 @@ export function FormularioPremioGacha({ open, onClose, premio, onGuardado }: For
 
     try {
       const token = localStorage.getItem('admin_token');
-      const tenant = localStorage.getItem('tenant_domain');
+      const domain = window.location.hostname.split('.')[0];
+      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
 
-      if (!token || !tenant) {
+      if (!token) {
         throw new Error('No autenticado');
       }
 
