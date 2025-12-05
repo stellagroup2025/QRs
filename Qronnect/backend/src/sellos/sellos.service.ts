@@ -18,10 +18,19 @@ import {
 @Injectable()
 export class SellosService {
   private readonly logger = new Logger(SellosService.name);
-  private readonly supabase: SupabaseClient;
 
-  constructor(private readonly supabaseService: SupabaseService) {
-    this.supabase = this.supabaseService.getAdminClient();
+  constructor(private readonly supabaseService: SupabaseService) {}
+
+  /**
+   * Obtiene el cliente admin de Supabase
+   * Se hace dinámicamente para asegurar que onModuleInit ya se ejecutó
+   */
+  private getSupabase(): SupabaseClient {
+    const client = this.supabaseService.getAdminClient();
+    if (!client) {
+      throw new Error('Supabase admin client no está disponible');
+    }
+    return client;
   }
 
   /**
@@ -33,7 +42,7 @@ export class SellosService {
   ): Promise<ProgramaSellos> {
     this.logger.log(`Creando programa de sellos para tienda ${idTienda}`);
 
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('programas_sellos')
       .insert({
         id_tienda: idTienda,
@@ -59,7 +68,7 @@ export class SellosService {
     idTienda: string,
     soloActivos = false,
   ): Promise<ProgramaSellos[]> {
-    let query = this.supabase
+    let query = this.getSupabase()
       .from('programas_sellos')
       .select('*')
       .eq('id_tienda', idTienda)
@@ -88,7 +97,7 @@ export class SellosService {
     idPrograma: string,
     idTienda: string,
   ): Promise<ProgramaSellos> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('programas_sellos')
       .select('*')
       .eq('id', idPrograma)
@@ -110,7 +119,7 @@ export class SellosService {
     idTienda: string,
     updateDto: UpdateProgramaSellosDto,
   ): Promise<ProgramaSellos> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('programas_sellos')
       .update(updateDto)
       .eq('id', idPrograma)
@@ -129,7 +138,7 @@ export class SellosService {
    * Eliminar (desactivar) un programa de sellos
    */
   async eliminarPrograma(idPrograma: string, idTienda: string): Promise<void> {
-    const { error } = await this.supabase
+    const { error } = await this.getSupabase()
       .from('programas_sellos')
       .update({ activo: false })
       .eq('id', idPrograma)
@@ -155,7 +164,7 @@ export class SellosService {
     );
 
     // Llamar a la función de PostgreSQL
-    const { data, error } = await this.supabase.rpc('otorgar_sello', {
+    const { data, error } = await this.getSupabase().rpc('otorgar_sello', {
       p_cliente_id: otorgarDto.id_cliente,
       p_programa_id: otorgarDto.id_programa,
       p_tienda_id: idTienda,
@@ -188,7 +197,7 @@ export class SellosService {
     this.logger.log(`Canjeando cupón ${canjearDto.codigo_cupon}`);
 
     // Llamar a la función de PostgreSQL
-    const { data, error } = await this.supabase.rpc('canjear_cupon_sello', {
+    const { data, error } = await this.getSupabase().rpc('canjear_cupon_sello', {
       p_codigo_cupon: canjearDto.codigo_cupon,
       p_tienda_id: idTienda,
       p_canjeado_por: idUsuarioStaff,
@@ -214,7 +223,7 @@ export class SellosService {
     idTienda: string,
     soloActivas = false,
   ): Promise<TarjetaSelloConProgreso[]> {
-    let query = this.supabase
+    let query = this.getSupabase()
       .from('vista_tarjetas_sellos_progreso')
       .select('*')
       .eq('id_cliente', idCliente)
@@ -244,7 +253,7 @@ export class SellosService {
     idTienda: string,
     estado?: string,
   ): Promise<TarjetaSelloConProgreso[]> {
-    let query = this.supabase
+    let query = this.getSupabase()
       .from('vista_tarjetas_sellos_progreso')
       .select('*')
       .eq('id_tienda', idTienda)
@@ -273,7 +282,7 @@ export class SellosService {
     idTarjeta: string,
     idTienda: string,
   ): Promise<TarjetaSelloConProgreso> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('vista_tarjetas_sellos_progreso')
       .select('*')
       .eq('id', idTarjeta)
@@ -294,7 +303,7 @@ export class SellosService {
     idTarjeta: string,
     idTienda: string,
   ): Promise<SelloOtorgado[]> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('sellos_otorgados')
       .select('*')
       .eq('id_tarjeta', idTarjeta)
@@ -317,7 +326,7 @@ export class SellosService {
   async obtenerEstadisticas(
     idTienda: string,
   ): Promise<EstadisticasProgramaSellos[]> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('vista_estadisticas_programas_sellos')
       .select('*')
       .eq('id_tienda', idTienda)
@@ -340,7 +349,7 @@ export class SellosService {
     codigoCupon: string,
     idTienda: string,
   ): Promise<TarjetaSelloConProgreso> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.getSupabase()
       .from('vista_tarjetas_sellos_progreso')
       .select('*')
       .eq('codigo_cupon', codigoCupon)
@@ -358,7 +367,7 @@ export class SellosService {
    * Cancelar una tarjeta de sellos
    */
   async cancelarTarjeta(idTarjeta: string, idTienda: string): Promise<void> {
-    const { error } = await this.supabase
+    const { error } = await this.getSupabase()
       .from('tarjetas_sellos_clientes')
       .update({ estado: 'cancelada' })
       .eq('id', idTarjeta)
