@@ -46,7 +46,7 @@ export class SellosController {
   @ApiResponse({ status: 200, description: 'Lista de programas' })
   async obtenerProgramas(
     @Request() req,
-    @Query('solo_activos') soloActivos?: boolean,
+    @Query('solo_activos') soloActivos?: string | boolean,
   ) {
     const idTienda = req.user.id_tienda;
     return this.sellosService.obtenerProgramas(
@@ -151,7 +151,7 @@ export class SellosController {
   async obtenerTarjetasCliente(
     @Request() req,
     @Param('idCliente') idCliente: string,
-    @Query('solo_activas') soloActivas?: boolean,
+    @Query('solo_activas') soloActivas?: string | boolean,
   ) {
     const idTienda = req.user.id_tienda;
     return this.sellosService.obtenerTarjetasCliente(
