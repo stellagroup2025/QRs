@@ -256,8 +256,8 @@ export class ComprasService {
 
       if (sellosOtorgados && sellosOtorgados.length > 0) {
         const sello = sellosOtorgados[0];
-        const tarjeta = sello.tarjetas_sellos_clientes;
-        const programa = (tarjeta as any).programas_sellos;
+        const tarjeta = sello.tarjetas_sellos_clientes as any;
+        const programa = tarjeta.programas_sellos;
 
         selloInfo = {
           sellosGanados: 1, // Por ahora otorgamos 1 sello por compra
