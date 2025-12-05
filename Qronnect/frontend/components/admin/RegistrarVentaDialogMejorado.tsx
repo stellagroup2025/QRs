@@ -98,6 +98,10 @@ export function RegistrarVentaDialogMejorado({
   const [promociones, setPromociones] = useState<Promocion[]>([])
   const [cupones, setCupones] = useState<Cupon[]>([])
   const [cuponSeleccionado, setCuponSeleccionado] = useState<Cupon | null>(null)
+
+  // Sellos
+  const [programasSellos, setProgramasSellos] = useState<any[]>([])
+  const [programaSelloSeleccionado, setProgramaSelloSeleccionado] = useState<string | null>(null)
   const [redeeming, setRedeeming] = useState(false)
   const [redeemingPromoId, setRedeemingPromoId] = useState<string | null>(null)
 
@@ -416,6 +420,26 @@ export function RegistrarVentaDialogMejorado({
         const cuponesData = await cuponesResponse.json()
         setCupones(cuponesData || [])
       }
+
+      // Cargar programas de sellos activos
+      const sellosResponse = await fetch(
+        `${API_URL}/api/sellos/programas?solo_activos=true`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-Tenant-Domain': domain,
+          },
+        }
+      )
+
+      if (sellosResponse.ok) {
+        const sellosData = await sellosResponse.json()
+        setProgramasSellos(sellosData || [])
+        // Auto-seleccionar el primer programa si solo hay uno
+        if (sellosData && sellosData.length === 1) {
+          setProgramaSelloSeleccionado(sellosData[0].id)
+        }
+      }
     } catch (err) {
       console.error('Error cargando promociones:', err)
     } finally {
@@ -538,12 +562,44 @@ export function RegistrarVentaDialogMejorado({
       setSuccessData(data)
       setSuccess(true)
 
-      // Mensaje personalizado según si hubo cupón
-      const successMessage = cuponSeleccionado && importeNum === 0
+      // Otorgar sello si hay programa seleccionado
+      let selloOtorgado = false
+      if (programaSelloSeleccionado && importeNum > 0) {
+        try {
+          const selloResponse = await fetch(`${API_URL}/api/sellos/otorgar`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+              'X-Tenant-Domain': domain,
+            },
+            body: JSON.stringify({
+              id_cliente: clienteSeleccionado.id,
+              id_programa: programaSelloSeleccionado,
+              id_venta: data.venta?.id || null,
+            }),
+          })
+
+          if (selloResponse.ok) {
+            const selloData = await selloResponse.json()
+            selloOtorgado = true
+            console.log('✓ Sello otorgado:', selloData)
+          }
+        } catch (err) {
+          console.error('Error al otorgar sello:', err)
+        }
+      }
+
+      // Mensaje personalizado según si hubo cupón y/o sello
+      let successMessage = cuponSeleccionado && importeNum === 0
         ? `Cupón "${cuponSeleccionado.titulo}" canjeado exitosamente`
         : cuponSeleccionado
         ? `Venta registrada con descuento. +${data.puntos_otorgados} puntos`
         : `+${data.puntos_otorgados} puntos para ${data.cliente.nombre}`
+
+      if (selloOtorgado) {
+        successMessage += ' + 1 sello'
+      }
 
       toast({
         title: cuponSeleccionado && importeNum === 0 ? '¡Cupón canjeado!' : '¡Venta registrada!',
@@ -574,6 +630,8 @@ export function RegistrarVentaDialogMejorado({
     setPromociones([])
     setCupones([])
     setCuponSeleccionado(null)
+    setProgramasSellos([])
+    setProgramaSelloSeleccionado(null)
     setRedeeming(false)
     setRedeemingPromoId(null)
     setImporte('')
@@ -985,11 +1043,57 @@ export function RegistrarVentaDialogMejorado({
                   </div>
                 )}
 
-                {cupones.length === 0 && promociones.length === 0 && (
+                {/* Programas de sellos disponibles */}
+                {programasSellos.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Ticket className="h-4 w-4" />
+                      Programas de Sellos Activos ({programasSellos.length})
+                    </Label>
+                    <p className="text-xs text-gray-600">
+                      Selecciona un programa para otorgar un sello con esta venta
+                    </p>
+                    <div className="space-y-2">
+                      {programasSellos.map((programa) => (
+                        <div
+                          key={programa.id}
+                          className={`w-full p-3 border-2 rounded-lg transition-all cursor-pointer ${
+                            programaSelloSeleccionado === programa.id
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-blue-300'
+                          }`}
+                          onClick={() => setProgramaSelloSeleccionado(
+                            programaSelloSeleccionado === programa.id ? null : programa.id
+                          )}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{programa.nombre}</p>
+                              <p className="text-xs text-gray-600 mt-1">{programa.descripcion}</p>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  {programa.sellos_requeridos} sellos
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  Premio: {programa.premio_detalles?.nombre || 'Incluido'}
+                                </Badge>
+                              </div>
+                            </div>
+                            {programaSelloSeleccionado === programa.id && (
+                              <CheckCircle2 className="h-5 w-5 text-blue-600 flex-shrink-0 ml-2" />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {cupones.length === 0 && promociones.length === 0 && programasSellos.length === 0 && (
                   <Alert>
                     <Sparkles className="h-4 w-4" />
                     <AlertDescription>
-                      No hay promociones o cupones disponibles en este momento
+                      No hay promociones, cupones o programas de sellos disponibles en este momento
                     </AlertDescription>
                   </Alert>
                 )}

@@ -51,7 +51,10 @@
       "Bash(git add app/sitemap.ts public/robots.txt)",
       "Bash(git add next.config.mjs)",
       "Bash(npx prisma format)",
-      "Bash(cat prisma/schema.prisma)"
+      "Bash(cat prisma/schema.prisma)",
+      "Bash(git add backend/src/sellos/sellos.controller.ts)",
+      "Bash(git add backend/src/sellos/sellos.module.ts backend/src/sellos/sellos.service.ts)",
+      "Bash(git add frontend/app/admin/dashboard/page.tsx)"
     ],
     "deny": [],
     "ask": []

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
-import { Gift, Ticket, QrCode, User, Users } from 'lucide-react'
+import { Gift, Ticket, QrCode, User, Users, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useBrandingContext } from './BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
@@ -115,6 +115,11 @@ export function ClientNav() {
       href: `/${slug}/promociones`,
       label: 'Promociones',
       icon: Gift,
+    },
+    {
+      href: `/${slug}/mis-sellos`,
+      label: 'Mis Sellos',
+      icon: CreditCard,
     },
     {
       href: `/${slug}/mis-canjes`,
