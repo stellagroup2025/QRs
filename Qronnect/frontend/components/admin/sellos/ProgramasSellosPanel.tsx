@@ -6,10 +6,12 @@ import { obtenerProgramasSellos, eliminarProgramaSello } from '@/lib/api/sellos'
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, BarChart3, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Trash2, BarChart3, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { ProgramaSelloFormModal } from './ProgramaSelloFormModal';
+import { PlantillasSelectorModal } from './PlantillasSelectorModal';
 import { formatearPremio, obtenerTextoTipoPremio } from '@/types/sellos';
+import { CrearProgramaSellosRequest } from '@/types/sellos';
 
 interface ProgramasSellosPanelProps {
   token: string;
@@ -19,7 +21,9 @@ export function ProgramasSellosPanel({ token }: ProgramasSellosPanelProps) {
   const [programas, setProgramas] = useState<ProgramaSellos[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [modalPlantillasAbierto, setModalPlantillasAbierto] = useState(false);
   const [programaEditar, setProgramaEditar] = useState<ProgramaSellos | null>(null);
+  const [programaDesdePlantilla, setProgramaDesdePlantilla] = useState<CrearProgramaSellosRequest | null>(null);
 
   useEffect(() => {
     cargarProgramas();
@@ -66,9 +70,20 @@ export function ProgramasSellosPanel({ token }: ProgramasSellosPanelProps) {
   const handleModalClose = (actualizado: boolean) => {
     setModalAbierto(false);
     setProgramaEditar(null);
+    setProgramaDesdePlantilla(null);
     if (actualizado) {
       cargarProgramas();
     }
+  };
+
+  const handleAbrirPlantillas = () => {
+    setModalPlantillasAbierto(true);
+  };
+
+  const handleSeleccionarPlantilla = (programa: CrearProgramaSellosRequest) => {
+    setProgramaDesdePlantilla(programa);
+    setProgramaEditar(null);
+    setModalAbierto(true);
   };
 
   if (loading) {
@@ -89,10 +104,16 @@ export function ProgramasSellosPanel({ token }: ProgramasSellosPanelProps) {
             Gestiona tus programas de fidelización por sellos
           </p>
         </div>
-        <Button onClick={handleCrear}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Programa
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleAbrirPlantillas}>
+            <Sparkles className="mr-2 h-4 w-4 text-yellow-500" />
+            Ver Plantillas
+          </Button>
+          <Button onClick={handleCrear}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Programa
+          </Button>
+        </div>
       </div>
 
       {/* Lista de programas */}
@@ -108,10 +129,16 @@ export function ProgramasSellosPanel({ token }: ProgramasSellosPanelProps) {
                 Crea tu primer programa de fidelización por sellos
               </p>
             </div>
-            <Button onClick={handleCrear}>
-              <Plus className="mr-2 h-4 w-4" />
-              Crear Programa
-            </Button>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={handleAbrirPlantillas}>
+                <Sparkles className="mr-2 h-4 w-4 text-yellow-500" />
+                Usar Plantilla
+              </Button>
+              <Button onClick={handleCrear}>
+                <Plus className="mr-2 h-4 w-4" />
+                Crear Programa
+              </Button>
+            </div>
           </div>
         </Card>
       ) : (
@@ -216,10 +243,18 @@ export function ProgramasSellosPanel({ token }: ProgramasSellosPanelProps) {
       {modalAbierto && (
         <ProgramaSelloFormModal
           programa={programaEditar}
+          programaDesdePlantilla={programaDesdePlantilla}
           token={token}
           onClose={handleModalClose}
         />
       )}
+
+      {/* Modal de plantillas */}
+      <PlantillasSelectorModal
+        open={modalPlantillasAbierto}
+        onOpenChange={setModalPlantillasAbierto}
+        onSeleccionarPlantilla={handleSeleccionarPlantilla}
+      />
     </div>
   );
 }
