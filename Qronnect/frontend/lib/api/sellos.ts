@@ -21,7 +21,7 @@ export async function crearProgramaSellos(
   data: CrearProgramaSellosRequest,
   token: string
 ): Promise<ProgramaSellos> {
-  const response = await fetch(`${API_URL}/sellos/programas`, {
+  const response = await fetch(`${API_URL}/api/sellos/programas`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ export async function obtenerProgramasSellos(
   token: string,
   soloActivos = false
 ): Promise<ProgramaSellos[]> {
-  const url = new URL(`${API_URL}/sellos/programas`);
+  const url = new URL(`${API_URL}/api/sellos/programas`);
   if (soloActivos) {
     url.searchParams.append('solo_activos', 'true');
   }
@@ -64,7 +64,7 @@ export async function obtenerProgramaSello(
   id: string,
   token: string
 ): Promise<ProgramaSellos> {
-  const response = await fetch(`${API_URL}/sellos/programas/${id}`, {
+  const response = await fetch(`${API_URL}/api/sellos/programas/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -82,7 +82,7 @@ export async function actualizarProgramaSello(
   data: ActualizarProgramaSellosRequest,
   token: string
 ): Promise<ProgramaSellos> {
-  const response = await fetch(`${API_URL}/sellos/programas/${id}`, {
+  const response = await fetch(`${API_URL}/api/sellos/programas/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ export async function eliminarProgramaSello(
   id: string,
   token: string
 ): Promise<void> {
-  const response = await fetch(`${API_URL}/sellos/programas/${id}`, {
+  const response = await fetch(`${API_URL}/api/sellos/programas/${id}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -119,7 +119,7 @@ export async function obtenerEstadisticasPrograma(
   id: string,
   token: string
 ): Promise<EstadisticasProgramaSellos | null> {
-  const response = await fetch(`${API_URL}/sellos/programas/${id}/estadisticas`, {
+  const response = await fetch(`${API_URL}/api/sellos/programas/${id}/estadisticas`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -140,7 +140,7 @@ export async function otorgarSello(
   data: OtorgarSelloRequest,
   token: string
 ): Promise<RespuestaOtorgarSello> {
-  const response = await fetch(`${API_URL}/sellos/otorgar`, {
+  const response = await fetch(`${API_URL}/api/sellos/otorgar`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ export async function canjearCuponSello(
   data: CanjearCuponSelloRequest,
   token: string
 ): Promise<RespuestaCanjearCupon> {
-  const response = await fetch(`${API_URL}/sellos/canjear`, {
+  const response = await fetch(`${API_URL}/api/sellos/canjear`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -182,7 +182,7 @@ export async function verificarCuponSello(
   codigo: string,
   token: string
 ): Promise<TarjetaSelloConProgreso> {
-  const response = await fetch(`${API_URL}/sellos/verificar-cupon/${codigo}`, {
+  const response = await fetch(`${API_URL}/api/sellos/verificar-cupon/${codigo}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -204,7 +204,7 @@ export async function obtenerTarjetasCliente(
   token: string,
   soloActivas = false
 ): Promise<TarjetaSelloConProgreso[]> {
-  const url = new URL(`${API_URL}/sellos/clientes/${idCliente}/tarjetas`);
+  const url = new URL(`${API_URL}/api/sellos/clientes/${idCliente}/tarjetas`);
   if (soloActivas) {
     url.searchParams.append('solo_activas', 'true');
   }
@@ -226,7 +226,7 @@ export async function obtenerTarjetasTienda(
   token: string,
   estado?: string
 ): Promise<TarjetaSelloConProgreso[]> {
-  const url = new URL(`${API_URL}/sellos/tarjetas`);
+  const url = new URL(`${API_URL}/api/sellos/tarjetas`);
   if (estado) {
     url.searchParams.append('estado', estado);
   }
@@ -248,7 +248,7 @@ export async function obtenerDetalleTarjeta(
   id: string,
   token: string
 ): Promise<TarjetaSelloConProgreso> {
-  const response = await fetch(`${API_URL}/sellos/tarjetas/${id}`, {
+  const response = await fetch(`${API_URL}/api/sellos/tarjetas/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -265,7 +265,7 @@ export async function obtenerSellosTarjeta(
   id: string,
   token: string
 ): Promise<SelloOtorgado[]> {
-  const response = await fetch(`${API_URL}/sellos/tarjetas/${id}/sellos`, {
+  const response = await fetch(`${API_URL}/api/sellos/tarjetas/${id}/sellos`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -279,7 +279,7 @@ export async function obtenerSellosTarjeta(
 }
 
 export async function cancelarTarjeta(id: string, token: string): Promise<void> {
-  const response = await fetch(`${API_URL}/sellos/tarjetas/${id}`, {
+  const response = await fetch(`${API_URL}/api/sellos/tarjetas/${id}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -298,7 +298,7 @@ export async function cancelarTarjeta(id: string, token: string): Promise<void> 
 export async function obtenerEstadisticasSellos(
   token: string
 ): Promise<EstadisticasProgramaSellos[]> {
-  const response = await fetch(`${API_URL}/sellos/estadisticas`, {
+  const response = await fetch(`${API_URL}/api/sellos/estadisticas`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
