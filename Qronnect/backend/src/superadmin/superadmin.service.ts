@@ -1340,6 +1340,7 @@ export class SuperAdminService {
       JSON.stringify({
         sub: superadminId, // Usamos el ID del superadmin
         tienda_id: tienda.id,
+        dominio: tienda.dominio, // Añadir dominio para usar en X-Tenant-Domain
         email: 'superadmin@access',
         role: 'admin',
         superadmin_access: true, // Flag para identificar que es acceso de superadmin
