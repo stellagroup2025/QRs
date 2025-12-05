@@ -24,6 +24,7 @@ import { UsuariosTiendaModule } from './usuarios-tienda/usuarios-tienda.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { InformesModule } from './informes/informes.module';
 import { SellosModule } from './sellos/sellos.module';
+import { GachaModule } from './gacha/gacha.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { SellosModule } from './sellos/sellos.module';
     OnboardingModule,
     InformesModule,
     SellosModule,
+    GachaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
