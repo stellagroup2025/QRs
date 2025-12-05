@@ -49,6 +49,26 @@ export class AdminController {
   }
 
   /**
+   * GET /api/admin/tienda
+   * Obtener información de la tienda del admin autenticado
+   */
+  @Get('tienda')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({
+    summary: 'Obtener datos de la tienda',
+    description: 'Devuelve los datos de la tienda del admin autenticado',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Datos de la tienda',
+  })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
+  async obtenerTienda(@CurrentTienda() tiendaId: string) {
+    return this.adminService.obtenerTienda(tiendaId);
+  }
+
+  /**
    * POST /api/admin/auth/cambiar-pin
    * Cambia el PIN del usuario admin autenticado
    * Envia email con el nuevo PIN

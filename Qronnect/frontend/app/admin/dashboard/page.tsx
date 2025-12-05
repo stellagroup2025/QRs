@@ -357,21 +357,26 @@ export default function AdminDashboardPage() {
     try {
       // Decodificar el token para obtener el tienda_id
       const payload = JSON.parse(atob(token))
-      const domain = window.location.hostname.split('.')[0] // Extraer el subdominio
 
-      // Simular data de tienda basado en el dominio (en producción esto vendría del backend)
-      const tiendaData = {
-        id: payload.tienda_id,
-        dominio: domain,
-        nombre: domain.charAt(0).toUpperCase() + domain.slice(1), // Capitalizar
+      // Obtener datos reales de la tienda desde el backend
+      const response = await fetch(`${API_URL}/api/admin/tienda`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al obtener datos de la tienda')
       }
+
+      const tiendaData = await response.json()
 
       localStorage.setItem('admin_tienda', JSON.stringify(tiendaData))
       setToken(token)
       setTienda(tiendaData)
 
-      // Generar URL del QR
-      const registroUrl = getQrUrl(domain)
+      // Generar URL del QR usando el dominio real de la tienda
+      const registroUrl = getQrUrl(tiendaData.dominio)
       setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(registroUrl)}`)
 
       // Cargar dashboard

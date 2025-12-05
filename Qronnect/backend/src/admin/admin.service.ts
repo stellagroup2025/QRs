@@ -108,6 +108,25 @@ export class AdminService {
   }
 
   /**
+   * Obtener datos de la tienda
+   */
+  async obtenerTienda(tiendaId: string): Promise<any> {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const { data: tienda, error } = await supabase
+      .from('tiendas')
+      .select('id, nombre, dominio, email, telefono, activo')
+      .eq('id', tiendaId)
+      .single();
+
+    if (error || !tienda) {
+      throw new NotFoundException('Tienda no encontrada');
+    }
+
+    return tienda;
+  }
+
+  /**
    * Cambia el PIN de un usuario admin
    * Verifica el PIN actual y actualiza al nuevo PIN
    * Envia notificacion por email con el nuevo PIN
