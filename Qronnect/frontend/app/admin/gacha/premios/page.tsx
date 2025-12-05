@@ -169,7 +169,8 @@ export default function GestionPremiosPage() {
             <Button onClick={handleCrear} size="lg">
               <Plus className="h-4 w-4 mr-2" />
               Nuevo Premio
-          </Button>
+            </Button>
+          </div>
         </div>
 
         {/* Resumen */}
