@@ -312,11 +312,25 @@ export class SellosController {
 
   @UseGuards(ClientAuthGuard)
   @Post('inicializar-mis-tarjetas')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Inicializar mis tarjetas de sellos (cliente)' })
-  @ApiResponse({ status: 201, description: 'Tarjetas inicializadas' })
+  @ApiResponse({ status: 200, description: 'Tarjetas inicializadas' })
+  @ApiResponse({ status: 400, description: 'Error al inicializar tarjetas' })
   async inicializarMisTarjetas(@Request() req) {
-    const idCliente = req.user.id;
-    const idTienda = req.user.tienda_id;
-    return this.sellosService.inicializarTarjetasCliente(idCliente, idTienda);
+    try {
+      const idCliente = req.user.id;
+      const idTienda = req.user.tienda_id;
+
+      console.log('🎯 Inicializando tarjetas para cliente:', { idCliente, idTienda });
+
+      const resultado = await this.sellosService.inicializarTarjetasCliente(idCliente, idTienda);
+
+      console.log('✅ Tarjetas inicializadas:', resultado);
+
+      return resultado;
+    } catch (error) {
+      console.error('❌ Error al inicializar tarjetas:', error);
+      throw error;
+    }
   }
 }

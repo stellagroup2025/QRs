@@ -68,6 +68,12 @@ export function MisTarjetasSellos({ idCliente, token, slug }: MisTarjetasSellosP
         },
       });
 
+      // Si es 400, probablemente no hay programas activos - no es un error crítico
+      if (response.status === 400) {
+        console.log('No hay programas de sellos activos para inicializar');
+        return;
+      }
+
       if (response.ok) {
         // Recargar tarjetas
         const misTarjetasResponse = await fetch(`${API_URL}/api/sellos/mis-tarjetas`, {
