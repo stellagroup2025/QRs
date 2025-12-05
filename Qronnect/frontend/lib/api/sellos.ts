@@ -19,13 +19,15 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function crearProgramaSellos(
   data: CrearProgramaSellosRequest,
-  token: string
+  token: string,
+  domain: string
 ): Promise<ProgramaSellos> {
   const response = await fetch(`${API_URL}/api/sellos/programas`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
     body: JSON.stringify(data),
   });
@@ -40,6 +42,7 @@ export async function crearProgramaSellos(
 
 export async function obtenerProgramasSellos(
   token: string,
+  domain: string,
   soloActivos = false
 ): Promise<ProgramaSellos[]> {
   const url = new URL(`${API_URL}/api/sellos/programas`);
@@ -50,6 +53,7 @@ export async function obtenerProgramasSellos(
   const response = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
   });
 
@@ -62,11 +66,13 @@ export async function obtenerProgramasSellos(
 
 export async function obtenerProgramaSello(
   id: string,
-  token: string
+  token: string,
+  domain: string
 ): Promise<ProgramaSellos> {
   const response = await fetch(`${API_URL}/api/sellos/programas/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
   });
 
@@ -80,13 +86,15 @@ export async function obtenerProgramaSello(
 export async function actualizarProgramaSello(
   id: string,
   data: ActualizarProgramaSellosRequest,
-  token: string
+  token: string,
+  domain: string
 ): Promise<ProgramaSellos> {
   const response = await fetch(`${API_URL}/api/sellos/programas/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
     body: JSON.stringify(data),
   });
@@ -101,12 +109,14 @@ export async function actualizarProgramaSello(
 
 export async function eliminarProgramaSello(
   id: string,
-  token: string
+  token: string,
+  domain: string
 ): Promise<void> {
   const response = await fetch(`${API_URL}/api/sellos/programas/${id}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
   });
 
@@ -117,11 +127,13 @@ export async function eliminarProgramaSello(
 
 export async function obtenerEstadisticasPrograma(
   id: string,
-  token: string
+  token: string,
+  domain: string
 ): Promise<EstadisticasProgramaSellos | null> {
   const response = await fetch(`${API_URL}/api/sellos/programas/${id}/estadisticas`, {
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
   });
 
@@ -138,13 +150,15 @@ export async function obtenerEstadisticasPrograma(
 
 export async function otorgarSello(
   data: OtorgarSelloRequest,
-  token: string
+  token: string,
+  domain: string
 ): Promise<RespuestaOtorgarSello> {
   const response = await fetch(`${API_URL}/api/sellos/otorgar`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
     body: JSON.stringify(data),
   });
@@ -159,13 +173,15 @@ export async function otorgarSello(
 
 export async function canjearCuponSello(
   data: CanjearCuponSelloRequest,
-  token: string
+  token: string,
+  domain: string
 ): Promise<RespuestaCanjearCupon> {
   const response = await fetch(`${API_URL}/api/sellos/canjear`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
     body: JSON.stringify(data),
   });
@@ -180,11 +196,13 @@ export async function canjearCuponSello(
 
 export async function verificarCuponSello(
   codigo: string,
-  token: string
+  token: string,
+  domain: string
 ): Promise<TarjetaSelloConProgreso> {
   const response = await fetch(`${API_URL}/api/sellos/verificar-cupon/${codigo}`, {
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
   });
 
@@ -202,6 +220,7 @@ export async function verificarCuponSello(
 export async function obtenerTarjetasCliente(
   idCliente: string,
   token: string,
+  domain: string,
   soloActivas = false
 ): Promise<TarjetaSelloConProgreso[]> {
   const url = new URL(`${API_URL}/api/sellos/clientes/${idCliente}/tarjetas`);
@@ -212,6 +231,7 @@ export async function obtenerTarjetasCliente(
   const response = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
   });
 
@@ -224,6 +244,7 @@ export async function obtenerTarjetasCliente(
 
 export async function obtenerTarjetasTienda(
   token: string,
+  domain: string,
   estado?: string
 ): Promise<TarjetaSelloConProgreso[]> {
   const url = new URL(`${API_URL}/api/sellos/tarjetas`);
@@ -234,6 +255,7 @@ export async function obtenerTarjetasTienda(
   const response = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
   });
 
@@ -246,11 +268,13 @@ export async function obtenerTarjetasTienda(
 
 export async function obtenerDetalleTarjeta(
   id: string,
-  token: string
+  token: string,
+  domain: string
 ): Promise<TarjetaSelloConProgreso> {
   const response = await fetch(`${API_URL}/api/sellos/tarjetas/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
   });
 
@@ -263,11 +287,13 @@ export async function obtenerDetalleTarjeta(
 
 export async function obtenerSellosTarjeta(
   id: string,
-  token: string
+  token: string,
+  domain: string
 ): Promise<SelloOtorgado[]> {
   const response = await fetch(`${API_URL}/api/sellos/tarjetas/${id}/sellos`, {
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
   });
 
@@ -278,11 +304,12 @@ export async function obtenerSellosTarjeta(
   return response.json();
 }
 
-export async function cancelarTarjeta(id: string, token: string): Promise<void> {
+export async function cancelarTarjeta(id: string, token: string, domain: string): Promise<void> {
   const response = await fetch(`${API_URL}/api/sellos/tarjetas/${id}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
   });
 
@@ -296,11 +323,13 @@ export async function cancelarTarjeta(id: string, token: string): Promise<void> 
 // ============================================
 
 export async function obtenerEstadisticasSellos(
-  token: string
+  token: string,
+  domain: string
 ): Promise<EstadisticasProgramaSellos[]> {
   const response = await fetch(`${API_URL}/api/sellos/estadisticas`, {
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-Tenant-Domain': domain,
     },
   });
 

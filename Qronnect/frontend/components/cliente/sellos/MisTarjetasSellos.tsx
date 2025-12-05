@@ -13,9 +13,10 @@ import { toast } from 'sonner';
 interface MisTarjetasSellosProps {
   idCliente: string;
   token: string;
+  slug: string;
 }
 
-export function MisTarjetasSellos({ idCliente, token }: MisTarjetasSellosProps) {
+export function MisTarjetasSellos({ idCliente, token, slug }: MisTarjetasSellosProps) {
   const [tarjetas, setTarjetas] = useState<TarjetaSelloConProgreso[]>([]);
   const [loading, setLoading] = useState(true);
   const [tabActiva, setTabActiva] = useState<'activas' | 'completadas' | 'todas'>('activas');
@@ -27,7 +28,7 @@ export function MisTarjetasSellos({ idCliente, token }: MisTarjetasSellosProps) 
   const cargarTarjetas = async () => {
     try {
       setLoading(true);
-      const data = await obtenerTarjetasCliente(idCliente, token, false);
+      const data = await obtenerTarjetasCliente(idCliente, token, slug, false);
       setTarjetas(data);
     } catch (error) {
       console.error('Error al cargar tarjetas:', error);

@@ -89,7 +89,7 @@ export default function MisSellosPage() {
           </p>
         </div>
 
-        <MisTarjetasSellos idCliente={clienteId} token={token} />
+        <MisTarjetasSellos idCliente={clienteId} token={token} slug={slug} />
       </div>
     </div>
   )

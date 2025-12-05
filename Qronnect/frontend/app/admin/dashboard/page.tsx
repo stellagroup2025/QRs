@@ -1327,7 +1327,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <ProgramasSellosPanel token={token || ''} />
+            <ProgramasSellosPanel token={token || ''} domain={tienda?.dominio || ''} />
           </TabsContent>
 
           {/* Tab de Campañas */}

@@ -21,10 +21,11 @@ interface ProgramaSelloFormModalProps {
   programa: ProgramaSellos | null;
   programaDesdePlantilla?: any | null;
   token: string;
+  domain: string;
   onClose: (actualizado: boolean) => void;
 }
 
-export function ProgramaSelloFormModal({ programa, programaDesdePlantilla, token, onClose }: ProgramaSelloFormModalProps) {
+export function ProgramaSelloFormModal({ programa, programaDesdePlantilla, token, domain, onClose }: ProgramaSelloFormModalProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CrearProgramaSellosRequest>({
     nombre: '',
@@ -77,10 +78,10 @@ export function ProgramaSelloFormModal({ programa, programaDesdePlantilla, token
 
     try {
       if (programa) {
-        await actualizarProgramaSello(programa.id, formData, token);
+        await actualizarProgramaSello(programa.id, formData, token, domain);
         toast.success('Programa actualizado exitosamente');
       } else {
-        await crearProgramaSellos(formData, token);
+        await crearProgramaSellos(formData, token, domain);
         toast.success('Programa creado exitosamente');
       }
       onClose(true);

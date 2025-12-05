@@ -15,9 +15,10 @@ import { CrearProgramaSellosRequest } from '@/types/sellos';
 
 interface ProgramasSellosPanelProps {
   token: string;
+  domain: string;
 }
 
-export function ProgramasSellosPanel({ token }: ProgramasSellosPanelProps) {
+export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProps) {
   const [programas, setProgramas] = useState<ProgramaSellos[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -32,7 +33,7 @@ export function ProgramasSellosPanel({ token }: ProgramasSellosPanelProps) {
   const cargarProgramas = async () => {
     try {
       setLoading(true);
-      const data = await obtenerProgramasSellos(token);
+      const data = await obtenerProgramasSellos(token, domain);
       setProgramas(data);
     } catch (error) {
       console.error('Error al cargar programas:', error);
@@ -44,11 +45,13 @@ export function ProgramasSellosPanel({ token }: ProgramasSellosPanelProps) {
 
   const handleCrear = () => {
     setProgramaEditar(null);
+    setProgramaDesdePlantilla(null);
     setModalAbierto(true);
   };
 
   const handleEditar = (programa: ProgramaSellos) => {
     setProgramaEditar(programa);
+    setProgramaDesdePlantilla(null);
     setModalAbierto(true);
   };
 
@@ -58,7 +61,7 @@ export function ProgramasSellosPanel({ token }: ProgramasSellosPanelProps) {
     }
 
     try {
-      await eliminarProgramaSello(id, token);
+      await eliminarProgramaSello(id, token, domain);
       toast.success('Programa desactivado exitosamente');
       cargarProgramas();
     } catch (error) {
@@ -245,6 +248,7 @@ export function ProgramasSellosPanel({ token }: ProgramasSellosPanelProps) {
           programa={programaEditar}
           programaDesdePlantilla={programaDesdePlantilla}
           token={token}
+          domain={domain}
           onClose={handleModalClose}
         />
       )}
