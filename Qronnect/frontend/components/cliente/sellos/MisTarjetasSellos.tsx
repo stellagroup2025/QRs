@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { TarjetaSelloConProgreso, EstadoTarjetaSello } from '@/types/sellos';
-import { obtenerTarjetasCliente } from '@/lib/api/sellos';
 import { TarjetaSelloCard } from './TarjetaSelloCard';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -28,7 +27,21 @@ export function MisTarjetasSellos({ idCliente, token, slug }: MisTarjetasSellosP
   const cargarTarjetas = async () => {
     try {
       setLoading(true);
-      const data = await obtenerTarjetasCliente(idCliente, token, slug, false);
+
+      // Usar el nuevo endpoint para clientes
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/sellos/mis-tarjetas`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-Tenant-Domain': slug,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener tarjetas');
+      }
+
+      const data = await response.json();
       setTarjetas(data);
 
       // Si no hay tarjetas, intentar inicializarlas
@@ -45,9 +58,9 @@ export function MisTarjetasSellos({ idCliente, token, slug }: MisTarjetasSellosP
 
   const inicializarTarjetas = async () => {
     try {
-      // Llamar al endpoint que crea tarjetas automáticamente
+      // Llamar al nuevo endpoint para clientes
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/sellos/clientes/${idCliente}/inicializar`, {
+      const response = await fetch(`${API_URL}/api/sellos/inicializar-mis-tarjetas`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -56,11 +69,20 @@ export function MisTarjetasSellos({ idCliente, token, slug }: MisTarjetasSellosP
       });
 
       if (response.ok) {
-        // Recargar tarjetas si se crearon algunas
-        const tarjetasNuevas = await obtenerTarjetasCliente(idCliente, token, slug, false);
-        if (tarjetasNuevas.length > 0) {
-          setTarjetas(tarjetasNuevas);
-          toast.success('¡Tarjetas de sellos inicializadas!');
+        // Recargar tarjetas
+        const misTarjetasResponse = await fetch(`${API_URL}/api/sellos/mis-tarjetas`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-Tenant-Domain': slug,
+          },
+        });
+
+        if (misTarjetasResponse.ok) {
+          const tarjetasNuevas = await misTarjetasResponse.json();
+          if (tarjetasNuevas.length > 0) {
+            setTarjetas(tarjetasNuevas);
+            toast.success('¡Tarjetas de sellos inicializadas!');
+          }
         }
       }
     } catch (error) {
