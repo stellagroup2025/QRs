@@ -224,7 +224,69 @@ export class ComprasService {
       // En producción, considera usar transacciones o mecanismos de retry
     }
 
-    // 6. Enviar email de agradecimiento
+    // 6. Consultar si se otorgó algún sello en esta compra (para el email)
+    let selloInfo: {
+      sellosGanados: number;
+      programaNombre: string;
+      sellosActuales: number;
+      sellosObjetivo: number;
+      tarjetaCompletada: boolean;
+    } | null = null;
+
+    try {
+      // Buscar sellos otorgados en esta compra
+      const { data: sellosOtorgados } = await supabase
+        .from('sellos_otorgados')
+        .select(`
+          id,
+          id_tarjeta,
+          tarjetas_sellos_clientes!inner (
+            id,
+            sellos_actuales,
+            sellos_objetivo,
+            estado,
+            programas_sellos!inner (
+              nombre
+            )
+          )
+        `)
+        .eq('id_compra', compra.id)
+        .order('fecha_otorgado', { ascending: false })
+        .limit(1);
+
+      if (sellosOtorgados && sellosOtorgados.length > 0) {
+        const sello = sellosOtorgados[0];
+        const tarjeta = sello.tarjetas_sellos_clientes;
+        const programa = (tarjeta as any).programas_sellos;
+
+        selloInfo = {
+          sellosGanados: 1, // Por ahora otorgamos 1 sello por compra
+          programaNombre: programa.nombre,
+          sellosActuales: tarjeta.sellos_actuales,
+          sellosObjetivo: tarjeta.sellos_objetivo,
+          tarjetaCompletada: tarjeta.estado === 'completada',
+        };
+      }
+    } catch (error) {
+      console.error('Error al consultar información de sellos para el email:', error);
+      // No fallar si hay error consultando sellos
+    }
+
+    // 7. Obtener URL de Google Reviews de la tienda (si está configurada)
+    let googleReviewsUrl: string | null = null;
+    try {
+      const { data: tiendaData } = await supabase
+        .from('tiendas')
+        .select('google_reviews_url')
+        .eq('id', tiendaId)
+        .single();
+
+      googleReviewsUrl = tiendaData?.google_reviews_url || null;
+    } catch (error) {
+      console.error('Error al obtener google_reviews_url:', error);
+    }
+
+    // 8. Enviar email de agradecimiento
     // Esto se hace de forma asíncrona sin bloquear la respuesta
     this.emailService.sendPurchaseThankYouEmail({
       clienteEmail: cliente.email,
@@ -232,12 +294,20 @@ export class ComprasService {
       tiendaNombre: tenant.nombre,
       importeCompra: parseFloat(compra.importe),
       puntosGanados: puntosOtorgados,
+      ...(selloInfo && {
+        sellosGanados: selloInfo.sellosGanados,
+        programaSelloNombre: selloInfo.programaNombre,
+        sellosActuales: selloInfo.sellosActuales,
+        sellosObjetivo: selloInfo.sellosObjetivo,
+        tarjetaCompletada: selloInfo.tarjetaCompletada,
+      }),
+      googleReviewsUrl: googleReviewsUrl || undefined,
     }).catch(error => {
       console.error('Error al enviar email de agradecimiento:', error);
       // No fallar la compra si el email falla
     });
 
-    // 7. Devolver respuesta
+    // 9. Devolver respuesta
     return {
       compra_id: compra.id,
       cliente: {

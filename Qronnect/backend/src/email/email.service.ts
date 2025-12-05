@@ -160,6 +160,8 @@ export class EmailService {
     programaSelloNombre?: string;
     sellosActuales?: number;
     sellosObjetivo?: number;
+    tarjetaCompletada?: boolean;
+    googleReviewsUrl?: string;
   }): Promise<{ success: boolean; error?: string }> {
     const {
       clienteEmail,
@@ -171,6 +173,8 @@ export class EmailService {
       programaSelloNombre,
       sellosActuales,
       sellosObjetivo,
+      tarjetaCompletada,
+      googleReviewsUrl,
     } = params;
 
     const html = `
@@ -229,7 +233,10 @@ export class EmailService {
                     </div>
                     ${sellosActuales !== undefined && sellosObjetivo ? `
                     <p style="margin: 12px 0 0; color: #666666; font-size: 13px;">
-                      Llevas <strong>${sellosActuales} de ${sellosObjetivo} sellos</strong>
+                      ${tarjetaCompletada
+                        ? `<strong style="color: #10b981;">🎉 ¡Tarjeta completada! Ya puedes canjear tu premio</strong>`
+                        : `Llevas <strong>${sellosActuales} de ${sellosObjetivo} sellos</strong> - Te ${sellosObjetivo - sellosActuales === 1 ? 'falta solo 1 sello' : `faltan ${sellosObjetivo - sellosActuales} sellos`} para completar tu tarjeta`
+                      }
                     </p>
                     ` : ''}
                     ` : ''}
@@ -246,6 +253,29 @@ export class EmailService {
               </p>
             </td>
           </tr>
+
+          ${googleReviewsUrl ? `
+          <!-- Google Review Request -->
+          <tr>
+            <td style="padding: 0 30px 40px;">
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); border-radius: 8px; overflow: hidden;">
+                <tr>
+                  <td style="padding: 24px; text-align: center;">
+                    <p style="margin: 0 0 12px; color: #ffffff; font-size: 16px; font-weight: 600;">
+                      ⭐ ¿Nos ayudas con tu opinión?
+                    </p>
+                    <p style="margin: 0 0 20px; color: #ffffff; font-size: 14px; line-height: 1.5; opacity: 0.95;">
+                      Tu experiencia nos importa mucho. Comparte tu opinión en Google y ayuda a otros clientes a conocernos mejor.
+                    </p>
+                    <a href="${googleReviewsUrl}" style="display: inline-block; background-color: #ffffff; color: #1a73e8; padding: 12px 32px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                      Dejar una reseña
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ` : ''}
 
           <!-- Footer -->
           <tr>
