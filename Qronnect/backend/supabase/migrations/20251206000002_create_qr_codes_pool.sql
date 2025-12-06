@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS qr_codes_pool (
   -- Auditoría
   creado_en TIMESTAMPTZ DEFAULT NOW(),
   actualizado_en TIMESTAMPTZ DEFAULT NOW(),
-  creado_por UUID REFERENCES admins(id) ON DELETE SET NULL
+  creado_por UUID -- ID del superadmin que lo creó (opcional)
 );
 
 -- Índices para búsquedas rápidas
