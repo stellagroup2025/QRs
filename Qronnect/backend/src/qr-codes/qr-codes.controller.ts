@@ -15,7 +15,7 @@ import { GenerarQrCodesDto } from './dto/generar-qr-codes.dto';
 import { AsignarQrDto } from './dto/asignar-qr.dto';
 
 @ApiTags('QR Codes - Gestión de QR Codes Genéricos')
-@Controller('qr-codes')
+@Controller('api/qr-codes')
 @ApiBearerAuth()
 export class QrCodesController {
   constructor(private readonly qrCodesService: QrCodesService) {}

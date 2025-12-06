@@ -89,7 +89,7 @@ export class AppModule implements NestModule {
         'superadmin/(.*)', // Excluir todas las rutas de superadmin
         'api/superadmin/(.*)',
         'q/(.*)', // Excluir redirecciones de QR genéricos (no necesita tenant)
-        'qr-codes/(.*)', // Excluir gestión de QR codes (usa auth de superadmin)
+        'api/qr-codes/(.*)', // Excluir gestión de QR codes (usa auth de superadmin)
         'health', // Excluir health check (no necesita tenant)
         'api/health', // Excluir health check con prefijo api
       )
