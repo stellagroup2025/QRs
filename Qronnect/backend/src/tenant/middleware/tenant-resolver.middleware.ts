@@ -24,10 +24,17 @@ export class TenantResolverMiddleware implements NestMiddleware {
     // IMPORTANTE: Usar originalUrl porque path puede ser solo "/" en algunos casos
     const path = req.originalUrl || req.path;
 
-    if (excludedPaths.some(pattern => pattern.test(path))) {
+    // Debug: Ver qué path estamos evaluando
+    console.log('🏪 [TENANT RESOLVER] Evaluando ruta:', path);
+
+    const isExcluded = excludedPaths.some(pattern => pattern.test(path));
+
+    if (isExcluded) {
       console.log('🏪 [TENANT RESOLVER] Ruta excluida:', path);
       return next();
     }
+
+    console.log('🏪 [TENANT RESOLVER] Ruta NO excluida, resolviendo tenant para:', path);
 
     try {
       // Priorizar el header X-Tenant-Domain (para desarrollo y APIs)
