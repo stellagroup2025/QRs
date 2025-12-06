@@ -25,6 +25,8 @@ import { OnboardingModule } from './onboarding/onboarding.module';
 import { InformesModule } from './informes/informes.module';
 import { SellosModule } from './sellos/sellos.module';
 import { GachaModule } from './gacha/gacha.module';
+import { QrRedirectModule } from './qr-redirect/qr-redirect.module';
+import { QrCodesModule } from './qr-codes/qr-codes.module';
 
 @Module({
   imports: [
@@ -67,6 +69,8 @@ import { GachaModule } from './gacha/gacha.module';
     InformesModule,
     SellosModule,
     GachaModule,
+    QrRedirectModule,
+    QrCodesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -84,6 +88,8 @@ export class AppModule implements NestModule {
       .exclude(
         'superadmin/(.*)', // Excluir todas las rutas de superadmin
         'api/superadmin/(.*)',
+        'q/(.*)', // Excluir redirecciones de QR genéricos (no necesita tenant)
+        'qr-codes/(.*)', // Excluir gestión de QR codes (usa auth de superadmin)
         'health', // Excluir health check (no necesita tenant)
         'api/health', // Excluir health check con prefijo api
       )
