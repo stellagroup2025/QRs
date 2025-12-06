@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ interface Tienda {
   email: string;
 }
 
-export default function AsignarQrRapidoPage() {
+function AsignarQrRapidoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -197,5 +197,17 @@ export default function AsignarQrRapidoPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AsignarQrRapidoPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    }>
+      <AsignarQrRapidoContent />
+    </Suspense>
   );
 }
