@@ -27,6 +27,7 @@ import {
   Smartphone,
   BarChart3,
   MessageSquare,
+  Instagram,
 } from 'lucide-react'
 import {
   OrganizationSchema,
@@ -178,6 +179,16 @@ export function ProductLandingPage() {
               <a href='#faq' className='text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors'>
                 FAQ
               </a>
+              <a
+                href='https://www.instagram.com/qronnect/'
+                target='_blank'
+                rel='noopener noreferrer'
+                className='flex items-center gap-1.5 text-sm font-medium text-pink-600 hover:text-pink-700 transition-colors'
+                aria-label='Síguenos en Instagram'
+              >
+                <Instagram className='h-4 w-4' />
+                <span>Instagram</span>
+              </a>
               <Button asChild size='sm' className='bg-blue-600 hover:bg-blue-700 text-white'>
                 <Link href='/get-qr'>
                   Empezar Gratis
@@ -308,6 +319,23 @@ export function ProductLandingPage() {
                     </Link>
                   </Button>
                 </div>
+
+                {/* Instagram CTA - MUY VISIBLE */}
+                <motion.a
+                  href='https://www.instagram.com/qronnect/'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all hover:scale-105 group'
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Instagram className='w-6 h-6 group-hover:rotate-12 transition-transform' />
+                  <div className='flex flex-col items-start'>
+                    <span className='text-sm font-semibold'>Síguenos en Instagram</span>
+                    <span className='text-xs opacity-90'>@qronnect - Consejos y casos de éxito</span>
+                  </div>
+                  <ArrowRight className='w-5 h-5 ml-auto group-hover:translate-x-1 transition-transform' />
+                </motion.a>
 
                 {/* Trust Badge */}
                 <div className='flex items-center gap-2 text-sm text-gray-600 pt-2'>
@@ -2006,9 +2034,9 @@ export function ProductLandingPage() {
                 </ul>
               </div>
 
-              {/* Contacto */}
+              {/* Contacto & Redes Sociales */}
               <div>
-                <h3 className='font-semibold mb-4 text-white'>Contacto</h3>
+                <h3 className='font-semibold mb-4 text-white'>Contacto & Redes</h3>
                 <ul className='space-y-3 text-gray-400 text-sm'>
                   <li className='flex items-start gap-2'>
                     <Mail className='w-4 h-4 mt-0.5 flex-shrink-0' />
@@ -2023,6 +2051,17 @@ export function ProductLandingPage() {
                   <li className='flex items-start gap-2'>
                     <MapPin className='w-4 h-4 mt-0.5 flex-shrink-0' />
                     <span>Madrid, España</span>
+                  </li>
+                  <li className='pt-2'>
+                    <a
+                      href='https://www.instagram.com/qronnect/'
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-lg hover:from-pink-700 hover:to-purple-700 transition-all hover:scale-105 font-medium'
+                    >
+                      <Instagram className='w-4 h-4' />
+                      <span>@qronnect</span>
+                    </a>
                   </li>
                 </ul>
               </div>
