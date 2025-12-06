@@ -5,11 +5,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "$NEXT_PUBLIC_API_URL/:path*"
+      "destination": "https://qronnect-backend.onrender.com/api/:path*"
     },
     {
       "source": "/q/:hash",
-      "destination": "$NEXT_PUBLIC_API_URL/q/:hash"
+      "destination": "https://qronnect-backend.onrender.com/q/:hash"
     }
   ],
   "headers": [
