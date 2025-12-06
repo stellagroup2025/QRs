@@ -12,6 +12,23 @@ export class TenantResolverMiddleware implements NestMiddleware {
   constructor(private tenantService: TenantService) {}
 
   async use(req: Request & { tenant?: TenantContext }, res: Response, next: NextFunction) {
+    // Rutas que no requieren resolución de tenant
+    const excludedPaths = [
+      /^\/superadmin/,
+      /^\/api\/superadmin/,
+      /^\/q\//,
+      /^\/api\/qr-codes/,
+      /^\/health/,
+      /^\/api\/health/,
+    ];
+
+    // Si la ruta está excluida, continuar sin resolver tenant
+    const path = req.path;
+    if (excludedPaths.some(pattern => pattern.test(path))) {
+      console.log('🏪 [TENANT RESOLVER] Ruta excluida:', path);
+      return next();
+    }
+
     try {
       // Priorizar el header X-Tenant-Domain (para desarrollo y APIs)
       // Si no existe, usar el host del request
