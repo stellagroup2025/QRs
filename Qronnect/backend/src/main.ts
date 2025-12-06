@@ -66,8 +66,10 @@ async function bootstrap() {
     }),
   );
 
-  // Prefijo global para todas las rutas de la API
-  app.setGlobalPrefix('api');
+  // Prefijo global para todas las rutas de la API (excepto /q para QR redirects)
+  app.setGlobalPrefix('api', {
+    exclude: ['q/:hash', 'q/:hash/info'],
+  });
 
   // Configuración de Swagger para documentación de la API
   const config = new DocumentBuilder()
