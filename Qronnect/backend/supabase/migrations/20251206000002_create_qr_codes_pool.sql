@@ -131,8 +131,8 @@ BEGIN
     VALUES (v_hash, v_url, p_lote, p_admin_id);
 
     -- Retornar para el script de generación
-    hash := v_hash;
-    qr_url := v_url;
+    generar_qr_codes_batch.hash := v_hash;
+    generar_qr_codes_batch.qr_url := v_url;
     RETURN NEXT;
   END LOOP;
 END;
