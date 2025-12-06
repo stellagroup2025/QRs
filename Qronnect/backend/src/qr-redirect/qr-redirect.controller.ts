@@ -47,17 +47,6 @@ export class QrRedirectController {
       // Obtener destino del QR
       const redirectInfo = await this.qrRedirectService.obtenerRedireccion(hash);
 
-      // Si el QR NO está asignado (url_destino es qronnect.es)
-      if (redirectInfo.url_destino === 'https://qronnect.es') {
-        // Verificar si hay token de superadmin
-        const isSuperAdmin = await this.checkSuperAdminToken(authorization);
-
-        if (isSuperAdmin) {
-          // Redirigir a página de asignación rápida
-          return res.redirect(302, `https://www.qronnect.es/superadmin/asignar-qr?hash=${hash}`);
-        }
-      }
-
       // Registrar escaneo en analytics
       await this.qrRedirectService.registrarEscaneo({
         idQr: redirectInfo.id_qr,
@@ -68,27 +57,13 @@ export class QrRedirectController {
         urlDestino: redirectInfo.url_destino,
       });
 
-      // Redirigir
-      return res.redirect(302, redirectInfo.url_destino);
+      // Siempre redirigir a la página intermedia del frontend
+      // El frontend se encargará de verificar si es superadmin (localStorage)
+      // y redirigir al destino apropiado
+      return res.redirect(302, `https://www.qronnect.es/qr/${hash}`);
     } catch (error) {
-      // Si el QR no existe, redirigir a landing
-      return res.redirect(302, 'https://qronnect.es');
-    }
-  }
-
-  // Método auxiliar para verificar token de superadmin
-  private async checkSuperAdminToken(authHeader: string): Promise<boolean> {
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return false;
-    }
-
-    try {
-      const token = authHeader.substring(7);
-      // Intentar decodificar como token de desarrollo
-      const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
-      return decoded.role === 'superadmin';
-    } catch {
-      return false;
+      // Si el QR no existe, redirigir a página intermedia que mostrará error
+      return res.redirect(302, `https://www.qronnect.es/qr/${hash}`);
     }
   }
 
