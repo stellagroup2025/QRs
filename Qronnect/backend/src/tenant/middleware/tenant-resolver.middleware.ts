@@ -24,6 +24,11 @@ export class TenantResolverMiddleware implements NestMiddleware {
 
     // Si la ruta está excluida, continuar sin resolver tenant
     const path = req.path;
+    const url = req.url;
+    const originalUrl = req.originalUrl;
+
+    console.log('🏪 [TENANT RESOLVER] DEBUG - path:', path, 'url:', url, 'originalUrl:', originalUrl);
+
     if (excludedPaths.some(pattern => pattern.test(path))) {
       console.log('🏪 [TENANT RESOLVER] Ruta excluida:', path);
       return next();
