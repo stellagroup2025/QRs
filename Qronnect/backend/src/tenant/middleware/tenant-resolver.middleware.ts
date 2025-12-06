@@ -14,12 +14,10 @@ export class TenantResolverMiddleware implements NestMiddleware {
   async use(req: Request & { tenant?: TenantContext }, res: Response, next: NextFunction) {
     // Rutas que no requieren resolución de tenant
     const excludedPaths = [
-      /^\/superadmin/,
       /^\/api\/superadmin/,
-      /^\/q\//,
       /^\/api\/qr-codes/,
-      /^\/health/,
       /^\/api\/health/,
+      /^\/q\//,
     ];
 
     // Si la ruta está excluida, continuar sin resolver tenant
