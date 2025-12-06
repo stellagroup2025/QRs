@@ -25,14 +25,18 @@ export class SuperAdminGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
+    console.log('🔐 [SUPERADMIN GUARD] Verificando autenticación...');
+
     // 1. Verificar que hay un usuario autenticado
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('❌ [SUPERADMIN GUARD] No hay token de autenticación');
       throw new UnauthorizedException('No se proporcionó token de autenticación');
     }
 
     const token = authHeader.substring(7); // Remover "Bearer "
+    console.log('🔐 [SUPERADMIN GUARD] Token recibido (primeros 20 chars):', token.substring(0, 20) + '...');
 
     const supabase = this.supabaseService.getAdminClient();
 
@@ -43,6 +47,7 @@ export class SuperAdminGuard implements CanActivate {
     try {
       // Intentar decodificar como token de desarrollo
       const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
+      console.log('🔐 [SUPERADMIN GUARD] Token decodificado:', { sub: decoded.sub, email: decoded.email, role: decoded.role });
 
       if (decoded.role === 'superadmin' && decoded.sub && decoded.email) {
         // Es un token de desarrollo válido
@@ -51,12 +56,16 @@ export class SuperAdminGuard implements CanActivate {
 
         // Verificar expiración
         if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
+          console.log('❌ [SUPERADMIN GUARD] Token expirado');
           throw new UnauthorizedException('Token expirado');
         }
+
+        console.log('✅ [SUPERADMIN GUARD] Token de desarrollo válido');
       } else {
         throw new Error('No es un token de desarrollo');
       }
     } catch (decodeError) {
+      console.log('⚠️ [SUPERADMIN GUARD] No es token de desarrollo, intentando con Supabase Auth...');
       // Si no es un token de desarrollo, intentar con Supabase Auth
       const {
         data: { user },
@@ -72,6 +81,7 @@ export class SuperAdminGuard implements CanActivate {
     }
 
     // 3. Verificar que el usuario es un superadmin
+    console.log('🔐 [SUPERADMIN GUARD] Buscando superadmin con userId:', userId);
     const { data: superadmin, error: superadminError } = await supabase
       .from('superadmin_users')
       .select('*')
@@ -80,8 +90,11 @@ export class SuperAdminGuard implements CanActivate {
       .single();
 
     if (superadminError || !superadmin) {
+      console.log('❌ [SUPERADMIN GUARD] No es superadmin. Error:', superadminError?.message);
       throw new ForbiddenException('Acceso denegado: No eres un superadministrador');
     }
+
+    console.log('✅ [SUPERADMIN GUARD] Superadmin encontrado:', superadmin.nombre);
 
     // 4. Actualizar último acceso
     await supabase
