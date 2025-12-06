@@ -37,8 +37,8 @@ export default function QrCodesPoolPage() {
   const [loading, setLoading] = useState(true);
   const [qrCodes, setQrCodes] = useState<QrCodeType[]>([]);
   const [estadisticas, setEstadisticas] = useState<QrPoolEstadisticas | null>(null);
-  const [filtroEstado, setFiltroEstado] = useState<string>('');
-  const [filtroLote, setFiltroLote] = useState<string>('');
+  const [filtroEstado, setFiltroEstado] = useState<string>('todos');
+  const [filtroLote, setFiltroLote] = useState<string>('todos');
   const [busqueda, setBusqueda] = useState('');
   const [modalGenerar, setModalGenerar] = useState(false);
   const [generando, setGenerando] = useState(false);
@@ -56,8 +56,12 @@ export default function QrCodesPoolPage() {
       const token = localStorage.getItem('superadmin_token');
       if (!token) return;
 
+      // Convertir 'todos' a undefined para el API
+      const estadoParam = filtroEstado === 'todos' ? undefined : filtroEstado;
+      const loteParam = filtroLote === 'todos' ? undefined : filtroLote;
+
       const [qrs, stats] = await Promise.all([
-        listarQrCodes(token, filtroEstado, filtroLote),
+        listarQrCodes(token, estadoParam, loteParam),
         obtenerEstadisticas(token),
       ]);
 
@@ -102,7 +106,7 @@ export default function QrCodesPoolPage() {
   };
 
   const handleExportar = async () => {
-    if (!filtroLote) {
+    if (!filtroLote || filtroLote === 'todos') {
       toast({
         title: 'Selecciona un lote',
         description: 'Debes filtrar por un lote específico para exportar',
@@ -284,7 +288,7 @@ export default function QrCodesPoolPage() {
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="todos">Todos</SelectItem>
                   <SelectItem value="disponible">Disponible</SelectItem>
                   <SelectItem value="asignado">Asignado</SelectItem>
                   <SelectItem value="desactivado">Desactivado</SelectItem>
@@ -298,7 +302,7 @@ export default function QrCodesPoolPage() {
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="todos">Todos</SelectItem>
                   {estadisticas?.lotes.map((l) => (
                     <SelectItem key={l} value={l}>
                       {l}
@@ -308,7 +312,7 @@ export default function QrCodesPoolPage() {
               </Select>
             </div>
             <div className="flex items-end">
-              <Button variant="outline" className="w-full" onClick={handleExportar} disabled={!filtroLote}>
+              <Button variant="outline" className="w-full" onClick={handleExportar} disabled={!filtroLote || filtroLote === 'todos'}>
                 <Download className="h-4 w-4 mr-2" />
                 Exportar CSV
               </Button>

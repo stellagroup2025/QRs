@@ -63,27 +63,27 @@ export class QrCodesService {
   async obtenerEstadisticas() {
     const supabase = this.supabaseService.getAdminClient();
 
-    const { data: total } = await supabase
+    const { count: total } = await supabase
       .from('qr_codes_pool')
       .select('*', { count: 'exact', head: true });
 
-    const { data: disponibles } = await supabase
+    const { count: disponibles } = await supabase
       .from('qr_codes_pool')
       .select('*', { count: 'exact', head: true })
       .eq('estado', 'disponible');
 
-    const { data: asignados } = await supabase
+    const { count: asignados } = await supabase
       .from('qr_codes_pool')
       .select('*', { count: 'exact', head: true })
       .eq('estado', 'asignado');
 
-    const { data: desactivados } = await supabase
+    const { count: desactivados } = await supabase
       .from('qr_codes_pool')
       .select('*', { count: 'exact', head: true })
       .eq('estado', 'desactivado');
 
     // Escaneos totales
-    const { data: totalEscaneos } = await supabase
+    const { count: totalEscaneos } = await supabase
       .from('qr_redirects_log')
       .select('*', { count: 'exact', head: true });
 
