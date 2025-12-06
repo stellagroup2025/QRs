@@ -1,4 +1,4 @@
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -86,13 +86,17 @@ export class AppModule implements NestModule {
     consumer
       .apply(TenantResolverMiddleware)
       .exclude(
-        'superadmin/(.*)', // Excluir todas las rutas de superadmin
-        'api/superadmin/(.*)',
-        'q/(.*)', // Excluir redirecciones de QR genéricos (no necesita tenant)
-        'api/qr-codes', // Excluir ruta base de gestión de QR codes
-        'api/qr-codes/(.*)', // Excluir subrutas de gestión de QR codes (usa auth de superadmin)
-        'health', // Excluir health check (no necesita tenant)
-        'api/health', // Excluir health check con prefijo api
+        // Excluir todas las rutas de superadmin
+        { path: 'superadmin/(.*)', method: RequestMethod.ALL },
+        { path: 'api/superadmin/(.*)', method: RequestMethod.ALL },
+        // Excluir redirecciones de QR genéricos (no necesita tenant)
+        { path: 'q/(.*)', method: RequestMethod.ALL },
+        // Excluir gestión de QR codes (usa auth de superadmin, no tenant)
+        { path: 'api/qr-codes', method: RequestMethod.ALL },
+        { path: 'api/qr-codes/(.*)', method: RequestMethod.ALL },
+        // Excluir health check (no necesita tenant)
+        { path: 'health', method: RequestMethod.ALL },
+        { path: 'api/health', method: RequestMethod.ALL },
       )
       .forRoutes('*'); // Aplicar a todas las demás rutas
   }
