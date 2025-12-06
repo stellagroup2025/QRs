@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
-interface RedirectInfo {
+export interface RedirectInfo {
   url_destino: string;
   id_qr: string;
   id_tienda: string | null;
   nombre_tienda: string | null;
 }
 
-interface RegistrarEscaneoDto {
+export interface RegistrarEscaneoDto {
   idQr: string;
   idTienda: string | null;
   userAgent: string;

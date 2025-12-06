@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Res, Headers, Ip } from '@nestjs/common';
 import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { QrRedirectService } from './qr-redirect.service';
+import { QrRedirectService, RedirectInfo } from './qr-redirect.service';
 
 @ApiTags('QR Redirect - Redirección de QR Codes Genéricos')
 @Controller('q')
@@ -72,7 +72,7 @@ export class QrRedirectController {
     status: 200,
     description: 'Información del QR code',
   })
-  async getQrInfo(@Param('hash') hash: string) {
+  async getQrInfo(@Param('hash') hash: string): Promise<RedirectInfo> {
     return this.qrRedirectService.obtenerRedireccion(hash);
   }
 }
