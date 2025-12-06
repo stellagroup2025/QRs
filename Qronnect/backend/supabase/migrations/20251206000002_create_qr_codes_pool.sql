@@ -210,8 +210,8 @@ BEGIN
     FROM tiendas
     WHERE id = v_qr.id_tienda;
 
-    -- Construir URL de destino (subdominio)
-    url_destino := 'https://' || v_tienda.slug || '.qronnect.es';
+    -- Construir URL de destino (subdominio + /get-qr)
+    url_destino := 'https://' || v_tienda.slug || '.qronnect.es/get-qr';
     id_qr := v_qr.id;
     id_tienda := v_tienda.id;
     nombre_tienda := v_tienda.nombre;
