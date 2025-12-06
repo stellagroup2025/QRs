@@ -158,14 +158,14 @@ BEGIN
   -- 12. Retornar información del premio con puntos actualizados
   RETURN QUERY
   SELECT
-    v_premio.id,
-    v_premio.nombre,
-    v_premio.descripcion,
-    v_premio.tipo,
-    v_premio.valor,
-    v_premio.rareza,
-    v_codigo,
-    v_fecha_expiracion,
-    v_puntos_actualizados;
+    v_premio.id::UUID,
+    v_premio.nombre::VARCHAR,
+    v_premio.descripcion::TEXT,
+    v_premio.tipo::VARCHAR,
+    v_premio.valor::DECIMAL,
+    v_premio.rareza::VARCHAR,
+    v_codigo::VARCHAR,
+    v_fecha_expiracion::TIMESTAMPTZ,
+    v_puntos_actualizados::INTEGER;
 END;
 $$ LANGUAGE plpgsql;
