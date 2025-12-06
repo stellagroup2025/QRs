@@ -14,7 +14,8 @@ import {
   Plus,
   Settings,
   BarChart3,
-  FileText
+  FileText,
+  QrCode
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
@@ -143,6 +144,15 @@ export default function SuperAdminDashboard() {
               </Button>
               <Button
                 variant="outline"
+                size="sm"
+                className="hidden sm:flex"
+                onClick={() => router.push('/superadmin/qr-codes')}
+              >
+                <QrCode className="h-4 w-4 mr-2" />
+                QR Codes
+              </Button>
+              <Button
+                variant="outline"
                 size="icon"
                 className="sm:hidden"
                 aria-label="Gestionar tiendas"
@@ -248,7 +258,7 @@ export default function SuperAdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/superadmin/tiendas/nueva')}>
             <CardHeader>
               <div className="flex items-center space-x-2">
@@ -272,6 +282,20 @@ export default function SuperAdminDashboard() {
                 <div>
                   <CardTitle className="text-lg">Ver Tiendas</CardTitle>
                   <CardDescription>Gestionar comercios</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/superadmin/qr-codes')}>
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <div className="p-2 bg-orange-500/10 rounded-lg">
+                  <QrCode className="h-5 w-5 text-orange-500" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Pool de QR Codes</CardTitle>
+                  <CardDescription>Gestionar QR genéricos</CardDescription>
                 </div>
               </div>
             </CardHeader>
