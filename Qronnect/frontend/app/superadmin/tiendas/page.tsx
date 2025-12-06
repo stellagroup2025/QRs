@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { SenderIDModal } from '@/components/superadmin/SenderIDModal'
+import AsignarQrModal from '@/components/superadmin/AsignarQrModal'
 import { getAdminDashboardUrl } from '@/lib/urls'
 import {
   Table,
@@ -33,7 +34,8 @@ import {
   MessageSquare,
   Globe2,
   Building2,
-  Search
+  Search,
+  QrCode
 } from 'lucide-react'
 import { TiendasListSkeleton } from '@/components/ui/skeletons'
 
@@ -62,6 +64,7 @@ export default function SuperAdminTiendasPage() {
   const [tiendas, setTiendas] = useState<Tienda[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
+  const [qrModalOpen, setQrModalOpen] = useState(false)
   const [selectedTienda, setSelectedTienda] = useState<Tienda | null>(null)
   const [searchTiendas, setSearchTiendas] = useState('')
 
@@ -149,6 +152,18 @@ export default function SuperAdminTiendasPage() {
   }
 
   const handleSenderIDSuccess = () => {
+    const token = localStorage.getItem('superadmin_token')
+    if (token) {
+      fetchTiendas(token)
+    }
+  }
+
+  const handleOpenQrModal = (tienda: Tienda) => {
+    setSelectedTienda(tienda)
+    setQrModalOpen(true)
+  }
+
+  const handleQrAssignSuccess = () => {
     const token = localStorage.getItem('superadmin_token')
     if (token) {
       fetchTiendas(token)
@@ -379,42 +394,56 @@ export default function SuperAdminTiendasPage() {
                         </div>
 
                         {/* Acciones */}
-                        <div className="flex items-center justify-between pt-3 border-t gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => handleOpenSenderIDModal(tienda)}
-                          >
-                            <Smartphone className="h-4 w-4 mr-1" />
-                            SMS
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => handleViewTienda(tienda)}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            Ver
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => router.push(`/superadmin/tiendas/${tienda.id}`)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Editar
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(tienda.id, tienda.nombre)}
-                            className="text-red-500 hover:text-red-700 flex-shrink-0"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        <div className="space-y-2 pt-3 border-t">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleOpenQrModal(tienda)}
+                            >
+                              <QrCode className="h-4 w-4 mr-1" />
+                              QR
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleOpenSenderIDModal(tienda)}
+                            >
+                              <Smartphone className="h-4 w-4 mr-1" />
+                              SMS
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleViewTienda(tienda)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Ver
+                            </Button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => router.push(`/superadmin/tiendas/${tienda.id}`)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Editar
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(tienda.id, tienda.nombre)}
+                              className="text-red-500 hover:text-red-700 flex-1"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Eliminar
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -548,6 +577,14 @@ export default function SuperAdminTiendasPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                onClick={() => handleOpenQrModal(tienda)}
+                                title="Asignar QR code pre-impreso"
+                              >
+                                <QrCode className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => handleViewTienda(tienda)}
                                 title="Ver panel de admin de la tienda"
                               >
@@ -591,6 +628,17 @@ export default function SuperAdminTiendasPage() {
           tiendaNombre={selectedTienda.nombre}
           currentSenderId={selectedTienda.sender_id}
           onSuccess={handleSenderIDSuccess}
+        />
+      )}
+
+      {/* Asignar QR Modal */}
+      {selectedTienda && (
+        <AsignarQrModal
+          open={qrModalOpen}
+          onOpenChange={setQrModalOpen}
+          idTienda={selectedTienda.id}
+          nombreTienda={selectedTienda.nombre}
+          onSuccess={handleQrAssignSuccess}
         />
       )}
     </div>
