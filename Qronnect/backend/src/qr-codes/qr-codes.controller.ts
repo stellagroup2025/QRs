@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { QrCodesService } from './qr-codes.service';
-import { SuperadminGuard } from '../superadmin/guards/superadmin.guard';
+import { SuperAdminGuard } from '../superadmin/guards/superadmin.guard';
 import { GenerarQrCodesDto } from './dto/generar-qr-codes.dto';
 import { AsignarQrDto } from './dto/asignar-qr.dto';
 
@@ -24,7 +24,7 @@ export class QrCodesController {
   // SUPERADMIN - Gestión de Pool
   // ============================================
 
-  @UseGuards(SuperadminGuard)
+  @UseGuards(SuperAdminGuard)
   @Post('generar')
   @ApiOperation({
     summary: 'Generar un lote de QR codes para imprimir',
@@ -46,7 +46,7 @@ export class QrCodesController {
     return this.qrCodesService.generarLote(dto.cantidad, dto.lote, adminId);
   }
 
-  @UseGuards(SuperadminGuard)
+  @UseGuards(SuperAdminGuard)
   @Get()
   @ApiOperation({
     summary: 'Listar todos los QR codes del pool',
@@ -64,7 +64,7 @@ export class QrCodesController {
     return this.qrCodesService.listarQrCodes(estado, lote);
   }
 
-  @UseGuards(SuperadminGuard)
+  @UseGuards(SuperAdminGuard)
   @Get('estadisticas')
   @ApiOperation({
     summary: 'Obtener estadísticas del pool de QR codes',
@@ -77,7 +77,7 @@ export class QrCodesController {
     return this.qrCodesService.obtenerEstadisticas();
   }
 
-  @UseGuards(SuperadminGuard)
+  @UseGuards(SuperAdminGuard)
   @Get(':hash')
   @ApiOperation({
     summary: 'Obtener detalles de un QR code específico',
@@ -90,7 +90,7 @@ export class QrCodesController {
     return this.qrCodesService.obtenerPorHash(hash);
   }
 
-  @UseGuards(SuperadminGuard)
+  @UseGuards(SuperAdminGuard)
   @Post('asignar')
   @ApiOperation({
     summary: 'Asignar un QR code a una tienda',
@@ -111,7 +111,7 @@ export class QrCodesController {
     return this.qrCodesService.asignarQrATienda(dto.hash, dto.id_tienda);
   }
 
-  @UseGuards(SuperadminGuard)
+  @UseGuards(SuperAdminGuard)
   @Post(':hash/desasignar')
   @ApiOperation({
     summary: 'Desasignar un QR code de su tienda actual',
@@ -125,7 +125,7 @@ export class QrCodesController {
     return this.qrCodesService.desasignarQr(hash);
   }
 
-  @UseGuards(SuperadminGuard)
+  @UseGuards(SuperAdminGuard)
   @Get(':hash/analytics')
   @ApiOperation({
     summary: 'Obtener analytics de un QR code',
@@ -139,7 +139,7 @@ export class QrCodesController {
     return this.qrCodesService.obtenerAnalytics(hash);
   }
 
-  @UseGuards(SuperadminGuard)
+  @UseGuards(SuperAdminGuard)
   @Post('exportar-csv')
   @ApiOperation({
     summary: 'Exportar QR codes a CSV para imprimir',
