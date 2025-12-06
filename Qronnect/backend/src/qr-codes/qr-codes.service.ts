@@ -62,6 +62,30 @@ export class QrCodesService {
     return data;
   }
 
+  // Listar tiendas sin QR asignado
+  async listarTiendasSinQr() {
+    const supabase = this.supabaseService.getAdminClient();
+
+    // Obtener todas las tiendas activas que NO tienen QR asignado
+    const { data, error } = await supabase
+      .from('tiendas')
+      .select('id, nombre, dominio, email, activo')
+      .eq('activo', true)
+      .not('id', 'in',
+        supabase
+          .from('qr_codes_pool')
+          .select('id_tienda')
+          .eq('estado', 'asignado')
+          .not('id_tienda', 'is', null)
+      );
+
+    if (error) {
+      throw new BadRequestException('Error al obtener tiendas sin QR');
+    }
+
+    return data;
+  }
+
   // Obtener estadísticas generales
   async obtenerEstadisticas() {
     console.log('📊 [QR CODES SERVICE] Obteniendo estadísticas...');

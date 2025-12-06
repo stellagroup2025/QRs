@@ -78,6 +78,20 @@ export class QrCodesController {
   }
 
   @UseGuards(SuperAdminGuard)
+  @Get('tiendas-sin-qr')
+  @ApiOperation({
+    summary: 'Listar tiendas que NO tienen QR asignado',
+    description: 'Útil para asignación rápida de QR codes',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de tiendas sin QR',
+  })
+  async listarTiendasSinQr() {
+    return this.qrCodesService.listarTiendasSinQr();
+  }
+
+  @UseGuards(SuperAdminGuard)
   @Get(':hash')
   @ApiOperation({
     summary: 'Obtener detalles de un QR code específico',

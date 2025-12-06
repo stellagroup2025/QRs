@@ -76,6 +76,25 @@ export async function obtenerEstadisticas(token: string): Promise<QrPoolEstadist
   return res.json();
 }
 
+export async function listarTiendasSinQr(token: string): Promise<Array<{
+  id: string;
+  nombre: string;
+  dominio: string;
+  email: string;
+}>> {
+  const res = await fetch(`${API_URL}/api/qr-codes/tiendas-sin-qr`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('Error al listar tiendas sin QR');
+  }
+
+  return res.json();
+}
+
 export async function obtenerQrCode(token: string, hash: string): Promise<QrCode> {
   const res = await fetch(`${API_URL}/api/qr-codes/${hash}`, {
     headers: {
