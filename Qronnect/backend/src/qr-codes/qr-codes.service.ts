@@ -35,6 +35,7 @@ export class QrCodesService {
 
   // Listar QR codes con filtros
   async listarQrCodes(estado?: string, lote?: string) {
+    console.log('📋 [QR CODES SERVICE] Listando QR codes. Filtros:', { estado, lote });
     const supabase = this.supabaseService.getAdminClient();
 
     let query = supabase.from('qr_codes_pool').select(`
@@ -53,14 +54,17 @@ export class QrCodesService {
     const { data, error } = await query.order('creado_en', { ascending: false });
 
     if (error) {
+      console.log('❌ [QR CODES SERVICE] Error al listar QR codes:', error);
       throw new BadRequestException('Error al obtener QR codes');
     }
 
+    console.log('✅ [QR CODES SERVICE] QR codes obtenidos:', data?.length || 0);
     return data;
   }
 
   // Obtener estadísticas generales
   async obtenerEstadisticas() {
+    console.log('📊 [QR CODES SERVICE] Obteniendo estadísticas...');
     const supabase = this.supabaseService.getAdminClient();
 
     const { count: total } = await supabase
