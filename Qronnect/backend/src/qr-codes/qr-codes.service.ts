@@ -40,7 +40,7 @@ export class QrCodesService {
 
     let query = supabase.from('qr_codes_pool').select(`
       *,
-      tienda:tiendas(id, nombre, slug)
+      tienda:tiendas(id, nombre)
     `);
 
     if (estado) {
