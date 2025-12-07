@@ -8,6 +8,7 @@ import { SupabaseService } from '../supabase/supabase.service';
 import { LoginComercialDto, CreateComercialDto } from './dto/comerciales.dto';
 import * as bcrypt from 'bcrypt';
 import { EmailService } from '../email/email.service';
+import { QrCodesService } from '../qr-codes/qr-codes.service';
 
 @Injectable()
 export class ComercialesService {
@@ -346,3 +347,4 @@ export class ComercialesService {
 
         return { url, access_token };
     }
+}
