@@ -66,20 +66,36 @@ export class QrCodesService {
   async listarTiendasSinQr() {
     const supabase = this.supabaseService.getAdminClient();
 
-    // Obtener todas las tiendas activas que NO tienen QR asignado
-    const { data, error } = await supabase
+    // Primero obtenemos todos los IDs de tiendas que tienen QR asignado
+    const { data: tiendasConQr, error: errorQr } = await supabase
+      .from('qr_codes_pool')
+      .select('id_tienda')
+      .eq('estado', 'asignado')
+      .not('id_tienda', 'is', null);
+
+    if (errorQr) {
+      console.error('Error al obtener tiendas con QR:', errorQr);
+      throw new BadRequestException('Error al obtener tiendas sin QR');
+    }
+
+    // Extraer los IDs de tiendas que ya tienen QR
+    const idsConQr = (tiendasConQr || []).map(item => item.id_tienda);
+
+    // Obtener todas las tiendas activas
+    let query = supabase
       .from('tiendas')
       .select('id, nombre, dominio, email, activo')
-      .eq('activo', true)
-      .not('id', 'in',
-        supabase
-          .from('qr_codes_pool')
-          .select('id_tienda')
-          .eq('estado', 'asignado')
-          .not('id_tienda', 'is', null)
-      );
+      .eq('activo', true);
+
+    // Si hay tiendas con QR, excluirlas
+    if (idsConQr.length > 0) {
+      query = query.not('id', 'in', `(${idsConQr.join(',')})`);
+    }
+
+    const { data, error } = await query.order('nombre', { ascending: true });
 
     if (error) {
+      console.error('Error al obtener tiendas sin QR:', error);
       throw new BadRequestException('Error al obtener tiendas sin QR');
     }
 
