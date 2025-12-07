@@ -145,6 +145,25 @@ export class ComercialesService {
             throw new BadRequestException(`El dominio "${tiendaData.dominio}" ya existe`);
         }
 
+        // 1.5 Validar Plan
+        let planId = tiendaData.plan_id;
+        let estadoPago = 'pendiente';
+
+        // Si no envía plan, asignar Demo por defecto
+        if (!planId) {
+            const { data: demo } = await supabase.from('planes').select('id').eq('nombre', 'Plan Demo').single();
+            if (demo) planId = demo.id;
+        }
+
+        if (!planId) throw new BadRequestException('Plan inválido o no seleccionado');
+
+        // Obtener detalles del plan para validaciones extra si fuera necesario
+        const { data: plan } = await supabase.from('planes').select('*').eq('id', planId).single();
+        if (!plan) throw new BadRequestException('El plan seleccionado no existe');
+
+        // Demo es gratis/pagado
+        if (plan.precio === 0) estadoPago = 'gratis';
+
         // 2. Crear Tienda
         const { data: tienda, error } = await supabase
             .from('tiendas')
@@ -155,7 +174,9 @@ export class ComercialesService {
                 direccion: tiendaData.direccion,
                 telefono: tiendaData.telefono,
                 email: tiendaData.email,
-                plan: tiendaData.plan || 'basico',
+                plan_id: planId, // Nuevo campo FK
+                plan: plan.nombre, // Mantener compatibilidad string por ahora
+                estado_pago: estadoPago,
                 configuracion: { puntos_por_euro: 1 },
                 activo: true,
                 comercial_id: comercialId,
@@ -164,6 +185,7 @@ export class ComercialesService {
             .single();
 
         if (error) {
+            console.error('Error creating tienda:', error);
             throw new BadRequestException(`Error al crear tienda: ${error.message}`);
         }
 
@@ -192,7 +214,7 @@ export class ComercialesService {
                     to: tiendaData.admin_email,
                     subject: 'Bienvenido a Qronnect - Tus Credenciales',
                     html: `<p>Hola ${tiendaData.admin_nombre},</p>
-                     <p>Tu tienda <strong>${tienda.nombre}</strong> ha sido creada.</p>
+                     <p>Tu tienda <strong>${tienda.nombre}</strong> ha sido creada con el plan <strong>${plan.nombre}</strong>.</p>
                      <p><strong>URL:</strong> https://${tienda.dominio}.qronnect.es/admin</p>
                      <p><strong>PIN:</strong> ${pinGenerado}</p>`
                 });

@@ -35,6 +35,7 @@ import { GachaModule } from './gacha/gacha.module';
 import { QrRedirectModule } from './qr-redirect/qr-redirect.module';
 import { QrCodesModule } from './qr-codes/qr-codes.module';
 import { ComercialesModule } from './comerciales/comerciales.module';
+import { PlanesModule } from './planes/planes.module';
 
 @Module({
   imports: [

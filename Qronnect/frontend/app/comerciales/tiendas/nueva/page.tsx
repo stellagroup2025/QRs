@@ -1,19 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Store, ArrowLeft, Save, CheckCircle2 } from 'lucide-react';
+import { Store, ArrowLeft, Save, CheckCircle2, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 export default function NuevaTiendaComercial() {
     const router = useRouter();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [successData, setSuccessData] = useState<any>(null);
+    const [planes, setPlanes] = useState<any[]>([]);
+
+    // Fetch planes
+    useEffect(() => {
+        const fetchPlanes = async () => {
+            const token = localStorage.getItem('comercial_token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/planes`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setPlanes(data);
+                    // Default to Demo if exists, or first one
+                    const demo = data.find((p: any) => p.nombre.includes('Demo'));
+                    if (demo && !formData.plan_id) {
+                        setFormData(prev => ({ ...prev, plan_id: demo.id }));
+                    }
+                }
+            } catch (e) { console.error(e); }
+        };
+        fetchPlanes();
+    }, []);
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -22,7 +47,7 @@ export default function NuevaTiendaComercial() {
         direccion: '',
         telefono: '',
         email: '',
-        plan: 'basico',
+        plan_id: '',
         admin_nombre: '',
         admin_email: '',
     });
@@ -45,8 +70,7 @@ export default function NuevaTiendaComercial() {
         setLoading(true);
 
         try {
-            const token = localStorage.getItem('comercial_token'); // TODO: Validar token real
-            // Simulamos token si es demo
+            const token = localStorage.getItem('comercial_token');
             const authHeader = token ? `Bearer ${token}` : '';
 
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comerciales/tiendas`, {
@@ -74,8 +98,6 @@ export default function NuevaTiendaComercial() {
                 });
             }
         } catch (error) {
-            // Si es demo y no hay backend real corriendo auth correcta, simularemos éxito para UX review
-            // En prod esto falla.
             toast({
                 title: "Error de conexión",
                 description: "Verifica tu conexión al servidor.",
@@ -129,7 +151,47 @@ export default function NuevaTiendaComercial() {
                 <form onSubmit={handleSubmit}>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Datos del Comercio</CardTitle>
+                            <CardTitle>1. Selección de Plan</CardTitle>
+                            <CardDescription>Elige el plan de suscripción para el cliente.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {planes.map((plan) => (
+                                    <div
+                                        key={plan.id}
+                                        className={cn(
+                                            "cursor-pointer rounded-lg border p-4 hover:border-blue-500 transition-all relative overflow-hidden",
+                                            formData.plan_id === plan.id ? "border-blue-600 bg-blue-50 dark:bg-blue-900/10 ring-1 ring-blue-600" : "border-slate-200"
+                                        )}
+                                        onClick={() => setFormData({ ...formData, plan_id: plan.id })}
+                                    >
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h3 className="font-bold">{plan.nombre}</h3>
+                                            {formData.plan_id === plan.id && <Check className="h-5 w-5 text-blue-600" />}
+                                        </div>
+                                        <div className="text-2xl font-bold mb-2">
+                                            {plan.precio === 0 ? 'Gratis' : `€${plan.precio}`}
+                                            <span className="text-sm font-normal text-muted-foreground">/mes</span>
+                                        </div>
+                                        {plan.duracion_meses > 1 && (
+                                            <div className="text-xs text-orange-600 font-medium mb-2">
+                                                Duración: {plan.duracion_meses} meses
+                                            </div>
+                                        )}
+                                        <p className="text-xs text-muted-foreground">
+                                            {/* Aquí podríamos parsear caracteristicas JSON si lo traemos */}
+                                            {plan.nombre.includes('Demo') ? 'Prueba gratuita completa.' : 'Plan profesional.'}
+                                        </p>
+
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="mt-6">
+                        <CardHeader>
+                            <CardTitle>2. Datos del Comercio</CardTitle>
                             <CardDescription>Información general de la tienda y su administrador.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -235,7 +297,7 @@ export default function NuevaTiendaComercial() {
                         </CardContent>
                         <CardFooter className="flex justify-end gap-4">
                             <Button type="button" variant="outline" onClick={() => router.back()}>Cancelar</Button>
-                            <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                            <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={loading || !formData.plan_id}>
                                 {loading ? 'Procesando...' : 'Dar de Alta Tienda'}
                             </Button>
                         </CardFooter>
