@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,8 @@ import { Store, ArrowLeft, Save, CheckCircle2, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-export default function NuevaTiendaComercial() {
+// Main Content Component
+function NuevaTiendaContent() {
     const router = useRouter();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
@@ -353,5 +354,13 @@ export default function NuevaTiendaComercial() {
                 </form>
             </main>
         </div>
+    );
+}
+
+export default function NuevaTiendaComercial() {
+    return (
+        <Suspense fallback={<div className="flex h-screen items-center justify-center">Cargando...</div>}>
+            <NuevaTiendaContent />
+        </Suspense>
     );
 }
