@@ -13,10 +13,12 @@ import { BrandLogo } from '@/components/BrandLogo'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
 import { motion, AnimatePresence } from "framer-motion"
-import { Gift, Ticket, ArrowRight, Download, Copy, Badge, Users, Share2, Sparkles, QrCode, RotateCw, Wallet, Star } from 'lucide-react'
+import { Gift, Ticket, ArrowRight, Download, Copy, Badge, Users, Share2, Sparkles, QrCode, RotateCw, Wallet, Star, Trophy, Crown, Medal } from 'lucide-react'
 import Link from 'next/link'
 import { ClientNav } from '@/components/ClientNav'
 import { TiendaInfoCard } from '@/components/TiendaInfoCard'
+import CountUp from 'react-countup'
+import confetti from 'canvas-confetti'
 
 interface Cliente {
   id: string
@@ -47,6 +49,13 @@ interface Compra {
   puntos_otorgados: number
   notas?: string
 }
+
+const TIERS = [
+  { name: 'Bronce', min: 0, color: 'from-orange-700 to-orange-500', icon: Medal, text: 'text-orange-200' },
+  { name: 'Plata', min: 100, color: 'from-slate-400 to-slate-200', icon: Medal, text: 'text-slate-200' },
+  { name: 'Oro', min: 500, color: 'from-amber-500 to-yellow-300', icon: Trophy, text: 'text-yellow-100' },
+  { name: 'Platino', min: 1000, color: 'from-cyan-500 to-blue-500', icon: Crown, text: 'text-cyan-100' },
+]
 
 export default function MiPerfilPage() {
   const params = useParams()
@@ -250,8 +259,17 @@ export default function MiPerfilPage() {
     router.push('/login')
   }
 
+  const triggerConfetti = () => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    })
+  }
+
   const handleDownloadQR = () => {
     if (!qrCodeUrl || !cliente) return
+    triggerConfetti()
 
     const link = document.createElement('a')
     link.download = `mi-qr-${cliente.nombre.replace(/\s+/g, '-')}.png`
@@ -266,6 +284,7 @@ export default function MiPerfilPage() {
 
   const handleCopyID = async () => {
     if (!cliente) return
+    triggerConfetti()
 
     try {
       await navigator.clipboard.writeText(cliente.id)
@@ -285,12 +304,12 @@ export default function MiPerfilPage() {
   const handleCompartirCodigo = async () => {
     if (!datosReferidos) return
 
-    const mensaje = `¡Únete a ${branding.nombre_tienda || 'nuestro programa de fidelización'}! Usa mi código ${datosReferidos.codigo} y ambos ganaremos puntos. ${datosReferidos.url}`
+    const mensaje = `¡Únete a ${branding.nombre_comercial || 'nuestro programa de fidelización'}! Usa mi código ${datosReferidos.codigo} y ambos ganaremos puntos. ${datosReferidos.url}`
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Únete a ${branding.nombre_tienda}`,
+          title: `Únete a ${branding.nombre_comercial || 'Comercio Local'}`,
           text: mensaje,
         })
       } catch (error) {
@@ -316,6 +335,7 @@ export default function MiPerfilPage() {
 
   const handleCopiarCodigo = async () => {
     if (!datosReferidos) return
+    triggerConfetti()
 
     try {
       await navigator.clipboard.writeText(datosReferidos.codigo)
@@ -346,6 +366,18 @@ export default function MiPerfilPage() {
       style: 'currency',
       currency: 'EUR',
     }).format(amount)
+  }
+
+  // Helper para determinar el nivel actual
+  const getCurrentTier = (points: number) => {
+    // Ordenado inversamente para encontrar el más alto que cumple
+    return [...TIERS].reverse().find(t => points >= t.min) || TIERS[0]
+  }
+
+  const getNextTier = (points: number) => {
+    const current = getCurrentTier(points)
+    const next = TIERS.find(t => t.min > current.min)
+    return next
   }
 
   if (isLoading) {
@@ -397,13 +429,19 @@ export default function MiPerfilPage() {
     return null
   }
 
+  const currentTier = getCurrentTier(cliente.puntos_totales)
+  const nextTier = getNextTier(cliente.puntos_totales)
+  const progressToNext = nextTier
+    ? ((cliente.puntos_totales - currentTier.min) / (nextTier.min - currentTier.min)) * 100
+    : 100
+
   return (
     <>
       <ClientNav />
       <div className="min-h-screen p-4 pb-28 md:p-8 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-4xl mx-auto space-y-6">
 
-          {/* Header con Saludo */}
+          {/* Header con Saludo + Contexto Temporal */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -412,9 +450,16 @@ export default function MiPerfilPage() {
             <div className="flex items-center space-x-4">
               <BrandLogo width={40} height={40} className="rounded-xl shadow-sm" />
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Bienvenido de nuevo,</p>
+                <p className="text-sm text-muted-foreground font-medium">
+                  {(() => {
+                    const h = new Date().getHours()
+                    if (h < 12) return 'Buenos días,'
+                    if (h < 20) return 'Buenas tardes,'
+                    return 'Buenas noches,'
+                  })()}
+                </p>
                 <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
-                  {cliente.nombre}
+                  {cliente.nombre.split(' ')[0]}
                 </h1>
               </div>
             </div>
@@ -428,52 +473,73 @@ export default function MiPerfilPage() {
             </Button>
           </motion.div>
 
-          {/* Hero Card: Puntos y Wallet */}
+          {/* Hero Card: Puntos y Wallet (Psychology Enhanced) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="relative overflow-hidden rounded-3xl shadow-xl"
+            className="relative overflow-hidden rounded-3xl shadow-2xl"
           >
-            {/* Background Gradient dinámico basado en branding */}
+            {/* Dynamic Metallic Gradient Background based on Tier */}
             <div
-              className="absolute inset-0 opacity-90"
-              style={{
-                background: `linear-gradient(135deg, ${hexToRgb(branding.color_primario)} 0%, ${hexToRgb(branding.color_acento)} 100%)`
-              }}
+              className={`absolute inset-0 opacity-90 bg-gradient-to-br ${currentTier.color} transition-all duration-1000`}
             />
-            {/* Pattern Overlay */}
+
+            {/* Branding Overlay (Subtle) */}
+            <div
+              className="absolute inset-0 opacity-30 mix-blend-overlay"
+              style={{ background: `linear-gradient(135deg, ${hexToRgb(branding.color_primario)}, transparent)` }}
+            />
+
+            {/* Shine Effect */}
             <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+            <div className="absolute -top-[100%] -left-[100%] w-[300%] h-[300%] bg-gradient-to-br from-transparent via-white/20 to-transparent rotate-45 animate-[shimmer_8s_infinite]" />
 
             <div className="relative p-8 text-white">
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <p className="text-white/80 font-medium mb-1 flex items-center gap-2">
-                    <Wallet className="h-4 w-4" /> Balance Total
-                  </p>
-                  <h2 className="text-5xl md:text-6xl font-black tracking-tight flex items-baseline gap-2">
-                    {cliente.puntos_totales}
+                  <div className="flex items-center gap-2 mb-2">
+                    <currentTier.icon className={`h-5 w-5 ${currentTier.text} drop-shadow-md`} />
+                    <span className={`text-sm font-bold uppercase tracking-wider ${currentTier.text} drop-shadow-sm`}>
+                      Nivel {currentTier.name}
+                    </span>
+                  </div>
+                  <h2 className="text-6xl md:text-7xl font-black tracking-tighter flex items-baseline gap-2 drop-shadow-xl">
+                    <CountUp end={cliente.puntos_totales} duration={2.5} separator="." />
                     <span className="text-2xl font-medium opacity-80">pts</span>
                   </h2>
                 </div>
-                <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl">
-                  <Star className="h-8 w-8 text-yellow-300 fill-yellow-300 animate-pulse" />
+                <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl shadow-inner border border-white/30">
+                  <Star className="h-8 w-8 text-yellow-300 fill-yellow-300 animate-[pulse_3s_infinite]" />
                 </div>
               </div>
 
-              {/* Barra de progreso simulada para próximo nivel/recompensa */}
-              <div className="bg-black/20 rounded-full h-2 mb-2 overflow-hidden backdrop-blur-sm">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "70%" }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  className="h-full bg-white/90 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-                />
-              </div>
-              <div className="flex justify-between text-xs font-medium text-white/80">
-                <span>Nivel Actual</span>
-                <span>Siguiente recompensa a 50 pts</span>
-              </div>
+              {/* Progress Bar to Next Tier */}
+              {nextTier ? (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-semibold text-white/90 drop-shadow-sm">
+                    <span>Progreso a {nextTier.name}</span>
+                    <span>{Math.floor(nextTier.min - cliente.puntos_totales)} pts para subir</span>
+                  </div>
+                  <div className="bg-black/20 rounded-full h-3 overflow-hidden backdrop-blur-sm shadow-inner border border-white/10">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressToNext}%` }}
+                      transition={{ duration: 2, ease: "easeOut", delay: 0.5 }}
+                      className="h-full bg-gradient-to-r from-white/80 to-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.6)] relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-white/30 w-full animate-[shimmer_2s_infinite]" />
+                    </motion.div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-2 bg-white/20 rounded-xl backdrop-blur-sm border border-white/20">
+                  <span className="text-sm font-bold text-white flex items-center justify-center gap-2">
+                    <Crown className="w-4 h-4 fill-yellow-300 text-yellow-300" />
+                    ¡Nivel Máximo Alcanzado!
+                  </span>
+                </div>
+              )}
             </div>
           </motion.div>
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import CountUp from 'react-countup'
 import { useDebounce } from '@/hooks/use-debounce'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -622,89 +623,119 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header Info Mobile/Desktop */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Resumen de actividad de {branding.nombre_comercial}
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+            {(() => {
+              const hour = new Date().getHours()
+              if (hour < 12) return 'Buenos días'
+              if (hour < 20) return 'Buenas tardes'
+              return 'Buenas noches'
+            })()}, {adminUser?.nombre.split(' ')[0] || 'Admin'}
+          </h1>
+          <p className="text-base text-muted-foreground mt-1">
+            Aquí tienes el resumen de {branding.nombre_comercial} hoy.
           </p>
         </div>
 
         {adminUser && (
-          <div className="hidden sm:flex items-center space-x-2 text-right bg-white dark:bg-slate-800 p-2 rounded-full shadow-sm">
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+          <div className="hidden sm:flex items-center space-x-3 text-right bg-white/50 backdrop-blur-sm border border-gray-100 dark:bg-slate-800/50 p-2 pr-4 rounded-full shadow-sm">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-primary/60 flex items-center justify-center text-white font-bold text-lg shadow-md">
               {adminUser.nombre.charAt(0).toUpperCase()}
             </div>
-            <span className="text-sm font-medium pr-2">{adminUser.nombre}</span>
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-semibold">{adminUser.nombre}</span>
+              <span className="text-xs text-muted-foreground capitalize">{adminUser.rol}</span>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-8" role="region" aria-label="Estadísticas principales">
+      {/* Stats Grid - Psychology Polish (Apple Style + Dopamine) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10" role="region" aria-label="Estadísticas principales">
         <Card
-          className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+          className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl"
           role="button"
           tabIndex={0}
-          aria-labelledby="stat-clientes"
-          aria-describedby="stat-clientes-desc"
           onClick={() => setActiveTab('clientes')}
-          onKeyDown={(e) => e.key === 'Enter' && setActiveTab('clientes')}
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
-            <CardTitle id="stat-clientes" className="text-xs sm:text-sm font-medium">Clientes</CardTitle>
-            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
-          </CardHeader>
-          <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
-            <div className="text-lg sm:text-2xl font-bold" aria-label={`${data?.total_clientes || 0} clientes registrados`}>
-              {data?.total_clientes || 0}
-            </div>
-            <p id="stat-clientes-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">Ver clientes →</p>
-          </CardContent>
-        </Card>
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Users className="w-24 h-24 text-primary" />
+          </div>
 
-        <Card
-          className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
-          role="button"
-          tabIndex={0}
-          aria-labelledby="stat-compras"
-          aria-describedby="stat-compras-desc"
-          onClick={() => setActiveTab('ventas')}
-          onKeyDown={(e) => e.key === 'Enter' && setActiveTab('ventas')}
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
-            <CardTitle id="stat-compras" className="text-xs sm:text-sm font-medium">Compras</CardTitle>
-            <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Clientes</CardTitle>
           </CardHeader>
-          <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
-            <div className="text-lg sm:text-2xl font-bold" aria-label={`${data?.total_compras || 0} compras totales`}>
-              {data?.total_compras || 0}
+          <CardContent>
+            <div className="flex items-baseline space-x-2">
+              <div className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight">
+                <CountUp end={data?.total_clientes || 0} duration={2.5} separator="." />
+              </div>
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                <TrendingUp className="w-3 h-3 mr-1" />
+                +12%
+              </span>
             </div>
-            <p id="stat-compras-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
-              Ver ventas →
+            <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-primary transition-colors flex items-center">
+              Gestionar clientes <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
             </p>
           </CardContent>
         </Card>
 
         <Card
-          className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+          className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl"
           role="button"
           tabIndex={0}
-          aria-labelledby="stat-ventas"
-          aria-describedby="stat-ventas-desc"
-          onClick={() => setActiveTab('analytics')}
-          onKeyDown={(e) => e.key === 'Enter' && setActiveTab('analytics')}
+          onClick={() => setActiveTab('ventas')}
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
-            <CardTitle id="stat-ventas" className="text-xs sm:text-sm font-medium">Ventas</CardTitle>
-            <Euro className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <ShoppingCart className="w-24 h-24 text-blue-500" />
+          </div>
+
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Compras Totales</CardTitle>
           </CardHeader>
-          <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
-            <div className="text-lg sm:text-2xl font-bold" aria-label={`${(data?.ventas_totales || 0).toLocaleString('es-ES')} euros en ventas totales`}>
-              €{(data?.ventas_totales || 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
+          <CardContent>
+            <div className="flex items-baseline space-x-2">
+              <div className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight">
+                <CountUp end={data?.total_compras || 0} duration={2.5} separator="." delay={0.2} />
+              </div>
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                <TrendingUp className="w-3 h-3 mr-1" />
+                +5.4%
+              </span>
             </div>
-            <p id="stat-ventas-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
-              Ver analytics →
+            <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-primary transition-colors flex items-center">
+              Ver historial de ventas <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20"
+          role="button"
+          tabIndex={0}
+          onClick={() => setActiveTab('analytics')}
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Euro className="w-24 h-24 text-indigo-500" />
+          </div>
+
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Ingresos Totales</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-baseline space-x-2">
+              <div className="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 tracking-tight">
+                €<CountUp end={data?.ventas_totales || 0} duration={3} separator="." decimals={0} delay={0.4} />
+              </div>
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                <Sparkles className="w-3 h-3 mr-1" />
+                Récord
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-indigo-600 transition-colors flex items-center">
+              Analizar rendimiento <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
             </p>
           </CardContent>
         </Card>
