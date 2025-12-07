@@ -30,14 +30,16 @@ export default function QrRedirectPage() {
           return;
         }
 
-        // QR NO está asignado - verificar si es superadmin
+        // QR NO está asignado - verificar superadmin o comercial
         const superadminToken = localStorage.getItem('superadmin_token');
+        const comercialToken = localStorage.getItem('comercial_token');
 
         if (superadminToken) {
-          // Es superadmin → ir a página de asignación
           router.push(`/superadmin/asignar-qr?hash=${hash}`);
+        } else if (comercialToken) {
+          router.push(`/comerciales/asignar-qr?hash=${hash}`);
         } else {
-          // No es superadmin → ir a landing
+          // Si no hay token administrativo, ir a landing
           window.location.href = 'https://qronnect.es';
         }
       } catch (error) {
