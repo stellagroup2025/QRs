@@ -36,6 +36,7 @@ import { QrRedirectModule } from './qr-redirect/qr-redirect.module';
 import { QrCodesModule } from './qr-codes/qr-codes.module';
 import { ComercialesModule } from './comerciales/comerciales.module';
 import { PlanesModule } from './planes/planes.module';
+import { ProspectosModule } from './prospectos/prospectos.module';
 
 @Module({
   imports: [
@@ -125,6 +126,8 @@ import { PlanesModule } from './planes/planes.module';
     QrRedirectModule,
     QrCodesModule,
     ComercialesModule,
+    PlanesModule,
+    ProspectosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

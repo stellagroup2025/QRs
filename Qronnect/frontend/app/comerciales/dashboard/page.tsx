@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Store, Plus, LogOut, TrendingUp, DollarSign, QrCode, ExternalLink, Loader2 } from 'lucide-react';
+import { Store, Plus, LogOut, TrendingUp, DollarSign, QrCode, ExternalLink, Loader2, LayoutDashboard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ComercialDashboard() {
@@ -144,10 +144,16 @@ export default function ComercialDashboard() {
                         <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h2>
                         <p className="text-muted-foreground">Bienvenido, {user?.nombre}</p>
                     </div>
-                    <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" onClick={() => router.push('/comerciales/tiendas/nueva')}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Nueva Tienda
-                    </Button>
+                    <div className="flex gap-3">
+                        <Button variant="outline" onClick={() => router.push('/comerciales/crm')}>
+                            <LayoutDashboard className="h-4 w-4 mr-2" />
+                            CRM
+                        </Button>
+                        <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" onClick={() => router.push('/comerciales/tiendas/nueva')}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Nueva Tienda
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Stats */}
