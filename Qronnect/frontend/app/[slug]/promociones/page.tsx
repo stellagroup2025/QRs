@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Gift, Sparkles, Clock, Users, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
@@ -197,177 +198,212 @@ export default function PromocionesPage() {
   return (
     <>
       <ClientNav />
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-        {/* Header */}
-        <div className="border-b bg-white dark:bg-gray-900">
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Promociones</h1>
-              <p className="text-muted-foreground">
-                Canjea tus puntos por descuentos y regalos exclusivos
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">Tus puntos</p>
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5" style={{ color: hexToRgb(branding.color_acento) }} />
-                <p className="text-3xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>
-                  {misPuntos}
+      {/* Container Principal con padding-bottom para nav móvil */}
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pb-24">
+
+        {/* Header Glassmorphism */}
+        <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b">
+          <div className="max-w-6xl mx-auto px-6 py-6">
+            <div className="flex items-center justify-between">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+              >
+                <h1 className="text-3xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+                  Promociones
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Canjea tus puntos por recompensas exclusivas
                 </p>
-              </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-right bg-white dark:bg-gray-800 p-2 pr-4 pl-3 rounded-full shadow-sm border flex items-center gap-3"
+              >
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <Sparkles className="h-4 w-4" style={{ color: hexToRgb(branding.color_primario) }} />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Tus puntos</p>
+                  <p className="text-xl font-bold leading-none" style={{ color: hexToRgb(branding.color_primario) }}>
+                    {misPuntos}
+                  </p>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Promociones Grid */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {promociones.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Gift className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <p className="text-xl font-medium mb-2">No hay promociones disponibles</p>
-              <p className="text-muted-foreground">
-                Vuelve pronto para descubrir nuevas ofertas
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {promociones.map((promo) => {
-              const puedeCanjearlo = puedeCanjear(promo)
-              const puntosFaltantes = Math.max(0, promo.puntos_requeridos - misPuntos)
+        {/* Promociones Grid - Masonry Layout */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          {promociones.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="bg-white/50 backdrop-blur-sm border-dashed border-2">
+                <CardContent className="py-16 text-center">
+                  <div className="mb-6 bg-gray-50 dark:bg-gray-800 w-24 h-24 rounded-full flex items-center justify-center mx-auto">
+                    <Gift className="h-10 w-10 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">No hay promociones activas</h3>
+                  <p className="text-muted-foreground max-w-sm mx-auto">
+                    Estamos preparando nuevas ofertas para ti. ¡Vuelve pronto para descubrir recompensas increíbles!
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ) : (
+            <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+              <AnimatePresence>
+                {promociones.map((promo, index) => {
+                  const puedeCanjearlo = puedeCanjear(promo)
+                  const puntosFaltantes = Math.max(0, promo.puntos_requeridos - misPuntos)
 
-              return (
-                <Card
-                  key={promo.id}
-                  className={`relative overflow-hidden transition-all hover:shadow-lg ${
-                    puedeCanjearlo ? 'border-2' : 'opacity-75'
-                  }`}
-                  style={puedeCanjearlo ? { borderColor: hexToRgb(branding.color_primario) } : {}}
-                >
-                  {/* Imagen de fondo si existe */}
-                  {promo.imagen_url && (
-                    <div className="h-40 overflow-hidden bg-gray-100">
-                      <img
-                        src={promo.imagen_url}
-                        alt={promo.titulo}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-
-                  {/* Badge de disponibilidad */}
-                  {puedeCanjearlo && (
-                    <div className="absolute top-4 right-4">
-                      <Badge
-                        className="text-white"
-                        style={{ backgroundColor: hexToRgb(branding.color_acento) }}
-                      >
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
-                        Disponible
-                      </Badge>
-                    </div>
-                  )}
-
-                  <CardHeader>
-                    <CardTitle className="flex items-start justify-between gap-2">
-                      <span>{promo.titulo}</span>
-                      <Badge variant="outline">{getTipoLabel(promo.tipo)}</Badge>
-                    </CardTitle>
-                    {promo.descripcion && (
-                      <CardDescription>{promo.descripcion}</CardDescription>
-                    )}
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    {/* Valor del beneficio */}
-                    <div
-                      className="text-center py-4 rounded-lg"
-                      style={{ backgroundColor: hexToRgb(branding.color_primario) + '10' }}
+                  return (
+                    <motion.div
+                      key={promo.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      layout
+                      className="break-inside-avoid"
                     >
-                      <p className="text-sm text-muted-foreground mb-1">Ahorra</p>
-                      <p
-                        className="text-4xl font-bold"
-                        style={{ color: hexToRgb(branding.color_primario) }}
+                      <Card
+                        className={`relative overflow-hidden transition-all duration-300 group hover:-translate-y-1 hover:shadow-xl border-0 ${puedeCanjearlo ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/50 opacity-90'
+                          }`}
                       >
-                        {getValorLabel(promo.tipo, promo.valor)}
-                      </p>
-                    </div>
+                        {/* Background Decoration */}
+                        <div className={`absolute top-0 right-0 w-24 h-24 rounded-bl-full opacity-10 transition-all group-hover:scale-110 ${puedeCanjearlo ? 'bg-primary' : 'bg-gray-400'
+                          }`} style={puedeCanjearlo ? { backgroundColor: hexToRgb(branding.color_primario) } : {}} />
 
-                    {/* Puntos requeridos */}
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Costo en puntos</span>
-                      <div className="flex items-center gap-1">
-                        <Sparkles className="h-4 w-4" style={{ color: hexToRgb(branding.color_acento) }} />
-                        <span className="font-bold text-lg">{promo.puntos_requeridos}</span>
-                      </div>
-                    </div>
-
-                    {/* Cantidad disponible */}
-                    {promo.cantidad_disponible !== null && (
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          Disponibles
-                        </span>
-                        <span className="font-medium">
-                          {promo.cantidad_disponible - promo.cantidad_canjeada}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Fecha de expiración */}
-                    {promo.fecha_fin && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        Válido hasta {new Date(promo.fecha_fin).toLocaleDateString('es-ES')}
-                      </div>
-                    )}
-
-                    {/* Botón de canje */}
-                    {puedeCanjearlo ? (
-                      <Button
-                        onClick={() => handleCanjear(promo)}
-                        disabled={canjeando === promo.id}
-                        className="w-full text-white"
-                        style={{ backgroundColor: hexToRgb(branding.color_primario) }}
-                      >
-                        {canjeando === promo.id ? (
-                          'Canjeando...'
-                        ) : (
-                          <>
-                            Canjear Ahora
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </>
+                        {/* Imagen de fondo si existe */}
+                        {promo.imagen_url && (
+                          <div className="relative h-48 overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+                            <img
+                              src={promo.imagen_url}
+                              alt={promo.titulo}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                            <div className="absolute bottom-4 left-4 z-20">
+                              <Badge className="backdrop-blur-md bg-white/20 text-white border-white/20 hover:bg-white/30">
+                                {getTipoLabel(promo.tipo)}
+                              </Badge>
+                            </div>
+                          </div>
                         )}
-                      </Button>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="text-center text-sm text-muted-foreground">
-                          {puntosFaltantes > 0 ? (
-                            <p>Te faltan <span className="font-bold">{puntosFaltantes}</span> puntos</p>
-                          ) : (
-                            <p>No disponible</p>
+
+                        {/* Badge de disponibilidad */}
+                        {puedeCanjearlo && (
+                          <div className="absolute top-4 right-4 z-20">
+                            <Badge
+                              className="shadow-lg border-0 text-white animate-fade-in"
+                              style={{ backgroundColor: hexToRgb(branding.color_acento) }}
+                            >
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Canjeable
+                            </Badge>
+                          </div>
+                        )}
+
+                        <CardHeader className={promo.imagen_url ? 'pt-4' : ''}>
+                          <div className="flex justify-between items-start mb-2">
+                            {!promo.imagen_url && (
+                              <Badge variant="secondary" className="mb-2">
+                                {getTipoLabel(promo.tipo)}
+                              </Badge>
+                            )}
+                          </div>
+
+                          <CardTitle className="text-xl font-bold leading-tight group-hover:text-primary transition-colors">
+                            {promo.titulo}
+                          </CardTitle>
+                          {promo.descripcion && (
+                            <CardDescription className="line-clamp-2 mt-2 text-sm">
+                              {promo.descripcion}
+                            </CardDescription>
                           )}
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          disabled
-                        >
-                          No Disponible
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        )}
-      </div>
+                        </CardHeader>
+
+                        <CardContent className="space-y-5">
+                          {/* Valor e Info */}
+                          <div className="flex items-end justify-between border-b pb-4 border-gray-100 dark:border-gray-700">
+                            <div>
+                              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Ahorras</p>
+                              <p className="text-3xl font-black tracking-tight" style={{ color: hexToRgb(branding.color_primario) }}>
+                                {getValorLabel(promo.tipo, promo.valor)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Costo</p>
+                              <div className="flex items-center gap-1 justify-end">
+                                <Sparkles className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                                <p className="text-lg font-bold text-gray-900 dark:text-white">{promo.puntos_requeridos}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Footer Info */}
+                          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                            {promo.cantidad_disponible !== null && (
+                              <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
+                                <Users className="h-3.5 w-3.5" />
+                                <span>
+                                  <strong className="text-gray-900 dark:text-gray-100">{promo.cantidad_disponible - promo.cantidad_canjeada}</strong> disp.
+                                </span>
+                              </div>
+                            )}
+                            {promo.fecha_fin && (
+                              <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
+                                <Clock className="h-3.5 w-3.5" />
+                                <span>Expira {new Date(promo.fecha_fin).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action Button */}
+                          <div className="pt-2">
+                            {puedeCanjearlo ? (
+                              <Button
+                                onClick={() => handleCanjear(promo)}
+                                disabled={canjeando === promo.id}
+                                className="w-full h-11 text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95"
+                                style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+                              >
+                                {canjeando === promo.id ? (
+                                  <span className="flex items-center gap-2">
+                                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Procesando...
+                                  </span>
+                                ) : (
+                                  <>
+                                    Canjear Recompensa
+                                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                                  </>
+                                )}
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                className="w-full h-11 border-dashed cursor-not-allowed opacity-70"
+                                disabled
+                              >
+                                {puntosFaltantes > 0 ? `Te faltan ${puntosFaltantes} pts` : 'No disponible'}
+                              </Button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )
+                })}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
       </div>
     </>
   )

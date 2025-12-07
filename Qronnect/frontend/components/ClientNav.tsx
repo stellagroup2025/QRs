@@ -111,38 +111,38 @@ export function ClientNav() {
     icon: any;
     badge?: string;
   }> = [
-    {
-      href: `/${slug}/mi-perfil`,
-      label: 'Mi Cuenta',
-      icon: User,
-    },
-    {
-      href: `/${slug}/promociones`,
-      label: 'Promociones',
-      icon: Gift,
-    },
-    {
-      href: `/${slug}/gacha`,
-      label: 'Gacha',
-      icon: Dices,
-      badge: 'Nuevo',
-    },
-    {
-      href: `/${slug}/mis-sellos`,
-      label: 'Mis Sellos',
-      icon: CreditCard,
-    },
-    {
-      href: `/${slug}/mis-canjes`,
-      label: 'Mis Cupones',
-      icon: Ticket,
-    },
-    {
-      href: `/${slug}/mis-referidos`,
-      label: 'Invita Amigos',
-      icon: Users,
-    },
-  ]
+      {
+        href: `/${slug}/mi-perfil`,
+        label: 'Mi Cuenta',
+        icon: User,
+      },
+      {
+        href: `/${slug}/promociones`,
+        label: 'Promociones',
+        icon: Gift,
+      },
+      {
+        href: `/${slug}/gacha`,
+        label: 'Gacha',
+        icon: Dices,
+        badge: 'Nuevo',
+      },
+      {
+        href: `/${slug}/mis-sellos`,
+        label: 'Mis Sellos',
+        icon: CreditCard,
+      },
+      {
+        href: `/${slug}/mis-canjes`,
+        label: 'Mis Cupones',
+        icon: Ticket,
+      },
+      {
+        href: `/${slug}/mis-referidos`,
+        label: 'Invita Amigos',
+        icon: Users,
+      },
+    ]
 
   const getBadgeCount = (label: string) => {
     if (label === 'Promociones') return promocionesCount
@@ -151,9 +151,60 @@ export function ClientNav() {
   }
 
   return (
-    <nav className="border-b bg-white dark:bg-gray-900 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-2 sm:px-4">
-        <div className="flex items-center justify-between">
+    <>
+      {/* DESKTOP NAVIGATION (Top Header) */}
+      <nav className="hidden md:block border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-1">
+              {navItems.map((item) => {
+                const Icon = item.icon
+                const isActive = pathname === item.href
+                const badgeCount = getBadgeCount(item.label)
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all relative',
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800'
+                    )}
+                    style={
+                      isActive
+                        ? {
+                          color: hexToRgb(branding.color_primario),
+                          backgroundColor: `${hexToRgb(branding.color_primario)}15`,
+                        }
+                        : {}
+                    }
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                    {badgeCount > 0 && (
+                      <Badge
+                        className="ml-1 h-5 min-w-5 px-1 flex items-center justify-center text-xs text-white rounded-full"
+                        style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+                      >
+                        {badgeCount}
+                      </Badge>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* MOBILE NAVIGATION (Bottom Bar) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border-t pb-safe">
+        <div className="flex items-center justify-around px-2 py-1">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
@@ -163,53 +214,45 @@ export function ClientNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                prefetch={false}
-                aria-label={`Ir a ${item.label}`}
-                aria-current={isActive ? 'page' : undefined}
                 className={cn(
-                  'flex flex-col items-center gap-0.5 py-2 px-1.5 sm:px-3 sm:py-3 text-xs sm:text-sm transition-colors relative flex-1',
-                  isActive
-                    ? 'border-b-2 font-medium'
-                    : 'text-muted-foreground hover:text-foreground'
+                  'flex flex-col items-center gap-1 p-2 min-w-[60px] relative transition-all active:scale-95',
+                  isActive ? 'text-primary' : 'text-muted-foreground'
                 )}
-                style={
-                  isActive
-                    ? {
-                        borderColor: hexToRgb(branding.color_primario),
-                        color: hexToRgb(branding.color_primario),
-                      }
-                    : {}
-                }
+                style={isActive ? { color: hexToRgb(branding.color_primario) } : {}}
               >
-                <div className="relative">
-                  <Icon className="h-5 w-5" />
-                  {badgeCount > 0 && (
-                    <Badge
-                      className="absolute -top-2 -right-2 h-4 min-w-4 px-1 flex items-center justify-center text-xs text-white"
-                      style={{ backgroundColor: hexToRgb(branding.color_primario) }}
-                    >
-                      {badgeCount}
-                    </Badge>
-                  )}
-                  {item.badge && (
-                    <Badge
-                      className="absolute -top-1 -right-3 text-[8px] px-1 h-3"
-                      variant="destructive"
-                    >
-                      {item.badge}
-                    </Badge>
-                  )}
+                <div className={cn(
+                  "p-1.5 rounded-xl transition-all",
+                  isActive ? "bg-primary/10" : ""
+                )}
+                  style={isActive ? { backgroundColor: `${hexToRgb(branding.color_primario)}15` } : {}}
+                >
+                  <Icon className={cn("h-6 w-6", isActive && "stroke-[2.5px]")} />
                 </div>
-                <span className="truncate max-w-[60px] sm:max-w-none text-center">{item.label}</span>
+
+                <span className="text-[10px] font-medium truncate max-w-[64px]">
+                  {item.label === 'Mis Sellos' ? 'Sellos' :
+                    item.label === 'Mis Cupones' ? 'Cupones' :
+                      item.label === 'Mis Cuenta' ? 'Perfil' :
+                        item.label === 'Invita Amigos' ? 'Invitar' :
+                          item.label}
+                </span>
+
+                {badgeCount > 0 && (
+                  <span
+                    className="absolute top-1 right-2 h-4 min-w-[16px] px-1 flex items-center justify-center text-[10px] font-bold text-white rounded-full ring-2 ring-white dark:ring-gray-900"
+                    style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+                  >
+                    {badgeCount}
+                  </span>
+                )}
+                {item.badge && (
+                  <span className="absolute top-0 right-1 h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                )}
               </Link>
             )
           })}
-          {/* Theme Toggle */}
-          <div className="py-2 pl-1 sm:py-3 sm:pl-2 flex-shrink-0">
-            <ThemeToggle />
-          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   )
 }

@@ -1,0 +1,66 @@
+name: CI - Qronnect
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  backend-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Qronnect/backend
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './Qronnect/backend/package-lock.json'
+        
+    - name: Install Dependencies
+      run: npm ci
+      
+    - name: Lint
+      run: npm run lint
+      
+    # - name: Run Tests
+    #   run: npm run test
+
+  frontend-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Qronnect/QRs
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './Qronnect/frontend/package-lock.json' # Adjusted path based on structure
+        
+    - name: Install Dependencies
+      run: npm ci --legacy-peer-deps
+      
+    - name: Lint
+      run: npm run lint
+      
+    # - name: Build Test
+    #   run: npm run build

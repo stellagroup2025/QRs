@@ -1,17 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
-import { GeminiService } from './gemini.service';
+import { AiProvider } from './interfaces/ai-provider.interface';
 import { KpiAnalysisRequestDto } from './dto/kpi-analysis-request.dto';
 import { PromoIdeasRequestDto } from './dto/promo-ideas-request.dto';
 import { EmailCampaignRequestDto } from './dto/email-campaign-request.dto';
 import { PlanAccionRequestDto } from './dto/plan-accion-request.dto';
 
 /**
- * Servicio de IA que integra la lógica de negocio con Gemini
+ * Servicio de IA que integra la lógica de negocio con el proveedor de IA (Gemini u OpenAI)
  *
  * Responsabilidades:
  * - Calcular KPIs agregados desde Supabase
- * - Preparar datos optimizados para enviar a Gemini
+ * - Preparar datos optimizados para enviar a la IA
  * - Coordinar entre la BD y el servicio de IA
  */
 @Injectable()
@@ -20,8 +20,8 @@ export class AiService {
 
   constructor(
     private readonly supabase: SupabaseService,
-    private readonly gemini: GeminiService,
-  ) {}
+    @Inject('AiProvider') private readonly aiProvider: AiProvider,
+  ) { }
 
   /**
    * Genera análisis de KPIs con IA
@@ -142,7 +142,7 @@ export class AiService {
     this.logger.log(`[AI KPI ANALYSIS] Contexto enriquecido: ${contextoIA ? 'SÍ' : 'NO'}`);
 
     // Llamar a Gemini para generar el análisis con contexto enriquecido
-    const analysis = await this.gemini.generateKpiAnalysis({
+    const analysis = await this.aiProvider.generateKpiAnalysis({
       kpis,
       sector,
       tiendaNombre: nombreTienda,
@@ -235,7 +235,7 @@ export class AiService {
     this.logger.log(`[AI PROMO IDEAS] Contexto enriquecido: ${contextoEnriquecido ? 'SÍ' : 'NO'}`);
 
     // Llamar a Gemini con los datos enriquecidos
-    const ideas = await this.gemini.generatePromoIdeas({
+    const ideas = await this.aiProvider.generatePromoIdeas({
       sector,
       ticketMedio,
       frecuenciaVisitas,
@@ -272,7 +272,7 @@ export class AiService {
     const nombreTienda = tienda.nombre || 'tu negocio';
 
     // Llamar a Gemini para generar la campaña
-    const campaign = await this.gemini.generateEmailCampaignIdeas({
+    const campaign = await this.aiProvider.generateEmailCampaignIdeas({
       segmentoDescripcion: requestDto.segmentoDescripcion,
       sector: requestDto.sector || 'comercio local',
       objetivo: requestDto.objetivo,
@@ -323,7 +323,7 @@ export class AiService {
     const clientesUnicos = new Set(compras?.map((c) => c.id_cliente) || []).size;
 
     // Llamar a Gemini para generar el plan de acción
-    const plan = await this.gemini.generatePlanAccion({
+    const plan = await this.aiProvider.generatePlanAccion({
       recomendacion: requestDto.recomendacion,
       contexto: requestDto.contexto,
       tipo_accion: requestDto.tipo_accion,

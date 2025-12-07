@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
-import { GeminiService } from '../ai/gemini.service';
+import { AiProvider } from '../ai/interfaces/ai-provider.interface';
 import { EmailService } from '../email/email.service';
 import { GenerarInformeDto, FormatoInforme } from './dto/generar-informe.dto';
 import { EnviarInformeDto } from './dto/enviar-informe.dto';
@@ -23,9 +23,9 @@ export class InformesService {
 
   constructor(
     private readonly supabase: SupabaseService,
-    private readonly gemini: GeminiService,
+    @Inject('AiProvider') private readonly aiProvider: AiProvider,
     private readonly emailService: EmailService,
-  ) {}
+  ) { }
 
   /**
    * Genera un informe mensual completo con análisis de IA
@@ -285,7 +285,7 @@ Productos principales: ${tienda.config_ia.productos_principales || 'No especific
       : undefined;
 
     // Análisis básico de KPIs
-    const analisisKPIs = await this.gemini.generateKpiAnalysis({
+    const analisisKPIs = await this.aiProvider.generateKpiAnalysis({
       kpis: {
         ventasTotales: kpis.ventasTotales,
         numeroTickets: kpis.numeroTickets,
@@ -323,45 +323,7 @@ Productos principales: ${tienda.config_ia.productos_principales || 'No especific
       };
     }
 
-    const prompt = `Analiza el impacto de estas promociones en un negocio:
-
-PROMOCIONES ACTIVAS:
-${promociones.map((p) => `- ${p.titulo} (${p.tipo}): ${p.descripcion || 'Sin descripción'}`).join('\n')}
-
-RENDIMIENTO DEL MES:
-- Ventas: €${kpis.ventasTotales}
-- Tickets: ${kpis.numeroTickets}
-- Clientes nuevos: ${kpis.clientesNuevos}
-
-${
-  comparativa
-    ? `
-COMPARATIVA CON MES ANTERIOR:
-- Ventas mes anterior: €${comparativa.mesAnterior.ventasTotales}
-- Tickets mes anterior: ${comparativa.mesAnterior.numeroTickets}
-- Variación ventas: ${((kpis.ventasTotales / comparativa.mesAnterior.ventasTotales - 1) * 100).toFixed(1)}%
-`
-    : ''
-}
-
-Genera un análisis breve (2-3 frases) del posible impacto de estas promociones.
-Devuelve JSON:
-{
-  "resumen": "Análisis del impacto...",
-  "impacto": "positivo" | "neutral" | "negativo",
-  "recomendaciones": ["Recomendación 1", "Recomendación 2"]
-}`;
-
-    try {
-      const response = await this.gemini['callGeminiWithRetry'](prompt, 'ANALISIS_PROMOCIONES');
-      return JSON.parse(this.extractJSON(response));
-    } catch (error) {
-      this.logger.error('[INFORME] Error analizando promociones:', error);
-      return {
-        resumen: 'No se pudo analizar el impacto de las promociones.',
-        impacto: 'neutral',
-      };
-    }
+    return await this.aiProvider.analyzePromoImpact(promociones, kpis, comparativa);
   }
 
   /**
@@ -396,56 +358,7 @@ Devuelve JSON:
     promociones: any[],
     campanas: any[],
   ) {
-    const prompt = `Eres un consultor de negocio experto. Genera un plan de acción para el próximo mes basado en estos datos:
-
-NEGOCIO: ${tienda.nombre}
-TIPO: ${tienda.config_ia?.tipo_negocio || 'Comercio local'}
-
-RENDIMIENTO ACTUAL:
-- Ventas: €${kpis.ventasTotales}
-- Tickets: ${kpis.numeroTickets}
-- Ticket medio: €${kpis.ticketMedio}
-- Clientes nuevos: ${kpis.clientesNuevos}
-- Clientes activos: ${kpis.clientesActivos}
-
-ANÁLISIS IA:
-${analisisIA.analisisGeneral.summary}
-
-RECOMENDACIONES GENERADAS:
-${analisisIA.analisisGeneral.recommendations.map((r) => `- ${r.texto}`).join('\n')}
-
-GENERA UN PLAN DE ACCIÓN para el próximo mes con:
-1. Objetivos específicos y medibles (2-3 objetivos)
-2. Acciones concretas a implementar (3-5 acciones)
-3. KPIs a monitorear
-
-Formato JSON:
-{
-  "objetivos": [
-    { "objetivo": "Descripción", "metrica": "KPI objetivo", "valor_objetivo": 1000 }
-  ],
-  "acciones": [
-    {
-      "accion": "Descripción de la acción",
-      "prioridad": "alta" | "media" | "baja",
-      "implementable_sistema": true | false,
-      "tipo": "campana_email" | "promocion" | "mejora_operativa" | "otro"
-    }
-  ],
-  "kpis_monitorear": ["KPI 1", "KPI 2", "KPI 3"]
-}`;
-
-    try {
-      const response = await this.gemini['callGeminiWithRetry'](prompt, 'PLAN_SIGUIENTE_MES');
-      return JSON.parse(this.extractJSON(response));
-    } catch (error) {
-      this.logger.error('[INFORME] Error generando plan:', error);
-      return {
-        objetivos: [],
-        acciones: [],
-        kpis_monitorear: ['Ventas totales', 'Número de tickets', 'Clientes nuevos'],
-      };
-    }
+    return await this.aiProvider.generateNextMonthPlan(tienda, kpis, analisisIA);
   }
 
   /**
@@ -683,102 +596,30 @@ Formato JSON:
         <h2>🤖 Análisis con IA</h2>
         <p style="line-height: 1.6; color: #444;">${informe.analisis_ia.analisisGeneral.summary}</p>
 
-        ${
-          informe.analisis_ia.analisisGeneral.highlights?.length > 0
-            ? `
+        ${informe.analisis_ia.analisisGeneral.highlights?.length > 0
+        ? `
         <h3 style="margin-top: 25px; font-size: 16px; color: #666;">⭐ Puntos Destacados</h3>
         ${informe.analisis_ia.analisisGeneral.highlights.map((h) => `<div class="highlight">${h}</div>`).join('')}
         `
-            : ''
-        }
+        : ''
+      }
 
-        ${
-          informe.analisis_ia.analisisGeneral.recommendations?.length > 0
-            ? `
+        ${informe.analisis_ia.analisisGeneral.recommendations?.length > 0
+        ? `
         <h3 style="margin-top: 25px; font-size: 16px; color: #666;">💡 Recomendaciones</h3>
-        ${informe.analisis_ia.analisisGeneral.recommendations.map((r) => `<div class="recommendation">${r.texto}</div>`).join('')}
+        ${informe.analisis_ia.analisisGeneral.recommendations.map((r) => `<div class="recommendation">${typeof r === 'string' ? r : r.texto}</div>`).join('')}
         `
-            : ''
-        }
-      </div>
-
-      <!-- Comparativa -->
-      ${
-        informe.comparativa_anterior
-          ? `
-      <div class="section">
-        <h2>📊 Comparativa</h2>
-        <p><strong>Vs. Mes Anterior:</strong></p>
-        <ul>
-          <li>Ventas: €${informe.comparativa_anterior.mesAnterior.ventasTotales.toFixed(2)} (${this.calcularPorcentajeCambio(informe.datos_kpis.ventasTotales, informe.comparativa_anterior.mesAnterior.ventasTotales)})</li>
-          <li>Tickets: ${informe.comparativa_anterior.mesAnterior.numeroTickets} (${this.calcularPorcentajeCambio(informe.datos_kpis.numeroTickets, informe.comparativa_anterior.mesAnterior.numeroTickets)})</li>
-        </ul>
-      </div>
-      `
-          : ''
+        : ''
       }
-
-      <!-- Promociones -->
-      ${
-        informe.promociones_usadas?.promociones?.length > 0
-          ? `
-      <div class="section">
-        <h2>🎁 Promociones del Mes</h2>
-        <p>${informe.analisis_ia.impactoPromociones?.resumen || 'Se ejecutaron promociones durante el mes.'}</p>
-        <ul>
-          ${informe.promociones_usadas.promociones.map((p) => `<li><strong>${p.titulo}</strong> (${p.tipo})</li>`).join('')}
-        </ul>
       </div>
-      `
-          : ''
-      }
 
-      <!-- Plan Próximo Mes -->
-      ${
-        informe.plan_siguiente_mes
-          ? `
-      <div class="section">
-        <h2>🎯 Plan para el Próximo Mes</h2>
-        ${
-          informe.plan_siguiente_mes.objetivos?.length > 0
-            ? `
-        <h3 style="font-size: 16px; color: #666;">Objetivos</h3>
-        <ul>
-          ${informe.plan_siguiente_mes.objetivos.map((o) => `<li><strong>${o.objetivo}</strong>: ${o.metrica} = ${o.valor_objetivo}</li>`).join('')}
-        </ul>
-        `
-            : ''
-        }
-        ${
-          informe.plan_siguiente_mes.acciones?.length > 0
-            ? `
-        <h3 style="font-size: 16px; color: #666; margin-top: 20px;">Acciones Recomendadas</h3>
-        <ul>
-          ${informe.plan_siguiente_mes.acciones.map((a) => `<li>${a.accion} <span style="color: ${a.prioridad === 'alta' ? '#ef4444' : a.prioridad === 'media' ? '#f59e0b' : '#10b981'};">[${a.prioridad.toUpperCase()}]</span></li>`).join('')}
-        </ul>
-        `
-            : ''
-        }
+      <div class="footer">
+        <p>Informe generado automáticamente por Qronnect AI</p>
       </div>
-      `
-          : ''
-      }
-    </div>
-
-    <div class="footer">
-      <p>Este informe ha sido generado automáticamente con Inteligencia Artificial</p>
-      <p style="margin-top: 10px; font-size: 12px;">Powered by Qronnect</p>
     </div>
   </div>
 </body>
 </html>
-    `.trim();
-  }
-
-  private calcularPorcentajeCambio(actual: number, anterior: number): string {
-    if (anterior === 0) return actual > 0 ? '+100%' : '0%';
-    const cambio = ((actual - anterior) / anterior) * 100;
-    const signo = cambio >= 0 ? '+' : '';
-    return `${signo}${cambio.toFixed(1)}%`;
+    `;
   }
 }

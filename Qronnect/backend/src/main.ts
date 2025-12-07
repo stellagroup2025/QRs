@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   // Habilitar CORS para permitir requests del frontend
   // Permite localhost y subdominios (*.localhost) para desarrollo
@@ -41,11 +45,11 @@ async function bootstrap() {
       });
 
       if (isAllowed) {
-        console.log(`✅ CORS permitido para origin: ${origin}`);
+        // console.log(`✅ CORS permitido para origin: ${origin}`);
         callback(null, true);
       } else {
         console.warn(`⚠️  CORS bloqueado para origin: ${origin}`);
-        console.warn(`   Origenes permitidos:`, allowedOrigins.map(o => o.toString()));
+        // console.warn(`   Origenes permitidos:`, allowedOrigins.map(o => o.toString()));
         callback(new Error('Not allowed by CORS'));
       }
     },
@@ -93,11 +97,10 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
 
-  console.log(`
-    🚀 Qronnect Backend is running!
-    📝 API: http://localhost:${port}/api
-    📚 Swagger Docs: http://localhost:${port}/api/docs
-  `);
+  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
+  logger.log(`🚀 Qronnect Backend is running on port ${port}`);
+  logger.log(`📝 API: http://localhost:${port}/api`);
+  logger.log(`📚 Swagger Docs: http://localhost:${port}/api/docs`);
 }
 
 bootstrap();

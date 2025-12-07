@@ -1,4 +1,5 @@
-import { Controller, Get, Put, Body, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Put, Body, UseGuards, Query, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { TiendasService } from './tiendas.service';
 import { ConfigurarRegaloBienvenidaDto } from './dto/configurar-regalo-bienvenida.dto';
@@ -12,9 +13,10 @@ import { CurrentTienda } from '../auth/decorators/current-tienda.decorator';
 @Controller('tiendas')
 @UseGuards(AdminAuthGuard)
 export class TiendasController {
-  constructor(private readonly tiendasService: TiendasService) {}
+  constructor(private readonly tiendasService: TiendasService) { }
 
   @Get('branding')
+  @UseInterceptors(CacheInterceptor)
   @ApiOperation({ summary: 'Obtener configuración de branding de la tienda' })
   @ApiResponse({ status: 200, description: 'Branding obtenido' })
   getBranding(@CurrentTienda() tiendaId: string) {
@@ -45,7 +47,7 @@ export class TiendasController {
 
   @Get('config/regalo-bienvenida')
   @ApiOperation({ summary: 'Obtener configuración de regalos de bienvenida' })
-  @ApiResponse({ status: 200, description: 'Configuración obtenida' })
+  @ApiResponse({ status: 200, description: 'Configuración obtenida', type: ConfigurarRegaloBienvenidaDto })
   getConfiguracionRegaloBienvenida(@CurrentTienda() tiendaId: string) {
     return this.tiendasService.getConfiguracionRegaloBienvenida(tiendaId);
   }
@@ -84,7 +86,7 @@ export class TiendasController {
 
   @Get('config/ia')
   @ApiOperation({ summary: 'Obtener configuración de IA' })
-  @ApiResponse({ status: 200, description: 'Configuración obtenida' })
+  @ApiResponse({ status: 200, description: 'Configuración obtenida', type: ConfigurarIADto })
   getConfiguracionIA(@CurrentTienda() tiendaId: string) {
     return this.tiendasService.getConfiguracionIA(tiendaId);
   }
@@ -101,8 +103,9 @@ export class TiendasController {
   }
 
   @Get('info')
+  @UseInterceptors(CacheInterceptor)
   @ApiOperation({ summary: 'Obtener información completa de la tienda (incluye estado abierto/cerrado)' })
-  @ApiResponse({ status: 200, description: 'Información obtenida' })
+  @ApiResponse({ status: 200, description: 'Información obtenida', type: ConfigurarInfoTiendaDto })
   getInfoTienda(@CurrentTienda() tiendaId: string) {
     return this.tiendasService.getInfoTienda(tiendaId);
   }

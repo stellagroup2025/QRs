@@ -1,7 +1,14 @@
 import { Module, MiddlewareConsumer, NestModule, RequestMethod } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CacheModule, CacheStore } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-redis-store';
+import { RedisClientOptions } from 'redis';
+import { WinstonModule, utilities as nestWinstonUtilities } from 'nest-winston';
+import * as winston from 'winston';
+import { I18nModule, AcceptLanguageResolver, QueryResolver, HeaderResolver } from 'nestjs-i18n';
+import * as path from 'path';
 
 // Módulos de la aplicación
 import { SupabaseModule } from './supabase/supabase.module';
@@ -53,6 +60,50 @@ import { QrCodesModule } from './qr-codes/qr-codes.module';
 
     // Módulo de IA (Google Gemini)
     AiModule,
+
+    // Módulo de Caché (Redis)
+    CacheModule.registerAsync<RedisClientOptions>({
+      isGlobal: true,
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        store: redisStore as unknown as CacheStore,
+        host: configService.get('REDIS_HOST', 'localhost'),
+        port: configService.get('REDIS_PORT', 6379),
+        ttl: 600, // 10 minutos por defecto
+      }),
+      inject: [ConfigService],
+    }),
+
+    // Módulos de Logging (Winston)
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.ms(),
+            nestWinstonUtilities.format.nestLike('Qronnect', {
+              colors: true,
+              prettyPrint: true,
+            }),
+          ),
+        }),
+        // En producción se puede añadir File o Http transport
+      ],
+    }),
+
+    // Módulo de Internacionalización (i18n)
+    I18nModule.forRoot({
+      fallbackLanguage: 'es',
+      loaderOptions: {
+        path: path.join(__dirname, '/i18n/'),
+        watch: true,
+      },
+      resolvers: [
+        { use: QueryResolver, options: ['lang'] },
+        AcceptLanguageResolver,
+        new HeaderResolver(['x-custom-lang']),
+      ],
+    }),
 
     // Módulos de dominio
     ClientesModule,

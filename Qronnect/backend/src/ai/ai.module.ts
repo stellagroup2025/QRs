@@ -2,25 +2,29 @@ import { Module } from '@nestjs/common';
 import { AiController } from './ai.controller';
 import { AiService } from './ai.service';
 import { GeminiService } from './gemini.service';
+import { OpenAiService } from './openai.service';
 import { SupabaseModule } from '../supabase/supabase.module';
 
 /**
- * Módulo de IA - Integración con Google Gemini
- *
- * Proporciona 3 funcionalidades principales:
- * 1. Análisis de KPIs con insights y recomendaciones
- * 2. Generación de ideas de promociones según sector
- * 3. Generación de campañas de email segmentadas
- *
- * Requiere:
- * - GEMINI_API_KEY en variables de entorno
- * - SupabaseModule para acceso a datos
- * - Autenticación de admin para todos los endpoints
+ * Módulo de IA - Integración con Google Gemini y OpenAI
  */
 @Module({
   imports: [SupabaseModule],
   controllers: [AiController],
-  providers: [AiService, GeminiService],
-  exports: [AiService, GeminiService], // Exportar para que otros módulos puedan usarlo
+  providers: [
+    AiService,
+    GeminiService,
+    OpenAiService,
+    {
+      provide: 'AiProvider',
+      useFactory: (geminiService: GeminiService, openAiService: OpenAiService) => {
+        const provider = process.env.AI_PROVIDER || 'gemini';
+        console.log(`🤖 Inicializando AI Module con proveedor: ${provider}`);
+        return provider === 'openai' ? openAiService : geminiService;
+      },
+      inject: [GeminiService, OpenAiService],
+    }
+  ],
+  exports: [AiService, 'AiProvider'],
 })
-export class AiModule {}
+export class AiModule { }

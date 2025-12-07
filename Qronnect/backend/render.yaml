@@ -31,3 +31,7 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: AI_PROVIDER
+        value: gemini # Change to 'openai' to switch provider

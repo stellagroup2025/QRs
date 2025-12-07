@@ -1,7 +1,7 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { SmsService } from '../sms/sms.service';
-import { GeminiService } from '../ai/gemini.service';
+import { AiProvider } from '../ai/interfaces/ai-provider.interface';
 import { CreateCampanaSmsDto } from './dto/create-campana-sms.dto';
 import { UpdateCampanaSmsDto } from './dto/update-campana-sms.dto';
 import { FiltrosSegmentacionDto } from './dto/filtros-segmentacion.dto';
@@ -12,8 +12,8 @@ export class CampanasSmsService {
   constructor(
     private readonly supabase: SupabaseService,
     private readonly smsService: SmsService,
-    private readonly geminiService: GeminiService,
-  ) {}
+    @Inject('AiProvider') private readonly aiProvider: AiProvider,
+  ) { }
 
   /**
    * Crea una nueva campaña SMS
@@ -512,7 +512,7 @@ export class CampanasSmsService {
   }
 
   /**
-   * Genera un mensaje SMS usando IA (Gemini)
+   * Genera un mensaje SMS usando IA
    * Enriquece el contexto con la configuración de IA de la tienda
    */
   async generarSmsConIA(tiendaId: string, dto: GenerarSmsIaDto) {
@@ -527,7 +527,6 @@ export class CampanasSmsService {
         .single();
 
       const configIA = tienda?.config_ia || {};
-      const nombreTienda = tienda?.nombre || 'tu negocio';
 
       // Construir contexto enriquecido
       let contextoEnriquecido = dto.contextoNegocio || '';
@@ -563,14 +562,11 @@ export class CampanasSmsService {
       // Usar el tono desde config_ia si no se especifica en el dto
       const tonoFinal = dto.tono || configIA.tono_comunicacion || 'profesional';
 
-      return await this.geminiService.generarCampanaSMS({
+      return await this.aiProvider.generarCampanaSMS({
         contextoNegocio: contextoEnriquecido,
         objetivo: dto.objetivo,
         mensajeClave: dto.mensajeClave,
         tono: tonoFinal,
-        urgencia: dto.urgencia,
-        incluirCTA: dto.incluirCTA,
-        variables: dto.variables,
       });
     } catch (error) {
       console.error('Error generando SMS con IA:', error);
