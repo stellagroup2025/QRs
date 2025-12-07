@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,11 +16,61 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export default function AdminLoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { branding } = useBrandingContext()
   const [email, setEmail] = useState('')
   const [pin, setPin] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [autoLogin, setAutoLogin] = useState(false)
+
+  // Efecto para detectar auto_token (Impersonation)
+  useEffect(() => {
+    const autoToken = searchParams.get('auto_token')
+    if (autoToken) {
+      verifyAutoToken(autoToken)
+    }
+  }, [searchParams])
+
+  const verifyAutoToken = async (token: string) => {
+    setAutoLogin(true)
+    try {
+      // Obtener dominio actual (necesario para el middleware backend)
+      const host = window.location.host
+      const parts = host.split('.')
+      let domain = ''
+
+      if (parts.length > 1 && parts[1].startsWith('localhost')) {
+        domain = parts[0]
+      } else if (host.startsWith('localhost')) {
+        domain = 'lokeyokiera' // fallback dev
+      } else {
+        domain = parts[0]
+      }
+
+      const res = await fetch(`${API_URL}/api/admin/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-Tenant-Domain': domain
+        }
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        localStorage.setItem('admin_token', token)
+        localStorage.setItem('admin_tienda', JSON.stringify(data.tienda))
+        localStorage.setItem('admin_user', JSON.stringify(data.admin))
+        localStorage.setItem('tenant_domain', domain)
+        router.push('/admin/dashboard')
+      } else {
+        setError('Enlace de acceso inválido o expirado')
+        setAutoLogin(false)
+      }
+    } catch (e) {
+      setError('Error de conexión validando acceso')
+      setAutoLogin(false)
+    }
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,6 +133,18 @@ export default function AdminLoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (autoLogin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+        <Card className="w-full max-w-md shadow-lg p-8 text-center">
+          <Loader2 className="h-10 w-10 animate-spin text-blue-600 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold">Accediendo a la tienda...</h2>
+          <p className="text-muted-foreground">Verificando credenciales de administrador</p>
+        </Card>
+      </div>
+    )
   }
 
   return (

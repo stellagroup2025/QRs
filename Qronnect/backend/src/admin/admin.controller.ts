@@ -27,7 +27,7 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly comprasService: ComprasService,
-  ) {}
+  ) { }
 
   /**
    * POST /api/admin/auth/login
@@ -46,6 +46,18 @@ export class AdminController {
   @ApiResponse({ status: 401, description: 'Email o PIN incorrecto' })
   async login(@Tenant() tenant: TenantContext, @Body() loginDto: LoginAdminDto) {
     return this.adminService.login(tenant.id, loginDto);
+  }
+
+  /**
+   * GET /api/admin/auth/me
+   * Validar token y obtener datos del admin/tienda
+   */
+  @Get('auth/me')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('JWT')
+  @ApiOperation({ summary: 'Obtener datos del usuario actual' })
+  async getMe(@Req() req: any) {
+    return this.adminService.getMe(req.user.id);
   }
 
   /**
