@@ -29,7 +29,8 @@ import {
     LogOut,
     Menu,
     X,
-    ChevronRight
+    ChevronRight,
+    QrCode
 } from 'lucide-react'
 
 interface SidebarItem {
@@ -51,8 +52,13 @@ const menuGroups: SidebarGroup[] = [
         items: [
             {
                 title: 'Dashboard',
-                href: '/admin/dashboard',
+                href: '/admin/dashboard', // Defaults to Analytics now
                 icon: LayoutDashboard,
+            },
+            {
+                title: 'QR Código',
+                href: '/admin/dashboard?tab=qr',
+                icon: QrCode,
             },
         ],
     },

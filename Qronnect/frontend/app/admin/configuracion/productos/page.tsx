@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { AdminNav } from '@/components/AdminNav'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -362,7 +362,7 @@ export default function ProductosPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminNav />
+
 
       <main className="container mx-auto px-4 py-8">
         {/* Header */}
@@ -531,11 +531,10 @@ export default function ProductosPage() {
                     return (
                       <Card
                         key={tipo.value}
-                        className={`cursor-pointer transition-all p-4 ${
-                          formData.tipo === tipo.value
-                            ? 'ring-2 ring-primary border-primary'
-                            : 'hover:border-primary/50'
-                        }`}
+                        className={`cursor-pointer transition-all p-4 ${formData.tipo === tipo.value
+                          ? 'ring-2 ring-primary border-primary'
+                          : 'hover:border-primary/50'
+                          }`}
                         onClick={() => setFormData({ ...formData, tipo: tipo.value as any })}
                       >
                         <div className="flex items-center gap-3">

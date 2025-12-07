@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { AdminNav } from '@/components/AdminNav'
+
 import { Paintbrush, Upload, Store, Save, Loader2 } from 'lucide-react'
 
 interface BrandingConfig {
@@ -109,7 +109,7 @@ export default function ConfiguracionBrandingPage() {
   if (loading) {
     return (
       <>
-        <AdminNav />
+
         <div className="container mx-auto p-4 md:p-6 lg:p-8">
           <div className="flex items-center justify-center h-96">
             <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
@@ -121,7 +121,7 @@ export default function ConfiguracionBrandingPage() {
 
   return (
     <>
-      <AdminNav />
+
       <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

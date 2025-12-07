@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Dices, Save, Sparkles, Clock, Settings, TrendingUp } from 'lucide-react';
-import { AdminNav } from '@/components/AdminNav';
+
 import { obtenerConfigGacha, configurarGacha, obtenerEstadisticasGacha } from '@/lib/api/gacha';
 import { GachaConfig, EstadisticasGacha } from '@/types/gacha';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -96,7 +96,7 @@ export default function ConfiguracionGachaPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <AdminNav />
+
         <div className="flex items-center justify-center h-screen">
           <p>Cargando...</p>
         </div>
@@ -106,7 +106,7 @@ export default function ConfiguracionGachaPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminNav />
+
       <div className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>

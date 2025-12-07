@@ -1,15 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Sparkles, Plus, Edit, Trash2, Package, TrendingUp } from 'lucide-react';
-import { AdminNav } from '@/components/AdminNav';
-import { obtenerPremios, eliminarPremio, insertarPremiosPredefinidos } from '@/lib/api/gacha';
-import { PremioGacha, getRarezaColor, getRarezaLabel, formatearPremio, getTipoLabel } from '@/types/gacha';
-import { FormularioPremioGacha } from '@/components/admin/gacha/FormularioPremioGacha';
+import { Sparkles, Plus, Trash2, Edit, Package, TrendingUp } from 'lucide-react';
+import {
+  obtenerPremios,
+  eliminarPremio,
+  insertarPremiosPredefinidos,
+} from '@/lib/api/gacha';
+import {
+  PremioGacha,
+  getRarezaColor,
+  getRarezaLabel,
+  getTipoLabel,
+  formatearPremio,
+  calcularDiasRestantes,
+  RarezaPremio,
+} from '@/types/gacha';
+import { Badge } from '@/components/ui/badge';
+import FormularioPremioGacha from '@/components/admin/gacha/FormularioPremioGacha';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +37,7 @@ export default function GestionPremiosPage() {
   const [loading, setLoading] = useState(true);
   const [premios, setPremios] = useState<PremioGacha[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [premioEditar, setPremioEditar] = useState<PremioGacha | undefined>();
+  const [premioEditar, setPremioEditar] = useState<PremioGacha | undefined>(undefined);
   const [premioEliminar, setPremioEliminar] = useState<PremioGacha | null>(null);
 
   useEffect(() => {
@@ -137,7 +148,6 @@ export default function GestionPremiosPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <AdminNav />
         <div className="flex items-center justify-center h-screen">
           <p>Cargando...</p>
         </div>
@@ -147,7 +157,6 @@ export default function GestionPremiosPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminNav />
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -236,9 +245,9 @@ export default function GestionPremiosPage() {
                   <div className="flex items-center gap-2">
                     <div
                       className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: getRarezaColor(rareza) }}
+                      style={{ backgroundColor: getRarezaColor(rareza as RarezaPremio) }}
                     />
-                    <CardTitle>{getRarezaLabel(rareza)}</CardTitle>
+                    <CardTitle>{getRarezaLabel(rareza as RarezaPremio)}</CardTitle>
                   </div>
                   <Badge variant="secondary">{premiosRareza.length} premios</Badge>
                 </div>

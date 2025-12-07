@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AdminNav } from '@/components/AdminNav'
+
 import { User, Lock, Mail, Loader2, CheckCircle, Eye, EyeOff } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
@@ -124,7 +124,7 @@ export default function CuentaPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-        <AdminNav />
+
         <div className="max-w-4xl mx-auto p-6">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -136,7 +136,7 @@ export default function CuentaPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <AdminNav />
+
 
       <div className="max-w-4xl mx-auto p-6">
         <div className="mb-6">
@@ -167,8 +167,8 @@ export default function CuentaPage() {
                     <Label className="text-muted-foreground text-sm">Rol</Label>
                     <p className="font-medium">
                       {adminUser?.rol === 'owner' ? 'Admin' :
-                       adminUser?.rol === 'empleado' ? 'Empleado' :
-                       adminUser?.rol || '-'}
+                        adminUser?.rol === 'empleado' ? 'Empleado' :
+                          adminUser?.rol || '-'}
                     </p>
                   </div>
                 </div>

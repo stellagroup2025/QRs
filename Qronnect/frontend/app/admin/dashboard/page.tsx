@@ -218,7 +218,7 @@ export default function AdminDashboardPage() {
 
   const searchParams = useSearchParams()
   // Estado para el tab activo (sincronizado con URL)
-  const activeTab = searchParams.get('tab') || 'qr'
+  const activeTab = searchParams.get('tab') || 'analytics'
 
   const setActiveTab = (tab: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -741,90 +741,9 @@ export default function AdminDashboardPage() {
         </Card>
       </div >
 
-      {/* Tabs */}
-      < Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" >
-        <div className="relative -mx-4 sm:mx-0">
-          <div
-            className="overflow-x-auto scrollbar-hide px-4 sm:px-0"
-            role="navigation"
-            aria-label="Navegación principal del panel de administración"
-          >
-            <TabsList className="inline-flex w-auto min-w-full sm:w-full justify-start">
-              <TabsTrigger
-                value="qr"
-                className="flex-shrink-0"
-                aria-label="Ver sección de QR de Registro"
-              >
-                <QrCode className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                <span className="hidden sm:inline">QR de Registro</span>
-                <span className="sr-only sm:hidden">QR</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="clientes"
-                className="flex-shrink-0"
-                aria-label="Ver lista de clientes"
-              >
-                <Users className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                <span className="hidden sm:inline">Clientes</span>
-                <span className="sr-only sm:hidden">Clientes</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="ventas"
-                className="flex-shrink-0"
-                aria-label="Ver registro de ventas"
-              >
-                <ShoppingCart className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                <span className="hidden sm:inline">Ventas</span>
-                <span className="sr-only sm:hidden">Ventas</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="promociones"
-                className="flex-shrink-0"
-                aria-label="Gestionar promociones"
-              >
-                <Gift className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                <span className="hidden sm:inline">Promociones</span>
-                <span className="sr-only sm:hidden">Promociones</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="sellos"
-                className="flex-shrink-0"
-                aria-label="Gestionar programas de sellos"
-              >
-                <CreditCard className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                <span className="hidden sm:inline">Sellos</span>
-                <span className="sr-only sm:hidden">Sellos</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="campanas"
-                className="flex-shrink-0"
-                aria-label="Ver campañas de email"
-              >
-                <Mail className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                <span className="hidden sm:inline">Campañas</span>
-                <span className="sr-only sm:hidden">Campañas</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="analytics"
-                className="flex-shrink-0"
-                aria-label="Ver analytics y métricas"
-              >
-                <BarChart3 className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                <span className="hidden sm:inline">Analytics</span>
-                <span className="sr-only sm:hidden">Analytics</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="ia"
-                className="flex-shrink-0"
-                aria-label="Herramientas de inteligencia artificial"
-              >
-                <Sparkles className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                <span className="hidden sm:inline">IA</span>
-                <span className="sr-only sm:hidden">IA</span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
-        </div>
+      {/* Tabs Content Wrapper */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        {/* Navigation is now handled by AdminSidebar */}
 
         {/* QR Tab */}
         <TabsContent value="qr" className="space-y-6">

@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Store, Clock, Phone, Globe, MapPin, Share2, Save, Star } from 'lucide-react';
-import { AdminNav } from '@/components/AdminNav';
+
 
 interface HorarioDia {
   abierto: boolean;
@@ -187,7 +187,7 @@ export default function ConfiguracionTiendaPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <AdminNav />
+
         <div className="flex items-center justify-center h-screen">
           <p>Cargando...</p>
         </div>
@@ -197,7 +197,7 @@ export default function ConfiguracionTiendaPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminNav />
+
       <div className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
