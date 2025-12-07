@@ -16,6 +16,8 @@ export default function NuevaTiendaComercial() {
     const [loading, setLoading] = useState(false);
     const [successData, setSuccessData] = useState<any>(null);
     const [planes, setPlanes] = useState<any[]>([]);
+    const [loadingPlanes, setLoadingPlanes] = useState(true);
+    const [planesError, setPlanesError] = useState('');
 
     // Fetch planes
     useEffect(() => {

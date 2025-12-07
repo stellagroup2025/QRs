@@ -20,7 +20,7 @@ import {
   RarezaPremio,
 } from '@/types/gacha';
 import { Badge } from '@/components/ui/badge';
-import FormularioPremioGacha from '@/components/admin/gacha/FormularioPremioGacha';
+import { FormularioPremioGacha } from '@/components/admin/gacha/FormularioPremioGacha';
 import {
   AlertDialog,
   AlertDialogAction,
