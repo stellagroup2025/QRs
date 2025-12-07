@@ -105,7 +105,7 @@ export default function NuevaTiendaComercial() {
                             </p>
                             <p className="text-xs text-center text-muted-foreground">Comparte este PIN con el cliente</p>
                         </div>
-                        <Button className="w-full" onClick={() => router.push('/comercial/dashboard')}>
+                        <Button className="w-full" onClick={() => router.push('/comerciales/dashboard')}>
                             Volver al Dashboard
                         </Button>
                     </CardContent>

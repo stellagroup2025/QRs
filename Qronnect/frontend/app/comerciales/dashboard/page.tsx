@@ -13,7 +13,7 @@ export default function ComercialDashboard() {
     useEffect(() => {
         const userData = localStorage.getItem('comercial_user');
         if (!userData) {
-            router.push('/comercial/login');
+            router.push('/comerciales/login');
             return;
         }
         setUser(JSON.parse(userData));
@@ -22,7 +22,7 @@ export default function ComercialDashboard() {
     const handleLogout = () => {
         localStorage.removeItem('comercial_token');
         localStorage.removeItem('comercial_user');
-        router.push('/comercial/login');
+        router.push('/comerciales/login');
     };
 
     return (
@@ -53,7 +53,7 @@ export default function ComercialDashboard() {
                         <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h2>
                         <p className="text-muted-foreground">Bienvenido, {user?.nombre}</p>
                     </div>
-                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/comercial/tiendas/nueva')}>
+                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/comerciales/tiendas/nueva')}>
                         <Plus className="mr-2 h-4 w-4" />
                         Nueva Tienda
                     </Button>

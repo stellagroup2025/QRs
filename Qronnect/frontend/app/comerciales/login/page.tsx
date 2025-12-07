@@ -42,7 +42,7 @@ export default function ComercialLogin() {
                 localStorage.setItem('comercial_token', 'demo_token_placeholder'); // TODO: Usar token real
                 localStorage.setItem('comercial_user', JSON.stringify(data.comercial));
 
-                router.push('/comercial/dashboard');
+                router.push('/comerciales/dashboard');
             } else {
                 toast({
                     title: "Error de acceso",
