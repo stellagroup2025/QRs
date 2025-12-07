@@ -30,29 +30,42 @@ export class ComercialAuthGuard implements CanActivate {
         try {
             // En un entorno real: jwtService.verify(token)
             const base64Url = token.split('.')[1];
+            if (!base64Url) {
+                console.log('⛔ [ComercialAuthGuard] Token malformed (no payload part)', token);
+                throw new UnauthorizedException('Invalid token format');
+            }
+
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const payload = JSON.parse(Buffer.from(base64, 'base64').toString());
+            console.log('🔍 [ComercialAuthGuard] Decoding payload:', base64.substring(0, 10) + '...');
+
+            const jsonStr = Buffer.from(base64, 'base64').toString();
+            const payload = JSON.parse(jsonStr);
+
+            console.log('✅ [ComercialAuthGuard] Payload decoded:', { sub: payload.sub, role: payload.role });
 
             if (!payload || payload.role !== 'comercial') {
+                console.log('⛔ [ComercialAuthGuard] Invalid role or payload', payload);
                 throw new UnauthorizedException('Invalid role');
             }
 
             // Verificar que siga activo en BD
             const supabase = this.supabaseService.getAdminClient();
-            const { data: comercial } = await supabase
+            const { data: comercial, error } = await supabase
                 .from('comerciales')
                 .select('id, email, nombre')
                 .eq('id', payload.sub)
                 .eq('activo', true)
                 .single();
 
-            if (!comercial) {
+            if (error || !comercial) {
+                console.log('⛔ [ComercialAuthGuard] Comercial not found or inactive in DB', { id: payload.sub, error });
                 throw new UnauthorizedException('Comercial inactive or not found');
             }
 
             request.user = comercial;
             return true;
         } catch (e) {
+            console.error('⛔ [ComercialAuthGuard] Exception:', e.message);
             throw new UnauthorizedException('Invalid token');
         }
     }
