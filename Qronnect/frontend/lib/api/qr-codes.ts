@@ -81,6 +81,7 @@ export async function listarTiendasSinQr(token: string): Promise<Array<{
   nombre: string;
   dominio: string;
   email: string;
+  creado_en: string;
 }>> {
   const res = await fetch(`${API_URL}/api/qr-codes/tiendas-sin-qr`, {
     headers: {

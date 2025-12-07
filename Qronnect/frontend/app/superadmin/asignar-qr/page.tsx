@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { QrCode, Store, ArrowRight, Loader2 } from 'lucide-react';
+import { QrCode, Store, ArrowRight, Loader2, Search } from 'lucide-react';
 import { asignarQr, listarTiendasSinQr } from '@/lib/api/qr-codes';
 
 interface Tienda {
@@ -14,6 +15,7 @@ interface Tienda {
   nombre: string;
   dominio: string;
   email: string;
+  creado_en: string;
 }
 
 function AsignarQrRapidoContent() {
@@ -25,6 +27,7 @@ function AsignarQrRapidoContent() {
   const [tiendas, setTiendas] = useState<Tienda[]>([]);
   const [loading, setLoading] = useState(true);
   const [asignando, setAsignando] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (!hash) {
@@ -104,6 +107,13 @@ function AsignarQrRapidoContent() {
     }
   };
 
+  // Filtrar tiendas por búsqueda
+  const tiendasFiltradas = tiendas.filter((tienda) =>
+    tienda.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tienda.dominio.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tienda.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -137,6 +147,20 @@ function AsignarQrRapidoContent() {
             </p>
           </div>
 
+          {/* Buscador */}
+          {tiendas.length > 0 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Buscar por nombre, dominio o email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          )}
+
           {/* Lista de tiendas */}
           {tiendas.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -153,9 +177,23 @@ function AsignarQrRapidoContent() {
           ) : (
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground mb-3">
-                {tiendas.length} {tiendas.length === 1 ? 'tienda disponible' : 'tiendas disponibles'}
+                {tiendasFiltradas.length} {tiendasFiltradas.length === 1 ? 'tienda encontrada' : 'tiendas encontradas'}
+                {searchTerm && ` de ${tiendas.length} total${tiendas.length !== 1 ? 'es' : ''}`}
               </p>
-              {tiendas.map((tienda) => (
+              {tiendasFiltradas.length === 0 && searchTerm ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>No se encontraron tiendas con &quot;{searchTerm}&quot;</p>
+                  <Button
+                    variant="link"
+                    onClick={() => setSearchTerm('')}
+                    className="mt-2"
+                  >
+                    Limpiar búsqueda
+                  </Button>
+                </div>
+              ) : (
+                tiendasFiltradas.map((tienda) => (
                 <Card
                   key={tienda.id}
                   className="hover:bg-accent/50 transition-colors cursor-pointer"
@@ -191,7 +229,8 @@ function AsignarQrRapidoContent() {
                     </Button>
                   </CardContent>
                 </Card>
-              ))}
+                ))
+              )}
             </div>
           )}
 

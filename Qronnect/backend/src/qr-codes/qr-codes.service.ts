@@ -84,7 +84,7 @@ export class QrCodesService {
     // Obtener todas las tiendas activas
     let query = supabase
       .from('tiendas')
-      .select('id, nombre, dominio, email, activo')
+      .select('id, nombre, dominio, email, activo, creado_en')
       .eq('activo', true);
 
     // Si hay tiendas con QR, excluirlas
@@ -92,7 +92,7 @@ export class QrCodesService {
       query = query.not('id', 'in', `(${idsConQr.join(',')})`);
     }
 
-    const { data, error } = await query.order('nombre', { ascending: true });
+    const { data, error } = await query.order('creado_en', { ascending: false });
 
     if (error) {
       console.error('Error al obtener tiendas sin QR:', error);
