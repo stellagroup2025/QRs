@@ -23,11 +23,17 @@ export default function NuevaTiendaComercial() {
     useEffect(() => {
         const fetchPlanes = async () => {
             const token = localStorage.getItem('comercial_token');
-            if (!token) return;
+            if (!token) {
+                setPlanesError('No se encontró sesión activa.');
+                setLoadingPlanes(false);
+                return;
+            }
+
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/planes`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+
                 if (res.ok) {
                     const data = await res.json();
                     setPlanes(data);
@@ -36,8 +42,16 @@ export default function NuevaTiendaComercial() {
                     if (demo && !formData.plan_id) {
                         setFormData(prev => ({ ...prev, plan_id: demo.id }));
                     }
+                } else {
+                    console.error('Error fetching planes:', res.status);
+                    setPlanesError('Error al cargar los planes.');
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+                setPlanesError('Error de conexión.');
+            } finally {
+                setLoadingPlanes(false);
+            }
         };
         fetchPlanes();
     }, []);
