@@ -7,14 +7,12 @@ import {
 import { SupabaseService } from '../supabase/supabase.service';
 import { LoginComercialDto, CreateComercialDto } from './dto/comerciales.dto';
 import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
 import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class ComercialesService {
     constructor(
         private supabaseService: SupabaseService,
-        private jwtService: JwtService,
         private emailService: EmailService,
     ) { }
 
