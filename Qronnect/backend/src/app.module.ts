@@ -147,6 +147,9 @@ export class AppModule implements NestModule {
         // Excluir gestión de QR codes (usa auth de superadmin, no tenant)
         { path: 'api/qr-codes', method: RequestMethod.ALL },
         { path: 'api/qr-codes/(.*)', method: RequestMethod.ALL },
+        // Excluir rutas de comerciales (agentes)
+        { path: 'comerciales/(.*)', method: RequestMethod.ALL },
+        { path: 'api/comerciales/(.*)', method: RequestMethod.ALL },
         // Excluir health check (no necesita tenant)
         { path: 'health', method: RequestMethod.ALL },
         { path: 'api/health', method: RequestMethod.ALL },
