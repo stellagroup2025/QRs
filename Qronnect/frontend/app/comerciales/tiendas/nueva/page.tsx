@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -55,6 +55,26 @@ export default function NuevaTiendaComercial() {
         };
         fetchPlanes();
     }, []);
+
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        if (!searchParams) return;
+        const nombre = searchParams.get('nombre');
+        if (nombre) {
+            setFormData(prev => ({
+                ...prev,
+                nombre: nombre || '',
+                direccion: searchParams.get('direccion') || '',
+                telefono: searchParams.get('telefono') || '',
+                email: searchParams.get('email') || '',
+                admin_nombre: searchParams.get('contacto') || '',
+                admin_email: searchParams.get('email') || '', // Assume contact email is admin email
+                dominio: generateDominio(nombre)
+            }));
+            // Optionally set Plan if passed in params
+        }
+    }, [searchParams]);
 
     const [formData, setFormData] = useState({
         nombre: '',
