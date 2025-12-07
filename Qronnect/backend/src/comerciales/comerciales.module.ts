@@ -3,9 +3,10 @@ import { ComercialesController } from './comerciales.controller';
 import { ComercialesService } from './comerciales.service';
 import { SupabaseModule } from '../supabase/supabase.module';
 import { EmailModule } from '../email/email.module';
+import { QrCodesModule } from '../qr-codes/qr-codes.module';
 
 @Module({
-    imports: [SupabaseModule, EmailModule],
+    imports: [SupabaseModule, EmailModule, QrCodesModule],
     controllers: [ComercialesController],
     providers: [ComercialesService],
     exports: [ComercialesService],

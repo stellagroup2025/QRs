@@ -14,6 +14,7 @@ export class ComercialesService {
     constructor(
         private supabaseService: SupabaseService,
         private emailService: EmailService,
+        private qrCodesService: QrCodesService,
     ) { }
 
     /**
@@ -202,4 +203,146 @@ export class ComercialesService {
 
         return { success: true, tienda, credenciales: { pin: pinGenerado } };
     }
-}
+
+    /**
+     * Obtener estadísticas del dashboard
+     */
+    async getDashboardStats(comercialId: string) {
+        const supabase = this.supabaseService.getAdminClient();
+
+        // Obtener tiendas del comercial
+        const { data: tiendas, error } = await supabase
+            .from('tiendas')
+            .select('id, creado_en')
+            .eq('comercial_id', comercialId);
+
+        if (error) throw new BadRequestException('Error al obtener estadísticas');
+
+        // Calcular stats
+        const storedCount = tiendas.length;
+
+        // Calcular altas del mes actual
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const newThisMonth = tiendas.filter(t => t.creado_en >= startOfMonth).length;
+
+        // Mock de comisiones (se implementará real cuando haya sistema de pagos)
+        const totalCommissions = storedCount * 50; // Ejemplo: 50€ por tienda
+        const conversionRate = 24; // Mock
+
+        return {
+            stores: {
+                total: storedCount,
+                newThisMonth
+            },
+            commissions: {
+                total: totalCommissions,
+                pending: totalCommissions // Asumimos todo pendiente por ahora
+            },
+            conversion: {
+                rate: conversionRate,
+                growth: 4
+            }
+        };
+    }
+
+    /**
+     * Listar tiendas del comercial
+     */
+    async getTiendas(comercialId: string) {
+        const supabase = this.supabaseService.getAdminClient();
+
+        const { data: tiendas, error } = await supabase
+            .from('tiendas')
+            .select('*')
+            .eq('comercial_id', comercialId)
+            .order('creado_en', { ascending: false });
+
+        if (error) throw new BadRequestException('Error al listar tiendas');
+
+        return tiendas;
+    }
+
+    /**
+     * Asignar QR a tienda
+     */
+    async asignarQr(comercialId: string, tiendaId: string, qrHash: string) {
+        const supabase = this.supabaseService.getAdminClient();
+
+        // Verificar propiedad
+        const { data: tienda } = await supabase
+            .from('tiendas')
+            .select('id')
+            .eq('id', tiendaId)
+            .eq('comercial_id', comercialId)
+            .single();
+
+        if (!tienda) throw new UnauthorizedException('No tienes permiso sobre esta tienda');
+
+        // Asignar usando QrCodesService
+        // Nota: Asumimos que QrCodesService está exportado y disponible
+        return this.qrCodesService.asignarQrATienda(qrHash, tiendaId);
+    }
+
+    /**
+     * Impersonar tienda (Entrar como Admin)
+     */
+    async impersonateTienda(comercialId: string, tiendaId: string) {
+        const supabase = this.supabaseService.getAdminClient();
+
+        // 1. Verificar propiedad
+        const { data: tienda } = await supabase
+            .from('tiendas')
+            .select('id, dominio, nombre, activo')
+            .eq('id', tiendaId)
+            .eq('comercial_id', comercialId)
+            .single();
+
+        if (!tienda) throw new UnauthorizedException('No tienes permiso sobre esta tienda');
+        if (!tienda.activo) throw new BadRequestException('La tienda está inactiva');
+
+        // 2. Buscar usuario owner
+        const { data: owner } = await supabase
+            .from('usuarios_tienda')
+            .select('*')
+            .eq('id_tienda', tiendaId)
+            .eq('rol', 'owner')
+            .eq('activo', true)
+            .single();
+
+        if (!owner) throw new NotFoundException('No se encontró un usuario administrador activo para esta tienda');
+
+        // 3. Generar Token (Simulado como en AdminService development)
+        // En producción idealmente usaríamos un sistema de tokens temporales firmados
+        const tokenPayload = {
+            sub: owner.id,
+            tienda_id: owner.id_tienda,
+            email: owner.email,
+            role: 'admin',
+            impersonated_by: comercialId, // Traza de auditoría
+            exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hora de acceso
+        };
+
+        const access_token = Buffer.from(JSON.stringify(tokenPayload)).toString('base64');
+
+        // 4. Construir URL de redirección
+        // Redirigir a una ruta especial del frontend de la tienda que procese el token
+        // O si usamos el mismo dominio, redirigir al login con token
+
+        // Asumimos subdominio: https://{dominio}.qronnect.es/admin/login?auto_token={token}
+        const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+        const baseDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'qronnect.es'; // Ajustar según env
+        // Si es localhost, el dominio es diferente.
+        // Simplificación: Devolvemos el token y el frontend construye la URL o la URL completa
+
+        // Hack para localhost vs producción
+        let url;
+        if (tienda.dominio.includes('localhost') || process.env.NODE_ENV !== 'production') {
+            // En dev a veces no usamos subdominios reales
+            url = `http://${tienda.dominio}.${baseDomain}/admin/login?auto_token=${access_token}`;
+        } else {
+            url = `https://${tienda.dominio}.qronnect.es/admin/login?auto_token=${access_token}`;
+        }
+
+        return { url, access_token };
+    }
