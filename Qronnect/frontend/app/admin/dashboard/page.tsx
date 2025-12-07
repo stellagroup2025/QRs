@@ -651,95 +651,7 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      {/* Stats Grid - Psychology Polish (Apple Style + Dopamine) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10" role="region" aria-label="Estadísticas principales">
-        <Card
-          className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl"
-          role="button"
-          tabIndex={0}
-          onClick={() => setActiveTab('clientes')}
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Users className="w-24 h-24 text-primary" />
-          </div>
 
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Clientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-baseline space-x-2">
-              <div className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight">
-                <CountUp end={data?.total_clientes || 0} duration={2.5} separator="." />
-              </div>
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
-                <TrendingUp className="w-3 h-3 mr-1" />
-                +12%
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-primary transition-colors flex items-center">
-              Gestionar clientes <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card
-          className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl"
-          role="button"
-          tabIndex={0}
-          onClick={() => setActiveTab('ventas')}
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <ShoppingCart className="w-24 h-24 text-blue-500" />
-          </div>
-
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Compras Totales</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-baseline space-x-2">
-              <div className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight">
-                <CountUp end={data?.total_compras || 0} duration={2.5} separator="." delay={0.2} />
-              </div>
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
-                <TrendingUp className="w-3 h-3 mr-1" />
-                +5.4%
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-primary transition-colors flex items-center">
-              Ver historial de ventas <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card
-          className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20"
-          role="button"
-          tabIndex={0}
-          onClick={() => setActiveTab('analytics')}
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Euro className="w-24 h-24 text-indigo-500" />
-          </div>
-
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Ingresos Totales</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-baseline space-x-2">
-              <div className="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 tracking-tight">
-                €<CountUp end={data?.ventas_totales || 0} duration={3} separator="." decimals={0} delay={0.4} />
-              </div>
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Récord
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-indigo-600 transition-colors flex items-center">
-              Analizar rendimiento <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </p>
-          </CardContent>
-        </Card>
-      </div >
 
       {/* Tabs Content Wrapper */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -1316,6 +1228,95 @@ export default function AdminDashboardPage() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
+          {/* Stats Grid - Psychology Polish (Apple Style + Dopamine) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10" role="region" aria-label="Estadísticas principales">
+            <Card
+              className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl"
+              role="button"
+              tabIndex={0}
+              onClick={() => setActiveTab('clientes')}
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Users className="w-24 h-24 text-primary" />
+              </div>
+
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Clientes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline space-x-2">
+                  <div className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight">
+                    <CountUp end={data?.total_clientes || 0} duration={2.5} separator="." />
+                  </div>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    +12%
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-primary transition-colors flex items-center">
+                  Gestionar clientes <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card
+              className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl"
+              role="button"
+              tabIndex={0}
+              onClick={() => setActiveTab('ventas')}
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <ShoppingCart className="w-24 h-24 text-blue-500" />
+              </div>
+
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Compras Totales</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline space-x-2">
+                  <div className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight">
+                    <CountUp end={data?.total_compras || 0} duration={2.5} separator="." delay={0.2} />
+                  </div>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    +5.4%
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-primary transition-colors flex items-center">
+                  Ver historial de ventas <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card
+              className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20"
+              role="button"
+              tabIndex={0}
+              onClick={() => setActiveTab('analytics')}
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Euro className="w-24 h-24 text-indigo-500" />
+              </div>
+
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Ingresos Totales</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline space-x-2">
+                  <div className="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 tracking-tight">
+                    €<CountUp end={data?.ventas_totales || 0} duration={3} separator="." decimals={0} delay={0.4} />
+                  </div>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    Récord
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-indigo-600 transition-colors flex items-center">
+                  Analizar rendimiento <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </p>
+              </CardContent>
+            </Card>
+          </div >
           {/* Analista de KPIs con IA */}
           <AnalistaKPIs
             tenantDomain={tienda?.dominio || ''}
@@ -1362,8 +1363,20 @@ export default function AdminDashboardPage() {
       </Tabs >
 
 
-      {/* Botón flotante para registrar venta */}
-      < div className="fixed bottom-6 right-6 z-50" >
+      {/* Botones flotantes (Stack) */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
+        {/* QR Code FAB */}
+        <Button
+          size="icon"
+          className="h-12 w-12 rounded-full shadow-lg bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 hover:scale-110 transition-transform"
+          onClick={() => setActiveTab('qr')}
+          aria-label="Ver código QR de registro"
+          title="Ver QR"
+        >
+          <QrCode className="h-5 w-5" />
+        </Button>
+
+        {/* Registrar Venta FAB */}
         <Button
           size="lg"
           className="h-14 w-14 rounded-full shadow-lg text-white hover:scale-110 transition-transform"
@@ -1375,7 +1388,7 @@ export default function AdminDashboardPage() {
           <Plus className="h-6 w-6" aria-hidden="true" />
           <span className="sr-only">Registrar nueva venta</span>
         </Button>
-      </div >
+      </div>
 
       {/* Diálogo de registrar venta */}
       < RegistrarVentaDialogMejorado
