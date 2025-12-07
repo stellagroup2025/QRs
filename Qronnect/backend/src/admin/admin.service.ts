@@ -20,7 +20,7 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AdminService {
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(private supabaseService: SupabaseService) { }
 
   /**
    * Login de administrador de tienda
@@ -104,6 +104,32 @@ export class AdminService {
         email: admin.email,
         rol: admin.rol,
       },
+    };
+  }
+
+  /**
+   * Obtener datos del admin logueado (para validar token)
+   */
+  async getMe(userId: string) {
+    const supabase = this.supabaseService.getAdminClient();
+    const { data: admin, error } = await supabase
+      .from('usuarios_tienda')
+      .select('*, tienda:tiendas(*)')
+      .eq('id', userId)
+      .single();
+
+    if (error || !admin) {
+      throw new UnauthorizedException('Admin no encontrado');
+    }
+
+    return {
+      admin: {
+        id: admin.id,
+        nombre: admin.nombre,
+        email: admin.email,
+        role: 'admin',
+      },
+      tienda: admin.tienda,
     };
   }
 
