@@ -153,6 +153,9 @@ export class AppModule implements NestModule {
         { path: 'comerciales/(.*)', method: RequestMethod.ALL },
         { path: 'api/comerciales', method: RequestMethod.ALL },
         { path: 'api/comerciales/(.*)', method: RequestMethod.ALL },
+        // Excluir rutas de planes (globales)
+        { path: 'api/planes', method: RequestMethod.ALL },
+        { path: 'api/planes/(.*)', method: RequestMethod.ALL },
         // Excluir health check (no necesita tenant)
         { path: 'health', method: RequestMethod.ALL },
         { path: 'api/health', method: RequestMethod.ALL },

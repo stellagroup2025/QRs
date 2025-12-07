@@ -155,37 +155,49 @@ export default function NuevaTiendaComercial() {
                             <CardDescription>Elige el plan de suscripción para el cliente.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {planes.map((plan) => (
-                                    <div
-                                        key={plan.id}
-                                        className={cn(
-                                            "cursor-pointer rounded-lg border p-4 hover:border-blue-500 transition-all relative overflow-hidden",
-                                            formData.plan_id === plan.id ? "border-blue-600 bg-blue-50 dark:bg-blue-900/10 ring-1 ring-blue-600" : "border-slate-200"
-                                        )}
-                                        onClick={() => setFormData({ ...formData, plan_id: plan.id })}
-                                    >
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="font-bold">{plan.nombre}</h3>
-                                            {formData.plan_id === plan.id && <Check className="h-5 w-5 text-blue-600" />}
-                                        </div>
-                                        <div className="text-2xl font-bold mb-2">
-                                            {plan.precio === 0 ? 'Gratis' : `€${plan.precio}`}
-                                            <span className="text-sm font-normal text-muted-foreground">/mes</span>
-                                        </div>
-                                        {plan.duracion_meses > 1 && (
-                                            <div className="text-xs text-orange-600 font-medium mb-2">
-                                                Duración: {plan.duracion_meses} meses
+                            {loadingPlanes ? (
+                                <div className="text-center py-6 text-muted-foreground">
+                                    <div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                                    Cargando planes disponibles...
+                                </div>
+                            ) : planesError ? (
+                                <div className="text-center py-6 text-red-500 bg-red-50 rounded-lg">
+                                    <p>{planesError}</p>
+                                    <Button type="button" variant="link" onClick={() => window.location.reload()}>Reintentar</Button>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {planes.map((plan) => (
+                                        <div
+                                            key={plan.id}
+                                            className={cn(
+                                                "cursor-pointer rounded-lg border p-4 hover:border-blue-500 transition-all relative overflow-hidden",
+                                                formData.plan_id === plan.id ? "border-blue-600 bg-blue-50 dark:bg-blue-900/10 ring-1 ring-blue-600" : "border-slate-200"
+                                            )}
+                                            onClick={() => setFormData({ ...formData, plan_id: plan.id })}
+                                        >
+                                            <div className="flex justify-between items-start mb-2">
+                                                <h3 className="font-bold">{plan.nombre}</h3>
+                                                {formData.plan_id === plan.id && <Check className="h-5 w-5 text-blue-600" />}
                                             </div>
-                                        )}
-                                        <p className="text-xs text-muted-foreground">
-                                            {/* Aquí podríamos parsear caracteristicas JSON si lo traemos */}
-                                            {plan.nombre.includes('Demo') ? 'Prueba gratuita completa.' : 'Plan profesional.'}
-                                        </p>
+                                            <div className="text-2xl font-bold mb-2">
+                                                {plan.precio === 0 ? 'Gratis' : `€${plan.precio}`}
+                                                <span className="text-sm font-normal text-muted-foreground">/mes</span>
+                                            </div>
+                                            {plan.duracion_meses > 1 && (
+                                                <div className="text-xs text-orange-600 font-medium mb-2">
+                                                    Duración: {plan.duracion_meses} meses
+                                                </div>
+                                            )}
+                                            <p className="text-xs text-muted-foreground">
+                                                {/* Aquí podríamos parsear caracteristicas JSON si lo traemos */}
+                                                {plan.nombre.includes('Demo') ? 'Prueba gratuita completa.' : 'Plan profesional.'}
+                                            </p>
 
-                                    </div>
-                                ))}
-                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
