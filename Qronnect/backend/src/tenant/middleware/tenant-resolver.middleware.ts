@@ -20,6 +20,7 @@ export class TenantResolverMiddleware implements NestMiddleware {
       /^\/q\//,
       /^\/api\/comerciales/,
       /^\/comerciales/,
+      /^\/api\/planes/,
     ];
 
     // Si la ruta está excluida, continuar sin resolver tenant
