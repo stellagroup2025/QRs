@@ -1,14 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { useDebounce } from '@/hooks/use-debounce'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
-import { AdminNav } from '@/components/AdminNav'
 import { getQrUrl } from '@/lib/urls'
 import {
   Table,
@@ -216,8 +215,15 @@ export default function AdminDashboardPage() {
   const debouncedSearchClientes = useDebounce(searchClientes, 400)
   const debouncedSearchCompras = useDebounce(searchCompras, 400)
 
-  // Estado para el tab activo
-  const [activeTab, setActiveTab] = useState('qr')
+  const searchParams = useSearchParams()
+  // Estado para el tab activo (sincronizado con URL)
+  const activeTab = searchParams.get('tab') || 'qr'
+
+  const setActiveTab = (tab: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('tab', tab)
+    router.push(`/admin/dashboard?${params.toString()}`)
+  }
 
   // Estado para los diálogos
   const [registrarVentaOpen, setRegistrarVentaOpen] = useState(false)
@@ -229,7 +235,7 @@ export default function AdminDashboardPage() {
   const [analyticsPeriodo, setAnalyticsPeriodo] = useState<'7d' | '30d' | '90d'>('30d')
 
   // Estado para refresh de campañas
-  const [refreshCampanas, setRefreshCampanas] = useState<(() => void) | null>(null)
+  const [refreshCampanas, setRefreshCampanas] = useState<(() => void) | undefined>(undefined)
 
   // Toast para notificaciones
   const { toast } = useToast()
@@ -600,9 +606,8 @@ export default function AdminDashboardPage() {
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-        <AdminNav />
-        <div className="max-w-md mx-auto p-6 pt-20">
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="max-w-md p-6">
           <ErrorRetry
             title="Error de conexión"
             message={loadError}
@@ -615,818 +620,800 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      {/* Admin Navigation */}
-      <AdminNav />
-
-      {/* Header - Logo y Info */}
-      <header className="bg-white dark:bg-slate-800 border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <BrandLogo width={120} height={40} />
-              <div>
-                <h1 className="text-xl font-bold" style={{ color: hexToRgb(branding.color_primario) }}>{branding.nombre_comercial}</h1>
-                <p className="text-sm text-muted-foreground">
-                  Panel de administración
-                </p>
-              </div>
-            </div>
-            {adminUser && (
-              <div className="hidden sm:flex items-center space-x-3 text-right">
-                <div>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">
-                    {adminUser.nombre}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {adminUser.rol === 'owner' ? 'Admin' : adminUser.rol === 'empleado' ? 'Empleado' : 'Empleado'}
-                  </p>
-                </div>
-                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold text-sm">
-                  {adminUser.nombre.charAt(0).toUpperCase()}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-8" role="region" aria-label="Estadísticas principales">
-          <Card
-            className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
-            role="button"
-            tabIndex={0}
-            aria-labelledby="stat-clientes"
-            aria-describedby="stat-clientes-desc"
-            onClick={() => setActiveTab('clientes')}
-            onKeyDown={(e) => e.key === 'Enter' && setActiveTab('clientes')}
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
-              <CardTitle id="stat-clientes" className="text-xs sm:text-sm font-medium">Clientes</CardTitle>
-              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
-            </CardHeader>
-            <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
-              <div className="text-lg sm:text-2xl font-bold" aria-label={`${data?.total_clientes || 0} clientes registrados`}>
-                {data?.total_clientes || 0}
-              </div>
-              <p id="stat-clientes-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">Ver clientes →</p>
-            </CardContent>
-          </Card>
-
-          <Card
-            className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
-            role="button"
-            tabIndex={0}
-            aria-labelledby="stat-compras"
-            aria-describedby="stat-compras-desc"
-            onClick={() => setActiveTab('ventas')}
-            onKeyDown={(e) => e.key === 'Enter' && setActiveTab('ventas')}
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
-              <CardTitle id="stat-compras" className="text-xs sm:text-sm font-medium">Compras</CardTitle>
-              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
-            </CardHeader>
-            <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
-              <div className="text-lg sm:text-2xl font-bold" aria-label={`${data?.total_compras || 0} compras totales`}>
-                {data?.total_compras || 0}
-              </div>
-              <p id="stat-compras-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
-                Ver ventas →
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card
-            className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
-            role="button"
-            tabIndex={0}
-            aria-labelledby="stat-ventas"
-            aria-describedby="stat-ventas-desc"
-            onClick={() => setActiveTab('analytics')}
-            onKeyDown={(e) => e.key === 'Enter' && setActiveTab('analytics')}
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
-              <CardTitle id="stat-ventas" className="text-xs sm:text-sm font-medium">Ventas</CardTitle>
-              <Euro className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
-            </CardHeader>
-            <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
-              <div className="text-lg sm:text-2xl font-bold" aria-label={`${(data?.ventas_totales || 0).toLocaleString('es-ES')} euros en ventas totales`}>
-                €{(data?.ventas_totales || 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
-              </div>
-              <p id="stat-ventas-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
-                Ver analytics →
-              </p>
-            </CardContent>
-          </Card>
+    <div className="space-y-6">
+      {/* Header Info Mobile/Desktop */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            Resumen de actividad de {branding.nombre_comercial}
+          </p>
         </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="relative -mx-4 sm:mx-0">
-            <div
-              className="overflow-x-auto scrollbar-hide px-4 sm:px-0"
-              role="navigation"
-              aria-label="Navegación principal del panel de administración"
-            >
-              <TabsList className="inline-flex w-auto min-w-full sm:w-full justify-start">
-                <TabsTrigger
-                  value="qr"
-                  className="flex-shrink-0"
-                  aria-label="Ver sección de QR de Registro"
-                >
-                  <QrCode className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                  <span className="hidden sm:inline">QR de Registro</span>
-                  <span className="sr-only sm:hidden">QR</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="clientes"
-                  className="flex-shrink-0"
-                  aria-label="Ver lista de clientes"
-                >
-                  <Users className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                  <span className="hidden sm:inline">Clientes</span>
-                  <span className="sr-only sm:hidden">Clientes</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="ventas"
-                  className="flex-shrink-0"
-                  aria-label="Ver registro de ventas"
-                >
-                  <ShoppingCart className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                  <span className="hidden sm:inline">Ventas</span>
-                  <span className="sr-only sm:hidden">Ventas</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="promociones"
-                  className="flex-shrink-0"
-                  aria-label="Gestionar promociones"
-                >
-                  <Gift className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                  <span className="hidden sm:inline">Promociones</span>
-                  <span className="sr-only sm:hidden">Promociones</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="sellos"
-                  className="flex-shrink-0"
-                  aria-label="Gestionar programas de sellos"
-                >
-                  <CreditCard className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                  <span className="hidden sm:inline">Sellos</span>
-                  <span className="sr-only sm:hidden">Sellos</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="campanas"
-                  className="flex-shrink-0"
-                  aria-label="Ver campañas de email"
-                >
-                  <Mail className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                  <span className="hidden sm:inline">Campañas</span>
-                  <span className="sr-only sm:hidden">Campañas</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="analytics"
-                  className="flex-shrink-0"
-                  aria-label="Ver analytics y métricas"
-                >
-                  <BarChart3 className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                  <span className="hidden sm:inline">Analytics</span>
-                  <span className="sr-only sm:hidden">Analytics</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="ia"
-                  className="flex-shrink-0"
-                  aria-label="Herramientas de inteligencia artificial"
-                >
-                  <Sparkles className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                  <span className="hidden sm:inline">IA</span>
-                  <span className="sr-only sm:hidden">IA</span>
-                </TabsTrigger>
-              </TabsList>
+        {adminUser && (
+          <div className="hidden sm:flex items-center space-x-2 text-right bg-white dark:bg-slate-800 p-2 rounded-full shadow-sm">
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+              {adminUser.nombre.charAt(0).toUpperCase()}
             </div>
+            <span className="text-sm font-medium pr-2">{adminUser.nombre}</span>
           </div>
+        )}
+      </div>
 
-          {/* QR Tab */}
-          <TabsContent value="qr" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>QR de Registro de Clientes</CardTitle>
-                <CardDescription>
-                  Comparte este QR para que tus clientes se registren en tu programa de fidelización
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex flex-col items-center space-y-6">
-                  {/* QR Code */}
-                  <div className="p-8 bg-white rounded-xl border-4 border-dashed" style={{ borderColor: `${hexToRgb(branding.color_primario).replace('rgb(', 'rgba(').replace(')', ', 0.3)')}` }}>
-                    <img
-                      src={qrUrl}
-                      alt="QR de registro"
-                      className="w-80 h-80"
-                    />
-                  </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-8" role="region" aria-label="Estadísticas principales">
+        <Card
+          className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+          role="button"
+          tabIndex={0}
+          aria-labelledby="stat-clientes"
+          aria-describedby="stat-clientes-desc"
+          onClick={() => setActiveTab('clientes')}
+          onKeyDown={(e) => e.key === 'Enter' && setActiveTab('clientes')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
+            <CardTitle id="stat-clientes" className="text-xs sm:text-sm font-medium">Clientes</CardTitle>
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
+          </CardHeader>
+          <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
+            <div className="text-lg sm:text-2xl font-bold" aria-label={`${data?.total_clientes || 0} clientes registrados`}>
+              {data?.total_clientes || 0}
+            </div>
+            <p id="stat-clientes-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">Ver clientes →</p>
+          </CardContent>
+        </Card>
 
-                  {/* Info */}
-                  <div className="w-full max-w-2xl space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">URL de registro</label>
-                      <div className="flex items-center space-x-2">
-                        <code className="flex-1 text-sm bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded">
-                          {tienda?.dominio && getQrUrl(tienda.dominio)}
-                        </code>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => tienda?.dominio && window.open(getQrUrl(tienda.dominio), '_blank')}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+        <Card
+          className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+          role="button"
+          tabIndex={0}
+          aria-labelledby="stat-compras"
+          aria-describedby="stat-compras-desc"
+          onClick={() => setActiveTab('ventas')}
+          onKeyDown={(e) => e.key === 'Enter' && setActiveTab('ventas')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
+            <CardTitle id="stat-compras" className="text-xs sm:text-sm font-medium">Compras</CardTitle>
+            <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
+          </CardHeader>
+          <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
+            <div className="text-lg sm:text-2xl font-bold" aria-label={`${data?.total_compras || 0} compras totales`}>
+              {data?.total_compras || 0}
+            </div>
+            <p id="stat-compras-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
+              Ver ventas →
+            </p>
+          </CardContent>
+        </Card>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-3 justify-center">
+        <Card
+          className="p-2 sm:p-0 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+          role="button"
+          tabIndex={0}
+          aria-labelledby="stat-ventas"
+          aria-describedby="stat-ventas-desc"
+          onClick={() => setActiveTab('analytics')}
+          onKeyDown={(e) => e.key === 'Enter' && setActiveTab('analytics')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-6 sm:pb-2">
+            <CardTitle id="stat-ventas" className="text-xs sm:text-sm font-medium">Ventas</CardTitle>
+            <Euro className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" aria-hidden="true" />
+          </CardHeader>
+          <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
+            <div className="text-lg sm:text-2xl font-bold" aria-label={`${(data?.ventas_totales || 0).toLocaleString('es-ES')} euros en ventas totales`}>
+              €{(data?.ventas_totales || 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
+            </div>
+            <p id="stat-ventas-desc" className="text-xs sm:text-xs text-muted-foreground hidden sm:block">
+              Ver analytics →
+            </p>
+          </CardContent>
+        </Card>
+      </div >
+
+      {/* Tabs */}
+      < Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" >
+        <div className="relative -mx-4 sm:mx-0">
+          <div
+            className="overflow-x-auto scrollbar-hide px-4 sm:px-0"
+            role="navigation"
+            aria-label="Navegación principal del panel de administración"
+          >
+            <TabsList className="inline-flex w-auto min-w-full sm:w-full justify-start">
+              <TabsTrigger
+                value="qr"
+                className="flex-shrink-0"
+                aria-label="Ver sección de QR de Registro"
+              >
+                <QrCode className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                <span className="hidden sm:inline">QR de Registro</span>
+                <span className="sr-only sm:hidden">QR</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="clientes"
+                className="flex-shrink-0"
+                aria-label="Ver lista de clientes"
+              >
+                <Users className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                <span className="hidden sm:inline">Clientes</span>
+                <span className="sr-only sm:hidden">Clientes</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="ventas"
+                className="flex-shrink-0"
+                aria-label="Ver registro de ventas"
+              >
+                <ShoppingCart className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                <span className="hidden sm:inline">Ventas</span>
+                <span className="sr-only sm:hidden">Ventas</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="promociones"
+                className="flex-shrink-0"
+                aria-label="Gestionar promociones"
+              >
+                <Gift className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                <span className="hidden sm:inline">Promociones</span>
+                <span className="sr-only sm:hidden">Promociones</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="sellos"
+                className="flex-shrink-0"
+                aria-label="Gestionar programas de sellos"
+              >
+                <CreditCard className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                <span className="hidden sm:inline">Sellos</span>
+                <span className="sr-only sm:hidden">Sellos</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="campanas"
+                className="flex-shrink-0"
+                aria-label="Ver campañas de email"
+              >
+                <Mail className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                <span className="hidden sm:inline">Campañas</span>
+                <span className="sr-only sm:hidden">Campañas</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="analytics"
+                className="flex-shrink-0"
+                aria-label="Ver analytics y métricas"
+              >
+                <BarChart3 className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                <span className="hidden sm:inline">Analytics</span>
+                <span className="sr-only sm:hidden">Analytics</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="ia"
+                className="flex-shrink-0"
+                aria-label="Herramientas de inteligencia artificial"
+              >
+                <Sparkles className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                <span className="hidden sm:inline">IA</span>
+                <span className="sr-only sm:hidden">IA</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+        </div>
+
+        {/* QR Tab */}
+        <TabsContent value="qr" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>QR de Registro de Clientes</CardTitle>
+              <CardDescription>
+                Comparte este QR para que tus clientes se registren en tu programa de fidelización
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex flex-col items-center space-y-6">
+                {/* QR Code */}
+                <div className="p-8 bg-white rounded-xl border-4 border-dashed" style={{ borderColor: `${hexToRgb(branding.color_primario).replace('rgb(', 'rgba(').replace(')', ', 0.3)')}` }}>
+                  <img
+                    src={qrUrl}
+                    alt="QR de registro"
+                    className="w-80 h-80"
+                  />
+                </div>
+
+                {/* Info */}
+                <div className="w-full max-w-2xl space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">URL de registro</label>
+                    <div className="flex items-center space-x-2">
+                      <code className="flex-1 text-sm bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded">
+                        {tienda?.dominio && getQrUrl(tienda.dominio)}
+                      </code>
                       <Button
-                        size="lg"
-                        className="text-white"
-                        style={{ backgroundColor: hexToRgb(branding.color_primario) }}
-                        onClick={() => {
-                          const link = document.createElement('a')
-                          link.href = qrUrl
-                          link.download = `qr-registro-${tienda?.dominio}.png`
-                          link.click()
-                        }}
-                      >
-                        <Download className="h-5 w-5 mr-2" />
-                        Descargar QR
-                      </Button>
-                      <Button
-                        size="lg"
+                        size="sm"
                         variant="outline"
-                        style={{
-                          borderColor: hexToRgb(branding.color_primario),
-                          color: hexToRgb(branding.color_primario)
-                        }}
-                        onClick={() => window.print()}
+                        onClick={() => tienda?.dominio && window.open(getQrUrl(tienda.dominio), '_blank')}
                       >
-                        Imprimir
+                        <ExternalLink className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
 
-                  {/* Instructions */}
-                  <div className="w-full max-w-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-                    <h4 className="font-semibold mb-3 flex items-center text-blue-900 dark:text-blue-100">
-                      <QrCode className="h-5 w-5 mr-2" />
-                      Cómo usar este QR
-                    </h4>
-                    <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-                      <li className="flex items-start">
-                        <span className="font-bold mr-2">1.</span>
-                        <span>Descarga o imprime el código QR</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="font-bold mr-2">2.</span>
-                        <span>Colócalo en un lugar visible de tu establecimiento (mostrador, entrada, mesas)</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="font-bold mr-2">3.</span>
-                        <span>Los clientes lo escanean con la cámara de su móvil</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="font-bold mr-2">4.</span>
-                        <span>Se abre automáticamente el formulario de registro</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="font-bold mr-2">5.</span>
-                        <span>¡Listo! Ya pueden acumular puntos con cada compra</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Clientes Tab */}
-          <TabsContent value="clientes" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <CardTitle>Gestión de Clientes</CardTitle>
-                    <CardDescription>
-                      {data?.total_clientes || 0} clientes registrados
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <div className="relative flex-1 sm:flex-initial">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Buscar clientes..."
-                        className="pl-9 pr-9 w-full sm:w-48"
-                        value={searchClientes}
-                        onChange={(e) => {
-                          setSearchClientes(e.target.value)
-                          setClientesPage(1)
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            fetchClientes(1, searchClientes)
-                          }
-                        }}
-                        aria-label="Buscar clientes por nombre, email o teléfono"
-                      />
-                      {clientesLoading && searchClientes && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" aria-hidden="true" />
-                          <span className="sr-only" aria-live="polite">Buscando clientes...</span>
-                        </div>
-                      )}
-                    </div>
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap gap-3 justify-center">
                     <Button
-                      onClick={() => fetchClientes(1, searchClientes)}
-                      style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+                      size="lg"
                       className="text-white"
-                      size="sm"
-                      disabled={clientesLoading}
+                      style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+                      onClick={() => {
+                        const link = document.createElement('a')
+                        link.href = qrUrl
+                        link.download = `qr-registro-${tienda?.dominio}.png`
+                        link.click()
+                      }}
                     >
-                      {clientesLoading ? 'Buscando...' : 'Buscar'}
+                      <Download className="h-5 w-5 mr-2" />
+                      Descargar QR
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      style={{
+                        borderColor: hexToRgb(branding.color_primario),
+                        color: hexToRgb(branding.color_primario)
+                      }}
+                      onClick={() => window.print()}
+                    >
+                      Imprimir
                     </Button>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {clientesLoading ? (
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: hexToRgb(branding.color_primario) }}></div>
+
+                {/* Instructions */}
+                <div className="w-full max-w-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+                  <h4 className="font-semibold mb-3 flex items-center text-blue-900 dark:text-blue-100">
+                    <QrCode className="h-5 w-5 mr-2" />
+                    Cómo usar este QR
+                  </h4>
+                  <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
+                    <li className="flex items-start">
+                      <span className="font-bold mr-2">1.</span>
+                      <span>Descarga o imprime el código QR</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="font-bold mr-2">2.</span>
+                      <span>Colócalo en un lugar visible de tu establecimiento (mostrador, entrada, mesas)</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="font-bold mr-2">3.</span>
+                      <span>Los clientes lo escanean con la cámara de su móvil</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="font-bold mr-2">4.</span>
+                      <span>Se abre automáticamente el formulario de registro</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="font-bold mr-2">5.</span>
+                      <span>¡Listo! Ya pueden acumular puntos con cada compra</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Clientes Tab */}
+        <TabsContent value="clientes" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <CardTitle>Gestión de Clientes</CardTitle>
+                  <CardDescription>
+                    {data?.total_clientes || 0} clientes registrados
+                  </CardDescription>
+                </div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <div className="relative flex-1 sm:flex-initial">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar clientes..."
+                      className="pl-9 pr-9 w-full sm:w-48"
+                      value={searchClientes}
+                      onChange={(e) => {
+                        setSearchClientes(e.target.value)
+                        setClientesPage(1)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          fetchClientes(1, searchClientes)
+                        }
+                      }}
+                      aria-label="Buscar clientes por nombre, email o teléfono"
+                    />
+                    {clientesLoading && searchClientes && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" aria-hidden="true" />
+                        <span className="sr-only" aria-live="polite">Buscando clientes...</span>
+                      </div>
+                    )}
                   </div>
-                ) : clientes && clientes.data && clientes.data.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No se encontraron clientes</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Vista Desktop - Tabla */}
-                    <div className="hidden md:block rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Nombre</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Teléfono</TableHead>
-                            <TableHead>Género</TableHead>
-                            <TableHead className="text-right">Edad</TableHead>
-                            <TableHead className="text-right">Puntos</TableHead>
-                            <TableHead className="text-right">Compras</TableHead>
-                            <TableHead className="text-right">Ticket Medio</TableHead>
-                            <TableHead className="text-right">Última Visita</TableHead>
-                            <TableHead>Registro</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {clientes?.data?.map((cliente) => (
-                            <TableRow key={cliente.id}>
-                              <TableCell className="font-medium">{cliente.nombre}</TableCell>
-                              <TableCell>{cliente.email}</TableCell>
-                              <TableCell>{cliente.telefono || '-'}</TableCell>
-                              <TableCell className="text-sm">
-                                {cliente.genero ? (
-                                  cliente.genero === 'masculino' ? 'M' :
+                  <Button
+                    onClick={() => fetchClientes(1, searchClientes)}
+                    style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+                    className="text-white"
+                    size="sm"
+                    disabled={clientesLoading}
+                  >
+                    {clientesLoading ? 'Buscando...' : 'Buscar'}
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {clientesLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: hexToRgb(branding.color_primario) }}></div>
+                </div>
+              ) : clientes && clientes.data && clientes.data.length === 0 ? (
+                <div className="text-center py-12">
+                  <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">No se encontraron clientes</p>
+                </div>
+              ) : (
+                <>
+                  {/* Vista Desktop - Tabla */}
+                  <div className="hidden md:block rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nombre</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Teléfono</TableHead>
+                          <TableHead>Género</TableHead>
+                          <TableHead className="text-right">Edad</TableHead>
+                          <TableHead className="text-right">Puntos</TableHead>
+                          <TableHead className="text-right">Compras</TableHead>
+                          <TableHead className="text-right">Ticket Medio</TableHead>
+                          <TableHead className="text-right">Última Visita</TableHead>
+                          <TableHead>Registro</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {clientes?.data?.map((cliente) => (
+                          <TableRow key={cliente.id}>
+                            <TableCell className="font-medium">{cliente.nombre}</TableCell>
+                            <TableCell>{cliente.email}</TableCell>
+                            <TableCell>{cliente.telefono || '-'}</TableCell>
+                            <TableCell className="text-sm">
+                              {cliente.genero ? (
+                                cliente.genero === 'masculino' ? 'M' :
                                   cliente.genero === 'femenino' ? 'F' :
-                                  cliente.genero === 'otro' ? 'Otro' :
-                                  'N/D'
-                                ) : '-'}
-                              </TableCell>
-                              <TableCell className="text-right text-sm">
-                                {calcularEdad(cliente.fecha_nacimiento)}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <span className="font-semibold" style={{ color: hexToRgb(branding.color_acento) }}>
-                                  {cliente.puntos_totales}
-                                </span>
-                              </TableCell>
-                              <TableCell className="text-right">{cliente.total_compras || 0}</TableCell>
-                              <TableCell className="text-right text-sm">
+                                    cliente.genero === 'otro' ? 'Otro' :
+                                      'N/D'
+                              ) : '-'}
+                            </TableCell>
+                            <TableCell className="text-right text-sm">
+                              {calcularEdad(cliente.fecha_nacimiento)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <span className="font-semibold" style={{ color: hexToRgb(branding.color_acento) }}>
+                                {cliente.puntos_totales}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right">{cliente.total_compras || 0}</TableCell>
+                            <TableCell className="text-right text-sm">
+                              {cliente.ticket_medio !== undefined
+                                ? `${cliente.ticket_medio.toFixed(2)} €`
+                                : '-'}
+                            </TableCell>
+                            <TableCell className="text-right text-sm text-muted-foreground">
+                              {formatearDiasDesdeUltimaVisita(cliente.dias_desde_ultima_visita)}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {formatDate(cliente.fecha_registro)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Vista Móvil - Cards */}
+                  <div className="md:hidden space-y-4">
+                    {clientes?.data?.map((cliente) => (
+                      <Card key={cliente.id}>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-base">{cliente.nombre}</h3>
+                              <p className="text-sm text-muted-foreground">{cliente.email}</p>
+                            </div>
+                            <div className="flex flex-col items-end">
+                              <span className="text-lg font-bold" style={{ color: hexToRgb(branding.color_acento) }}>
+                                {cliente.puntos_totales}
+                              </span>
+                              <span className="text-xs text-muted-foreground">puntos</span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Teléfono:</span>
+                              <p className="font-medium">{cliente.telefono || '-'}</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Edad:</span>
+                              <p className="font-medium">{calcularEdad(cliente.fecha_nacimiento)}</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Compras:</span>
+                              <p className="font-medium">{cliente.total_compras || 0}</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Ticket medio:</span>
+                              <p className="font-medium">
                                 {cliente.ticket_medio !== undefined
                                   ? `${cliente.ticket_medio.toFixed(2)} €`
                                   : '-'}
-                              </TableCell>
-                              <TableCell className="text-right text-sm text-muted-foreground">
-                                {formatearDiasDesdeUltimaVisita(cliente.dias_desde_ultima_visita)}
-                              </TableCell>
-                              <TableCell className="text-sm text-muted-foreground">
-                                {formatDate(cliente.fecha_registro)}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-
-                    {/* Vista Móvil - Cards */}
-                    <div className="md:hidden space-y-4">
-                      {clientes?.data?.map((cliente) => (
-                        <Card key={cliente.id}>
-                          <CardContent className="p-4 space-y-3">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-base">{cliente.nombre}</h3>
-                                <p className="text-sm text-muted-foreground">{cliente.email}</p>
-                              </div>
-                              <div className="flex flex-col items-end">
-                                <span className="text-lg font-bold" style={{ color: hexToRgb(branding.color_acento) }}>
-                                  {cliente.puntos_totales}
-                                </span>
-                                <span className="text-xs text-muted-foreground">puntos</span>
-                              </div>
+                              </p>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Teléfono:</span>
-                                <p className="font-medium">{cliente.telefono || '-'}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Edad:</span>
-                                <p className="font-medium">{calcularEdad(cliente.fecha_nacimiento)}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Compras:</span>
-                                <p className="font-medium">{cliente.total_compras || 0}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Ticket medio:</span>
-                                <p className="font-medium">
-                                  {cliente.ticket_medio !== undefined
-                                    ? `${cliente.ticket_medio.toFixed(2)} €`
-                                    : '-'}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Última visita:</span>
-                                <p className="font-medium">{formatearDiasDesdeUltimaVisita(cliente.dias_desde_ultima_visita)}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Registro:</span>
-                                <p className="font-medium">{formatDate(cliente.fecha_registro)}</p>
-                              </div>
+                            <div>
+                              <span className="text-muted-foreground">Última visita:</span>
+                              <p className="font-medium">{formatearDiasDesdeUltimaVisita(cliente.dias_desde_ultima_visita)}</p>
                             </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                            <div>
+                              <span className="text-muted-foreground">Registro:</span>
+                              <p className="font-medium">{formatDate(cliente.fecha_registro)}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
 
-                    {/* Paginación */}
-                    {clientes && clientes.totalPages > 1 && (
-                      <div className="flex items-center justify-between mt-4">
-                        <p className="text-sm text-muted-foreground">
-                          Página {clientes.page} de {clientes.totalPages} ({clientes.total} clientes)
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const newPage = clientesPage - 1
-                              setClientesPage(newPage)
-                              fetchClientes(newPage, searchClientes)
-                            }}
-                            disabled={clientesPage === 1}
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                            Anterior
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const newPage = clientesPage + 1
-                              setClientesPage(newPage)
-                              fetchClientes(newPage, searchClientes)
-                            }}
-                            disabled={clientesPage === clientes.totalPages}
-                          >
-                            Siguiente
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
+                  {/* Paginación */}
+                  {clientes && clientes.totalPages > 1 && (
+                    <div className="flex items-center justify-between mt-4">
+                      <p className="text-sm text-muted-foreground">
+                        Página {clientes.page} de {clientes.totalPages} ({clientes.total} clientes)
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const newPage = clientesPage - 1
+                            setClientesPage(newPage)
+                            fetchClientes(newPage, searchClientes)
+                          }}
+                          disabled={clientesPage === 1}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          Anterior
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const newPage = clientesPage + 1
+                            setClientesPage(newPage)
+                            fetchClientes(newPage, searchClientes)
+                          }}
+                          disabled={clientesPage === clientes.totalPages}
+                        >
+                          Siguiente
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Ventas Tab */}
+        <TabsContent value="ventas" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <CardTitle>Registro de Ventas</CardTitle>
+                  <CardDescription>
+                    {data?.total_compras || 0} compras registradas
+                  </CardDescription>
+                </div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <div className="relative flex-1 sm:flex-initial">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar por cliente..."
+                      className="pl-9 pr-9 w-full sm:w-48"
+                      value={searchCompras}
+                      onChange={(e) => {
+                        setSearchCompras(e.target.value)
+                        setComprasPage(1)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          fetchCompras(1, searchCompras)
+                        }
+                      }}
+                      aria-label="Buscar compras por nombre de cliente"
+                    />
+                    {comprasLoading && searchCompras && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" aria-hidden="true" />
+                        <span className="sr-only" aria-live="polite">Buscando compras...</span>
                       </div>
                     )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Ventas Tab */}
-          <TabsContent value="ventas" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <CardTitle>Registro de Ventas</CardTitle>
-                    <CardDescription>
-                      {data?.total_compras || 0} compras registradas
-                    </CardDescription>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <div className="relative flex-1 sm:flex-initial">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Buscar por cliente..."
-                        className="pl-9 pr-9 w-full sm:w-48"
-                        value={searchCompras}
-                        onChange={(e) => {
-                          setSearchCompras(e.target.value)
-                          setComprasPage(1)
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            fetchCompras(1, searchCompras)
-                          }
-                        }}
-                        aria-label="Buscar compras por nombre de cliente"
-                      />
-                      {comprasLoading && searchCompras && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" aria-hidden="true" />
-                          <span className="sr-only" aria-live="polite">Buscando compras...</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => fetchCompras(1, searchCompras)}
-                        style={{ backgroundColor: hexToRgb(branding.color_primario) }}
-                        className="text-white flex-1 sm:flex-initial"
-                        size="sm"
-                        disabled={comprasLoading}
-                      >
-                        {comprasLoading ? 'Buscando...' : 'Buscar'}
-                      </Button>
-                      <Button
-                        onClick={() => fetchCompras(1, searchCompras)}
-                        variant="outline"
-                        size="sm"
-                        disabled={comprasLoading}
-                      >
-                        <RefreshCw className={`h-4 w-4 ${comprasLoading ? 'animate-spin' : ''}`} />
-                      </Button>
-                    </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => fetchCompras(1, searchCompras)}
+                      style={{ backgroundColor: hexToRgb(branding.color_primario) }}
+                      className="text-white flex-1 sm:flex-initial"
+                      size="sm"
+                      disabled={comprasLoading}
+                    >
+                      {comprasLoading ? 'Buscando...' : 'Buscar'}
+                    </Button>
+                    <Button
+                      onClick={() => fetchCompras(1, searchCompras)}
+                      variant="outline"
+                      size="sm"
+                      disabled={comprasLoading}
+                    >
+                      <RefreshCw className={`h-4 w-4 ${comprasLoading ? 'animate-spin' : ''}`} />
+                    </Button>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {comprasLoading ? (
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: hexToRgb(branding.color_primario) }}></div>
-                  </div>
-                ) : compras && compras.data && compras.data.length === 0 ? (
-                  <div className="text-center py-12">
-                    <ShoppingCart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No se encontraron ventas</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Vista Desktop - Tabla */}
-                    <div className="hidden md:block rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Fecha</TableHead>
-                            <TableHead>Cliente</TableHead>
-                            <TableHead className="text-right">Importe</TableHead>
-                            <TableHead className="text-right">Puntos</TableHead>
-                            <TableHead>Notas</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {compras?.data?.map((compra) => (
-                            <TableRow key={compra.id}>
-                              <TableCell className="text-sm">
-                                {formatDateTime(compra.fecha)}
-                              </TableCell>
-                              <TableCell>
-                                <div>
-                                  <p className="font-medium">{compra.cliente.nombre}</p>
-                                  <p className="text-sm text-muted-foreground">{compra.cliente.email}</p>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-right font-semibold">
-                                {formatCurrency(compra.importe)}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <span className="font-semibold" style={{ color: hexToRgb(branding.color_acento) }}>
-                                  +{compra.puntos_otorgados}
-                                </span>
-                              </TableCell>
-                              <TableCell className="text-sm text-muted-foreground">
-                                {compra.notas || '-'}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-
-                    {/* Vista Móvil - Cards */}
-                    <div className="md:hidden space-y-4">
-                      {compras?.data?.map((compra) => (
-                        <Card key={compra.id}>
-                          <CardContent className="p-4 space-y-3">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-base">{compra.cliente.nombre}</h3>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {comprasLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: hexToRgb(branding.color_primario) }}></div>
+                </div>
+              ) : compras && compras.data && compras.data.length === 0 ? (
+                <div className="text-center py-12">
+                  <ShoppingCart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">No se encontraron ventas</p>
+                </div>
+              ) : (
+                <>
+                  {/* Vista Desktop - Tabla */}
+                  <div className="hidden md:block rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fecha</TableHead>
+                          <TableHead>Cliente</TableHead>
+                          <TableHead className="text-right">Importe</TableHead>
+                          <TableHead className="text-right">Puntos</TableHead>
+                          <TableHead>Notas</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {compras?.data?.map((compra) => (
+                          <TableRow key={compra.id}>
+                            <TableCell className="text-sm">
+                              {formatDateTime(compra.fecha)}
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{compra.cliente.nombre}</p>
                                 <p className="text-sm text-muted-foreground">{compra.cliente.email}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{formatDateTime(compra.fecha)}</p>
                               </div>
-                              <div className="flex flex-col items-end">
-                                <span className="text-lg font-bold">
-                                  {formatCurrency(compra.importe)}
-                                </span>
-                                <span className="text-sm font-semibold" style={{ color: hexToRgb(branding.color_acento) }}>
-                                  +{compra.puntos_otorgados} pts
-                                </span>
-                              </div>
+                            </TableCell>
+                            <TableCell className="text-right font-semibold">
+                              {formatCurrency(compra.importe)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <span className="font-semibold" style={{ color: hexToRgb(branding.color_acento) }}>
+                                +{compra.puntos_otorgados}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {compra.notas || '-'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Vista Móvil - Cards */}
+                  <div className="md:hidden space-y-4">
+                    {compras?.data?.map((compra) => (
+                      <Card key={compra.id}>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-base">{compra.cliente.nombre}</h3>
+                              <p className="text-sm text-muted-foreground">{compra.cliente.email}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{formatDateTime(compra.fecha)}</p>
                             </div>
+                            <div className="flex flex-col items-end">
+                              <span className="text-lg font-bold">
+                                {formatCurrency(compra.importe)}
+                              </span>
+                              <span className="text-sm font-semibold" style={{ color: hexToRgb(branding.color_acento) }}>
+                                +{compra.puntos_otorgados} pts
+                              </span>
+                            </div>
+                          </div>
 
-                            {compra.notas && (
-                              <div className="pt-2 border-t">
-                                <span className="text-xs text-muted-foreground">Notas:</span>
-                                <p className="text-sm mt-1">{compra.notas}</p>
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                          {compra.notas && (
+                            <div className="pt-2 border-t">
+                              <span className="text-xs text-muted-foreground">Notas:</span>
+                              <p className="text-sm mt-1">{compra.notas}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
 
-                    {/* Paginación */}
-                    {compras && compras.totalPages > 1 && (
-                      <div className="flex items-center justify-between mt-4">
-                        <p className="text-sm text-muted-foreground">
-                          Página {compras.page} de {compras.totalPages} ({compras.total} ventas)
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const newPage = comprasPage - 1
-                              setComprasPage(newPage)
-                              fetchCompras(newPage, searchCompras)
-                            }}
-                            disabled={comprasPage === 1}
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                            Anterior
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const newPage = comprasPage + 1
-                              setComprasPage(newPage)
-                              fetchCompras(newPage, searchCompras)
-                            }}
-                            disabled={comprasPage === compras.totalPages}
-                          >
-                            Siguiente
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
+                  {/* Paginación */}
+                  {compras && compras.totalPages > 1 && (
+                    <div className="flex items-center justify-between mt-4">
+                      <p className="text-sm text-muted-foreground">
+                        Página {compras.page} de {compras.totalPages} ({compras.total} ventas)
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const newPage = comprasPage - 1
+                            setComprasPage(newPage)
+                            fetchCompras(newPage, searchCompras)
+                          }}
+                          disabled={comprasPage === 1}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          Anterior
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const newPage = comprasPage + 1
+                            setComprasPage(newPage)
+                            fetchCompras(newPage, searchCompras)
+                          }}
+                          disabled={comprasPage === compras.totalPages}
+                        >
+                          Siguiente
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
                       </div>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          {/* Promociones Tab */}
-          <TabsContent value="promociones" className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div className="min-w-0">
-                <h2 className="text-xl sm:text-2xl font-bold">Promociones</h2>
-                <p className="text-sm text-muted-foreground">
-                  Gestiona las promociones canjeables con puntos
-                </p>
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <IADrawerPromociones
-                  tenantDomain={tienda?.dominio || ''}
-                  adminToken={token || ''}
-                />
-                <Button
-                  onClick={() => setValidarCanjeOpen(true)}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Ticket className="h-4 w-4" />
-                  <span className="hidden sm:inline">Validar Cupón</span>
-                </Button>
-              </div>
+        {/* Promociones Tab */}
+        <TabsContent value="promociones" className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl font-bold">Promociones</h2>
+              <p className="text-sm text-muted-foreground">
+                Gestiona las promociones canjeables con puntos
+              </p>
             </div>
-
-            <PromocionesPanel
-              tiendaId={tienda?.id || ''}
-              adminToken={token || ''}
-              tenantDomain={tienda?.dominio || ''}
-            />
-          </TabsContent>
-
-          {/* Sellos Tab */}
-          <TabsContent value="sellos" className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div className="min-w-0">
-                <h2 className="text-xl sm:text-2xl font-bold">Programas de Sellos</h2>
-                <p className="text-sm text-muted-foreground">
-                  Gestiona las tarjetas de sellos y recompensas
-                </p>
-              </div>
-            </div>
-
-            <ProgramasSellosPanel token={token || ''} domain={tienda?.dominio || ''} />
-          </TabsContent>
-
-          {/* Tab de Campañas */}
-          <TabsContent value="campanas" className="space-y-6">
-            {/* Botón de IA en la parte superior */}
-            <div className="flex justify-end">
-              <IADrawerCampanas
+            <div className="flex gap-2 flex-shrink-0">
+              <IADrawerPromociones
                 tenantDomain={tienda?.dominio || ''}
                 adminToken={token || ''}
-                onCampanaCreada={refreshCampanas}
               />
+              <Button
+                onClick={() => setValidarCanjeOpen(true)}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Ticket className="h-4 w-4" />
+                <span className="hidden sm:inline">Validar Cupón</span>
+              </Button>
             </div>
+          </div>
 
-            <CampanasPanel
-              adminToken={localStorage.getItem('admin_token') || ''}
-              tenantDomain={tienda?.dominio || 'localhost'}
-              onRefreshNeeded={setRefreshCampanas}
-            />
+          <PromocionesPanel
+            tiendaId={tienda?.id || ''}
+            adminToken={token || ''}
+            tenantDomain={tienda?.dominio || ''}
+          />
+        </TabsContent>
 
-            {/* Campañas SMS */}
-            <CampanasSMSPanel
-              adminToken={localStorage.getItem('admin_token') || ''}
-              tenantDomain={tienda?.dominio || 'localhost'}
-            />
-          </TabsContent>
+        {/* Sellos Tab */}
+        <TabsContent value="sellos" className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl font-bold">Programas de Sellos</h2>
+              <p className="text-sm text-muted-foreground">
+                Gestiona las tarjetas de sellos y recompensas
+              </p>
+            </div>
+          </div>
 
-          <TabsContent value="analytics" className="space-y-6">
-            {/* Analista de KPIs con IA */}
-            <AnalistaKPIs
+          <ProgramasSellosPanel token={token || ''} domain={tienda?.dominio || ''} />
+        </TabsContent>
+
+        {/* Tab de Campañas */}
+        <TabsContent value="campanas" className="space-y-6">
+          {/* Botón de IA en la parte superior */}
+          <div className="flex justify-end">
+            <IADrawerCampanas
               tenantDomain={tienda?.dominio || ''}
               adminToken={token || ''}
-              onCreateCampaign={handleCreateCampaignFromIA}
-              onCreatePromotion={handleCreatePromotionFromIA}
+              onCampanaCreada={refreshCampanas}
             />
+          </div>
 
-            {/* Selector de Periodo */}
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    <CardTitle>Analytics y Métricas</CardTitle>
-                    <CardDescription>
-                      Rendimiento del negocio
-                    </CardDescription>
-                  </div>
-                  <Select value={analyticsPeriodo} onValueChange={(value: '7d' | '30d' | '90d') => setAnalyticsPeriodo(value)}>
-                    <SelectTrigger className="w-full sm:w-[160px]">
-                      <SelectValue placeholder="Periodo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="7d">Últimos 7 días</SelectItem>
-                      <SelectItem value="30d">Últimos 30 días</SelectItem>
-                      <SelectItem value="90d">Últimos 90 días</SelectItem>
-                    </SelectContent>
-                  </Select>
+          <CampanasPanel
+            adminToken={localStorage.getItem('admin_token') || ''}
+            tenantDomain={tienda?.dominio || 'localhost'}
+            onRefreshNeeded={setRefreshCampanas}
+          />
+
+          {/* Campañas SMS */}
+          <CampanasSMSPanel
+            adminToken={localStorage.getItem('admin_token') || ''}
+            tenantDomain={tienda?.dominio || 'localhost'}
+          />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          {/* Analista de KPIs con IA */}
+          <AnalistaKPIs
+            tenantDomain={tienda?.dominio || ''}
+            adminToken={token || ''}
+            onCreateCampaign={handleCreateCampaignFromIA}
+            onCreatePromotion={handleCreatePromotionFromIA}
+          />
+
+          {/* Selector de Periodo */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <CardTitle>Analytics y Métricas</CardTitle>
+                  <CardDescription>
+                    Rendimiento del negocio
+                  </CardDescription>
                 </div>
-              </CardHeader>
-            </Card>
+                <Select value={analyticsPeriodo} onValueChange={(value: '7d' | '30d' | '90d') => setAnalyticsPeriodo(value)}>
+                  <SelectTrigger className="w-full sm:w-[160px]">
+                    <SelectValue placeholder="Periodo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7d">Últimos 7 días</SelectItem>
+                    <SelectItem value="30d">Últimos 30 días</SelectItem>
+                    <SelectItem value="90d">Últimos 90 días</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+          </Card>
 
-            {/* Gráficos */}
-            <AnalyticsCharts data={analytics} loading={analyticsLoading} />
-          </TabsContent>
+          {/* Gráficos */}
+          <AnalyticsCharts data={analytics} loading={analyticsLoading} />
+        </TabsContent>
 
-          {/* IA Tab */}
-          <TabsContent value="ia" className="space-y-4">
-            <PanelIA
-              tenantDomain={tienda?.dominio || 'localhost'}
-              adminToken={token || ''}
-            />
-          </TabsContent>
-        </Tabs>
-      </main>
+        {/* IA Tab */}
+        <TabsContent value="ia" className="space-y-4">
+          <PanelIA
+            tenantDomain={tienda?.dominio || 'localhost'}
+            adminToken={token || ''}
+          />
+        </TabsContent>
+      </Tabs >
+
 
       {/* Botón flotante para registrar venta */}
-      <div className="fixed bottom-6 right-6 z-50">
+      < div className="fixed bottom-6 right-6 z-50" >
         <Button
           size="lg"
           className="h-14 w-14 rounded-full shadow-lg text-white hover:scale-110 transition-transform"
@@ -1438,10 +1425,10 @@ export default function AdminDashboardPage() {
           <Plus className="h-6 w-6" aria-hidden="true" />
           <span className="sr-only">Registrar nueva venta</span>
         </Button>
-      </div>
+      </div >
 
       {/* Diálogo de registrar venta */}
-      <RegistrarVentaDialogMejorado
+      < RegistrarVentaDialogMejorado
         open={registrarVentaOpen}
         onOpenChange={setRegistrarVentaOpen}
         onSuccess={() => {
@@ -1454,7 +1441,8 @@ export default function AdminDashboardPage() {
           } else if (activeTab === 'clientes') {
             fetchClientes(clientesPage, searchClientes)
           }
-        }}
+        }
+        }
       />
 
       {/* Diálogo de validar canje */}
@@ -1464,6 +1452,6 @@ export default function AdminDashboardPage() {
         adminToken={token || ''}
         tenantDomain={tienda?.dominio || ''}
       />
-    </div>
+    </div >
   )
 }
