@@ -820,7 +820,7 @@ export default function AdminDashboardPage() {
               ) : (
                 <>
                   {/* Vista Desktop - Tabla */}
-                  <div className="hidden md:block rounded-md border">
+                  <div className="hidden md:block rounded-md border overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -1042,7 +1042,7 @@ export default function AdminDashboardPage() {
               ) : (
                 <>
                   {/* Vista Desktop - Tabla */}
-                  <div className="hidden md:block rounded-md border">
+                  <div className="hidden md:block rounded-md border overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>

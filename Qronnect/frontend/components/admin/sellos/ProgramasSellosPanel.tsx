@@ -100,19 +100,19 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold">Programas de Sellos</h2>
-          <p className="text-muted-foreground mt-1">
+          <h2 className="text-2xl sm:text-3xl font-bold">Programas de Sellos</h2>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Gestiona tus programas de fidelización por sellos
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleAbrirPlantillas}>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button variant="outline" onClick={handleAbrirPlantillas} className="w-full sm:w-auto">
             <Sparkles className="mr-2 h-4 w-4 text-yellow-500" />
             Ver Plantillas
           </Button>
-          <Button onClick={handleCrear}>
+          <Button onClick={handleCrear} className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Programa
           </Button>
@@ -145,7 +145,7 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
           </div>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {programas.map((programa) => (
             <Card key={programa.id} className="p-6">
               {/* Header con color */}
