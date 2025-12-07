@@ -34,6 +34,7 @@ import { SellosModule } from './sellos/sellos.module';
 import { GachaModule } from './gacha/gacha.module';
 import { QrRedirectModule } from './qr-redirect/qr-redirect.module';
 import { QrCodesModule } from './qr-codes/qr-codes.module';
+import { ComercialesModule } from './comerciales/comerciales.module';
 
 @Module({
   imports: [
@@ -122,6 +123,7 @@ import { QrCodesModule } from './qr-codes/qr-codes.module';
     GachaModule,
     QrRedirectModule,
     QrCodesModule,
+    ComercialesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1191,14 +1191,7 @@ export default function AdminDashboardPage() {
 
         {/* Sellos Tab */}
         <TabsContent value="sellos" className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div className="min-w-0">
-              <h2 className="text-xl sm:text-2xl font-bold">Programas de Sellos</h2>
-              <p className="text-sm text-muted-foreground">
-                Gestiona las tarjetas de sellos y recompensas
-              </p>
-            </div>
-          </div>
+
 
           <ProgramasSellosPanel token={token || ''} domain={tienda?.dominio || ''} />
         </TabsContent>

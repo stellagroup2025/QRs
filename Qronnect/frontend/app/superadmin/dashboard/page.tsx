@@ -312,6 +312,20 @@ export default function SuperAdminDashboard() {
               </div>
             </CardHeader>
           </Card>
+
+          <Card className="group hover:shadow-2xl transition-all duration-300 cursor-pointer border-l-4 border-l-cyan-500" onClick={() => router.push('/superadmin/comerciales')}>
+            <CardHeader>
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-2xl group-hover:scale-110 transition-transform">
+                  <Users className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-bold">Equipo Comercial</CardTitle>
+                  <CardDescription>Gestión de agentes</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
         </div>
 
         {/* Info Card Refined */}
