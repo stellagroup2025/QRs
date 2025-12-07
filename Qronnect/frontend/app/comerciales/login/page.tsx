@@ -39,7 +39,7 @@ export default function ComercialLogin() {
                 // Si el service backend actual solo devuelve el user, faltaría el token.
                 // Asumiremos por ahora que el usuario maneja la auth visualmente hasta que conectemos jwt real.
 
-                localStorage.setItem('comercial_token', 'demo_token_placeholder'); // TODO: Usar token real
+                localStorage.setItem('comercial_token', data.access_token);
                 localStorage.setItem('comercial_user', JSON.stringify(data.comercial));
 
                 router.push('/comerciales/dashboard');

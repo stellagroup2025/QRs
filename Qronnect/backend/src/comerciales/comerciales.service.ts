@@ -46,20 +46,19 @@ export class ComercialesService {
             .update({ ultimo_acceso: new Date().toISOString() })
             .eq('id', comercial.id);
 
-        // Generar JWT
-        const payload = { sub: comercial.id, email: comercial.email, role: 'comercial' };
+        // Generar JWT (Simulado para coincidir con Auth Guard)
+        const payload = {
+            sub: comercial.id,
+            email: comercial.email,
+            role: 'comercial',
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 // 24 horas
+        };
 
-        // NOTA: En un caso real usaríamos JwtService inyectado, pero aquí simulamos
-        // o reutilizamos el setup de AuthModule si fuera posible. 
-        // Para simplificar, asumimos que este service generará un objeto simple
-        // o requeriríamos injectar JwtService del AuthModule.
-        // Vamos a asumir que el AuthModule exporta JwtService o similar.
-        // Si no, podríamos necesitar usar una librería directa o configurar JwtModule en ComercialesModule.
-
-        // Por ahora retornamos el objeto usuario, el controller se encargará del token real
-        // si inyectamos JwtService.
+        const access_token = Buffer.from(JSON.stringify(payload)).toString('base64');
+        const token = `header.${access_token}.signature`;
 
         return {
+            access_token: token,
             comercial: {
                 id: comercial.id,
                 nombre: comercial.nombre,
