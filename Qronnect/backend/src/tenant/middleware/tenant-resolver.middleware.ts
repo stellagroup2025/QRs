@@ -9,7 +9,7 @@ import { TenantContext } from '../entities/tenant-context.entity';
  */
 @Injectable()
 export class TenantResolverMiddleware implements NestMiddleware {
-  constructor(private tenantService: TenantService) {}
+  constructor(private tenantService: TenantService) { }
 
   async use(req: Request & { tenant?: TenantContext }, res: Response, next: NextFunction) {
     // Rutas que no requieren resolución de tenant
@@ -18,6 +18,8 @@ export class TenantResolverMiddleware implements NestMiddleware {
       /^\/api\/qr-codes/,
       /^\/api\/health/,
       /^\/q\//,
+      /^\/api\/comerciales/,
+      /^\/comerciales/,
     ];
 
     // Si la ruta está excluida, continuar sin resolver tenant
