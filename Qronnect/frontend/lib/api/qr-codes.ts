@@ -89,7 +89,8 @@ export async function listarTiendasSinQr(token: string): Promise<Array<{
   });
 
   if (!res.ok) {
-    throw new Error('Error al listar tiendas sin QR');
+    const error = await res.json().catch(() => ({ message: 'Error al listar tiendas sin QR' }));
+    throw new Error(error.message || `Error ${res.status}: ${res.statusText}`);
   }
 
   return res.json();

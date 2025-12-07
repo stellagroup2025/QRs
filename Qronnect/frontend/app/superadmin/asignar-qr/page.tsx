@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { QrCode, Store, ArrowRight, Loader2 } from 'lucide-react';
-import { asignarQr } from '@/lib/api/qr-codes';
+import { asignarQr, listarTiendasSinQr } from '@/lib/api/qr-codes';
 
 interface Tienda {
   id: string;
@@ -38,24 +38,35 @@ function AsignarQrRapidoContent() {
     try {
       const token = localStorage.getItem('superadmin_token');
       if (!token) {
+        console.error('No hay token de superadmin');
         router.push('/superadmin/login');
         return;
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/qr-codes/tiendas-sin-qr`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error('Error al cargar tiendas');
-
-      const data = await res.json();
+      console.log('Cargando tiendas sin QR con token:', token.substring(0, 20) + '...');
+      const data = await listarTiendasSinQr(token);
       setTiendas(data);
-    } catch (error) {
+      console.log('Tiendas cargadas:', data.length);
+    } catch (error: any) {
+      console.error('Error al cargar tiendas:', error);
+
+      // Si el error es de autenticación, redirigir al login
+      if (error.message?.includes('401') || error.message?.includes('Unauthorized') || error.message?.includes('Token')) {
+        toast({
+          title: 'Sesión expirada',
+          description: 'Por favor, inicia sesión nuevamente',
+          variant: 'destructive',
+        });
+        localStorage.removeItem('superadmin_token');
+        localStorage.removeItem('superadmin_refresh_token');
+        localStorage.removeItem('superadmin_user');
+        router.push('/superadmin/login');
+        return;
+      }
+
       toast({
         title: 'Error',
-        description: 'No se pudieron cargar las tiendas',
+        description: error.message || 'No se pudieron cargar las tiendas',
         variant: 'destructive',
       });
     } finally {

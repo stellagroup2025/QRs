@@ -22,8 +22,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package } from 'lucide-react';
+import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft } from 'lucide-react';
 import { QrCode as QrCodeType, QrPoolEstadisticas, getEstadoColor, getEstadoLabel } from '@/types/qr-codes';
+import { useRouter } from 'next/navigation';
 import {
   generarQrCodes,
   listarQrCodes,
@@ -34,6 +35,7 @@ import {
 
 export default function QrCodesPoolPage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [qrCodes, setQrCodes] = useState<QrCodeType[]>([]);
   const [estadisticas, setEstadisticas] = useState<QrPoolEstadisticas | null>(null);
@@ -157,14 +159,19 @@ export default function QrCodesPoolPage() {
     <div className="container mx-auto p-6 space-y-6 max-w-7xl">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <QrCode className="h-8 w-8" />
-            Pool de QR Codes
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Gestión de QR codes genéricos pre-impresos
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.push('/superadmin')}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <QrCode className="h-8 w-8" />
+              Pool de QR Codes
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Gestión de QR codes genéricos pre-impresos
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => cargarDatos()}>
