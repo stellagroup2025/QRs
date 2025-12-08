@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { DndContext, DragEndEvent, DragOverlay, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragStartEvent, DragOverlay, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,10 +11,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from '@/components/ui/label';
 import { Phone, Mail, Plus, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import confetti from 'canvas-confetti';
 
 import { DraggableCard } from '@/components/crm/DraggableCard';
 import { DroppableColumn } from '@/components/crm/DroppableColumn';
 import { PlaybookDialog } from '@/components/crm/PlaybookDialog';
+import { LeadCard } from '@/components/crm/LeadCard';
+import { MagicMessageDialog } from '@/components/crm/MagicMessageDialog';
+import { SalesGamification } from '@/components/crm/SalesGamification';
 
 // Status Configuration
 const STATUSES = {
@@ -34,7 +38,18 @@ export default function CRMDashboard() {
     const [loading, setLoading] = useState(true);
     const [createOpen, setCreateOpen] = useState(false);
 
-    // Draggable Sensor Setup (Pointer for mouse, Touch for mobile)
+    // Drag State
+    const [activeId, setActiveId] = useState<string | null>(null);
+
+    // Gamification State
+    const [streak, setStreak] = useState(0);
+    const [stats, setStats] = useState({ sales: 0, goal: 5000 });
+
+    // Magic Message State
+    const [magicOpen, setMagicOpen] = useState(false);
+    const [selectedMagicLead, setSelectedMagicLead] = useState<any>(null);
+
+    // Draggable Sensor Setup
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
         useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
@@ -46,68 +61,75 @@ export default function CRMDashboard() {
 
     // New Lead Form State
     const [formData, setFormData] = useState({
-        nombre_negocio: '',
-        nombre_contacto: '',
-        telefono: '',
-        email: '',
-        direccion: '',
-        valor_estimado: '',
-        notas: ''
+        nombre_negocio: '', nombre_contacto: '', telefono: '', email: '', direccion: '', valor_estimado: '', notas: ''
     });
 
-    // Fetch Leads
+    // Magic Handler
+    const handleMagicClick = (lead: any) => {
+        setSelectedMagicLead(lead);
+        setMagicOpen(true);
+    };
+
+    // Gamification Effects
+    const triggerWinEffect = () => {
+        const duration = 3 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 50 };
+        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+        const interval: any = setInterval(function () {
+            const timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) return clearInterval(interval);
+            const particleCount = 50 * (timeLeft / duration);
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+        }, 250);
+    };
+
+    // Calculate initial stats
+    useEffect(() => {
+        if (leads.length > 0) {
+            const wonLeads = leads.filter(l => l.estado === 'ganado');
+            const totalValue = wonLeads.reduce((acc, curr) => acc + (parseFloat(curr.valor_estimado) || 0), 0);
+            setStats(prev => ({ ...prev, sales: totalValue }));
+        }
+    }, [leads]);
+
     const fetchLeads = async () => {
         try {
             const token = localStorage.getItem('comercial_token');
             if (!token) return;
-
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comerciales/prospectos`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-
-            if (res.ok) {
-                const data = await res.json();
-                setLeads(data);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
+            if (res.ok) setLeads(await res.json());
+        } catch (error) { console.error(error); } finally { setLoading(false); }
     };
 
-    useEffect(() => {
-        fetchLeads();
-    }, []);
+    useEffect(() => { fetchLeads(); }, []);
 
-    // Create Handler
     const handleCreate = async () => {
         try {
             const token = localStorage.getItem('comercial_token');
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comerciales/prospectos`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(formData)
             });
-
             if (res.ok) {
-                toast({ title: 'Prospecto creado', description: 'Se ha añadido al pipeline.' });
+                toast({ title: 'Prospecto creado' });
                 setCreateOpen(false);
                 setFormData({ nombre_negocio: '', nombre_contacto: '', telefono: '', email: '', direccion: '', valor_estimado: '', notas: '' });
                 fetchLeads();
-            } else {
-                toast({ title: 'Error', variant: 'destructive' });
-            }
+            } else { toast({ title: 'Error', variant: 'destructive' }); }
         } catch (e) { console.error(e); }
     };
 
-    // Drag Handler
+    const handleDragStart = (event: DragStartEvent) => setActiveId(event.active.id as string);
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
-
+        setActiveId(null);
         if (!over) return;
 
         const leadId = active.id as string;
@@ -116,46 +138,38 @@ export default function CRMDashboard() {
 
         if (!lead || lead.estado === newStatus) return;
 
-        // Open dialog to confirm
-        setPendingChange({
-            id: leadId,
-            oldStatus: lead.estado,
-            newStatus: newStatus
-        });
+        setPendingChange({ id: leadId, oldStatus: lead.estado, newStatus: newStatus });
         setDialogOpen(true);
     };
 
-    // Confirm Change Handler
     const handleConfirmChange = async (reason: string, notes: string) => {
         if (!pendingChange) return;
-
         const { id, newStatus } = pendingChange;
 
-        // Optimistic UI update
-        const oldState = [...leads];
+        // Optimistic Update
         setLeads(prev => prev.map(l => l.id === id ? { ...l, estado: newStatus } : l));
         setDialogOpen(false);
 
-        // Special case: Ganado -> Redirect to Store Creation
+        // Gamification & Special Actions
         if (newStatus === 'ganado') {
+            setStreak(prev => prev + 1);
+            triggerWinEffect();
             const lead = leads.find(l => l.id === id);
             if (lead) {
-                const params = new URLSearchParams({
-                    nombre: lead.nombre_negocio || '',
-                    contacto: lead.nombre_contacto || '',
-                    email: lead.email || '',
-                    telefono: lead.telefono || '',
-                    direccion: lead.direccion || '',
-                    crm_id: lead.id
-                });
-                router.push(`/comerciales/tiendas/nueva?${params.toString()}`);
-                // Background update
-                updateLeadStatus(id, newStatus, reason, notes);
-                return;
+                setStats(prev => ({ ...prev, sales: prev.sales + (parseFloat(lead.valor_estimado) || 0) }));
+                // Delay redirect so they see the confetti
+                setTimeout(() => {
+                    const params = new URLSearchParams({
+                        nombre: lead.nombre_negocio || '', contacto: lead.nombre_contacto || '',
+                        email: lead.email || '', telefono: lead.telefono || '', direccion: lead.direccion || '', crm_id: lead.id
+                    });
+                    router.push(`/comerciales/tiendas/nueva?${params.toString()}`);
+                }, 2000);
             }
+        } else if (newStatus === 'perdido') {
+            setStreak(0);
         }
 
-        // Standard update
         await updateLeadStatus(id, newStatus, reason, notes);
     };
 
@@ -163,40 +177,24 @@ export default function CRMDashboard() {
         try {
             const token = localStorage.getItem('comercial_token');
             const lead = leads.find(l => l.id === id);
-
-            // Append note history
             const timestamp = new Date().toLocaleString();
             const newEntry = `\n[${timestamp}] Cambio a ${newStatus.toUpperCase()}: ${reason}. ${notes}`;
             const updatedNotas = (lead?.notas || '') + newEntry;
 
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comerciales/prospectos/${id}`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    estado: newStatus,
-                    notas: updatedNotas
-                })
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ estado: newStatus, notas: updatedNotas })
             });
-
-            if (!res.ok) {
-                // Revert optimistic
-                toast({ title: 'Error al actualizar', variant: 'destructive' });
-                fetchLeads(); // Force refresh
-            } else {
-                toast({ title: 'Estado actualizado' });
-            }
-        } catch (e) {
-            fetchLeads();
-        }
+            if (!res.ok) fetchLeads(); // Revert on failure
+        } catch (e) { fetchLeads(); }
     };
+
+    const activeLead = activeId ? leads.find(l => l.id === activeId) : null;
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-8">
-            {/* Header */}
-            <header className="bg-white dark:bg-slate-900 border-b px-6 py-4 sticky top-0 z-10 w-full overflow-hidden">
+            <header className="bg-white dark:bg-slate-900 border-b px-6 py-4 sticky top-0 z-10 w-full overflow-hidden shadow-sm">
                 <div className="max-w-[1800px] mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" onClick={() => router.push('/comerciales/dashboard')}>
@@ -209,63 +207,43 @@ export default function CRMDashboard() {
                             <p className="text-xs text-muted-foreground">Gestiona tus prospectos</p>
                         </div>
                     </div>
+
+                    <div className="hidden md:block">
+                        <SalesGamification streak={streak} monthlySales={stats.sales} monthlyGoal={stats.goal} />
+                    </div>
+
                     <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-blue-600 hover:bg-blue-700">
-                                <Plus className="h-4 w-4 mr-2" />
-                                Nuevo
+                            <Button className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200">
+                                <Plus className="h-4 w-4 mr-2" /> Nuevo Lead
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Nuevo Prospecto</DialogTitle>
-                            </DialogHeader>
+                            <DialogHeader><DialogTitle>Nuevo Prospecto</DialogTitle></DialogHeader>
                             <div className="space-y-4 py-4">
+                                {/* Form Inputs (simplified for brevity) */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>Nombre Negocio</Label>
-                                        <Input value={formData.nombre_negocio} onChange={e => setFormData({ ...formData, nombre_negocio: e.target.value })} placeholder="Ej. Bar Pepe" />
-                                    </div>
-                                    <div>
-                                        <Label>Contacto</Label>
-                                        <Input value={formData.nombre_contacto} onChange={e => setFormData({ ...formData, nombre_contacto: e.target.value })} placeholder="Pepe García" />
-                                    </div>
+                                    <div><Label>Negocio</Label><Input value={formData.nombre_negocio} onChange={e => setFormData({ ...formData, nombre_negocio: e.target.value })} /></div>
+                                    <div><Label>Contacto</Label><Input value={formData.nombre_contacto} onChange={e => setFormData({ ...formData, nombre_contacto: e.target.value })} /></div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>Teléfono</Label>
-                                        <Input value={formData.telefono} onChange={e => setFormData({ ...formData, telefono: e.target.value })} placeholder="+34..." />
-                                    </div>
-                                    <div>
-                                        <Label>Email</Label>
-                                        <Input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="pepe@bar.com" />
-                                    </div>
+                                    <div><Label>Teléfono</Label><Input value={formData.telefono} onChange={e => setFormData({ ...formData, telefono: e.target.value })} /></div>
+                                    <div><Label>Email</Label><Input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} /></div>
                                 </div>
-                                <div>
-                                    <Label>Valor Estimado (€)</Label>
-                                    <Input type="number" value={formData.valor_estimado} onChange={e => setFormData({ ...formData, valor_estimado: e.target.value })} placeholder="Ej. 500" />
-                                </div>
-                                <div>
-                                    <Label>Notas Iniciales</Label>
-                                    <Input value={formData.notas} onChange={e => setFormData({ ...formData, notas: e.target.value })} placeholder="Interesado en Plan Business..." />
-                                </div>
+                                <div><Label>Valor (€)</Label><Input type="number" value={formData.valor_estimado} onChange={e => setFormData({ ...formData, valor_estimado: e.target.value })} /></div>
+                                <div><Label>Notas</Label><Input value={formData.notas} onChange={e => setFormData({ ...formData, notas: e.target.value })} /></div>
                             </div>
-                            <DialogFooter>
-                                <Button onClick={handleCreate}>Guardar</Button>
-                            </DialogFooter>
+                            <DialogFooter><Button onClick={handleCreate}>Guardar</Button></DialogFooter>
                         </DialogContent>
                     </Dialog>
                 </div>
             </header>
 
-            {/* Kanban Board */}
             <main className="max-w-[1800px] mx-auto p-6 overflow-x-auto h-[calc(100vh-80px)]">
                 {loading ? (
-                    <div className="flex justify-center py-20">
-                        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-                    </div>
+                    <div className="flex justify-center py-20"><div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" /></div>
                 ) : (
-                    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                         <div className="flex gap-4 min-w-[1200px] pb-4 h-full">
                             {Object.entries(STATUSES).map(([statusKey, config]) => (
                                 <DroppableColumn
@@ -276,28 +254,16 @@ export default function CRMDashboard() {
                                     colorClass={config.color}
                                 >
                                     {leads.filter(l => l.estado === statusKey).map(lead => (
-                                        <DraggableCard key={lead.id} id={lead.id}>
-                                            <Card className="hover:shadow-md transition-all border-l-4 cursor-grab active:cursor-grabbing" style={{ borderLeftColor: lead.valor_estimado > 1000 ? '#22c55e' : 'transparent' }}>
-                                                <CardContent className="p-3 space-y-2">
-                                                    <div className="flex justify-between items-start">
-                                                        <h4 className="font-bold text-sm select-none">{lead.nombre_negocio}</h4>
-                                                        {lead.valor_estimado && (
-                                                            <span className="text-xs font-mono text-green-600 bg-green-50 px-1 rounded">
-                                                                €{lead.valor_estimado}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-xs text-muted-foreground select-none">{lead.nombre_contacto}</p>
-                                                    <div className="flex gap-2 text-xs text-muted-foreground mt-2">
-                                                        {lead.telefono && <div className="flex items-center"><Phone className="h-3 w-3 mr-1" />{lead.telefono}</div>}
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
+                                        <DraggableCard key={lead.id} id={lead.id} className={activeId === lead.id ? 'opacity-30' : ''}>
+                                            <LeadCard lead={lead} onMagicClick={handleMagicClick} />
                                         </DraggableCard>
                                     ))}
                                 </DroppableColumn>
                             ))}
                         </div>
+                        <DragOverlay>
+                            {activeLead ? <LeadCard lead={activeLead} /> : null}
+                        </DragOverlay>
                     </DndContext>
                 )}
             </main>
@@ -308,6 +274,12 @@ export default function CRMDashboard() {
                 onConfirm={handleConfirmChange}
                 oldStatus={pendingChange?.oldStatus || ''}
                 newStatus={pendingChange?.newStatus || ''}
+            />
+
+            <MagicMessageDialog
+                open={magicOpen}
+                onOpenChange={setMagicOpen}
+                lead={selectedMagicLead}
             />
         </div>
     );

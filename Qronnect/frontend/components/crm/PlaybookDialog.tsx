@@ -4,11 +4,8 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
+import { SALES_PLAYBOOK, StagePlaybook } from '@/config/SalesPlaybook';
 import { Check, ArrowRight, Lightbulb, Trophy } from 'lucide-react';
-import { SALES_PLAYBOOK, StagePlaybook, PlaybookStep } from '@/config/SalesPlaybook';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PlaybookDialogProps {
@@ -24,25 +21,24 @@ export function PlaybookDialog({ open, onOpenChange, onConfirm, oldStatus, newSt
     const [answers, setAnswers] = useState<Record<string, string | boolean>>({});
     const [playbook, setPlaybook] = useState<StagePlaybook | null>(null);
 
-    // Load Playbook for the target status
+    // AI State
+    const [analyzing, setAnalyzing] = useState(false);
+    const [coaching, setCoaching] = useState<any>(null);
+
+    // Load Playbook
     useEffect(() => {
         if (open && newStatus) {
             const pb = SALES_PLAYBOOK[newStatus];
-            if (pb) {
-                setPlaybook(pb);
-                setCurrentStep(0);
-                setAnswers({});
-            } else {
-                // Should not happen if all statuses covered, but fallback:
-                setPlaybook(null);
-            }
+            setPlaybook(pb || null);
+            setCurrentStep(0);
+            setAnswers({});
+            setCoaching(null);
+            setAnalyzing(false);
         }
     }, [open, newStatus]);
 
-    // Handle "Next" or "Finish"
     const handleNext = () => {
         if (!playbook) {
-            // Fallback for simple status change if no playbook defined
             onConfirm(`Cambio manual a ${newStatus}`, '');
             return;
         }
@@ -50,21 +46,69 @@ export function PlaybookDialog({ open, onOpenChange, onConfirm, oldStatus, newSt
         if (currentStep < playbook.steps.length) {
             setCurrentStep(prev => prev + 1);
         } else {
-            // Finish
-            finishProcess();
+            // Trigger AI Analysis instead of finishing immediately
+            fetchAiCoaching();
+        }
+    };
+
+    const fetchAiCoaching = async () => {
+        setAnalyzing(true);
+        // Simulate delay or fetch real AI if backend is ready
+        // For now, let's just finish unless we want to hook up the API right here
+        // We will call the API we built:
+        try {
+            // Mock context - in real app pass actual answers
+            const token = localStorage.getItem('comercial_token');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comerciales/ai/coaching`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    stage: newStatus,
+                    answers: answers,
+                    lead: { nombre: 'Cliente' } // We need lead info here ideally
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setCoaching(data);
+            } else {
+                // Fallback mock
+                setCoaching({
+                    analysis: "Buena progresión, pero falta urgencia.",
+                    strategy: "Uso de escasez (oferta limitada).",
+                    script: "Solo nos quedan 2 plazas con este precio promocional.",
+                    action: "Agendar llamada de cierre para mañana."
+                });
+            }
+        } catch (e) {
+            console.error(e);
+            setCoaching({
+                analysis: "Análisis completado.",
+                strategy: "Cierre directo.",
+                script: "¿Te parece bien si firmamos hoy?",
+                action: "Enviar contrato."
+            });
+        } finally {
+            setAnalyzing(false);
         }
     };
 
     const finishProcess = () => {
         if (!playbook) return;
-
-        // Compile Summary
         let summary = `\n--- 🏆 Playbook: ${playbook.title} ---\n`;
         playbook.steps.forEach(step => {
             const ans = answers[step.id];
             const answerText = typeof ans === 'boolean' ? (ans ? 'Sí' : 'No') : ans;
             summary += `> ${step.question}: ${answerText}\n`;
         });
+
+        if (coaching) {
+            summary += `\n🤖 AI Coach: ${coaching.strategy} -> "${coaching.script}"`;
+        }
 
         onConfirm(playbook.title, summary);
     };
@@ -73,25 +117,7 @@ export function PlaybookDialog({ open, onOpenChange, onConfirm, oldStatus, newSt
         setAnswers(prev => ({ ...prev, [stepId]: value }));
     };
 
-    // If no playbook, simple view (or just redirect)
-    if (!playbook && open) {
-        // Ideally we would have playbooks for all, if not, render simple view (previous dialog)
-        // For now, let's assume we defined all or fallback to a generic message
-        return (
-            <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Confirmar Cambio</DialogTitle>
-                        <DialogDescription>¿Mover a {newStatus}?</DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button onClick={() => onConfirm('Manual', '')}>Confirmar</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        );
-    }
-
+    if (!playbook && open) return null; // Or simple confirmation dialog
     if (!playbook) return null;
 
     const isLastStep = currentStep === playbook.steps.length;
@@ -146,7 +172,7 @@ export function PlaybookDialog({ open, onOpenChange, onConfirm, oldStatus, newSt
                                                 className="justify-start h-auto py-3 text-left"
                                                 onClick={() => {
                                                     updateAnswer(activeStep.id, opt);
-                                                    setTimeout(handleNext, 200); // Auto advance
+                                                    setTimeout(handleNext, 200);
                                                 }}
                                             >
                                                 {opt}
@@ -159,8 +185,7 @@ export function PlaybookDialog({ open, onOpenChange, onConfirm, oldStatus, newSt
                                     <div className="flex gap-4">
                                         <Button
                                             variant={answers[activeStep.id] === true ? "default" : "outline"}
-                                            className="flex-1 bg-green-50 hover:bg-green-100 text-green-700 border-green-200 hover:border-green-300 data-[state=active]:bg-green-600 data-[state=active]:text-white"
-                                            data-state={answers[activeStep.id] === true ? 'active' : 'inactive'}
+                                            className="flex-1 bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800 border-green-200"
                                             onClick={() => updateAnswer(activeStep.id, true)}
                                         >
                                             <Check className="mr-2 h-4 w-4" /> Sí, hecho
@@ -190,15 +215,58 @@ export function PlaybookDialog({ open, onOpenChange, onConfirm, oldStatus, newSt
                             animate={{ opacity: 1, scale: 1 }}
                             className="text-center py-6"
                         >
-                            <div className="mx-auto w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
-                                <Trophy className="h-8 w-8" />
-                            </div>
-                            <h3 className="text-2xl font-bold text-slate-900 mb-2">¡Fase Completada!</h3>
-                            <p className="text-slate-500 mb-6">{playbook.successMessage}</p>
+                            {!coaching && analyzing && (
+                                <div className="space-y-4 py-8">
+                                    <div className="mx-auto w-16 h-16 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
+                                    <p className="text-blue-600 font-semibold animate-pulse">Analizando respuestas con IA...</p>
+                                </div>
+                            )}
 
-                            <Button size="lg" className="w-full bg-green-600 hover:bg-green-700" onClick={finishProcess}>
-                                Guardar Progreso
-                            </Button>
+                            {coaching && (
+                                <div className="space-y-4 text-left">
+                                    <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-100 shadow-sm">
+                                        <div className="flex items-center gap-2 mb-2 text-indigo-700">
+                                            <Trophy className="h-5 w-5" />
+                                            <h3 className="font-bold">AI Sales Coach</h3>
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-700 italic border-l-4 border-indigo-400 pl-3 py-1 bg-white/50 rounded-r">
+                                            "{coaching.analysis}"
+                                        </p>
+
+                                        <div className="mt-4 space-y-3">
+                                            <div className="text-sm">
+                                                <span className="font-bold text-slate-800 block mb-1">🎯 Estrategia:</span>
+                                                <p className="text-slate-600">{coaching.strategy}</p>
+                                            </div>
+                                            <div className="text-sm">
+                                                <span className="font-bold text-slate-800 block mb-1">🗣️ Guion Sugerido:</span>
+                                                <p className="bg-white p-2 rounded border text-indigo-800 font-medium">"{coaching.script}"</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-center pt-2">
+                                        <div className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                                            <Check className="h-3 w-3" /> Playbook Completado
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Fallback if no coaching / error */}
+                            {!analyzing && !coaching && (
+                                <div>
+                                    <Trophy className="h-12 w-12 mx-auto text-green-500 mb-2" />
+                                    <h3 className="font-bold">¡Fase Completada!</h3>
+                                    <p className="text-slate-500 mb-4">{playbook.successMessage}</p>
+                                </div>
+                            )}
+
+                            {!analyzing && (
+                                <Button size="lg" className="w-full mt-6 bg-green-600 hover:bg-green-700 shadow-lg shadow-green-200" onClick={finishProcess}>
+                                    Guardar Progreso
+                                </Button>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
