@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 
 import { DraggableCard } from '@/components/crm/DraggableCard';
 import { DroppableColumn } from '@/components/crm/DroppableColumn';
-import { StatusChangeDialog } from '@/components/crm/StatusChangeDialog';
+import { PlaybookDialog } from '@/components/crm/PlaybookDialog';
 
 // Status Configuration
 const STATUSES = {
@@ -302,7 +302,7 @@ export default function CRMDashboard() {
                 )}
             </main>
 
-            <StatusChangeDialog
+            <PlaybookDialog
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}
                 onConfirm={handleConfirmChange}
