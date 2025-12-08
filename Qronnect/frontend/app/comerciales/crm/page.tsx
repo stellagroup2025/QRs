@@ -2,16 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { DndContext, DragEndEvent, DragOverlay, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
+
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Phone, Mail, MapPin, Plus, ArrowLeft, ArrowRight, Store, DollarSign } from 'lucide-react';
+import { Phone, Mail, Plus, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+import { DraggableCard } from '@/components/crm/DraggableCard';
+import { DroppableColumn } from '@/components/crm/DroppableColumn';
+import { StatusChangeDialog } from '@/components/crm/StatusChangeDialog';
 
 // Status Configuration
 const STATUSES = {
@@ -30,6 +33,16 @@ export default function CRMDashboard() {
     const [leads, setLeads] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [createOpen, setCreateOpen] = useState(false);
+
+    // Draggable Sensor Setup (Pointer for mouse, Touch for mobile)
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+    );
+
+    // Dialog State
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [pendingChange, setPendingChange] = useState<{ id: string, oldStatus: string, newStatus: string } | null>(null);
 
     // New Lead Form State
     const [formData, setFormData] = useState({
@@ -91,95 +104,99 @@ export default function CRMDashboard() {
         } catch (e) { console.error(e); }
     };
 
-    // Update Status Handler
-    const handleStatusChange = async (id: string, newStatus: string) => {
+    // Drag Handler
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (!over) return;
+
+        const leadId = active.id as string;
+        const newStatus = over.id as string;
+        const lead = leads.find(l => l.id === leadId);
+
+        if (!lead || lead.estado === newStatus) return;
+
+        // Open dialog to confirm
+        setPendingChange({
+            id: leadId,
+            oldStatus: lead.estado,
+            newStatus: newStatus
+        });
+        setDialogOpen(true);
+    };
+
+    // Confirm Change Handler
+    const handleConfirmChange = async (reason: string, notes: string) => {
+        if (!pendingChange) return;
+
+        const { id, newStatus } = pendingChange;
+
+        // Optimistic UI update
+        const oldState = [...leads];
+        setLeads(prev => prev.map(l => l.id === id ? { ...l, estado: newStatus } : l));
+        setDialogOpen(false);
+
+        // Special case: Ganado -> Redirect to Store Creation
         if (newStatus === 'ganado') {
-            // Logic for conversion usually handles this, but for now just update status
-            // In v2 we can trigger the "Create Store" flow pre-filled
+            const lead = leads.find(l => l.id === id);
+            if (lead) {
+                const params = new URLSearchParams({
+                    nombre: lead.nombre_negocio || '',
+                    contacto: lead.nombre_contacto || '',
+                    email: lead.email || '',
+                    telefono: lead.telefono || '',
+                    direccion: lead.direccion || '',
+                    crm_id: lead.id
+                });
+                router.push(`/comerciales/tiendas/nueva?${params.toString()}`);
+                // Background update
+                updateLeadStatus(id, newStatus, reason, notes);
+                return;
+            }
         }
 
+        // Standard update
+        await updateLeadStatus(id, newStatus, reason, notes);
+    };
+
+    const updateLeadStatus = async (id: string, newStatus: string, reason: string, notes: string) => {
         try {
             const token = localStorage.getItem('comercial_token');
+            const lead = leads.find(l => l.id === id);
+
+            // Append note history
+            const timestamp = new Date().toLocaleString();
+            const newEntry = `\n[${timestamp}] Cambio a ${newStatus.toUpperCase()}: ${reason}. ${notes}`;
+            const updatedNotas = (lead?.notas || '') + newEntry;
+
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comerciales/prospectos/${id}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ estado: newStatus })
+                body: JSON.stringify({
+                    estado: newStatus,
+                    notas: updatedNotas
+                })
             });
 
-            if (res.ok) {
+            if (!res.ok) {
+                // Revert optimistic
+                toast({ title: 'Error al actualizar', variant: 'destructive' });
+                fetchLeads(); // Force refresh
+            } else {
                 toast({ title: 'Estado actualizado' });
-                fetchLeads();
             }
         } catch (e) {
-            toast({ title: 'Error al actualizar', variant: 'destructive' });
+            fetchLeads();
         }
-    };
-
-    const StatusColumn = ({ status, title }: { status: string, title: string }) => {
-        const items = leads.filter(l => l.estado === status);
-        const config = STATUSES[status as keyof typeof STATUSES];
-
-        return (
-            <div className="flex flex-col gap-3 min-w-[280px] bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl h-full border border-slate-100 dark:border-slate-800">
-                <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${config.color.split(' ')[0]}`} />
-                        <h3 className="font-semibold text-sm">{title}</h3>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">{items.length}</Badge>
-                </div>
-
-                <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-250px)] pr-1">
-                    {items.map(lead => (
-                        <Card key={lead.id} className="cursor-pointer hover:shadow-md transition-all border-l-4" style={{ borderLeftColor: lead.valor_estimado > 1000 ? '#22c55e' : 'transparent' }}>
-                            <CardContent className="p-3 space-y-2">
-                                <div className="flex justify-between items-start">
-                                    <h4 className="font-bold text-sm">{lead.nombre_negocio}</h4>
-                                    {lead.valor_estimado && (
-                                        <span className="text-xs font-mono text-green-600 bg-green-50 px-1 rounded">
-                                            €{lead.valor_estimado}
-                                        </span>
-                                    )}
-                                </div>
-                                <p className="text-xs text-muted-foreground">{lead.nombre_contacto}</p>
-
-                                <div className="flex gap-2 text-xs text-muted-foreground mt-2">
-                                    {lead.telefono && <a href={`tel:${lead.telefono}`} className="hover:text-blue-500"><Phone className="h-3 w-3" /></a>}
-                                    {lead.email && <a href={`mailto:${lead.email}`} className="hover:text-blue-500"><Mail className="h-3 w-3" /></a>}
-                                </div>
-
-                                <div className="pt-2 border-t mt-2 flex justify-between items-center">
-                                    <select
-                                        className="text-[10px] bg-transparent border rounded p-1"
-                                        value={lead.estado}
-                                        onChange={(e) => handleStatusChange(lead.id, e.target.value)}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        {Object.entries(STATUSES).map(([key, val]) => (
-                                            <option key={key} value={key}>{val.label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                    {items.length === 0 && (
-                        <div className="text-center py-8 text-slate-300 text-xs border-2 border-dashed rounded-lg">
-                            Vacío
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
     };
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-8">
             {/* Header */}
-            <header className="bg-white dark:bg-slate-900 border-b px-6 py-4 sticky top-0 z-10">
+            <header className="bg-white dark:bg-slate-900 border-b px-6 py-4 sticky top-0 z-10 w-full overflow-hidden">
                 <div className="max-w-[1800px] mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" onClick={() => router.push('/comerciales/dashboard')}>
@@ -189,14 +206,14 @@ export default function CRMDashboard() {
                             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                                 Pipeline de Ventas
                             </h1>
-                            <p className="text-xs text-muted-foreground">Gestiona tus prospectos y cierra ventas</p>
+                            <p className="text-xs text-muted-foreground">Gestiona tus prospectos</p>
                         </div>
                     </div>
                     <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                         <DialogTrigger asChild>
                             <Button className="bg-blue-600 hover:bg-blue-700">
                                 <Plus className="h-4 w-4 mr-2" />
-                                Nuevo Prospecto
+                                Nuevo
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -242,23 +259,56 @@ export default function CRMDashboard() {
             </header>
 
             {/* Kanban Board */}
-            <main className="max-w-[1800px] mx-auto p-6 overflow-x-auto">
+            <main className="max-w-[1800px] mx-auto p-6 overflow-x-auto h-[calc(100vh-80px)]">
                 {loading ? (
                     <div className="flex justify-center py-20">
                         <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
                     </div>
                 ) : (
-                    <div className="flex gap-4 min-w-[1200px] pb-4">
-                        <StatusColumn status="nuevo" title="Nuevos" />
-                        <StatusColumn status="contactado" title="Contactados" />
-                        <StatusColumn status="interesado" title="Interesados" />
-                        <StatusColumn status="negociacion" title="En Negociación" />
-                        <StatusColumn status="cierre" title="Cierre" />
-                        <StatusColumn status="ganado" title="Ganados" />
-                        <StatusColumn status="perdido" title="Perdidos" />
-                    </div>
+                    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                        <div className="flex gap-4 min-w-[1200px] pb-4 h-full">
+                            {Object.entries(STATUSES).map(([statusKey, config]) => (
+                                <DroppableColumn
+                                    key={statusKey}
+                                    id={statusKey}
+                                    title={config.label}
+                                    count={leads.filter(l => l.estado === statusKey).length}
+                                    colorClass={config.color}
+                                >
+                                    {leads.filter(l => l.estado === statusKey).map(lead => (
+                                        <DraggableCard key={lead.id} id={lead.id}>
+                                            <Card className="hover:shadow-md transition-all border-l-4 cursor-grab active:cursor-grabbing" style={{ borderLeftColor: lead.valor_estimado > 1000 ? '#22c55e' : 'transparent' }}>
+                                                <CardContent className="p-3 space-y-2">
+                                                    <div className="flex justify-between items-start">
+                                                        <h4 className="font-bold text-sm select-none">{lead.nombre_negocio}</h4>
+                                                        {lead.valor_estimado && (
+                                                            <span className="text-xs font-mono text-green-600 bg-green-50 px-1 rounded">
+                                                                €{lead.valor_estimado}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground select-none">{lead.nombre_contacto}</p>
+                                                    <div className="flex gap-2 text-xs text-muted-foreground mt-2">
+                                                        {lead.telefono && <div className="flex items-center"><Phone className="h-3 w-3 mr-1" />{lead.telefono}</div>}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </DraggableCard>
+                                    ))}
+                                </DroppableColumn>
+                            ))}
+                        </div>
+                    </DndContext>
                 )}
             </main>
+
+            <StatusChangeDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                onConfirm={handleConfirmChange}
+                oldStatus={pendingChange?.oldStatus || ''}
+                newStatus={pendingChange?.newStatus || ''}
+            />
         </div>
     );
 }
