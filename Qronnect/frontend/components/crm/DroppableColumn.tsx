@@ -1,5 +1,3 @@
-'use client';
-
 import { useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -13,27 +11,27 @@ interface DroppableColumnProps {
 }
 
 export function DroppableColumn({ id, title, count, colorClass, children }: DroppableColumnProps) {
-    const { setNodeRef, isOver } = useDroppable({
-        id: id,
-    });
+    const { setNodeRef, isOver } = useDroppable({ id });
 
     return (
-        <div
-            ref={setNodeRef}
-            className={cn(
-                "flex flex-col gap-3 min-w-[280px] p-3 rounded-xl h-full border transition-colors",
-                isOver ? "bg-blue-50 border-blue-300 dark:bg-blue-900/20" : "bg-slate-50 border-slate-100 dark:bg-slate-900/50 dark:border-slate-800"
-            )}
-        >
-            <div className="flex items-center justify-between mb-2">
+        <div ref={setNodeRef} className={cn(
+            "flex-shrink-0 w-80 flex flex-col h-full rounded-xl transition-colors duration-300",
+            isOver ? "bg-slate-100/50 dark:bg-slate-800/50 ring-2 ring-indigo-400/30" : "bg-transparent"
+        )}>
+            {/* Header */}
+            <div className="flex items-center justify-between p-3 mb-2 rounded-t-xl backdrop-blur-sm">
                 <div className="flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full ${colorClass.split(' ')[0]}`} />
-                    <h3 className="font-semibold text-sm">{title}</h3>
+                    <h3 className="font-bold text-sm text-slate-700 dark:text-slate-200 tracking-tight">{title}</h3>
+                    <Badge variant="secondary" className="px-1.5 py-0 h-5 text-[10px] font-mono bg-white/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 shadow-sm border-0">
+                        {count}
+                    </Badge>
                 </div>
-                <Badge variant="secondary" className="text-xs">{count}</Badge>
+                {/* Visual line color indicator */}
+                <div className={cn("h-1.5 w-1.5 rounded-full", colorClass.replace('bg-', 'bg-').replace('text-', '').split(' ')[0])} />
             </div>
 
-            <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-250px)] pr-1 min-h-[100px]">
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-3 scrollbar-hide">
                 {children}
             </div>
         </div>

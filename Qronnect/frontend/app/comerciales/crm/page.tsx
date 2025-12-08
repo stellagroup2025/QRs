@@ -193,35 +193,40 @@ export default function CRMDashboard() {
     const activeLead = activeId ? leads.find(l => l.id === activeId) : null;
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-8">
-            <header className="bg-white dark:bg-slate-900 border-b px-6 py-4 sticky top-0 z-10 w-full overflow-hidden shadow-sm">
-                <div className="max-w-[1800px] mx-auto flex justify-between items-center">
+        <div className="min-h-screen bg-[#F3F4F6] dark:bg-[#0B0F19] pb-8 relative overflow-hidden">
+            {/* Background Decoration */}
+            <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-blue-100/40 to-transparent dark:from-indigo-900/20 pointer-events-none" />
+            <div className="absolute top-[-100px] right-[-100px] w-[500px] h-[500px] bg-purple-200/20 dark:bg-purple-900/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Header */}
+            <header className="sticky top-0 z-10 w-full border-b border-white/20 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-sm px-6 py-4 transition-all">
+                <div className="max-w-[1920px] mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => router.push('/comerciales/dashboard')}>
+                        <Button variant="ghost" size="icon" onClick={() => router.push('/comerciales/dashboard')} className="hover:bg-black/5 dark:hover:bg-white/10">
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
                         <div>
-                            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                                Pipeline de Ventas
+                            <h1 className="text-2xl font-black bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent tracking-tight">
+                                Qronnect CRM
                             </h1>
-                            <p className="text-xs text-muted-foreground">Gestiona tus prospectos</p>
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Avant-Garde Sales</p>
                         </div>
                     </div>
 
-                    <div className="hidden md:block">
+                    <div className="hidden lg:block">
                         <SalesGamification streak={streak} monthlySales={stats.sales} monthlyGoal={stats.goal} />
                     </div>
 
                     <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200">
-                                <Plus className="h-4 w-4 mr-2" /> Nuevo Lead
+                            <Button className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-500/20 transition-all font-bold">
+                                <Plus className="h-4 w-4 mr-2" /> Nuevo
                             </Button>
                         </DialogTrigger>
+                        {/* ... Dialog Content ... (Keep existing) */}
                         <DialogContent>
                             <DialogHeader><DialogTitle>Nuevo Prospecto</DialogTitle></DialogHeader>
                             <div className="space-y-4 py-4">
-                                {/* Form Inputs (simplified for brevity) */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div><Label>Negocio</Label><Input value={formData.nombre_negocio} onChange={e => setFormData({ ...formData, nombre_negocio: e.target.value })} /></div>
                                     <div><Label>Contacto</Label><Input value={formData.nombre_contacto} onChange={e => setFormData({ ...formData, nombre_contacto: e.target.value })} /></div>
@@ -239,12 +244,12 @@ export default function CRMDashboard() {
                 </div>
             </header>
 
-            <main className="max-w-[1800px] mx-auto p-6 overflow-x-auto h-[calc(100vh-80px)]">
+            <main className="max-w-[1920px] mx-auto p-6 overflow-x-auto h-[calc(100vh-80px)] relative z-0">
                 {loading ? (
-                    <div className="flex justify-center py-20"><div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" /></div>
+                    <div className="flex justify-center py-20"><div className="animate-spin h-8 w-8 border-4 border-slate-900 border-t-transparent rounded-full" /></div>
                 ) : (
                     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                        <div className="flex gap-4 min-w-[1200px] pb-4 h-full">
+                        <div className="flex gap-4 min-w-[1200px] h-full pb-8">
                             {Object.entries(STATUSES).map(([statusKey, config]) => (
                                 <DroppableColumn
                                     key={statusKey}
@@ -254,15 +259,19 @@ export default function CRMDashboard() {
                                     colorClass={config.color}
                                 >
                                     {leads.filter(l => l.estado === statusKey).map(lead => (
-                                        <DraggableCard key={lead.id} id={lead.id} className={activeId === lead.id ? 'opacity-30' : ''}>
+                                        <DraggableCard key={lead.id} id={lead.id} className={activeId === lead.id ? 'opacity-30 scale-95' : ''}>
                                             <LeadCard lead={lead} onMagicClick={handleMagicClick} />
                                         </DraggableCard>
                                     ))}
                                 </DroppableColumn>
                             ))}
                         </div>
-                        <DragOverlay>
-                            {activeLead ? <LeadCard lead={activeLead} /> : null}
+                        <DragOverlay dropAnimation={{ duration: 200, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
+                            {activeLead ? (
+                                <div className="rotate-3 scale-105 cursor-grabbing shadow-2xl">
+                                    <LeadCard lead={activeLead} />
+                                </div>
+                            ) : null}
                         </DragOverlay>
                     </DndContext>
                 )}
