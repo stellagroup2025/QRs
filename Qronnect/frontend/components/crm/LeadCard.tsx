@@ -72,8 +72,8 @@ export function LeadCard({ lead, onClick, onMagicClick }: LeadCardProps) {
                         )}
                     </div>
 
-                    {/* Quick Actions (Visible on Hover) */}
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 translate-x-2 group-hover:translate-x-0">
+                    {/* Quick Actions (Visible on Hover for desktop, Always for mobile) */}
+                    <div className="flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200 translate-x-0 lg:translate-x-2 lg:group-hover:translate-x-0">
                         {/* Call */}
                         {lead.telefono && (
                             <Button size="icon" variant="ghost" className="h-7 w-7 rounded-full hover:bg-green-100 hover:text-green-600"
