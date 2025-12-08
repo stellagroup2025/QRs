@@ -50,6 +50,31 @@ export class GeminiService implements AiProvider {
     throw lastError;
   }
 
+  /**
+   * Limpia y parsea la respuesta JSON de Gemini
+   * Maneja bloques de código markdown y posibles textos adicionales
+   */
+  private cleanAndParseJson(text: string, context: string = ''): any {
+    try {
+      // 1. Eliminar bloques de código mrkdwn ```json ... ```
+      let cleanText = text.replace(/```json/g, '').replace(/```/g, '');
+
+      // 2. Encontrar el primer { y el último }
+      const firstOpen = cleanText.indexOf('{');
+      const lastClose = cleanText.lastIndexOf('}');
+
+      if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
+        cleanText = cleanText.substring(firstOpen, lastClose + 1);
+      }
+
+      return JSON.parse(cleanText);
+    } catch (error) {
+      this.logger.error(`[${context}] Error parsing JSON from Gemini response:`, error);
+      this.logger.debug(`[${context}] Raw text was: ${text.substring(0, 500)}...`);
+      return null;
+    }
+  }
+
   async generateKpiAnalysis(params: any): Promise<any> {
     if (!this.model) throw new Error('Gemini AI not configured');
 
@@ -61,8 +86,7 @@ export class GeminiService implements AiProvider {
 
     try {
       const text = await this.callGeminiWithRetry(prompt, 'KPI_ANALYSIS');
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : { summary: text, highlights: [], recommendations: [] };
+      return this.cleanAndParseJson(text, 'KPI_ANALYSIS') || { summary: text, highlights: [], recommendations: [] };
     } catch (e) {
       this.logger.error(e);
       throw e;
@@ -77,8 +101,7 @@ export class GeminiService implements AiProvider {
 
     try {
       const text = await this.callGeminiWithRetry(prompt, 'PROMO_IDEAS');
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : { ideas: [] };
+      return this.cleanAndParseJson(text, 'PROMO_IDEAS') || { ideas: [] };
     } catch (e) { throw e; }
   }
 
@@ -90,8 +113,7 @@ export class GeminiService implements AiProvider {
 
     try {
       const text = await this.callGeminiWithRetry(prompt, 'EMAIL_CAMPAIGN');
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : { asuntos: [], cuerpos: [], consejos: [] };
+      return this.cleanAndParseJson(text, 'EMAIL_CAMPAIGN') || { asuntos: [], cuerpos: [], consejos: [] };
     } catch (e) { throw e; }
   }
 
@@ -102,8 +124,7 @@ export class GeminiService implements AiProvider {
 
     try {
       const text = await this.callGeminiWithRetry(prompt, 'PLAN_ACCION');
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : { acciones: [], explicacion: '', impacto_estimado: '' };
+      return this.cleanAndParseJson(text, 'PLAN_ACCION') || { acciones: [], explicacion: '', impacto_estimado: '' };
     } catch (e) { throw e; }
   }
 
@@ -119,9 +140,9 @@ export class GeminiService implements AiProvider {
 
     try {
       const text = await this.callGeminiWithRetry(prompt, 'SMS_CAMPAIGN');
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = this.cleanAndParseJson(text, 'SMS_CAMPAIGN');
+
+      if (parsed) {
         const mensaje = parsed.mensaje || '';
         return {
           mensaje,
@@ -153,8 +174,7 @@ Devuelve JSON:
 
     try {
       const text = await this.callGeminiWithRetry(prompt, 'ANALISIS_PROMOCIONES');
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : { resumen: text, impacto: 'neutral' };
+      return this.cleanAndParseJson(text, 'ANALISIS_PROMOCIONES') || { resumen: text, impacto: 'neutral' };
     } catch (error) {
       this.logger.error('[INFORME] Error analizando promociones:', error);
       return { resumen: 'Error analizando impacto', impacto: 'neutral' };
@@ -177,8 +197,7 @@ Devuelve JSON:
 
     try {
       const text = await this.callGeminiWithRetry(prompt, 'PLAN_SIGUIENTE_MES');
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : { objetivos: [] };
+      return this.cleanAndParseJson(text, 'PLAN_SIGUIENTE_MES') || { objetivos: [] };
     } catch (error) {
       this.logger.error('[INFORME] Error generando plan:', error);
       return { objetivos: [], kpis_monitorear: [] };
@@ -208,8 +227,7 @@ Devuelve JSON:
 
     try {
       const text = await this.callGeminiWithRetry(prompt, 'SALES_COACHING');
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : { strategy: 'No se pudo generar estrategia', script: '' };
+      return this.cleanAndParseJson(text, 'SALES_COACHING') || { strategy: 'No se pudo generar estrategia', script: '' };
     } catch (error) {
       this.logger.error('Error generating sales coaching:', error);
       return { strategy: 'Error de conexión', script: '' };
@@ -235,8 +253,7 @@ Devuelve JSON:
 
     try {
       const text = await this.callGeminiWithRetry(prompt, 'NEURO_MESSAGE');
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return jsonMatch ? JSON.parse(jsonMatch[0]) : { message: '' };
+      return this.cleanAndParseJson(text, 'NEURO_MESSAGE') || { message: '' };
     } catch (error) {
       this.logger.error('Error generating neuro message:', error);
       return { message: '' };
