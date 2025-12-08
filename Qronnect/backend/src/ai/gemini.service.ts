@@ -184,4 +184,62 @@ Devuelve JSON:
       return { objetivos: [], kpis_monitorear: [] };
     }
   }
+
+  // --- SALES INNOVATION METHODS ---
+
+  async generateSalesCoaching(context: any): Promise<any> {
+    if (!this.model) throw new Error('Gemini AI not configured');
+
+    const prompt = `Actúa como el mejor Coach de Ventas del mundo (estilo Jordan Belfort pero ético).
+    Analiza la situación de este prospecto y dame una estrategia de CIERRE inmediata.
+    
+    Estado Actual: ${context.stage}
+    Respuestas del Playbook: ${JSON.stringify(context.answers)}
+    Info Prospecto: ${JSON.stringify(context.lead)}
+    
+    Genera un JSON con:
+    {
+      "analysis": "Breve análisis de la situación (1 frase)",
+      "strategy": "La estrategia psicológica a usar",
+      "script": "Un guion exacto de 1-2 frases para decir AHORA MISMO",
+      "action": "La siguiente acción física recomendada"
+    }
+    Mantenlo corto, directo y energizante.`;
+
+    try {
+      const text = await this.callGeminiWithRetry(prompt, 'SALES_COACHING');
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      return jsonMatch ? JSON.parse(jsonMatch[0]) : { strategy: 'No se pudo generar estrategia', script: '' };
+    } catch (error) {
+      this.logger.error('Error generating sales coaching:', error);
+      return { strategy: 'Error de conexión', script: '' };
+    }
+  }
+
+  async generateNeuroMessage(context: any): Promise<any> {
+    if (!this.model) throw new Error('Gemini AI not configured');
+
+    const prompt = `Eres experto en Copywriting y PNL (Programación Neuro-Lingüística).
+    Genera un mensaje de ${context.channel} (WhatsApp/Email) para este prospecto.
+    Objetivo: Moverlo de ${context.currentStatus} a ${context.targetStatus}.
+    
+    Datos:
+    Nombre: ${context.leadName}
+    Negocio: ${context.businessName}
+    Dolor/Interés: ${context.painPoint || 'Mejorar ventas'}
+    Tono: ${context.tone || 'Profesional pero cercano'}
+    
+    Usa principios de persuasión (Escasez, Autoridad, Prueba Social) según aplique.
+    
+    JSON: { "message": "Texto del mensaje..." }`;
+
+    try {
+      const text = await this.callGeminiWithRetry(prompt, 'NEURO_MESSAGE');
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      return jsonMatch ? JSON.parse(jsonMatch[0]) : { message: '' };
+    } catch (error) {
+      this.logger.error('Error generating neuro message:', error);
+      return { message: '' };
+    }
+  }
 }
