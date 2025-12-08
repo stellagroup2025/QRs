@@ -15,6 +15,7 @@ import { CookieBanner } from "@/components/CookieBanner"
 import { SkipLink } from "@/components/ui/skip-link"
 import { ConfirmDialogProvider } from "@/hooks/use-confirm-dialog"
 import { SimpleLoadingBar } from "@/components/loading-bar"
+import { VersionUpdater } from "@/components/system/VersionUpdater"
 import { BRAND } from "@/config/appBrand"
 import "./globals.css"
 
@@ -183,6 +184,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SimpleLoadingBar />
+          <VersionUpdater />
           <SkipLink />
           <BrandingProvider>
             <CookieConsentProvider>
