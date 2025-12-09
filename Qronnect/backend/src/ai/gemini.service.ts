@@ -23,8 +23,8 @@ export class GeminiService implements AiProvider {
       this.model = null;
     } else {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
-      this.logger.log('✅ Google Gemini AI service initialized with model: gemini-1.5-flash-latest');
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      this.logger.log('✅ Google Gemini AI service initialized with model: gemini-1.5-flash');
     }
   }
 
