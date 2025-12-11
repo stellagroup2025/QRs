@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft, CheckCircle, FileDown, Settings2, Image as ImageIcon } from 'lucide-react';
+import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft, CheckCircle, FileDown, Settings2, Image as ImageIcon, Palette } from 'lucide-react';
 import { QrCode as QrCodeType, QrPoolEstadisticas, getEstadoColor, getEstadoLabel } from '@/types/qr-codes';
 import { useRouter } from 'next/navigation';
 import {
@@ -63,7 +63,8 @@ export default function QrCodesPoolPage() {
 
   // Download Options
   const [pdfTitle, setPdfTitle] = useState('QR Codes Pool');
-  const [qrStyle, setQrStyle] = useState<'standard' | 'brand'>('standard');
+  const [qrStyle, setQrStyle] = useState<'standard' | 'brand' | 'custom'>('standard');
+  const [customColor, setCustomColor] = useState('#000000');
   const [includeLogo, setIncludeLogo] = useState(false);
 
   // Form para generar QR codes
@@ -301,10 +302,11 @@ export default function QrCodesPoolPage() {
         ctx.drawImage(templateImg, 0, 0);
 
         // QR Params
-        let qrColor = '0-0-0';
+        let qrColor = '0-0-0'; // default standard
         if (qrStyle === 'brand') qrColor = '7c3aed';
+        if (qrStyle === 'custom') qrColor = customColor.replace('#', ''); // strip hex #
 
-        // Use ECC High (H) if logo is included, otherwise Low (L) or Medium (M) is fine, but H is safer for stickers
+        // Use ECC High (H) if logo is included
         const ecc = includeLogo ? 'H' : 'M';
 
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&format=png&color=${qrColor}&ecc=${ecc}&data=${encodeURIComponent(qr.qr_url)}`;
@@ -320,14 +322,12 @@ export default function QrCodesPoolPage() {
 
         // Draw Center Logo
         if (includeLogo && logoImg) {
-          const logoSize = qrInfoSize * 0.23; // 23% of QR size covers safe area for ECC H
+          const logoSize = qrInfoSize * 0.23;
           const logoX = qrX + (qrInfoSize - logoSize) / 2;
           const logoY = qrY + (qrInfoSize - logoSize) / 2;
 
-          // Optional: Draw a white circle/square behind logo for better visibility
           ctx.fillStyle = '#FFFFFF';
           ctx.beginPath();
-          // Draw rounded rect or circle background
           const padding = 5;
           ctx.roundRect(logoX - padding / 2, logoY - padding / 2, logoSize + padding, logoSize + padding, 10);
           ctx.fill();
@@ -485,7 +485,7 @@ export default function QrCodesPoolPage() {
                     <Label className="text-right pt-2">Estilo</Label>
                     <RadioGroup
                       value={qrStyle}
-                      onValueChange={(v: 'standard' | 'brand') => setQrStyle(v)}
+                      onValueChange={(v: 'standard' | 'brand' | 'custom') => setQrStyle(v)}
                       className="col-span-3 flex flex-col gap-2"
                     >
                       <div className="flex items-center space-x-2 border p-3 rounded-md cursor-pointer hover:bg-muted/50">
@@ -504,6 +504,24 @@ export default function QrCodesPoolPage() {
                         </div>
                         <QrCode className="h-6 w-6 text-indigo-600" />
                       </div>
+                      <div className="flex items-center space-x-2 border p-3 rounded-md cursor-pointer hover:bg-muted/50">
+                        <RadioGroupItem value="custom" id="Custom" />
+                        <div className="flex-1">
+                          <Label htmlFor="Custom" className="font-semibold cursor-pointer">Personalizado</Label>
+                          <p className="text-xs text-muted-foreground">Elige tu color</p>
+                        </div>
+                        {qrStyle === 'custom' && (
+                          <div className="relative">
+                            <Input
+                              type="color"
+                              value={customColor}
+                              onChange={(e) => setCustomColor(e.target.value)}
+                              className="h-8 w-12 p-0 border-none cursor-pointer"
+                            />
+                          </div>
+                        )}
+                        {qrStyle !== 'custom' && <Palette className="h-6 w-6 text-gray-400" />}
+                      </div>
                     </RadioGroup>
                   </div>
 
@@ -512,8 +530,8 @@ export default function QrCodesPoolPage() {
                     <div className="col-span-3 flex items-center space-x-2">
                       <Switch id="logo-mode" checked={includeLogo} onCheckedChange={setIncludeLogo} />
                       <Label htmlFor="logo-mode" className="font-normal">
-                        Incrustar Logo Central
-                        {includeLogo && <Badge variant="outline" className="ml-2 text-xs">Recomendado</Badge>}
+                        Incrustar Logo
+                        {includeLogo && <Badge variant="outline" className="ml-2 text-xs">ECC High</Badge>}
                       </Label>
                       {includeLogo && <ImageIcon className="h-4 w-4 text-muted-foreground ml-auto" />}
                     </div>
