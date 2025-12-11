@@ -231,9 +231,8 @@ export default function QrCodesPoolPage() {
       });
 
       // Calcular aspecto y grid
-      // Asumiremos un ancho de sticker de unos 60mm para que se vean bien
-      // Ajustar según necesidad de impresión
-      const stickerWidth = 60;
+      // Usamos 90mm de ancho para que quepan 2 columnas holgadas en A4 (210mm)
+      const stickerWidth = 90;
       const aspectRatio = templateImg.height / templateImg.width;
       const stickerHeight = stickerWidth * aspectRatio;
 
@@ -243,7 +242,7 @@ export default function QrCodesPoolPage() {
       const cols = Math.floor((pageWidth - (2 * marginX)) / stickerWidth);
       const rows = Math.floor((pageHeight - (2 * marginY)) / stickerHeight);
 
-      // Recalcular gaps para centrar
+      // Recalcular gaps para centrar el bloque en la página
       const totalContentWidth = cols * stickerWidth;
       const totalContentHeight = rows * stickerHeight;
       const startX = (pageWidth - totalContentWidth) / 2;
@@ -252,7 +251,7 @@ export default function QrCodesPoolPage() {
       let col = 0;
       let row = 0;
 
-      // Canvas reutilizable fuera del loop para rendimiento (aunque hay que limpiar o redibujar)
+      // Canvas reutilizable
       const canvas = document.createElement('canvas');
       canvas.width = templateImg.width;
       canvas.height = templateImg.height;
@@ -263,7 +262,7 @@ export default function QrCodesPoolPage() {
       for (let i = 0; i < qrsToDownload.length; i++) {
         const qr = qrsToDownload[i];
 
-        // Nueva página
+        // Nueva página si se completa la página actual
         if (i > 0 && i % (cols * rows) === 0) {
           doc.addPage();
           col = 0;
@@ -272,7 +271,7 @@ export default function QrCodesPoolPage() {
 
         // --- Generar Diseño Individual ---
 
-        // 1. Dibujar Template (limpia el canvas al sobreescribir todo)
+        // 1. Dibujar Template (esto limpia el canvas porque el template es opaco)
         ctx.drawImage(templateImg, 0, 0);
 
         // 2. Cargar y dibujar QR
@@ -280,17 +279,23 @@ export default function QrCodesPoolPage() {
         const qrResponse = await fetch(qrUrl);
         const qrBlob = await qrResponse.blob();
 
-        // Usar createImageBitmap es más eficiente que new Image() + onload
-        const qrBitmap = await createImageBitmap(qrBlob);
+        // Crear imagen desde blob
+        const qrImg = new Image();
+        qrImg.src = URL.createObjectURL(qrBlob);
+        await new Promise((resolve) => { qrImg.onload = resolve; });
 
+        // Ajustar QR en el diseño
+        // Medidas basadas en la experiencia previa: 50% de ancho, centrado horizontal, ligeramente abajo del centro vertical
         const qrInfoSize = canvas.width * 0.50;
         const qrX = (canvas.width - qrInfoSize) / 2;
         const qrY = (canvas.height * 0.515) - (qrInfoSize / 2);
 
-        ctx.drawImage(qrBitmap, qrX, qrY, qrInfoSize, qrInfoSize);
+        ctx.drawImage(qrImg, qrX, qrY, qrInfoSize, qrInfoSize);
+
+        URL.revokeObjectURL(qrImg.src);
 
         // 3. Obtener Data URL del diseño completo
-        const designBase64 = canvas.toDataURL('image/jpeg', 0.8); // JPEG 0.8 para reducir peso del PDF
+        const designBase64 = canvas.toDataURL('image/jpeg', 0.9); // Calidad alta
 
         // --- Añadir al PDF ---
 
@@ -299,13 +304,11 @@ export default function QrCodesPoolPage() {
 
         doc.addImage(designBase64, 'JPEG', x, y, stickerWidth, stickerHeight);
 
-        // (Opcional) Texto Hash pequeño debajo o encima si cabe, 
-        // pero mejor no manchar el diseño si no se pide explícitamente.
-        // Si el usuario quiere el diseño "tal cual", mejor no añadir texto extra fuera.
-        // doc.setFontSize(8);
-        // doc.text(qr.hash, x + (stickerWidth/2), y + stickerHeight + 3, { align: 'center' });
+        // Texto Hash pequeño debajo del diseño
+        doc.setFontSize(8);
+        doc.text(qr.hash, x + (stickerWidth / 2), y + stickerHeight + 5, { align: 'center' });
 
-        // Avanzar
+        // Avanzar posición en parrilla
         col++;
         if (col >= cols) {
           col = 0;
@@ -315,12 +318,13 @@ export default function QrCodesPoolPage() {
 
       doc.save(`qrs-diseño-bulk-${new Date().toISOString().split('T')[0]}.pdf`);
 
-      // Marcar descargados
+      // Marcar como descargados en lote
       const token = localStorage.getItem('superadmin_token');
       if (token) {
         await marcarLoteComoDescargado(token, Array.from(selectedQrs));
+        // Actualizar estado local
         setQrCodes(prev => prev.map(q => selectedQrs.has(q.hash) ? { ...q, descargado: true } : q));
-        setSelectedQrs(new Set());
+        setSelectedQrs(new Set()); // Limpiar selección
       }
 
       toast({
@@ -332,7 +336,7 @@ export default function QrCodesPoolPage() {
       console.error('Error generating PDF:', error);
       toast({
         title: 'Error',
-        description: 'Falló la generación del PDF. Intenta con menos cantidad si son muchos.',
+        description: 'Falló la generación del PDF',
         variant: 'destructive',
       });
     } finally {
