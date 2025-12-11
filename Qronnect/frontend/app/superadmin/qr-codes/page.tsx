@@ -217,56 +217,95 @@ export default function QrCodesPoolPage() {
     try {
       const doc = new jsPDF();
       const qrsToDownload = qrCodesFiltrados.filter(q => selectedQrs.has(q.hash));
-      const pageHeight = doc.internal.pageSize.height;
-      const pageWidth = doc.internal.pageSize.width;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
 
-      // Configuración de Grilla (A4)
-      // 3 columnas x 5 filas = 15 pegatinas por página
-      const cols = 3;
-      const rows = 5;
-      const marginX = 15;
-      const marginY = 15;
-      const qrSize = 50; // 50x50 mm
-      const gapX = (pageWidth - (2 * marginX) - (cols * qrSize)) / (cols - 1);
-      const gapY = (pageHeight - (2 * marginY) - (rows * qrSize)) / (rows - 1);
+      // 1. Cargar Template para dimensiones
+      const templateImg = new Image();
+      templateImg.crossOrigin = "anonymous";
+      templateImg.src = '/templates/qr-unete-al-club.jpg';
+
+      await new Promise((resolve, reject) => {
+        templateImg.onload = resolve;
+        templateImg.onerror = reject;
+      });
+
+      // Calcular aspecto y grid
+      // Asumiremos un ancho de sticker de unos 60mm para que se vean bien
+      // Ajustar según necesidad de impresión
+      const stickerWidth = 60;
+      const aspectRatio = templateImg.height / templateImg.width;
+      const stickerHeight = stickerWidth * aspectRatio;
+
+      const marginX = 10;
+      const marginY = 10;
+
+      const cols = Math.floor((pageWidth - (2 * marginX)) / stickerWidth);
+      const rows = Math.floor((pageHeight - (2 * marginY)) / stickerHeight);
+
+      // Recalcular gaps para centrar
+      const totalContentWidth = cols * stickerWidth;
+      const totalContentHeight = rows * stickerHeight;
+      const startX = (pageWidth - totalContentWidth) / 2;
+      const startY = (pageHeight - totalContentHeight) / 2;
 
       let col = 0;
       let row = 0;
 
+      // Canvas reutilizable fuera del loop para rendimiento (aunque hay que limpiar o redibujar)
+      const canvas = document.createElement('canvas');
+      canvas.width = templateImg.width;
+      canvas.height = templateImg.height;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) throw new Error('No canvas context');
+
       for (let i = 0; i < qrsToDownload.length; i++) {
         const qr = qrsToDownload[i];
 
-        // Nueva página si se llena
+        // Nueva página
         if (i > 0 && i % (cols * rows) === 0) {
           doc.addPage();
           col = 0;
           row = 0;
         }
 
-        // Obtener imagen del QR
-        const imageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qr.qr_url)}`;
-        const response = await fetch(imageUrl);
-        const blob = await response.blob();
+        // --- Generar Diseño Individual ---
 
-        // Convertir a Data URL
-        const base64 = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
-        });
+        // 1. Dibujar Template (limpia el canvas al sobreescribir todo)
+        ctx.drawImage(templateImg, 0, 0);
 
-        // Calcular posición
-        const x = marginX + (col * (qrSize + gapX));
-        const y = marginY + (row * (qrSize + gapY));
+        // 2. Cargar y dibujar QR
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&format=png&data=${encodeURIComponent(qr.qr_url)}`;
+        const qrResponse = await fetch(qrUrl);
+        const qrBlob = await qrResponse.blob();
 
-        // Dibujar QR
-        doc.addImage(base64, 'PNG', x, y, qrSize, qrSize);
+        // Usar createImageBitmap es más eficiente que new Image() + onload
+        const qrBitmap = await createImageBitmap(qrBlob);
 
-        // Añadir Hash debajo
-        doc.setFontSize(10);
-        doc.text(qr.hash, x + (qrSize / 2), y + qrSize + 5, { align: 'center' });
+        const qrInfoSize = canvas.width * 0.50;
+        const qrX = (canvas.width - qrInfoSize) / 2;
+        const qrY = (canvas.height * 0.515) - (qrInfoSize / 2);
 
-        // Avanzar posición
+        ctx.drawImage(qrBitmap, qrX, qrY, qrInfoSize, qrInfoSize);
+
+        // 3. Obtener Data URL del diseño completo
+        const designBase64 = canvas.toDataURL('image/jpeg', 0.8); // JPEG 0.8 para reducir peso del PDF
+
+        // --- Añadir al PDF ---
+
+        const x = startX + (col * stickerWidth);
+        const y = startY + (row * stickerHeight);
+
+        doc.addImage(designBase64, 'JPEG', x, y, stickerWidth, stickerHeight);
+
+        // (Opcional) Texto Hash pequeño debajo o encima si cabe, 
+        // pero mejor no manchar el diseño si no se pide explícitamente.
+        // Si el usuario quiere el diseño "tal cual", mejor no añadir texto extra fuera.
+        // doc.setFontSize(8);
+        // doc.text(qr.hash, x + (stickerWidth/2), y + stickerHeight + 3, { align: 'center' });
+
+        // Avanzar
         col++;
         if (col >= cols) {
           col = 0;
@@ -274,27 +313,26 @@ export default function QrCodesPoolPage() {
         }
       }
 
-      doc.save(`qrs-bulk-${new Date().toISOString().split('T')[0]}.pdf`);
+      doc.save(`qrs-diseño-bulk-${new Date().toISOString().split('T')[0]}.pdf`);
 
-      // Marcar como descargados en lote
+      // Marcar descargados
       const token = localStorage.getItem('superadmin_token');
       if (token) {
         await marcarLoteComoDescargado(token, Array.from(selectedQrs));
-        // Actualizar estado local
         setQrCodes(prev => prev.map(q => selectedQrs.has(q.hash) ? { ...q, descargado: true } : q));
-        setSelectedQrs(new Set()); // Limpiar selección
+        setSelectedQrs(new Set());
       }
 
       toast({
-        title: 'PDF Generado',
-        description: `${qrsToDownload.length} QRs descargados y marcados correctamente`,
+        title: 'PDF de Diseños Generado',
+        description: `${qrsToDownload.length} pegatinas generadas correctamente`,
       });
 
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({
         title: 'Error',
-        description: 'Falló la generación del PDF',
+        description: 'Falló la generación del PDF. Intenta con menos cantidad si son muchos.',
         variant: 'destructive',
       });
     } finally {
