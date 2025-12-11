@@ -1,4 +1,7 @@
-Post,
+import {
+  Controller,
+  Get,
+  Post,
   Patch,
   Body,
   Param,
