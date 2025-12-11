@@ -54,6 +54,13 @@ export class QrCodesController {
     return this.qrCodesService.markAsDownloaded(hash);
   }
 
+  @Post('mark-batch-downloaded')
+  @ApiOperation({ summary: 'Marcar lote de QRs como descargados' })
+  @ApiResponse({ status: 200, description: 'Lote actualizado correctamente' })
+  async markBatchAsDownloaded(@Body() body: { hashes: string[] }) {
+    return this.qrCodesService.markBatchAsDownloaded(body.hashes);
+  }
+
   @UseGuards(SuperAdminGuard)
   @Get()
   @ApiOperation({

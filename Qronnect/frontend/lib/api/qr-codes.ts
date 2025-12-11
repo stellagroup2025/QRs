@@ -174,6 +174,23 @@ export async function marcarQrComoDescargado(token: string, hash: string): Promi
   return res.json();
 }
 
+export async function marcarLoteComoDescargado(token: string, hashes: string[]): Promise<any> {
+  const res = await fetch(`${API_URL}/api/qr-codes/mark-batch-downloaded`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ hashes }),
+  });
+
+  if (!res.ok) {
+    throw new Error('Error al marcar lote como descargado');
+  }
+
+  return res.json();
+}
+
 export async function exportarCsv(token: string, lote: string): Promise<Blob> {
   const res = await fetch(`${API_URL}/api/qr-codes/exportar-csv?lote=${encodeURIComponent(lote)}`, {
     method: 'POST',

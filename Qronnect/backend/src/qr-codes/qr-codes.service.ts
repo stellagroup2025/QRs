@@ -55,6 +55,27 @@ export class QrCodesService {
     return data;
   }
 
+  // Marcar lote como descargado
+  async markBatchAsDownloaded(hashes: string[]) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const { data, error } = await supabase
+      .from('qr_codes_pool')
+      .update({
+        descargado: true,
+        fecha_descarga: new Date().toISOString()
+      })
+      .in('hash', hashes)
+      .select();
+
+    if (error) {
+      console.error('Error marking batch as downloaded:', error);
+      throw new BadRequestException('Error updating batch status');
+    }
+
+    return { success: true, count: data.length };
+  }
+
   // Listar QR codes con filtros
   async listarQrCodes(estado?: string, lote?: string) {
     console.log('📋 [QR CODES SERVICE] Listando QR codes. Filtros:', { estado, lote });
