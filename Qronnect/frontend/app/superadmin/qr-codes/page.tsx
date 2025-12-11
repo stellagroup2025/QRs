@@ -147,10 +147,38 @@ export default function QrCodesPoolPage() {
     );
   });
 
+  const downloadQr = async (qrData: string, hash: string) => {
+    try {
+      const imageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}`;
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `qr-${hash}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: 'QR Descargado',
+        description: `QR ${hash} guardado correctamente`
+      });
+    } catch (error) {
+      console.error('Error downloading QR:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo descargar la imagen del QR',
+        variant: 'destructive'
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p>Cargando...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
       </div>
     );
   }
@@ -387,7 +415,15 @@ export default function QrCodesPoolPage() {
                       </td>
                       <td className="p-2 text-sm">{qr.lote || '-'}</td>
                       <td className="p-2 text-sm">{qr.total_escaneos}</td>
-                      <td className="p-2">
+                      <td className="p-2 flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => downloadQr(qr.qr_url, qr.hash)}
+                          title="Descargar QR"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="sm">
                           <BarChart className="h-4 w-4" />
                         </Button>
