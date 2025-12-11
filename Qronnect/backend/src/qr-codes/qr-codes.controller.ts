@@ -18,7 +18,7 @@ import { AsignarQrDto } from './dto/asignar-qr.dto';
 @Controller('qr-codes')
 @ApiBearerAuth()
 export class QrCodesController {
-  constructor(private readonly qrCodesService: QrCodesService) {}
+  constructor(private readonly qrCodesService: QrCodesService) { }
 
   // ============================================
   // SUPERADMIN - Gestión de Pool
@@ -44,13 +44,14 @@ export class QrCodesController {
   async generarQrCodes(@Request() req, @Body() dto: GenerarQrCodesDto) {
     const adminId = req.user.id;
     return this.qrCodesService.generarLote(dto.cantidad, dto.lote, adminId);
-    @Patch(':hash/mark-downloaded')
+  }
+
+  @Patch(':hash/mark-downloaded')
   @ApiOperation({ summary: 'Marcar QR como descargado' })
   @ApiResponse({ status: 200, description: 'Estado actualizado correctamente' })
   async markAsDownloaded(@Param('hash') hash: string) {
     return this.qrCodesService.markAsDownloaded(hash);
   }
-}
 
   @UseGuards(SuperAdminGuard)
   @Get()

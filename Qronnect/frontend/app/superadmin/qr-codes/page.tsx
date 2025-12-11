@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft } from 'lucide-react';
+import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft, CheckCircle } from 'lucide-react';
 import { QrCode as QrCodeType, QrPoolEstadisticas, getEstadoColor, getEstadoLabel } from '@/types/qr-codes';
 import { useRouter } from 'next/navigation';
 import {
@@ -31,6 +31,7 @@ import {
   obtenerEstadisticas,
   exportarCsv,
   descargarCsv,
+  marcarQrComoDescargado,
 } from '@/lib/api/qr-codes';
 
 export default function QrCodesPoolPage() {
@@ -149,6 +150,15 @@ export default function QrCodesPoolPage() {
 
   const downloadQr = async (qrData: string, hash: string) => {
     try {
+      // 1. Marcar como descargado en backend
+      const token = localStorage.getItem('superadmin_token');
+      if (token) {
+        await marcarQrComoDescargado(token, hash);
+        // Actualizar estado local
+        setQrCodes(prev => prev.map(q => q.hash === hash ? { ...q, descargado: true } : q));
+      }
+
+      // 2. Descargar imagen
       const imageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}`;
       const response = await fetch(imageUrl);
       const blob = await response.blob();
@@ -163,7 +173,7 @@ export default function QrCodesPoolPage() {
 
       toast({
         title: 'QR Descargado',
-        description: `QR ${hash} guardado correctamente`
+        description: `QR ${hash} guardado y marcado como descargado`
       });
     } catch (error) {
       console.error('Error downloading QR:', error);
@@ -177,6 +187,14 @@ export default function QrCodesPoolPage() {
 
   const downloadDesignedQr = async (qrData: string, hash: string) => {
     try {
+      // 1. Marcar como descargado en backend
+      const token = localStorage.getItem('superadmin_token');
+      if (token) {
+        await marcarQrComoDescargado(token, hash);
+        // Actualizar estado local
+        setQrCodes(prev => prev.map(q => q.hash === hash ? { ...q, descargado: true } : q));
+      }
+
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('No canvas context');
@@ -237,14 +255,14 @@ export default function QrCodesPoolPage() {
 
       toast({
         title: 'Diseño Generado',
-        description: `Imagen guardada como design-qr-${hash}.png`
+        description: `Imagen guardada y marcada verificado`
       });
 
     } catch (error) {
       console.error('Error generating design:', error);
       toast({
         title: 'Error',
-        description: 'No se pudo generar el diseño con QR',
+        description: 'No se pudo generar el diseño',
         variant: 'destructive'
       });
     }
@@ -466,9 +484,16 @@ export default function QrCodesPoolPage() {
                   {qrCodesFiltrados.slice(0, 50).map((qr) => (
                     <tr key={qr.id} className="border-b hover:bg-muted/50">
                       <td className="p-2">
-                        <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                          {qr.hash}
-                        </code>
+                        <div className="flex items-center gap-2">
+                          <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
+                            {qr.hash}
+                          </code>
+                          {(qr as any).descargado && (
+                            <div title="Ya descargado">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="p-2">
                         <a

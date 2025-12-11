@@ -3,7 +3,7 @@ import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class QrCodesService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService) { }
 
   // Generar lote de QR codes
   async generarLote(cantidad: number, lote?: string, adminId?: string) {
@@ -31,6 +31,28 @@ export class QrCodesService {
       lote,
       qr_codes: data,
     };
+  }
+
+  // Marcar QR como descargado
+  async markAsDownloaded(hash: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const { data, error } = await supabase
+      .from('qr_codes_pool')
+      .update({
+        descargado: true,
+        fecha_descarga: new Date().toISOString()
+      })
+      .eq('hash', hash)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error marking QR as downloaded:', error);
+      throw new BadRequestException('Error updating QR status');
+    }
+
+    return data;
   }
 
   // Listar QR codes con filtros
