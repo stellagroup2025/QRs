@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft, CheckCircle } from 'lucide-react';
+import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft, CheckCircle, FileDown } from 'lucide-react';
 import { QrCode as QrCodeType, QrPoolEstadisticas, getEstadoColor, getEstadoLabel } from '@/types/qr-codes';
 import { useRouter } from 'next/navigation';
 import {
@@ -32,7 +33,9 @@ import {
   exportarCsv,
   descargarCsv,
   marcarQrComoDescargado,
+  marcarLoteComoDescargado,
 } from '@/lib/api/qr-codes';
+import jsPDF from 'jspdf';
 
 export default function QrCodesPoolPage() {
   const { toast } = useToast();
@@ -45,6 +48,8 @@ export default function QrCodesPoolPage() {
   const [busqueda, setBusqueda] = useState('');
   const [modalGenerar, setModalGenerar] = useState(false);
   const [generando, setGenerando] = useState(false);
+  const [selectedQrs, setSelectedQrs] = useState<Set<string>>(new Set());
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   // Form para generar QR codes
   const [cantidad, setCantidad] = useState(100);
@@ -70,6 +75,7 @@ export default function QrCodesPoolPage() {
 
       setQrCodes(qrs);
       setEstadisticas(stats);
+      setSelectedQrs(new Set()); // Reset selection on reload
     } catch (error) {
       console.error('Error cargando datos:', error);
       toast({
@@ -148,6 +154,25 @@ export default function QrCodesPoolPage() {
     );
   });
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allHashes = qrCodesFiltrados.map(q => q.hash);
+      setSelectedQrs(new Set(allHashes));
+    } else {
+      setSelectedQrs(new Set());
+    }
+  };
+
+  const handleSelectRow = (hash: string, checked: boolean) => {
+    const newSelected = new Set(selectedQrs);
+    if (checked) {
+      newSelected.add(hash);
+    } else {
+      newSelected.delete(hash);
+    }
+    setSelectedQrs(newSelected);
+  };
+
   const downloadQr = async (qrData: string, hash: string) => {
     try {
       // 1. Marcar como descargado en backend
@@ -185,6 +210,98 @@ export default function QrCodesPoolPage() {
     }
   };
 
+  const handleDownloadBulkPdf = async () => {
+    if (selectedQrs.size === 0) return;
+    setDownloadingPdf(true);
+
+    try {
+      const doc = new jsPDF();
+      const qrsToDownload = qrCodesFiltrados.filter(q => selectedQrs.has(q.hash));
+      const pageHeight = doc.internal.pageSize.height;
+      const pageWidth = doc.internal.pageSize.width;
+
+      // Configuración de Grilla (A4)
+      // 3 columnas x 5 filas = 15 pegatinas por página
+      const cols = 3;
+      const rows = 5;
+      const marginX = 15;
+      const marginY = 15;
+      const qrSize = 50; // 50x50 mm
+      const gapX = (pageWidth - (2 * marginX) - (cols * qrSize)) / (cols - 1);
+      const gapY = (pageHeight - (2 * marginY) - (rows * qrSize)) / (rows - 1);
+
+      let col = 0;
+      let row = 0;
+
+      for (let i = 0; i < qrsToDownload.length; i++) {
+        const qr = qrsToDownload[i];
+
+        // Nueva página si se llena
+        if (i > 0 && i % (cols * rows) === 0) {
+          doc.addPage();
+          col = 0;
+          row = 0;
+        }
+
+        // Obtener imagen del QR
+        const imageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qr.qr_url)}`;
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+
+        // Convertir a Data URL
+        const base64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+
+        // Calcular posición
+        const x = marginX + (col * (qrSize + gapX));
+        const y = marginY + (row * (qrSize + gapY));
+
+        // Dibujar QR
+        doc.addImage(base64, 'PNG', x, y, qrSize, qrSize);
+
+        // Añadir Hash debajo
+        doc.setFontSize(10);
+        doc.text(qr.hash, x + (qrSize / 2), y + qrSize + 5, { align: 'center' });
+
+        // Avanzar posición
+        col++;
+        if (col >= cols) {
+          col = 0;
+          row++;
+        }
+      }
+
+      doc.save(`qrs-bulk-${new Date().toISOString().split('T')[0]}.pdf`);
+
+      // Marcar como descargados en lote
+      const token = localStorage.getItem('superadmin_token');
+      if (token) {
+        await marcarLoteComoDescargado(token, Array.from(selectedQrs));
+        // Actualizar estado local
+        setQrCodes(prev => prev.map(q => selectedQrs.has(q.hash) ? { ...q, descargado: true } : q));
+        setSelectedQrs(new Set()); // Limpiar selección
+      }
+
+      toast({
+        title: 'PDF Generado',
+        description: `${qrsToDownload.length} QRs descargados y marcados correctamente`,
+      });
+
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: 'Error',
+        description: 'Falló la generación del PDF',
+        variant: 'destructive',
+      });
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   const downloadDesignedQr = async (qrData: string, hash: string) => {
     try {
       // 1. Marcar como descargado en backend
@@ -199,7 +316,6 @@ export default function QrCodesPoolPage() {
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('No canvas context');
 
-      // 1. Cargar el Template (Diseño)
       const templateImg = new Image();
       templateImg.crossOrigin = "anonymous";
       templateImg.src = '/templates/qr-unete-al-club.jpg';
@@ -209,14 +325,11 @@ export default function QrCodesPoolPage() {
         templateImg.onerror = reject;
       });
 
-      // Configurar tamaño del canvas al tamaño del template
       canvas.width = templateImg.width;
       canvas.height = templateImg.height;
 
-      // Dibujar template
       ctx.drawImage(templateImg, 0, 0);
 
-      // 2. Cargar el QR (como Blob para evitar CORS)
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&format=png&data=${encodeURIComponent(qrData)}`;
       const qrResponse = await fetch(qrUrl);
       const qrBlob = await qrResponse.blob();
@@ -230,21 +343,14 @@ export default function QrCodesPoolPage() {
         qrImg.onerror = reject;
       });
 
-      // 3. Dibujar QR en el centro (Ajustar coordenadas según el diseño)
-      // Estimación basada en la imagen: El cuadrado está centrado horizontalmente
-      // y un poco arriba del centro vertical.
-      // Asumimos un cuadrado de 400x400 px en una imagen de aprox 1080x1920
-
-      const qrSize = canvas.width * 0.50; // Aumentado al 50% para cobertura total
+      const qrSize = canvas.width * 0.50;
       const qrX = (canvas.width - qrSize) / 2;
-      const qrY = (canvas.height * 0.515) - (qrSize / 2); // Bajado del 48.5% al 51.5%
+      const qrY = (canvas.height * 0.515) - (qrSize / 2);
 
       ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
-      // Liberar memoria
       URL.revokeObjectURL(qrObjectUrl);
 
-      // 4. Descargar
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.href = dataUrl;
@@ -295,6 +401,25 @@ export default function QrCodesPoolPage() {
           </div>
         </div>
         <div className="flex gap-2">
+          {selectedQrs.size > 0 && (
+            <Button
+              variant="default"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              onClick={handleDownloadBulkPdf}
+              disabled={downloadingPdf}
+            >
+              {downloadingPdf ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Esto tarda un poco...
+                </>
+              ) : (
+                <>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Descargar PDF ({selectedQrs.size})
+                </>
+              )}
+            </Button>
+          )}
           <Button variant="outline" onClick={() => cargarDatos()}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualizar
@@ -471,6 +596,13 @@ export default function QrCodesPoolPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
+                    <th className="text-left p-2">
+                      <Checkbox
+                        checked={selectedQrs.size === qrCodesFiltrados.length && qrCodesFiltrados.length > 0}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Seleccionar todos"
+                      />
+                    </th>
                     <th className="text-left p-2">Hash</th>
                     <th className="text-left p-2">URL</th>
                     <th className="text-left p-2">Estado</th>
@@ -483,6 +615,12 @@ export default function QrCodesPoolPage() {
                 <tbody>
                   {qrCodesFiltrados.slice(0, 50).map((qr) => (
                     <tr key={qr.id} className="border-b hover:bg-muted/50">
+                      <td className="p-2">
+                        <Checkbox
+                          checked={selectedQrs.has(qr.hash)}
+                          onCheckedChange={(checked) => handleSelectRow(qr.hash, !!checked)}
+                        />
+                      </td>
                       <td className="p-2">
                         <div className="flex items-center gap-2">
                           <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
