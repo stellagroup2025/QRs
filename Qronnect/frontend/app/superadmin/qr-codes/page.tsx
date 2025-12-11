@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft, CheckCircle, FileDown, Settings2 } from 'lucide-react';
+import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft, CheckCircle, FileDown, Settings2, Image as ImageIcon } from 'lucide-react';
 import { QrCode as QrCodeType, QrPoolEstadisticas, getEstadoColor, getEstadoLabel } from '@/types/qr-codes';
 import { useRouter } from 'next/navigation';
 import {
@@ -63,6 +64,7 @@ export default function QrCodesPoolPage() {
   // Download Options
   const [pdfTitle, setPdfTitle] = useState('QR Codes Pool');
   const [qrStyle, setQrStyle] = useState<'standard' | 'brand'>('standard');
+  const [includeLogo, setIncludeLogo] = useState(false);
 
   // Form para generar QR codes
   const [cantidad, setCantidad] = useState(100);
@@ -187,15 +189,15 @@ export default function QrCodesPoolPage() {
   };
 
   const downloadQr = async (qrData: string, hash: string) => {
-    // ... single download logic same as before but respecting style? 
-    // Keeping simple for single download for now
     try {
+      // 1. Marcar como descargado en backend
       const token = localStorage.getItem('superadmin_token');
       if (token) {
         await marcarQrComoDescargado(token, hash);
         setQrCodes(prev => prev.map(q => q.hash === hash ? { ...q, descargado: true } : q));
       }
 
+      // 2. Descargar imagen
       const imageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}`;
       const response = await fetch(imageUrl);
       const blob = await response.blob();
@@ -208,17 +210,24 @@ export default function QrCodesPoolPage() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      toast({ title: 'QR Descargado' });
+      toast({
+        title: 'QR Descargado',
+        description: `QR ${hash} guardado y marcado como descargado`
+      });
     } catch (error) {
-      console.error(error);
-      toast({ title: 'Error', variant: 'destructive' });
+      console.error('Error downloading QR:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo descargar la imagen del QR',
+        variant: 'destructive'
+      });
     }
   };
 
   const handleDownloadBulkPdf = async () => {
     if (selectedQrs.size === 0) return;
     setDownloadingPdf(true);
-    setModalDownload(false); // Close modal
+    setModalDownload(false);
 
     try {
       const doc = new jsPDF();
@@ -235,25 +244,38 @@ export default function QrCodesPoolPage() {
         templateImg.onerror = reject;
       });
 
+      // Load Logo if needed
+      let logoImg: HTMLImageElement | null = null;
+      if (includeLogo) {
+        logoImg = new Image();
+        logoImg.crossOrigin = "anonymous";
+        logoImg.src = '/LogoQronnect.png'; // Using the logo found in public
+        await new Promise((resolve, reject) => {
+          if (!logoImg) return;
+          logoImg.onload = resolve;
+          logoImg.onerror = () => { console.warn('No se pudo cargar el logo'); resolve(null); };
+        });
+      }
+
       // Config
       const stickerWidth = 90;
       const aspectRatio = templateImg.height / templateImg.width;
       const stickerHeight = stickerWidth * aspectRatio;
       const marginX = 10;
-      const marginY = 15; // Increased top margin for Title
+      const marginY = 15;
 
       const cols = Math.floor((pageWidth - (2 * marginX)) / stickerWidth);
-      const rows = Math.floor((pageHeight - (2 * marginY) - 10) / stickerHeight); // -10 for title space
+      const rows = Math.floor((pageHeight - (2 * marginY) - 10) / stickerHeight);
 
       const totalContentWidth = cols * stickerWidth;
       const totalContentHeight = rows * stickerHeight;
       const startX = (pageWidth - totalContentWidth) / 2;
-      const startY = (pageHeight - totalContentHeight) / 2 + 5; // offset for title
+      const startY = (pageHeight - totalContentHeight) / 2 + 5;
 
       let col = 0;
       let row = 0;
 
-      // Add Title to first page
+      // Add Title
       doc.setFontSize(16);
       doc.text(pdfTitle, pageWidth / 2, 12, { align: 'center' });
 
@@ -268,7 +290,6 @@ export default function QrCodesPoolPage() {
 
         if (i > 0 && i % (cols * rows) === 0) {
           doc.addPage();
-          // Add title to subsequent pages? Maybe small
           doc.setFontSize(10);
           doc.text(pdfTitle, pageWidth / 2, 10, { align: 'center' });
           col = 0;
@@ -276,15 +297,17 @@ export default function QrCodesPoolPage() {
         }
 
         // Draw Template
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear
         ctx.drawImage(templateImg, 0, 0);
 
-        // QR Color Logic
-        let qrColor = '0-0-0'; // Default black
-        if (qrStyle === 'brand') {
-          qrColor = '7c3aed'; // Violet-600 approx (matching brand)
-        }
+        // QR Params
+        let qrColor = '0-0-0';
+        if (qrStyle === 'brand') qrColor = '7c3aed';
 
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&format=png&color=${qrColor}&data=${encodeURIComponent(qr.qr_url)}`;
+        // Use ECC High (H) if logo is included, otherwise Low (L) or Medium (M) is fine, but H is safer for stickers
+        const ecc = includeLogo ? 'H' : 'M';
+
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&format=png&color=${qrColor}&ecc=${ecc}&data=${encodeURIComponent(qr.qr_url)}`;
         const qrResponse = await fetch(qrUrl);
         const qrBlob = await qrResponse.blob();
         const qrBitmap = await createImageBitmap(qrBlob);
@@ -294,6 +317,23 @@ export default function QrCodesPoolPage() {
         const qrY = (canvas.height * 0.515) - (qrInfoSize / 2);
 
         ctx.drawImage(qrBitmap, qrX, qrY, qrInfoSize, qrInfoSize);
+
+        // Draw Center Logo
+        if (includeLogo && logoImg) {
+          const logoSize = qrInfoSize * 0.23; // 23% of QR size covers safe area for ECC H
+          const logoX = qrX + (qrInfoSize - logoSize) / 2;
+          const logoY = qrY + (qrInfoSize - logoSize) / 2;
+
+          // Optional: Draw a white circle/square behind logo for better visibility
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          // Draw rounded rect or circle background
+          const padding = 5;
+          ctx.roundRect(logoX - padding / 2, logoY - padding / 2, logoSize + padding, logoSize + padding, 10);
+          ctx.fill();
+
+          ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+        }
 
         const designBase64 = canvas.toDataURL('image/jpeg', 0.9);
 
@@ -340,7 +380,6 @@ export default function QrCodesPoolPage() {
   };
 
   const downloadDesignedQr = async (qrData: string, hash: string) => {
-    // Same logic as before for single download
     try {
       const token = localStorage.getItem('superadmin_token');
       if (token) {
@@ -433,9 +472,7 @@ export default function QrCodesPoolPage() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="title" className="text-right">
-                      Título
-                    </Label>
+                    <Label htmlFor="title" className="text-right">Título</Label>
                     <Input
                       id="title"
                       value={pdfTitle}
@@ -443,8 +480,9 @@ export default function QrCodesPoolPage() {
                       className="col-span-3"
                     />
                   </div>
+
                   <div className="grid grid-cols-4 items-start gap-4">
-                    <Label className="text-right pt-2">Estilo QR</Label>
+                    <Label className="text-right pt-2">Estilo</Label>
                     <RadioGroup
                       value={qrStyle}
                       onValueChange={(v: 'standard' | 'brand') => setQrStyle(v)}
@@ -453,21 +491,34 @@ export default function QrCodesPoolPage() {
                       <div className="flex items-center space-x-2 border p-3 rounded-md cursor-pointer hover:bg-muted/50">
                         <RadioGroupItem value="standard" id="Standard" />
                         <div className="flex-1">
-                          <Label htmlFor="Standard" className="font-semibold cursor-pointer">Estándar (Negro)</Label>
-                          <p className="text-xs text-muted-foreground">QR code clásico de alto contraste</p>
+                          <Label htmlFor="Standard" className="font-semibold cursor-pointer">Estándar</Label>
+                          <p className="text-xs text-muted-foreground">Negro clásico</p>
                         </div>
                         <QrCode className="h-6 w-6 text-black" />
                       </div>
                       <div className="flex items-center space-x-2 border p-3 rounded-md cursor-pointer hover:bg-muted/50">
                         <RadioGroupItem value="brand" id="Brand" />
                         <div className="flex-1">
-                          <Label htmlFor="Brand" className="font-semibold cursor-pointer">Marca (Violeta)</Label>
-                          <p className="text-xs text-muted-foreground">QR code con color corporativo</p>
+                          <Label htmlFor="Brand" className="font-semibold cursor-pointer">Marca</Label>
+                          <p className="text-xs text-muted-foreground">Violeta corporativo</p>
                         </div>
                         <QrCode className="h-6 w-6 text-indigo-600" />
                       </div>
                     </RadioGroup>
                   </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Logo</Label>
+                    <div className="col-span-3 flex items-center space-x-2">
+                      <Switch id="logo-mode" checked={includeLogo} onCheckedChange={setIncludeLogo} />
+                      <Label htmlFor="logo-mode" className="font-normal">
+                        Incrustar Logo Central
+                        {includeLogo && <Badge variant="outline" className="ml-2 text-xs">Recomendado</Badge>}
+                      </Label>
+                      {includeLogo && <ImageIcon className="h-4 w-4 text-muted-foreground ml-auto" />}
+                    </div>
+                  </div>
+
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setModalDownload(false)}>Cancelar</Button>
@@ -478,7 +529,7 @@ export default function QrCodesPoolPage() {
                       </>
                     ) : (
                       <>
-                        <Download className="h-4 w-4 mr-2" /> Descargar Ahora
+                        <Download className="h-4 w-4 mr-2" /> Descargar
                       </>
                     )}
                   </Button>
