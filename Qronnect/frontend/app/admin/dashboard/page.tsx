@@ -701,11 +701,23 @@ export default function AdminDashboardPage() {
                       size="lg"
                       className="text-white"
                       style={{ backgroundColor: hexToRgb(branding.color_primario) }}
-                      onClick={() => {
-                        const link = document.createElement('a')
-                        link.href = qrUrl
-                        link.download = `qr-registro-${tienda?.dominio}.png`
-                        link.click()
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(qrUrl);
+                          const blob = await response.blob();
+                          const url = window.URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = `qr-registro-${tienda?.dominio}.png`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          window.URL.revokeObjectURL(url);
+                        } catch (error) {
+                          console.error('Error downloading QR:', error);
+                          // Fallback to direct link if fetch fails
+                          window.open(qrUrl, '_blank');
+                        }
                       }}
                     >
                       <Download className="h-5 w-5 mr-2" />
