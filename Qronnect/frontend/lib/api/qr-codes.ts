@@ -158,6 +158,22 @@ export async function obtenerAnalytics(token: string, hash: string): Promise<QrA
   return res.json();
 }
 
+export async function marcarQrComoDescargado(token: string, hash: string): Promise<any> {
+  const res = await fetch(`${API_URL}/api/qr-codes/${hash}/mark-downloaded`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('Error al marcar QR como descargado');
+  }
+
+  return res.json();
+}
+
 export async function exportarCsv(token: string, lote: string): Promise<Blob> {
   const res = await fetch(`${API_URL}/api/qr-codes/exportar-csv?lote=${encodeURIComponent(lote)}`, {
     method: 'POST',
