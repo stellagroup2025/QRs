@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -23,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft, CheckCircle, FileDown } from 'lucide-react';
+import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft, CheckCircle, FileDown, Settings2 } from 'lucide-react';
 import { QrCode as QrCodeType, QrPoolEstadisticas, getEstadoColor, getEstadoLabel } from '@/types/qr-codes';
 import { useRouter } from 'next/navigation';
 import {
@@ -46,10 +48,21 @@ export default function QrCodesPoolPage() {
   const [filtroEstado, setFiltroEstado] = useState<string>('todos');
   const [filtroLote, setFiltroLote] = useState<string>('todos');
   const [busqueda, setBusqueda] = useState('');
+
+  // Modals
   const [modalGenerar, setModalGenerar] = useState(false);
+  const [modalDownload, setModalDownload] = useState(false);
+
+  // Loading states
   const [generando, setGenerando] = useState(false);
-  const [selectedQrs, setSelectedQrs] = useState<Set<string>>(new Set());
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+  // Selection
+  const [selectedQrs, setSelectedQrs] = useState<Set<string>>(new Set());
+
+  // Download Options
+  const [pdfTitle, setPdfTitle] = useState('QR Codes Pool');
+  const [qrStyle, setQrStyle] = useState<'standard' | 'brand'>('standard');
 
   // Form para generar QR codes
   const [cantidad, setCantidad] = useState(100);
@@ -64,7 +77,6 @@ export default function QrCodesPoolPage() {
       const token = localStorage.getItem('superadmin_token');
       if (!token) return;
 
-      // Convertir 'todos' a undefined para el API
       const estadoParam = filtroEstado === 'todos' ? undefined : filtroEstado;
       const loteParam = filtroLote === 'todos' ? undefined : filtroLote;
 
@@ -75,7 +87,8 @@ export default function QrCodesPoolPage() {
 
       setQrCodes(qrs);
       setEstadisticas(stats);
-      setSelectedQrs(new Set()); // Reset selection on reload
+      setSelectedQrs(new Set());
+      setPdfTitle(`Lote ${new Date().toLocaleDateString()}`);
     } catch (error) {
       console.error('Error cargando datos:', error);
       toast({
@@ -174,16 +187,15 @@ export default function QrCodesPoolPage() {
   };
 
   const downloadQr = async (qrData: string, hash: string) => {
+    // ... single download logic same as before but respecting style? 
+    // Keeping simple for single download for now
     try {
-      // 1. Marcar como descargado en backend
       const token = localStorage.getItem('superadmin_token');
       if (token) {
         await marcarQrComoDescargado(token, hash);
-        // Actualizar estado local
         setQrCodes(prev => prev.map(q => q.hash === hash ? { ...q, descargado: true } : q));
       }
 
-      // 2. Descargar imagen
       const imageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}`;
       const response = await fetch(imageUrl);
       const blob = await response.blob();
@@ -196,23 +208,17 @@ export default function QrCodesPoolPage() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      toast({
-        title: 'QR Descargado',
-        description: `QR ${hash} guardado y marcado como descargado`
-      });
+      toast({ title: 'QR Descargado' });
     } catch (error) {
-      console.error('Error downloading QR:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo descargar la imagen del QR',
-        variant: 'destructive'
-      });
+      console.error(error);
+      toast({ title: 'Error', variant: 'destructive' });
     }
   };
 
   const handleDownloadBulkPdf = async () => {
     if (selectedQrs.size === 0) return;
     setDownloadingPdf(true);
+    setModalDownload(false); // Close modal
 
     try {
       const doc = new jsPDF();
@@ -220,95 +226,86 @@ export default function QrCodesPoolPage() {
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
-      // 1. Cargar Template para dimensiones
+      // Load Template
       const templateImg = new Image();
       templateImg.crossOrigin = "anonymous";
       templateImg.src = '/templates/qr-unete-al-club.jpg';
-
       await new Promise((resolve, reject) => {
         templateImg.onload = resolve;
         templateImg.onerror = reject;
       });
 
-      // Calcular aspecto y grid
-      // Usamos 90mm de ancho para que quepan 2 columnas holgadas en A4 (210mm)
+      // Config
       const stickerWidth = 90;
       const aspectRatio = templateImg.height / templateImg.width;
       const stickerHeight = stickerWidth * aspectRatio;
-
       const marginX = 10;
-      const marginY = 10;
+      const marginY = 15; // Increased top margin for Title
 
       const cols = Math.floor((pageWidth - (2 * marginX)) / stickerWidth);
-      const rows = Math.floor((pageHeight - (2 * marginY)) / stickerHeight);
+      const rows = Math.floor((pageHeight - (2 * marginY) - 10) / stickerHeight); // -10 for title space
 
-      // Recalcular gaps para centrar el bloque en la página
       const totalContentWidth = cols * stickerWidth;
       const totalContentHeight = rows * stickerHeight;
       const startX = (pageWidth - totalContentWidth) / 2;
-      const startY = (pageHeight - totalContentHeight) / 2;
+      const startY = (pageHeight - totalContentHeight) / 2 + 5; // offset for title
 
       let col = 0;
       let row = 0;
 
-      // Canvas reutilizable
+      // Add Title to first page
+      doc.setFontSize(16);
+      doc.text(pdfTitle, pageWidth / 2, 12, { align: 'center' });
+
       const canvas = document.createElement('canvas');
       canvas.width = templateImg.width;
       canvas.height = templateImg.height;
       const ctx = canvas.getContext('2d');
-
       if (!ctx) throw new Error('No canvas context');
 
       for (let i = 0; i < qrsToDownload.length; i++) {
         const qr = qrsToDownload[i];
 
-        // Nueva página si se completa la página actual
         if (i > 0 && i % (cols * rows) === 0) {
           doc.addPage();
+          // Add title to subsequent pages? Maybe small
+          doc.setFontSize(10);
+          doc.text(pdfTitle, pageWidth / 2, 10, { align: 'center' });
           col = 0;
           row = 0;
         }
 
-        // --- Generar Diseño Individual ---
-
-        // 1. Dibujar Template (esto limpia el canvas porque el template es opaco)
+        // Draw Template
         ctx.drawImage(templateImg, 0, 0);
 
-        // 2. Cargar y dibujar QR
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&format=png&data=${encodeURIComponent(qr.qr_url)}`;
+        // QR Color Logic
+        let qrColor = '0-0-0'; // Default black
+        if (qrStyle === 'brand') {
+          qrColor = '7c3aed'; // Violet-600 approx (matching brand)
+        }
+
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&format=png&color=${qrColor}&data=${encodeURIComponent(qr.qr_url)}`;
         const qrResponse = await fetch(qrUrl);
         const qrBlob = await qrResponse.blob();
+        const qrBitmap = await createImageBitmap(qrBlob);
 
-        // Crear imagen desde blob
-        const qrImg = new Image();
-        qrImg.src = URL.createObjectURL(qrBlob);
-        await new Promise((resolve) => { qrImg.onload = resolve; });
-
-        // Ajustar QR en el diseño
-        // Medidas basadas en la experiencia previa: 50% de ancho, centrado horizontal, ligeramente abajo del centro vertical
         const qrInfoSize = canvas.width * 0.50;
         const qrX = (canvas.width - qrInfoSize) / 2;
         const qrY = (canvas.height * 0.515) - (qrInfoSize / 2);
 
-        ctx.drawImage(qrImg, qrX, qrY, qrInfoSize, qrInfoSize);
+        ctx.drawImage(qrBitmap, qrX, qrY, qrInfoSize, qrInfoSize);
 
-        URL.revokeObjectURL(qrImg.src);
-
-        // 3. Obtener Data URL del diseño completo
-        const designBase64 = canvas.toDataURL('image/jpeg', 0.9); // Calidad alta
-
-        // --- Añadir al PDF ---
+        const designBase64 = canvas.toDataURL('image/jpeg', 0.9);
 
         const x = startX + (col * stickerWidth);
         const y = startY + (row * stickerHeight);
 
         doc.addImage(designBase64, 'JPEG', x, y, stickerWidth, stickerHeight);
 
-        // Texto Hash pequeño debajo del diseño
         doc.setFontSize(8);
-        doc.text(qr.hash, x + (stickerWidth / 2), y + stickerHeight + 5, { align: 'center' });
+        doc.setTextColor(100);
+        doc.text(qr.hash, x + (stickerWidth / 2), y + stickerHeight + 4, { align: 'center' });
 
-        // Avanzar posición en parrilla
         col++;
         if (col >= cols) {
           col = 0;
@@ -316,27 +313,25 @@ export default function QrCodesPoolPage() {
         }
       }
 
-      doc.save(`qrs-diseño-bulk-${new Date().toISOString().split('T')[0]}.pdf`);
+      doc.save(`${pdfTitle.replace(/\s+/g, '-')}.pdf`);
 
-      // Marcar como descargados en lote
       const token = localStorage.getItem('superadmin_token');
       if (token) {
         await marcarLoteComoDescargado(token, Array.from(selectedQrs));
-        // Actualizar estado local
         setQrCodes(prev => prev.map(q => selectedQrs.has(q.hash) ? { ...q, descargado: true } : q));
-        setSelectedQrs(new Set()); // Limpiar selección
+        setSelectedQrs(new Set());
       }
 
       toast({
-        title: 'PDF de Diseños Generado',
-        description: `${qrsToDownload.length} pegatinas generadas correctamente`,
+        title: 'PDF Generado',
+        description: `${qrsToDownload.length} pegatinas generadas con éxito`,
       });
 
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('Error:', error);
       toast({
         title: 'Error',
-        description: 'Falló la generación del PDF',
+        description: 'Error al generar PDF',
         variant: 'destructive',
       });
     } finally {
@@ -345,53 +340,39 @@ export default function QrCodesPoolPage() {
   };
 
   const downloadDesignedQr = async (qrData: string, hash: string) => {
+    // Same logic as before for single download
     try {
-      // 1. Marcar como descargado en backend
       const token = localStorage.getItem('superadmin_token');
       if (token) {
         await marcarQrComoDescargado(token, hash);
-        // Actualizar estado local
         setQrCodes(prev => prev.map(q => q.hash === hash ? { ...q, descargado: true } : q));
       }
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('No canvas context');
+      if (!ctx) return;
 
       const templateImg = new Image();
       templateImg.crossOrigin = "anonymous";
       templateImg.src = '/templates/qr-unete-al-club.jpg';
-
-      await new Promise((resolve, reject) => {
-        templateImg.onload = resolve;
-        templateImg.onerror = reject;
-      });
+      await new Promise((resolve) => { templateImg.onload = resolve; });
 
       canvas.width = templateImg.width;
       canvas.height = templateImg.height;
-
       ctx.drawImage(templateImg, 0, 0);
 
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&format=png&data=${encodeURIComponent(qrData)}`;
       const qrResponse = await fetch(qrUrl);
       const qrBlob = await qrResponse.blob();
-      const qrObjectUrl = URL.createObjectURL(qrBlob);
-
       const qrImg = new Image();
-      qrImg.src = qrObjectUrl;
-
-      await new Promise((resolve, reject) => {
-        qrImg.onload = resolve;
-        qrImg.onerror = reject;
-      });
+      qrImg.src = URL.createObjectURL(qrBlob);
+      await new Promise((resolve) => { qrImg.onload = resolve; });
 
       const qrSize = canvas.width * 0.50;
       const qrX = (canvas.width - qrSize) / 2;
       const qrY = (canvas.height * 0.515) - (qrSize / 2);
 
       ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
-
-      URL.revokeObjectURL(qrObjectUrl);
 
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
@@ -401,20 +382,9 @@ export default function QrCodesPoolPage() {
       link.click();
       document.body.removeChild(link);
 
-      toast({
-        title: 'Diseño Generado',
-        description: `Imagen guardada y marcada verificado`
-      });
-
-    } catch (error) {
-      console.error('Error generating design:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo generar el diseño',
-        variant: 'destructive'
-      });
-    }
-  };
+      toast({ title: 'Diseño Generado' });
+    } catch (e) { console.error(e); }
+  }
 
   if (loading) {
     return (
@@ -444,23 +414,77 @@ export default function QrCodesPoolPage() {
         </div>
         <div className="flex gap-2">
           {selectedQrs.size > 0 && (
-            <Button
-              variant="default"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
-              onClick={handleDownloadBulkPdf}
-              disabled={downloadingPdf}
-            >
-              {downloadingPdf ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Esto tarda un poco...
-                </>
-              ) : (
-                <>
+            <Dialog open={modalDownload} onOpenChange={setModalDownload}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="default"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                >
                   <FileDown className="h-4 w-4 mr-2" />
                   Descargar PDF ({selectedQrs.size})
-                </>
-              )}
-            </Button>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Opciones de Descarga</DialogTitle>
+                  <DialogDescription>
+                    Configura el apariencia de tu archivo PDF
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="title" className="text-right">
+                      Título
+                    </Label>
+                    <Input
+                      id="title"
+                      value={pdfTitle}
+                      onChange={(e) => setPdfTitle(e.target.value)}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-start gap-4">
+                    <Label className="text-right pt-2">Estilo QR</Label>
+                    <RadioGroup
+                      value={qrStyle}
+                      onValueChange={(v: 'standard' | 'brand') => setQrStyle(v)}
+                      className="col-span-3 flex flex-col gap-2"
+                    >
+                      <div className="flex items-center space-x-2 border p-3 rounded-md cursor-pointer hover:bg-muted/50">
+                        <RadioGroupItem value="standard" id="Standard" />
+                        <div className="flex-1">
+                          <Label htmlFor="Standard" className="font-semibold cursor-pointer">Estándar (Negro)</Label>
+                          <p className="text-xs text-muted-foreground">QR code clásico de alto contraste</p>
+                        </div>
+                        <QrCode className="h-6 w-6 text-black" />
+                      </div>
+                      <div className="flex items-center space-x-2 border p-3 rounded-md cursor-pointer hover:bg-muted/50">
+                        <RadioGroupItem value="brand" id="Brand" />
+                        <div className="flex-1">
+                          <Label htmlFor="Brand" className="font-semibold cursor-pointer">Marca (Violeta)</Label>
+                          <p className="text-xs text-muted-foreground">QR code con color corporativo</p>
+                        </div>
+                        <QrCode className="h-6 w-6 text-indigo-600" />
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setModalDownload(false)}>Cancelar</Button>
+                  <Button onClick={handleDownloadBulkPdf} disabled={downloadingPdf}>
+                    {downloadingPdf ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Generando...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" /> Descargar Ahora
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
           <Button variant="outline" onClick={() => cargarDatos()}>
             <RefreshCw className="h-4 w-4 mr-2" />
