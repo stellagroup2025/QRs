@@ -175,6 +175,81 @@ export default function QrCodesPoolPage() {
     }
   };
 
+  const downloadDesignedQr = async (qrData: string, hash: string) => {
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('No canvas context');
+
+      // 1. Cargar el Template (Diseño)
+      const templateImg = new Image();
+      templateImg.crossOrigin = "anonymous";
+      templateImg.src = '/templates/qr-unete-al-club.jpg';
+
+      await new Promise((resolve, reject) => {
+        templateImg.onload = resolve;
+        templateImg.onerror = reject;
+      });
+
+      // Configurar tamaño del canvas al tamaño del template
+      canvas.width = templateImg.width;
+      canvas.height = templateImg.height;
+
+      // Dibujar template
+      ctx.drawImage(templateImg, 0, 0);
+
+      // 2. Cargar el QR (como Blob para evitar CORS)
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&format=png&data=${encodeURIComponent(qrData)}`;
+      const qrResponse = await fetch(qrUrl);
+      const qrBlob = await qrResponse.blob();
+      const qrObjectUrl = URL.createObjectURL(qrBlob);
+
+      const qrImg = new Image();
+      qrImg.src = qrObjectUrl;
+
+      await new Promise((resolve, reject) => {
+        qrImg.onload = resolve;
+        qrImg.onerror = reject;
+      });
+
+      // 3. Dibujar QR en el centro (Ajustar coordenadas según el diseño)
+      // Estimación basada en la imagen: El cuadrado está centrado horizontalmente
+      // y un poco arriba del centro vertical.
+      // Asumimos un cuadrado de 400x400 px en una imagen de aprox 1080x1920
+
+      const qrSize = canvas.width * 0.45; // El QR ocupa el 45% del ancho
+      const qrX = (canvas.width - qrSize) / 2;
+      const qrY = (canvas.height * 0.42) - (qrSize / 2); // Ajuste vertical manual para "encajar" en el recuadro
+
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+      // Liberar memoria
+      URL.revokeObjectURL(qrObjectUrl);
+
+      // 4. Descargar
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `design-qr-${hash}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: 'Diseño Generado',
+        description: `Imagen guardada como design-qr-${hash}.png`
+      });
+
+    } catch (error) {
+      console.error('Error generating design:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo generar el diseño con QR',
+        variant: 'destructive'
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -423,6 +498,15 @@ export default function QrCodesPoolPage() {
                           title="Descargar QR"
                         >
                           <Download className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => downloadDesignedQr(qr.qr_url, qr.hash)}
+                          title="Descargar Diseño"
+                          className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                        >
+                          <Package className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm">
                           <BarChart className="h-4 w-4" />
