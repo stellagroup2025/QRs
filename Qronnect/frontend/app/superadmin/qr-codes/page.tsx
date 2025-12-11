@@ -217,9 +217,9 @@ export default function QrCodesPoolPage() {
       // y un poco arriba del centro vertical.
       // Asumimos un cuadrado de 400x400 px en una imagen de aprox 1080x1920
 
-      const qrSize = canvas.width * 0.45; // El QR ocupa el 45% del ancho
+      const qrSize = canvas.width * 0.48; // Aumentado a 48% para tapar bien el cuadro
       const qrX = (canvas.width - qrSize) / 2;
-      const qrY = (canvas.height * 0.42) - (qrSize / 2); // Ajuste vertical manual para "encajar" en el recuadro
+      const qrY = (canvas.height * 0.485) - (qrSize / 2); // Bajado del 42% al 48.5% para centrarlo
 
       ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
