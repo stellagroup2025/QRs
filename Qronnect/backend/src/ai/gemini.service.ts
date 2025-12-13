@@ -23,8 +23,28 @@ export class GeminiService implements AiProvider {
       this.model = null;
     } else {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash-001' });
-      this.logger.log('✅ Google Gemini AI service initialized with model: gemini-1.5-flash-001');
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      this.logger.log('✅ Google Gemini AI service initialized with model: gemini-1.5-flash');
+
+      // AUTO-DEBUG: List available models to find out what is wrong
+      this.listAvailableModels(apiKey);
+    }
+  }
+
+  private async listAvailableModels(apiKey: string) {
+    try {
+      // Direct REST call to list models since SDK might not expose it easily in all versions
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      if (response.ok) {
+        const data = await response.json();
+        this.logger.log('📋 AVAILABLE GEMINI MODELS:');
+        const models = (data.models || []).map((m: any) => m.name);
+        this.logger.log(JSON.stringify(models, null, 2));
+      } else {
+        this.logger.error(`❌ Failed to list models: ${response.status} ${response.statusText}`);
+      }
+    } catch (e) {
+      this.logger.error('❌ Error listing models', e);
     }
   }
 
