@@ -341,4 +341,34 @@ export class QrCodesService {
       filename: `qr-codes-${lote}.csv`,
     };
   }
+  // Enviar PDF por email
+  async sendPdfByEmail(file: Express.Multer.File, email: string, subject: string) {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('Archivo PDF inválido o vacío');
+    }
+
+    const { success, error } = await this.emailService.sendEmail({
+      to: email,
+      subject: subject || 'Tu archivo de Qronnect',
+      html: `
+        <div style="font-family: sans-serif; color: #333;">
+          <h2>Aquí tienes tu archivo PDF</h2>
+          <p>Adjunto encontrarás el archivo PDF con tus códigos QR generados.</p>
+          <p>Gracias por usar Qronnect.</p>
+        </div>
+      `,
+      attachments: [
+        {
+          filename: file.originalname || 'qronnect-codes.pdf',
+          content: file.buffer,
+        },
+      ],
+    });
+
+    if (!success) {
+      throw new BadRequestException('Error al enviar el email: ' + error);
+    }
+
+    return { success: true, message: 'Email enviado correctamente' };
+  }
 }
