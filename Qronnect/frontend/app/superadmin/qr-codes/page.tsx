@@ -258,20 +258,38 @@ export default function QrCodesPoolPage() {
         });
       }
 
-      // Config
-      const stickerWidth = 90;
-      const aspectRatio = templateImg.height / templateImg.width;
-      const stickerHeight = stickerWidth * aspectRatio;
-      const marginX = 10;
-      const marginY = 15;
+      // Config - 2x2 Layout (4 stickers per page)
+      const margin = 10;
+      const titleSpace = 15;
 
-      const cols = Math.floor((pageWidth - (2 * marginX)) / stickerWidth);
-      const rows = Math.floor((pageHeight - (2 * marginY) - 10) / stickerHeight);
+      const availableWidth = pageWidth - (2 * margin);
+      const availableHeight = pageHeight - (2 * margin) - titleSpace;
 
-      const totalContentWidth = cols * stickerWidth;
-      const totalContentHeight = rows * stickerHeight;
-      const startX = (pageWidth - totalContentWidth) / 2;
-      const startY = (pageHeight - totalContentHeight) / 2 + 5;
+      const cols = 2;
+      const rows = 2;
+
+      const cellWidth = availableWidth / cols;
+      const cellHeight = availableHeight / rows;
+
+      const templateAspect = templateImg.height / templateImg.width;
+      const cellAspect = cellHeight / cellWidth;
+
+      let stickerWidth, stickerHeight;
+
+      // Calculate dimensions to fit/fill cell maintaining aspect ratio
+      if (templateAspect > cellAspect) {
+        stickerHeight = cellHeight;
+        stickerWidth = stickerHeight / templateAspect;
+      } else {
+        stickerWidth = cellWidth;
+        stickerHeight = stickerWidth * templateAspect;
+      }
+
+      const offsetX = (cellWidth - stickerWidth) / 2;
+      const offsetY = (cellHeight - stickerHeight) / 2;
+
+      const startX = margin;
+      const startY = margin + titleSpace;
 
       let col = 0;
       let row = 0;
@@ -337,8 +355,8 @@ export default function QrCodesPoolPage() {
 
         const designBase64 = canvas.toDataURL('image/jpeg', 0.9);
 
-        const x = startX + (col * stickerWidth);
-        const y = startY + (row * stickerHeight);
+        const x = startX + (col * cellWidth) + offsetX;
+        const y = startY + (row * cellHeight) + offsetY;
 
         doc.addImage(designBase64, 'JPEG', x, y, stickerWidth, stickerHeight);
 
