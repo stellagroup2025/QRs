@@ -1,9 +1,14 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
+import { EmailService } from '../email/email.service';
+
 @Injectable()
 export class QrCodesService {
-  constructor(private readonly supabaseService: SupabaseService) { }
+  constructor(
+    private readonly supabaseService: SupabaseService,
+    private readonly emailService: EmailService,
+  ) { }
 
   // Generar lote de QR codes
   async generarLote(cantidad: number, lote?: string, adminId?: string) {

@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft, CheckCircle, FileDown, Settings2, Image as ImageIcon, Palette } from 'lucide-react';
+import { QrCode, Plus, Download, RefreshCw, Search, BarChart, Package, ArrowLeft, CheckCircle, FileDown, Settings2, Image as ImageIcon, Palette, Mail, Send } from 'lucide-react';
 import { QrCode as QrCodeType, QrPoolEstadisticas, getEstadoColor, getEstadoLabel } from '@/types/qr-codes';
 import { useRouter } from 'next/navigation';
 import {
@@ -37,6 +37,7 @@ import {
   descargarCsv,
   marcarQrComoDescargado,
   marcarLoteComoDescargado,
+  enviarPdfPorEmail,
 } from '@/lib/api/qr-codes';
 import jsPDF from 'jspdf';
 
@@ -65,7 +66,12 @@ export default function QrCodesPoolPage() {
   const [pdfTitle, setPdfTitle] = useState('QR Codes Pool');
   const [qrStyle, setQrStyle] = useState<'standard' | 'brand' | 'custom'>('standard');
   const [customColor, setCustomColor] = useState('#000000');
+
   const [includeLogo, setIncludeLogo] = useState(false);
+
+  // Email Options
+  const [sendByEmail, setSendByEmail] = useState(false);
+  const [emailAddress, setEmailAddress] = useState('');
 
   // Form para generar QR codes
   const [cantidad, setCantidad] = useState(100);
@@ -228,7 +234,7 @@ export default function QrCodesPoolPage() {
   const handleDownloadBulkPdf = async () => {
     if (selectedQrs.size === 0) return;
     setDownloadingPdf(true);
-    setModalDownload(false);
+    // setModalDownload(false); // Mantener modal abierto si envía email, pero para feedback inmediato mejor cerrar o mostrar estado
 
     try {
       const doc = new jsPDF();
@@ -371,25 +377,50 @@ export default function QrCodesPoolPage() {
         }
       }
 
-      doc.save(`${pdfTitle.replace(/\s+/g, '-')}.pdf`);
+      // ACTION: Email or Download
+      if (sendByEmail && emailAddress) {
+        const pdfBlob = doc.output('blob');
+        const token = localStorage.getItem('superadmin_token');
+        if (token) {
+          await enviarPdfPorEmail(token, {
+            file: pdfBlob,
+            email: emailAddress,
+            subject: `Qronnect - ${pdfTitle}`
+          });
 
-      const token = localStorage.getItem('superadmin_token');
-      if (token) {
-        await marcarLoteComoDescargado(token, Array.from(selectedQrs));
-        setQrCodes(prev => prev.map(q => selectedQrs.has(q.hash) ? { ...q, descargado: true } : q));
-        setSelectedQrs(new Set());
+          toast({
+            title: 'Email Enviado',
+            description: `PDF enviado correctamente a ${emailAddress}`
+          });
+
+          // Mark as downloaded
+          await marcarLoteComoDescargado(token, Array.from(selectedQrs));
+          setQrCodes(prev => prev.map(q => selectedQrs.has(q.hash) ? { ...q, descargado: true } : q));
+          setSelectedQrs(new Set());
+          setModalDownload(false);
+        }
+      } else {
+        doc.save(`${pdfTitle.replace(/\s+/g, '-')}.pdf`);
+
+        const token = localStorage.getItem('superadmin_token');
+        if (token) {
+          await marcarLoteComoDescargado(token, Array.from(selectedQrs));
+          setQrCodes(prev => prev.map(q => selectedQrs.has(q.hash) ? { ...q, descargado: true } : q));
+          setSelectedQrs(new Set());
+          setModalDownload(false);
+        }
+
+        toast({
+          title: 'PDF Generado',
+          description: `${qrsToDownload.length} pegatinas generadas con éxito`,
+        });
       }
 
-      toast({
-        title: 'PDF Generado',
-        description: `${qrsToDownload.length} pegatinas generadas con éxito`,
-      });
-
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
       toast({
         title: 'Error',
-        description: 'Error al generar PDF',
+        description: error.message || 'Error al generar PDF',
         variant: 'destructive',
       });
     } finally {
@@ -551,7 +582,25 @@ export default function QrCodesPoolPage() {
                         Incrustar Logo
                         {includeLogo && <Badge variant="outline" className="ml-2 text-xs">ECC High</Badge>}
                       </Label>
-                      {includeLogo && <ImageIcon className="h-4 w-4 text-muted-foreground ml-auto" />}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4 border-t pt-4">
+                    <Label className="text-right">Email</Label>
+                    <div className="col-span-3 space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Switch id="email-mode" checked={sendByEmail} onCheckedChange={setSendByEmail} />
+                        <Label htmlFor="email-mode" className="font-normal">Enviar por correo</Label>
+                        {sendByEmail && <Mail className="h-4 w-4 text-muted-foreground ml-auto" />}
+                      </div>
+                      {sendByEmail && (
+                        <Input
+                          placeholder="direccion@email.com"
+                          type="email"
+                          value={emailAddress}
+                          onChange={(e) => setEmailAddress(e.target.value)}
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -565,7 +614,8 @@ export default function QrCodesPoolPage() {
                       </>
                     ) : (
                       <>
-                        <Download className="h-4 w-4 mr-2" /> Descargar
+                        {sendByEmail ? <Send className="h-4 w-4 mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+                        {sendByEmail ? 'Enviar y Marcar' : 'Descargar'}
                       </>
                     )}
                   </Button>

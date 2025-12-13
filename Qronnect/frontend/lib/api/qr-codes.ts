@@ -210,6 +210,29 @@ export async function exportarCsv(token: string, lote: string): Promise<Blob> {
   return blob;
 }
 
+export async function enviarPdfPorEmail(token: string, data: { file: Blob; email: string; subject: string }) {
+  const formData = new FormData();
+  formData.append('file', data.file, 'qronnect-codes.pdf');
+  formData.append('email', data.email);
+  formData.append('subject', data.subject);
+
+  const res = await fetch(`${API_URL}/api/qr-codes/send-pdf`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // 'Content-Type': 'multipart/form-data' // DO NOT SET MANUALLY, browser sets boundary
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || 'Error al enviar email');
+  }
+
+  return res.json();
+}
+
 // ===================================
 // UTILIDADES
 // ===================================

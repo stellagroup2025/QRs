@@ -8,12 +8,16 @@ import {
   Query,
   UseGuards,
   Request,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { QrCodesService } from './qr-codes.service';
 import { SuperAdminGuard } from '../superadmin/guards/superadmin.guard';
 import { GenerarQrCodesDto } from './dto/generar-qr-codes.dto';
 import { AsignarQrDto } from './dto/asignar-qr.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('QR Codes - Gestión de QR Codes Genéricos')
 @Controller('qr-codes')
@@ -59,6 +63,38 @@ export class QrCodesController {
   @ApiResponse({ status: 200, description: 'Lote actualizado correctamente' })
   async markBatchAsDownloaded(@Body() body: { hashes: string[] }) {
     return this.qrCodesService.markBatchAsDownloaded(body.hashes);
+  }
+
+  @Post('send-pdf')
+  @ApiOperation({ summary: 'Enviar PDF generado por email' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+        email: {
+          type: 'string',
+        },
+        subject: {
+          type: 'string',
+        }
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async sendPdfByEmail(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('email') email: string,
+    @Body('subject') subject: string,
+  ) {
+    if (!file || !email) {
+      throw new BadRequestException('Falta el archivo o el email');
+    }
+    return this.qrCodesService.sendPdfByEmail(file, email, subject);
   }
 
   @UseGuards(SuperAdminGuard)

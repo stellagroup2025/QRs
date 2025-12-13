@@ -27,6 +27,7 @@ export class EmailService {
     html: string;
     from?: string;
     replyTo?: string;
+    attachments?: any[]; // Resend Attachment format
   }): Promise<{ success: boolean; messageId?: string; error?: string }> {
     if (!this.resend) {
       this.logger.warn('Email sending skipped - Resend not configured');
@@ -47,6 +48,7 @@ export class EmailService {
         subject: params.subject,
         html: params.html,
         replyTo: params.replyTo,
+        attachments: params.attachments,
       });
 
       if (error) {
@@ -234,9 +236,9 @@ export class EmailService {
                     ${sellosActuales !== undefined && sellosObjetivo ? `
                     <p style="margin: 12px 0 0; color: #666666; font-size: 13px;">
                       ${tarjetaCompletada
-                        ? `<strong style="color: #10b981;">🎉 ¡Tarjeta completada! Ya puedes canjear tu premio</strong>`
-                        : `Llevas <strong>${sellosActuales} de ${sellosObjetivo} sellos</strong> - Te ${sellosObjetivo - sellosActuales === 1 ? 'falta solo 1 sello' : `faltan ${sellosObjetivo - sellosActuales} sellos`} para completar tu tarjeta`
-                      }
+            ? `<strong style="color: #10b981;">🎉 ¡Tarjeta completada! Ya puedes canjear tu premio</strong>`
+            : `Llevas <strong>${sellosActuales} de ${sellosObjetivo} sellos</strong> - Te ${sellosObjetivo - sellosActuales === 1 ? 'falta solo 1 sello' : `faltan ${sellosObjetivo - sellosActuales} sellos`} para completar tu tarjeta`
+          }
                     </p>
                     ` : ''}
                     ` : ''}
