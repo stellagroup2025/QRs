@@ -1,3 +1,4 @@
+import 'multer';
 import { Controller, Get, Put, Post, Body, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
@@ -5,7 +6,6 @@ import { BrandingService } from './branding.service';
 import { LandingService } from './landing.service';
 import { Tenant } from '../tenant/decorators/tenant.decorator';
 import { AdminAuthGuard } from '../auth/guards/admin-auth.guard';
-import { Multer } from 'multer';
 
 @ApiTags('Config')
 @Controller('config')
@@ -13,7 +13,7 @@ export class BrandingController {
   constructor(
     private readonly brandingService: BrandingService,
     private readonly landingService: LandingService,
-  ) {}
+  ) { }
 
   @Get('branding')
   @ApiOperation({
@@ -144,7 +144,7 @@ export class BrandingController {
   })
   async uploadFile(
     @Tenant('id') idTienda: string,
-    @UploadedFile() file: Multer.File,
+    @UploadedFile() file: Express.Multer.File,
     @Body('type') type: string,
   ) {
     if (!file) {

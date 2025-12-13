@@ -1,17 +1,17 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
-import { Multer } from 'multer';
+import 'multer';
 
 @Injectable()
 export class BrandingService {
-  constructor(private readonly supabase: SupabaseService) {}
+  constructor(private readonly supabase: SupabaseService) { }
 
   /**
    * Sube un archivo (logo, favicon, etc) a Supabase Storage
    */
   async uploadFile(
     idTienda: string,
-    file: Multer.File,
+    file: Express.Multer.File,
     type: 'logo' | 'favicon' | 'og_image',
   ): Promise<{ url: string }> {
     const client = this.supabase.getAdminClient();
