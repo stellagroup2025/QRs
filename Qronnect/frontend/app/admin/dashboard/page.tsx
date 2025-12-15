@@ -44,7 +44,6 @@ import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
 import { RegistrarVentaDialogMejorado } from '@/components/admin/RegistrarVentaDialogMejorado'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ValidarCanjeDialog } from '@/components/admin/promociones/ValidarCanjeDialog'
 import { DashboardSkeleton, CardSkeleton } from '@/components/ui/skeleton'
 import { ErrorRetry } from '@/components/ui/error-retry'
 import { useToast } from '@/hooks/use-toast'
@@ -87,10 +86,6 @@ const IADrawerCampanas = dynamic(
   { ssr: false }
 )
 
-const IADrawerPromociones = dynamic(
-  () => import('@/components/admin/promociones/IADrawer').then(mod => ({ default: mod.IADrawerPromociones })),
-  { ssr: false }
-)
 
 const PanelIA = dynamic(
   () => import('@/components/admin/ia/PanelIA').then(mod => ({ default: mod.PanelIA })),
@@ -228,7 +223,6 @@ export default function AdminDashboardPage() {
 
   // Estado para los diálogos
   const [registrarVentaOpen, setRegistrarVentaOpen] = useState(false)
-  const [validarCanjeOpen, setValidarCanjeOpen] = useState(false)
 
   // Estado para analytics
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
@@ -1170,28 +1164,11 @@ export default function AdminDashboardPage() {
 
         {/* Promociones Tab */}
         <TabsContent value="promociones" className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div className="min-w-0">
-              <h2 className="text-xl sm:text-2xl font-bold">Promociones</h2>
-              <p className="text-sm text-muted-foreground">
-                Gestiona las promociones canjeables con puntos
-              </p>
-            </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <IADrawerPromociones
-                tenantDomain={tienda?.dominio || ''}
-                adminToken={token || ''}
-              />
-              <Button
-                onClick={() => setValidarCanjeOpen(true)}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <Ticket className="h-4 w-4" />
-                <span className="hidden sm:inline">Validar Cupón</span>
-              </Button>
-            </div>
+          <div className="mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Promociones</h2>
+            <p className="text-sm text-muted-foreground">
+              Gestiona las promociones y recompensas para tus clientes
+            </p>
           </div>
 
           <PromocionesPanel
@@ -1414,12 +1391,6 @@ export default function AdminDashboardPage() {
       />
 
       {/* Diálogo de validar canje */}
-      <ValidarCanjeDialog
-        open={validarCanjeOpen}
-        onOpenChange={setValidarCanjeOpen}
-        adminToken={token || ''}
-        tenantDomain={tienda?.dominio || ''}
-      />
     </div >
   )
 }
