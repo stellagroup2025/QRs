@@ -287,13 +287,14 @@ KPIs: ${JSON.stringify(kpis)}
       this.logger.error('[INFORME] Error generando plan:', error);
       return { objetivos: [], kpis_monitorear: [] };
     }
+  }
 
   // --- SALES INNOVATION METHODS ---
 
-  async generateSalesCoaching(context: any): Promise < any > {
-      if(!this.model) throw new Error('Gemini AI not configured');
+  async generateSalesCoaching(context: any): Promise<any> {
+    if (!this.model) throw new Error('Gemini AI not configured');
 
-      const prompt = `Actúa como el mejor Coach de Ventas del mundo(estilo Jordan Belfort pero ético).
+    const prompt = `Actúa como el mejor Coach de Ventas del mundo(estilo Jordan Belfort pero ético).
     Analiza la situación de este prospecto y dame una estrategia de CIERRE inmediata.
     
     Estado Actual: ${context.stage}
@@ -309,19 +310,19 @@ KPIs: ${JSON.stringify(kpis)}
 }
     Mantenlo corto, directo y energizante.`;
 
-      try {
-        const text = await this.callGeminiWithRetry(prompt, 'SALES_COACHING');
-        return this.cleanAndParseJson(text, 'SALES_COACHING') || { strategy: 'No se pudo generar estrategia', script: '' };
-      } catch(error) {
-        this.logger.error('Error generating sales coaching:', error);
-        return { strategy: 'Error de conexión', script: '' };
-      }
+    try {
+      const text = await this.callGeminiWithRetry(prompt, 'SALES_COACHING');
+      return this.cleanAndParseJson(text, 'SALES_COACHING') || { strategy: 'No se pudo generar estrategia', script: '' };
+    } catch (error) {
+      this.logger.error('Error generating sales coaching:', error);
+      return { strategy: 'Error de conexión', script: '' };
     }
+  }
 
-  async generateNeuroMessage(context: any): Promise < any > {
-      if(!this.model) throw new Error('Gemini AI not configured');
+  async generateNeuroMessage(context: any): Promise<any> {
+    if (!this.model) throw new Error('Gemini AI not configured');
 
-      const prompt = `Eres experto en Copywriting y PNL(Programación Neuro - Lingüística).
+    const prompt = `Eres experto en Copywriting y PNL(Programación Neuro - Lingüística).
     Genera un mensaje de ${context.channel} (WhatsApp / Email) para este prospecto.
   Objetivo: Moverlo de ${context.currentStatus} a ${context.targetStatus}.
 
@@ -335,12 +336,12 @@ Tono: ${context.tone || 'Profesional pero cercano'}
 
   JSON: { "message": "Texto del mensaje..." } `;
 
-      try {
-        const text = await this.callGeminiWithRetry(prompt, 'NEURO_MESSAGE');
-        return this.cleanAndParseJson(text, 'NEURO_MESSAGE') || { message: '' };
-      } catch(error) {
-        this.logger.error('Error generating neuro message:', error);
-        return { message: '' };
-      }
+    try {
+      const text = await this.callGeminiWithRetry(prompt, 'NEURO_MESSAGE');
+      return this.cleanAndParseJson(text, 'NEURO_MESSAGE') || { message: '' };
+    } catch (error) {
+      this.logger.error('Error generating neuro message:', error);
+      return { message: '' };
     }
   }
+}
