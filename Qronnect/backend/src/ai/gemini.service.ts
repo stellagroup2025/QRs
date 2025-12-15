@@ -51,9 +51,11 @@ export class GeminiService implements AiProvider {
 
         this.addDebugLog(`📋 Remote models: ${models.join(', ')}`);
 
-        // Priority list - updated based on user's available models
+        // Priority list - updated based on user's available models and quota limits
         const candidates = [
-          'gemini-2.0-flash',
+          'gemini-2.0-flash-exp', // Experimental often has better free access
+          'gemini-2.5-flash',     // Newer preview model
+          'gemini-2.0-flash',     // Standard flash (hit limit 0)
           'gemini-2.0-flash-001',
           'gemini-flash-latest',
           'gemini-1.5-flash',
