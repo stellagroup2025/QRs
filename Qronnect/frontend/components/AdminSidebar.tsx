@@ -219,7 +219,7 @@ export function AdminSidebar() {
             {/* Sidebar Container */}
             <aside
                 className={cn(
-                    "fixed inset-y-0 left-0 z-40 w-64 bg-white/95 backdrop-blur-xl border-r shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:block",
+                    "fixed inset-y-0 left-0 z-40 w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r dark:border-slate-800 shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:block",
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
@@ -233,7 +233,7 @@ export function AdminSidebar() {
                                 className="h-8 w-auto max-w-[150px] object-contain"
                             />
                         ) : (
-                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
                                 {branding.nombre_comercial || 'Panel Admin'}
                             </span>
                         )}
@@ -261,7 +261,7 @@ export function AdminSidebar() {
                                                         "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 group relative overflow-hidden",
                                                         active
                                                             ? "text-primary bg-primary/10"
-                                                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                                                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-slate-800"
                                                     )}
                                                     style={active ? {
                                                         color: `rgb(${primaryColor})`,
@@ -293,7 +293,7 @@ export function AdminSidebar() {
                     </ScrollArea>
 
                     {/* Footer / User Profile */}
-                    <div className="p-4 border-t bg-gray-50/50">
+                    <div className="p-4 border-t bg-gray-50/50 dark:bg-slate-900/50 dark:border-slate-800">
                         <Button
                             variant="ghost"
                             className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"

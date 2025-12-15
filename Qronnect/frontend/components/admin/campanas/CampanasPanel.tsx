@@ -261,7 +261,7 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
 
       {/* Lista de campañas */}
       {campanasVisibles.length === 0 ? (
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <CardContent className="py-8 text-center">
             <Mail className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
             <p className="text-sm text-muted-foreground mb-3">
@@ -288,7 +288,7 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
             return (
               <Card
                 key={campana.id}
-                className={`overflow-hidden transition-opacity ${campana.estado === 'cancelada' ? 'opacity-60' : ''}`}
+                className={`overflow-hidden transition-opacity dark:bg-slate-900 dark:border-slate-800 ${campana.estado === 'cancelada' ? 'opacity-60' : ''}`}
               >
                 <CardContent className="p-3">
                   {/* Header de la card */}

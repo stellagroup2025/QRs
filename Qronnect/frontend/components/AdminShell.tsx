@@ -17,9 +17,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900">
+        <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
             <AdminSidebar />
-            <main className="flex-1 w-full overflow-y-auto h-screen transition-all bg-gray-50/50">
+            <main className="flex-1 w-full overflow-y-auto h-screen transition-all bg-gray-50/50 dark:bg-slate-950">
                 <div className="p-4 md:p-8 pt-16 lg:pt-8 max-w-7xl mx-auto">
                     {children}
                 </div>
