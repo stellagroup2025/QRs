@@ -14,7 +14,7 @@ export class CampanasService {
     private readonly supabase: SupabaseService,
     private readonly emailService: EmailService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   /**
    * Crea una nueva campaña de email
@@ -455,17 +455,22 @@ export class CampanasService {
     // Obtener datos de la campaña
     const campana = await this.findOne(tiendaId, campanaId);
 
-    // Obtener información de la tienda para el remitente dinámico
+    // Obtener información de la tienda para el remitente dinámico y template
     const { data: tienda } = await client
       .from('tiendas')
-      .select('nombre, dominio')
+      .select('*')
       .eq('id', tiendaId)
       .single();
 
     const nombreTienda = tienda?.nombre || 'Qronnect';
     const dominioTienda = tienda?.dominio || 'qronnect';
+    const direccionTienda = tienda?.direccion || '';
+    const telefonoTienda = tienda?.telefono || tienda?.whatsapp || '';
+    const sitioWeb = tienda?.sitio_web || `https://${dominioTienda}.qronnect.es`;
+    const logoUrl = tienda?.logo_url;
+    const colorPrimario = tienda?.color_primario || '#4F46E5';
 
-    // Configurar remitente dinámico (igual que en OTP)
+    // Configurar remitente dinámico
     const useWildcard = process.env.RESEND_WILDCARD_ENABLED === 'true';
     const fromEmail = useWildcard
       ? `${nombreTienda} <noreply@${dominioTienda}.qronnect.es>`
@@ -473,7 +478,7 @@ export class CampanasService {
 
     console.log('[ENVIAR CAMPAÑA] Email remitente:', fromEmail);
 
-    // Obtener destinatarios de la campaña con todos los datos del cliente
+    // Obtener destinatarios pendientes
     const { data: destinatarios, error: destError } = await client
       .from('campanas_destinatarios')
       .select(
@@ -520,45 +525,45 @@ export class CampanasService {
         continue;
       }
 
-      // Personalizar HTML con variables (soporta espacios opcionales: {{nombre}} o {{ nombre }})
-      let htmlPersonalizado = campana.contenido_html;
+      // 1. Personalizar HTML con variables
+      let htmlPersonalizado = campana.contenido_html || '';
 
-      // Log para debug
-      console.log(`[ENVIAR CAMPAÑA] Personalizando para: ${cliente.nombre} <${cliente.email}>`);
+      // Variables de Tienda
+      htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*tienda_nombre\s*\}\}/gi, nombreTienda);
+      htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*tienda_direccion\s*\}\}/gi, direccionTienda);
+      htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*tienda_telefono\s*\}\}/gi, telefonoTienda);
+      htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*tienda_web\s*\}\}/gi, sitioWeb);
 
-      // Reemplazar variables con regex que soporta espacios opcionales
-      htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*nombre\s*\}\}/gi, cliente.nombre || '');
+      // Variables de Cliente
+      const nombreCliente = cliente.nombre || 'Cliente';
+      htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*nombre\s*\}\}/gi, nombreCliente);
+      htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*cliente_nombre\s*\}\}/gi, nombreCliente);
       htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*email\s*\}\}/gi, cliente.email || '');
       htmlPersonalizado = htmlPersonalizado.replace(/\{\{\s*puntos\s*\}\}/gi, String(cliente.puntos_totales || 0));
 
-      // Añadir enlace de baja (unsubscribe) al final del HTML
+      // 2. Generar URL de baja
       const baseUrl = this.configService.get('FRONTEND_URL') || 'https://qronnect.es';
       const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${cliente.unsubscribe_token}`;
-      const unsubscribeFooter = `
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
-          <p style="font-size: 12px; color: #6b7280; margin: 0;">
-            Si no deseas recibir más emails de marketing, puedes
-            <a href="${unsubscribeUrl}" style="color: #3b82f6; text-decoration: underline;">darte de baja aquí</a>
-          </p>
-        </div>
-      `;
 
-      // Si el HTML ya tiene un </body>, insertar antes; si no, añadir al final
-      if (htmlPersonalizado.includes('</body>')) {
-        htmlPersonalizado = htmlPersonalizado.replace('</body>', `${unsubscribeFooter}</body>`);
-      } else {
-        htmlPersonalizado += unsubscribeFooter;
-      }
+      // 3. Envolver en Template Profesional
+      const finalHtml = this.wrapWithTemplate(htmlPersonalizado, campana.asunto, {
+        nombreTienda,
+        logoUrl,
+        colorPrimario,
+        unsubscribeUrl,
+        direccionTienda,
+        sitioWeb
+      });
 
-      // Enviar email con remitente dinámico
+      // 4. Enviar email
       const result = await this.emailService.sendEmail({
         to: cliente.email,
         subject: campana.asunto,
-        html: htmlPersonalizado,
+        html: finalHtml,
         from: fromEmail,
       });
 
-      // Actualizar estado del destinatario y registrar en envios_campanas
+      // 5. Actualizar estado
       if (result.success) {
         enviados++;
         await client
@@ -569,7 +574,6 @@ export class CampanasService {
           })
           .eq('id', dest.id);
 
-        // Registrar en tabla de envíos de campañas
         await client.from('envios_campanas').insert({
           id_campana: campanaId,
           id_cliente: cliente.id,
@@ -588,7 +592,6 @@ export class CampanasService {
           })
           .eq('id', dest.id);
 
-        // Registrar envío fallido
         await client.from('envios_campanas').insert({
           id_campana: campanaId,
           id_cliente: cliente.id,
@@ -600,11 +603,11 @@ export class CampanasService {
         });
       }
 
-      // Pequeña pausa entre emails
+      // Pequeña pausa
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
-    // Actualizar estadísticas de la campaña
+    // Actualizar resumen campaña
     await client
       .from('campanas_email')
       .update({
@@ -936,5 +939,59 @@ export class CampanasService {
       segmentos,
       total_clientes: totalClientes,
     };
+  }
+  private wrapWithTemplate(content: string, title: string, ctx: any): string {
+    const { nombreTienda, logoUrl, colorPrimario, unsubscribeUrl, direccionTienda, sitioWeb } = ctx;
+
+    return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; color: #1f2937; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; margin-top: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .header { background-color: #ffffff; padding: 24px; text-align: center; border-bottom: 1px solid #e5e7eb; }
+        .logo { max-height: 50px; width: auto; }
+        .brand-name { font-size: 24px; font-weight: bold; color: ${colorPrimario}; text-decoration: none; }
+        .content { padding: 32px 24px; line-height: 1.6; }
+        .footer { background-color: #f9fafb; padding: 24px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; }
+        img { max-width: 100%; height: auto; }
+        a { color: ${colorPrimario}; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            ${logoUrl
+        ? `<img src="${logoUrl}" alt="${nombreTienda}" class="logo">`
+        : `<div class="brand-name">${nombreTienda}</div>`
+      }
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            ${content}
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <strong>${nombreTienda}</strong><br>
+                ${direccionTienda ? `${direccionTienda}<br>` : ''}
+                ${sitioWeb ? `<a href="${sitioWeb}" style="color: #6b7280; text-decoration: none;">${sitioWeb}</a>` : ''}
+            </p>
+            <p style="margin-top: 20px;">
+                Si no deseas recibir más emails de marketing, puedes 
+                <a href="${unsubscribeUrl}" style="text-decoration: underline;">darte de baja aquí</a>.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
   }
 }
