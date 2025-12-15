@@ -361,7 +361,7 @@ export default function ProductosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
 
 
       <main className="container mx-auto px-4 py-8">
@@ -383,7 +383,7 @@ export default function ProductosPage() {
         </div>
 
         {/* Filtros */}
-        <Card className="mb-6">
+        <Card className="mb-6 dark:bg-slate-900 dark:border-slate-800">
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
@@ -418,7 +418,7 @@ export default function ProductosPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : productosFiltrados.length === 0 ? (
-          <Card className="py-12">
+          <Card className="py-12 dark:bg-slate-900 dark:border-slate-800">
             <CardContent className="text-center">
               <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">
@@ -446,7 +446,7 @@ export default function ProductosPage() {
               return (
                 <Card
                   key={producto.id}
-                  className={`transition-all hover:shadow-md ${!producto.activo ? 'opacity-60' : ''}`}
+                  className={`transition-all hover:shadow-md ${!producto.activo ? 'opacity-60' : ''} dark:bg-slate-900 dark:border-slate-800`}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
@@ -525,13 +525,13 @@ export default function ProductosPage() {
               {/* Tipo de producto */}
               <div className="space-y-3">
                 <Label>Tipo de producto</Label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
                   {tiposProducto.map((tipo) => {
                     const Icon = tipo.icon
                     return (
                       <Card
                         key={tipo.value}
-                        className={`cursor-pointer transition-all p-4 ${formData.tipo === tipo.value
+                        className={`cursor-pointer transition-all p-4 dark:bg-slate-900 dark:border-slate-800 ${formData.tipo === tipo.value
                           ? 'ring-2 ring-primary border-primary'
                           : 'hover:border-primary/50'
                           }`}
@@ -594,7 +594,7 @@ export default function ProductosPage() {
 
               {/* Campos especificos segun tipo */}
               {formData.tipo === 'producto' && (
-                <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
                   <div className="space-y-2">
                     <Label>Nombre del producto</Label>
                     <Input
@@ -626,7 +626,7 @@ export default function ProductosPage() {
               )}
 
               {formData.tipo === 'servicio' && (
-                <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
                   <div className="space-y-2">
                     <Label>Nombre del servicio</Label>
                     <Input
@@ -651,7 +651,7 @@ export default function ProductosPage() {
               )}
 
               {formData.tipo === 'descuento' && (
-                <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
                   <div className="space-y-2">
                     <Label>Porcentaje de descuento</Label>
                     <div className="flex items-center gap-2">
@@ -691,7 +691,7 @@ export default function ProductosPage() {
               )}
 
               {formData.tipo === 'puntos' && (
-                <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
                   <div className="space-y-2">
                     <Label>Cantidad de puntos</Label>
                     <div className="flex items-center gap-2">

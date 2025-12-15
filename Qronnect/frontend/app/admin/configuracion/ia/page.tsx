@@ -217,7 +217,7 @@ export default function ConfiguracionIAPage() {
 
         <div className="space-y-6">
           {/* Información Básica */}
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
@@ -290,7 +290,7 @@ export default function ConfiguracionIAPage() {
           </Card>
 
           {/* Público Objetivo */}
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5" />
@@ -378,7 +378,7 @@ export default function ConfiguracionIAPage() {
           </Card>
 
           {/* Marca */}
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
               <CardTitle>Valores de Marca</CardTitle>
               <CardDescription>Qué representa tu negocio</CardDescription>
@@ -422,7 +422,7 @@ export default function ConfiguracionIAPage() {
           </Card>
 
           {/* Productos/Servicios */}
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
               <CardTitle>Productos/Servicios Principales</CardTitle>
               <CardDescription>Qué ofreces a tus clientes</CardDescription>
@@ -468,7 +468,7 @@ export default function ConfiguracionIAPage() {
           </Card>
 
           {/* Ubicación */}
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
@@ -510,7 +510,7 @@ export default function ConfiguracionIAPage() {
           </Card>
 
           {/* Promociones y Hashtags */}
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Tag className="h-5 w-5" />
@@ -588,7 +588,7 @@ export default function ConfiguracionIAPage() {
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {config.hashtags?.map((hashtag, idx) => (
-                    <Badge key={idx} variant="outline" className="bg-blue-50">
+                    <Badge key={idx} variant="outline" className="bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
                       {hashtag}
                       <button
                         onClick={() => eliminarItem('hashtags', idx)}

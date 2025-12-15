@@ -147,7 +147,7 @@ export default function GestionPremiosPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
         <div className="flex items-center justify-center h-screen">
           <p>Cargando...</p>
         </div>
@@ -156,7 +156,7 @@ export default function GestionPremiosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -184,7 +184,7 @@ export default function GestionPremiosPage() {
 
         {/* Resumen */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Total Premios</CardTitle>
             </CardHeader>
@@ -196,7 +196,7 @@ export default function GestionPremiosPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Legendarios</CardTitle>
             </CardHeader>
@@ -208,7 +208,7 @@ export default function GestionPremiosPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Épicos</CardTitle>
             </CardHeader>
@@ -220,7 +220,7 @@ export default function GestionPremiosPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Con Stock Limitado</CardTitle>
             </CardHeader>
@@ -239,7 +239,7 @@ export default function GestionPremiosPage() {
           if (premiosRareza.length === 0) return null;
 
           return (
-            <Card key={rareza}>
+            <Card key={rareza} className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ export default function GestionPremiosPage() {
                   {premiosRareza.map((premio) => (
                     <div
                       key={premio.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:border-slate-700"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-3">
@@ -320,7 +320,7 @@ export default function GestionPremiosPage() {
         })}
 
         {premios.length === 0 && (
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardContent className="py-12">
               <div className="text-center">
                 <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

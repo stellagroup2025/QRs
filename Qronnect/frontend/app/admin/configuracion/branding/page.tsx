@@ -149,7 +149,7 @@ export default function ConfiguracionBrandingPage() {
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Formulario */}
           <div className="space-y-6">
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Store className="h-5 w-5" />
@@ -178,7 +178,7 @@ export default function ConfiguracionBrandingPage() {
                 {/* Logo Upload (placeholder) */}
                 <div className="space-y-2">
                   <Label>Logo (opcional)</Label>
-                  <Card className="border-2 border-dashed p-8">
+                  <Card className="border-2 border-dashed p-8 dark:bg-slate-900 dark:border-slate-800">
                     <div className="text-center space-y-2">
                       <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">
@@ -196,7 +196,7 @@ export default function ConfiguracionBrandingPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Paintbrush className="h-5 w-5" />
@@ -296,7 +296,7 @@ export default function ConfiguracionBrandingPage() {
 
           {/* Preview */}
           <div className="space-y-6">
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle>Vista Previa</CardTitle>
                 <CardDescription>
@@ -324,7 +324,7 @@ export default function ConfiguracionBrandingPage() {
               </CardContent>
             </Card>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
               <p className="text-sm text-blue-900">
                 <strong>💡 Consejo:</strong> Usa los colores de tu marca existente para que tus
                 clientes reconozcan fácilmente tus comunicaciones. Los cambios se aplicarán en toda

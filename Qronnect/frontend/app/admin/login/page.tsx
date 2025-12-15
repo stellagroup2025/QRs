@@ -137,8 +137,8 @@ export default function AdminLoginPage() {
 
   if (autoLogin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-        <Card className="w-full max-w-md shadow-lg p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-950 dark:to-slate-900 p-4">
+        <Card className="w-full max-w-md shadow-lg p-8 text-center dark:bg-slate-900 dark:border-slate-800">
           <Loader2 className="h-10 w-10 animate-spin text-blue-600 mx-auto mb-4" />
           <h2 className="text-xl font-semibold">Accediendo a la tienda...</h2>
           <p className="text-muted-foreground">Verificando credenciales de administrador</p>
@@ -148,8 +148,8 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-      <Card className="w-full max-w-md shadow-lg border-[rgb(var(--brand-primary))]/10">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-950 dark:to-slate-900 p-4">
+      <Card className="w-full max-w-md shadow-lg border-[rgb(var(--brand-primary))]/10 dark:bg-slate-900 dark:border-slate-800">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <BrandLogo width={180} height={60} />

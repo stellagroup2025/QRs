@@ -144,7 +144,7 @@ export default function ConfiguracionPuntosPage() {
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Formulario */}
           <div className="space-y-6">
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Coins className="h-5 w-5" />
@@ -197,14 +197,14 @@ export default function ConfiguracionPuntosPage() {
               </CardContent>
             </Card>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
               <p className="text-sm text-blue-900">
                 <strong>💡 Consejo:</strong> Un buen sistema de puntos motiva a los clientes a
                 volver. Lo ideal es que con 5-10 visitas puedan obtener una recompensa significativa.
               </p>
             </div>
 
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 dark:bg-amber-900/20 dark:border-amber-800">
               <p className="text-sm text-amber-900">
                 <strong>⚠️ Importante:</strong> Los cambios en el sistema de puntos solo afectarán
                 a nuevas compras. Los puntos ya otorgados no se modificarán.
@@ -214,7 +214,7 @@ export default function ConfiguracionPuntosPage() {
 
           {/* Ejemplos y Preview */}
           <div className="space-y-6">
-            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 dark:from-green-900/20 dark:to-emerald-900/20 dark:border-green-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-900">
                   <TrendingUp className="h-5 w-5" />
@@ -225,26 +225,26 @@ export default function ConfiguracionPuntosPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="flex justify-between items-center p-3 bg-white rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-white dark:bg-slate-800 rounded-lg">
                   <span className="text-gray-700">Cliente nuevo se registra:</span>
                   <span className="font-bold text-green-600">+{config.puntos_bienvenida} pts</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-white rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-white dark:bg-slate-800 rounded-lg">
                   <span className="text-gray-700">Compra de 20€:</span>
                   <span className="font-bold text-green-600">+{compra20Euros} pts</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-white rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-white dark:bg-slate-800 rounded-lg">
                   <span className="text-gray-700">Compra de 50€:</span>
                   <span className="font-bold text-green-600">+{compra50Euros} pts</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-white rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-white dark:bg-slate-800 rounded-lg">
                   <span className="text-gray-700">Compra de 100€:</span>
                   <span className="font-bold text-green-600">+{compra100Euros} pts</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle>Simulador de Cliente</CardTitle>
                 <CardDescription>
@@ -253,7 +253,7 @@ export default function ConfiguracionPuntosPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
                     <div>
                       <p className="text-sm font-medium">Registro inicial</p>
                       <p className="text-xs text-muted-foreground">Día 1</p>
@@ -264,7 +264,7 @@ export default function ConfiguracionPuntosPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
                     <div>
                       <p className="text-sm font-medium">Primera compra (25€)</p>
                       <p className="text-xs text-muted-foreground">Día 3</p>
@@ -275,7 +275,7 @@ export default function ConfiguracionPuntosPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
                     <div>
                       <p className="text-sm font-medium">Segunda compra (40€)</p>
                       <p className="text-xs text-muted-foreground">Día 10</p>

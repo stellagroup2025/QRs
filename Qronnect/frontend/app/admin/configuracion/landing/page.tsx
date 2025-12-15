@@ -166,7 +166,7 @@ export default function LandingConfigPage() {
 
               {/* Hero Section */}
               <TabsContent value="hero">
-                <Card>
+                <Card className="dark:bg-slate-900 dark:border-slate-800">
                   <CardHeader>
                     <CardTitle>Sección Hero</CardTitle>
                     <CardDescription>
@@ -244,7 +244,7 @@ export default function LandingConfigPage() {
 
               {/* Servicios */}
               <TabsContent value="servicios">
-                <Card>
+                <Card className="dark:bg-slate-900 dark:border-slate-800">
                   <CardHeader>
                     <CardTitle>Servicios / Soluciones</CardTitle>
                     <CardDescription>
@@ -326,7 +326,7 @@ export default function LandingConfigPage() {
 
               {/* Beneficios */}
               <TabsContent value="beneficios">
-                <Card>
+                <Card className="dark:bg-slate-900 dark:border-slate-800">
                   <CardHeader>
                     <CardTitle>Beneficios</CardTitle>
                     <CardDescription>
@@ -441,7 +441,7 @@ export default function LandingConfigPage() {
 
               {/* Testimonios */}
               <TabsContent value="testimonios">
-                <Card>
+                <Card className="dark:bg-slate-900 dark:border-slate-800">
                   <CardHeader>
                     <CardTitle>Testimonios</CardTitle>
                     <CardDescription>
@@ -513,7 +513,7 @@ export default function LandingConfigPage() {
 
               {/* CTA Final */}
               <TabsContent value="cta">
-                <Card>
+                <Card className="dark:bg-slate-900 dark:border-slate-800">
                   <CardHeader>
                     <CardTitle>Call-to-Action Final</CardTitle>
                     <CardDescription>

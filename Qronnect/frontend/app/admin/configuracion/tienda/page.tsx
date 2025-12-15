@@ -196,7 +196,7 @@ export default function ConfiguracionTiendaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
 
       <div className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
@@ -216,7 +216,7 @@ export default function ConfiguracionTiendaPage() {
         </div>
 
         {/* Información General */}
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Store className="h-5 w-5" />
@@ -241,7 +241,7 @@ export default function ConfiguracionTiendaPage() {
         </Card>
 
         {/* Contacto */}
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Phone className="h-5 w-5" />
@@ -269,7 +269,7 @@ export default function ConfiguracionTiendaPage() {
         </Card>
 
         {/* Web y Ubicación */}
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Globe className="h-5 w-5" />
@@ -323,7 +323,7 @@ export default function ConfiguracionTiendaPage() {
         </Card>
 
         {/* Horarios */}
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
@@ -391,7 +391,7 @@ export default function ConfiguracionTiendaPage() {
         </Card>
 
         {/* Redes Sociales */}
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Share2 className="h-5 w-5" />

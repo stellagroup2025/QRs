@@ -234,7 +234,7 @@ export default function RegalosPage() {
 
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Otorgados</CardTitle>
               <Gift className="h-4 w-4 text-gray-500" />
@@ -245,7 +245,7 @@ export default function RegalosPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Últimos 30 días</CardTitle>
               <Calendar className="h-4 w-4 text-gray-500" />
@@ -256,7 +256,7 @@ export default function RegalosPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Estado</CardTitle>
               <TrendingUp className="h-4 w-4 text-gray-500" />
@@ -269,14 +269,14 @@ export default function RegalosPage() {
         </div>
 
         {/* Configuración */}
-        <Card className="mb-8">
+        <Card className="mb-8 dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
             <CardTitle>Configuración de Regalos</CardTitle>
             <CardDescription>Define qué regalar a los nuevos clientes</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Activar/Desactivar */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
               <div>
                 <Label htmlFor="activo" className="text-base font-medium">
                   Sistema Activo
@@ -310,7 +310,7 @@ export default function RegalosPage() {
                   })
                 }
               >
-                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:border-slate-700">
                   <RadioGroupItem value="puntos" id="puntos" />
                   <Label htmlFor="puntos" className="flex-1 cursor-pointer">
                     <div className="font-medium">Puntos</div>
@@ -318,7 +318,7 @@ export default function RegalosPage() {
                   </Label>
                 </div>
 
-                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:border-slate-700">
                   <RadioGroupItem value="cupon" id="cupon" />
                   <Label htmlFor="cupon" className="flex-1 cursor-pointer">
                     <div className="font-medium">Cupón de Descuento</div>
@@ -326,7 +326,7 @@ export default function RegalosPage() {
                   </Label>
                 </div>
 
-                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:border-slate-700">
                   <RadioGroupItem value="promocion" id="promocion" />
                   <Label htmlFor="promocion" className="flex-1 cursor-pointer">
                     <div className="font-medium">Promoción Existente</div>
@@ -466,7 +466,7 @@ export default function RegalosPage() {
         </Card>
 
         {/* Historial */}
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
             <CardTitle>Historial de Regalos Otorgados</CardTitle>
             <CardDescription>Últimos 10 regalos entregados a clientes</CardDescription>

@@ -278,9 +278,9 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-50"
+        className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-950 dark:to-slate-900"
       >
-        <Card className="max-w-2xl w-full shadow-xl">
+        <Card className="max-w-2xl w-full shadow-xl dark:bg-slate-900 dark:border-slate-800">
           <CardHeader className="text-center">
             <motion.div
               initial={{ scale: 0 }}
@@ -295,9 +295,9 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6 dark:bg-green-900/20 dark:border-green-800">
               <h3 className="font-semibold text-green-900 mb-2">¿Qué sigue ahora?</h3>
-              <ul className="space-y-2 text-sm text-green-800">
+              <ul className="space-y-2 text-sm text-green-800 dark:text-green-300">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <span>Tu tienda ya está lista para recibir clientes</span>
@@ -335,7 +335,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-950 dark:to-slate-900 py-8 px-4">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div className="relative text-center space-y-2">
@@ -343,7 +343,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
             variant="ghost"
             size="icon"
             onClick={() => window.location.href = '/admin/dashboard'}
-            className="absolute left-0 top-0 hover:bg-gray-200"
+            className="absolute left-0 top-0 hover:bg-gray-200 dark:hover:bg-slate-800"
             title="Salir del onboarding"
           >
             <X className="h-5 w-5" />
@@ -370,22 +370,19 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
               <button
                 onClick={() => irAPaso(paso.numero)}
                 disabled={paso.numero > pasoActual}
-                className={`flex flex-col items-center gap-2 group ${
-                  paso.numero > pasoActual ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                }`}
+                className={`flex flex-col items-center gap-2 group ${paso.numero > pasoActual ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  }`}
               >
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                    paso.completado
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${paso.completado
                       ? 'bg-green-500 text-white'
                       : paso.numero === pasoActual
-                      ? 'bg-primary text-primary-foreground ring-4 ring-primary/20'
-                      : 'bg-gray-200 text-gray-400'
-                  } ${
-                    paso.numero <= pasoActual && !paso.completado
+                        ? 'bg-primary text-primary-foreground ring-4 ring-primary/20'
+                        : 'bg-gray-200 text-gray-400'
+                    } ${paso.numero <= pasoActual && !paso.completado
                       ? 'group-hover:bg-primary/80'
                       : ''
-                  }`}
+                    }`}
                 >
                   {paso.completado ? (
                     <CheckCircle2 className="h-6 w-6" />
@@ -402,9 +399,8 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
               </button>
               {index < pasos.length - 1 && (
                 <div
-                  className={`h-1 w-8 md:w-16 mx-2 transition-colors ${
-                    paso.completado ? 'bg-green-500' : 'bg-gray-200'
-                  }`}
+                  className={`h-1 w-8 md:w-16 mx-2 transition-colors ${paso.completado ? 'bg-green-500' : 'bg-gray-200'
+                    }`}
                 />
               )}
             </div>
@@ -412,7 +408,7 @@ export function OnboardingWizard({ onCompleted }: OnboardingWizardProps) {
         </div>
 
         {/* Step content */}
-        <Card className="shadow-lg">
+        <Card className="shadow-lg dark:bg-slate-900 dark:border-slate-800">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>

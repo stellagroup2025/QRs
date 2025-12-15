@@ -121,7 +121,7 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
 
       {/* Lista de programas */}
       {programas.length === 0 ? (
-        <Card className="p-12 text-center">
+        <Card className="p-12 text-center dark:bg-slate-900 dark:border-slate-800">
           <div className="flex flex-col items-center gap-4">
             <div className="rounded-full bg-muted p-6">
               <Plus className="h-12 w-12 text-muted-foreground" />
@@ -147,7 +147,7 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {programas.map((programa) => (
-            <Card key={programa.id} className="p-6">
+            <Card key={programa.id} className="p-6 dark:bg-slate-900 dark:border-slate-800">
               {/* Header con color */}
               <div
                 className="h-2 -mx-6 -mt-6 rounded-t-lg mb-4"

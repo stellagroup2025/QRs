@@ -146,7 +146,7 @@ export default function CuentaPage() {
 
         <div className="grid gap-6">
           {/* Informacion del Usuario */}
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
@@ -184,7 +184,7 @@ export default function CuentaPage() {
           </Card>
 
           {/* Cambiar PIN */}
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lock className="h-5 w-5" />
@@ -196,9 +196,9 @@ export default function CuentaPage() {
             </CardHeader>
             <CardContent>
               {pinSuccess && (
-                <Alert className="mb-4 bg-green-50 border-green-200">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertDescription className="text-green-800">
+                <Alert className="mb-4 bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <AlertDescription className="text-green-800 dark:text-green-300">
                     PIN actualizado correctamente. Hemos enviado el nuevo PIN a tu email.
                   </AlertDescription>
                 </Alert>

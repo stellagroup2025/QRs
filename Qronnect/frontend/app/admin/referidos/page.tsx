@@ -302,13 +302,13 @@ export default function ReferidosPage() {
 
           {/* TAB: Configuración */}
           <TabsContent value="configuracion" className="space-y-6">
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle>Información del Programa</CardTitle>
                 <CardDescription>Configura los detalles básicos</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
                   <div>
                     <Label htmlFor="activo" className="text-base font-medium">
                       Programa Activo
@@ -345,7 +345,7 @@ export default function ReferidosPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle>Recompensas por Registro</CardTitle>
                 <CardDescription>Cuando un amigo se registra</CardDescription>
@@ -467,7 +467,7 @@ export default function ReferidosPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>Milestones (Objetivos)</CardTitle>
@@ -590,7 +590,7 @@ export default function ReferidosPage() {
           {/* TAB: Estadísticas */}
           <TabsContent value="estadisticas" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card>
+              <Card className="dark:bg-slate-900 dark:border-slate-800">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Total Referidos</CardTitle>
                 </CardHeader>
@@ -599,7 +599,7 @@ export default function ReferidosPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="dark:bg-slate-900 dark:border-slate-800">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Este Mes</CardTitle>
                 </CardHeader>
@@ -608,7 +608,7 @@ export default function ReferidosPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="dark:bg-slate-900 dark:border-slate-800">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Tasa de Conversión</CardTitle>
                 </CardHeader>
@@ -619,7 +619,7 @@ export default function ReferidosPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="dark:bg-slate-900 dark:border-slate-800">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Recompensas Otorgadas</CardTitle>
                 </CardHeader>
@@ -629,7 +629,7 @@ export default function ReferidosPage() {
               </Card>
             </div>
 
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle>Top Referidores</CardTitle>
                 <CardDescription>Clientes con más referidos</CardDescription>
@@ -667,7 +667,7 @@ export default function ReferidosPage() {
 
           {/* TAB: Referidos */}
           <TabsContent value="referidos">
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle>Lista de Referidos</CardTitle>
                 <CardDescription>Todos los referidos registrados</CardDescription>
