@@ -663,7 +663,7 @@ export default function AdminDashboardPage() {
             <CardContent className="space-y-6">
               <div className="flex flex-col items-center space-y-6">
                 {/* QR Code */}
-                <div className="p-8 bg-white rounded-xl border-4 border-dashed" style={{ borderColor: `${hexToRgb(branding.color_primario).replace('rgb(', 'rgba(').replace(')', ', 0.3)')}` }}>
+                <div className="p-8 bg-white dark:bg-slate-800 rounded-xl border-4 border-dashed" style={{ borderColor: `${hexToRgb(branding.color_primario).replace('rgb(', 'rgba(').replace(')', ', 0.3)')}` }}>
                   <img
                     src={qrUrl}
                     alt="QR de registro"

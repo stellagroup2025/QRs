@@ -95,7 +95,7 @@ export default function ConfiguracionGachaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
 
         <div className="flex items-center justify-center h-screen">
           <p>Cargando...</p>
@@ -105,7 +105,7 @@ export default function ConfiguracionGachaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
 
       <div className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
@@ -142,7 +142,7 @@ export default function ConfiguracionGachaPage() {
 
           <TabsContent value="configuracion" className="space-y-6">
             {/* Estado */}
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle>Estado del Sistema</CardTitle>
                 <CardDescription>
@@ -169,7 +169,7 @@ export default function ConfiguracionGachaPage() {
             </Card>
 
             {/* Configuración Básica */}
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle>Configuración Básica</CardTitle>
                 <CardDescription>
@@ -250,7 +250,7 @@ export default function ConfiguracionGachaPage() {
             </Card>
 
             {/* Límites y Restricciones */}
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
@@ -305,7 +305,7 @@ export default function ConfiguracionGachaPage() {
           </TabsContent>
 
           <TabsContent value="premios">
-            <Card>
+            <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
                 <CardTitle>Gestión de Premios</CardTitle>
                 <CardDescription>
@@ -328,7 +328,7 @@ export default function ConfiguracionGachaPage() {
 
           <TabsContent value="estadisticas">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
+              <Card className="dark:bg-slate-900 dark:border-slate-800">
                 <CardHeader>
                   <CardTitle>Tiradas Totales</CardTitle>
                 </CardHeader>
@@ -340,7 +340,7 @@ export default function ConfiguracionGachaPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="dark:bg-slate-900 dark:border-slate-800">
                 <CardHeader>
                   <CardTitle>Tasa de Canje</CardTitle>
                 </CardHeader>
@@ -355,29 +355,29 @@ export default function ConfiguracionGachaPage() {
                 </CardContent>
               </Card>
 
-              <Card className="md:col-span-2">
+              <Card className="md:col-span-2 dark:bg-slate-900 dark:border-slate-800">
                 <CardHeader>
                   <CardTitle>Premios por Rareza</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-4 rounded-lg bg-gray-100">
+                    <div className="p-4 rounded-lg bg-gray-100 dark:bg-slate-800">
                       <div className="text-2xl font-bold">{estadisticas?.por_rareza.comun || 0}</div>
                       <p className="text-sm text-gray-600">Comunes</p>
                     </div>
-                    <div className="p-4 rounded-lg bg-blue-100">
+                    <div className="p-4 rounded-lg bg-blue-100 dark:bg-blue-900/20">
                       <div className="text-2xl font-bold text-blue-700">
                         {estadisticas?.por_rareza.raro || 0}
                       </div>
                       <p className="text-sm text-blue-600">Raros</p>
                     </div>
-                    <div className="p-4 rounded-lg bg-purple-100">
+                    <div className="p-4 rounded-lg bg-purple-100 dark:bg-purple-900/20">
                       <div className="text-2xl font-bold text-purple-700">
                         {estadisticas?.por_rareza.epico || 0}
                       </div>
                       <p className="text-sm text-purple-600">Épicos</p>
                     </div>
-                    <div className="p-4 rounded-lg bg-amber-100">
+                    <div className="p-4 rounded-lg bg-amber-100 dark:bg-amber-900/20">
                       <div className="text-2xl font-bold text-amber-700">
                         {estadisticas?.por_rareza.legendario || 0}
                       </div>

@@ -43,7 +43,7 @@ export function PanelIA({ tenantDomain, adminToken }: { tenantDomain: string; ad
         </div>
         <div>
           <h2 className="text-2xl font-bold">Asistente IA</h2>
-          <p className="text-sm text-gray-600">Potenciado por Google Gemini</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Potenciado por Google Gemini</p>
         </div>
       </div>
 

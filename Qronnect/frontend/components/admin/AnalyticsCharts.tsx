@@ -94,12 +94,12 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
     return (
       <div className="grid gap-6 md:grid-cols-2">
         {[...Array(4)].map((_, i) => (
-          <Card key={i}>
+          <Card key={i} className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
-              <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 w-32 bg-gray-200 dark:bg-slate-800 rounded animate-pulse" />
             </CardHeader>
             <CardContent>
-              <div className="h-64 bg-gray-100 rounded animate-pulse" />
+              <div className="h-64 bg-gray-100 dark:bg-slate-800 rounded animate-pulse" />
             </CardContent>
           </Card>
         ))}
@@ -109,7 +109,7 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
 
   if (!data) {
     return (
-      <Card>
+      <Card className="dark:bg-slate-900 dark:border-slate-800">
         <CardContent className="py-8">
           <p className="text-center text-muted-foreground">No hay datos disponibles</p>
         </CardContent>
@@ -128,7 +128,7 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
         <TooltipProvider>
           <UITooltip>
             <TooltipTrigger asChild>
-              <button className="h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
+              <button className="h-8 w-8 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors">
                 <Info className="h-4 w-4 text-muted-foreground" />
               </button>
             </TooltipTrigger>
@@ -146,7 +146,7 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
       {/* Primera fila: Gráficos de línea y barras */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Evolución de Facturación */}
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <ChartHeader
             title="Evolución de Facturación"
             description="Ingresos diarios del periodo seleccionado"
@@ -187,7 +187,7 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
         </Card>
 
         {/* Nuevos Clientes */}
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <ChartHeader
             title="Nuevos Clientes"
             description="Clientes registrados por día"
@@ -229,7 +229,7 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
       {/* Segunda fila: Distribución de puntos y Top clientes */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Distribución de Clientes por Puntos */}
-        <Card>
+        <Card className="dark:bg-slate-900 dark:border-slate-800">
           <ChartHeader
             title="Distribución por Puntos"
             description="Clientes agrupados por rango de puntos acumulados"
@@ -283,7 +283,7 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
         </Card>
 
         {/* Top 10 Clientes VIP */}
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden dark:bg-slate-900 dark:border-slate-800">
           <ChartHeader
             title="Top 10 Clientes VIP"
             description="Clientes con mayor facturación total"
