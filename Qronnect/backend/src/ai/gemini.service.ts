@@ -13,26 +13,34 @@ export class GeminiService implements AiProvider {
   private model: any;
   private readonly MAX_RETRIES = 3;
   private readonly INITIAL_RETRY_DELAY = 2000;
+  private debugLog: string[] = [];
 
   constructor(private readonly supabase: SupabaseService) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      this.logger.warn('⚠️  GEMINI_API_KEY not configured. AI features will be disabled.');
+      this.addDebugLog('⚠️ GEMINI_API_KEY not configured.');
       this.genAI = null;
       this.model = null;
     } else {
       this.genAI = new GoogleGenerativeAI(apiKey);
       // Initialize asynchronously
       this.initializeModel(apiKey).catch(err => {
+        this.addDebugLog(`Initialization Error: ${err.message}`);
         this.logger.error('Failed to initialize Gemini model', err);
       });
     }
   }
 
+  private addDebugLog(msg: string) {
+    this.debugLog.push(`[${new Date().toISOString()}] ${msg}`);
+    // Keep only last 20 logs
+    if (this.debugLog.length > 20) this.debugLog.shift();
+  }
+
   private async initializeModel(apiKey: string) {
     try {
-      this.logger.log('🔄 Detecting available Gemini models...');
+      this.addDebugLog('🔄 Detecting available Gemini models...');
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
 
       let selectedModelName = 'gemini-1.5-flash'; // Fallback default
@@ -41,7 +49,7 @@ export class GeminiService implements AiProvider {
         const data = await response.json();
         const models = (data.models || []).map((m: any) => m.name.replace('models/', ''));
 
-        this.logger.log(`📋 Available models: ${models.join(', ')}`);
+        this.addDebugLog(`📋 Remote models: ${models.join(', ')}`);
 
         // Priority list
         const candidates = [
@@ -58,17 +66,19 @@ export class GeminiService implements AiProvider {
 
         if (bestMatch) {
           selectedModelName = bestMatch;
-          this.logger.log(`✨ Selected optimal model: ${selectedModelName}`);
+          this.addDebugLog(`✨ Selected optimal model: ${selectedModelName}`);
         } else {
-          this.logger.warn(`⚠️ No preferred model found. Falling back to default: ${selectedModelName}`);
+          this.addDebugLog(`⚠️ No preferred model found. Fallback: ${selectedModelName}`);
         }
       } else {
-        this.logger.error(`❌ Failed to list models (${response.status}). Using fallback: ${selectedModelName}`);
+        this.addDebugLog(`❌ List models failed (${response.status} ${response.statusText}). Fallback: ${selectedModelName}`);
       }
 
       this.model = this.genAI.getGenerativeModel({ model: selectedModelName });
+      this.addDebugLog(`✅ Service ready with: ${selectedModelName}`);
       this.logger.log(`✅ Gemini Service ready with model: ${selectedModelName}`);
     } catch (error) {
+      this.addDebugLog(`❌ Init exception: ${error.message}`);
       this.logger.error('❌ Error during model initialization', error);
       // Fallback in case of error
       this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -78,14 +88,16 @@ export class GeminiService implements AiProvider {
   private async callGeminiWithRetry(prompt: string, context: string): Promise<any> {
     // Wait for initialization if needed (max 10 seconds)
     if (!this.model && this.genAI) {
-      this.logger.log('⏳ Waiting for model initialization...');
       for (let i = 0; i < 20; i++) {
         if (this.model) break;
         await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
 
-    if (!this.model) throw new Error('Gemini AI not configured or failed to initialize');
+    if (!this.model) {
+      const debugInfo = this.debugLog.join('\n');
+      throw new Error(`Gemini not configured. Debug Info:\n${debugInfo}`);
+    }
 
     let lastError: Error;
     for (let attempt = 0; attempt < this.MAX_RETRIES; attempt++) {
@@ -100,7 +112,9 @@ export class GeminiService implements AiProvider {
           await new Promise((resolve) => setTimeout(resolve, delay));
           continue;
         }
-        throw error;
+        // Append debug info to error
+        const enhancedError = new Error(`${error.message}\n\n[SERVER DEBUG LOGS]:\n${this.debugLog.join('\n')}`);
+        throw enhancedError;
       }
     }
     throw lastError;
