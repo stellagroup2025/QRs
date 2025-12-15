@@ -241,12 +241,39 @@ export function AnalistaKPIs({ tenantDomain, adminToken, onCreateCampaign, onCre
                   <div className="flex-1">
                     <h4 className="font-semibold text-blue-900 mb-2">Puntos Destacados</h4>
                     <ul className="space-y-2">
-                      {analysis.highlights.map((highlight, idx) => (
-                        <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                          <span className="text-blue-500 font-bold mt-0.5">•</span>
-                          <span>{highlight}</span>
-                        </li>
-                      ))}
+                      {analysis.highlights.map((highlight: any, idx) => { // Type 'any' to handle runtime mismatch
+                        let content = '';
+                        if (typeof highlight === 'string') {
+                          content = highlight;
+                        } else if (typeof highlight === 'object' && highlight !== null) {
+                          // Handle object structure { metric, value, insight }
+                          const parts = [];
+                          if (highlight.metric) parts.push(`**${highlight.metric}**: `);
+                          if (highlight.insight) parts.push(highlight.insight);
+                          if (highlight.value) parts.push(` (${highlight.value})`);
+                          content = parts.join('');
+
+                          // If empty, fallback to JSON string
+                          if (!content) content = JSON.stringify(highlight);
+                        }
+
+                        return (
+                          <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                            <span className="text-blue-500 font-bold mt-0.5">•</span>
+                            {/* Render simple HTML-like bolding if needed or just text */}
+                            <span>
+                              {typeof highlight === 'object' && highlight.metric ? (
+                                <>
+                                  <strong>{highlight.metric}:</strong> {highlight.insight}
+                                  {highlight.value && <span className="text-gray-500 text-xs ml-1">({highlight.value})</span>}
+                                </>
+                              ) : (
+                                highlight
+                              )}
+                            </span>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 </div>
