@@ -653,7 +653,7 @@ export default function AdminDashboardPage() {
 
         {/* QR Tab */}
         <TabsContent value="qr" className="space-y-6">
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
               <CardTitle>QR de Registro de Clientes</CardTitle>
               <CardDescription>
@@ -767,7 +767,7 @@ export default function AdminDashboardPage() {
 
         {/* Clientes Tab */}
         <TabsContent value="clientes" className="space-y-6">
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -885,7 +885,7 @@ export default function AdminDashboardPage() {
                   {/* Vista Móvil - Cards */}
                   <div className="md:hidden space-y-4">
                     {clientes?.data?.map((cliente) => (
-                      <Card key={cliente.id}>
+                      <Card key={cliente.id} className="dark:bg-slate-900 dark:border-slate-800">
                         <CardContent className="p-4 space-y-3">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -979,7 +979,7 @@ export default function AdminDashboardPage() {
 
         {/* Ventas Tab */}
         <TabsContent value="ventas" className="space-y-6">
-          <Card>
+          <Card className="dark:bg-slate-900 dark:border-slate-800">
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -1091,7 +1091,7 @@ export default function AdminDashboardPage() {
                   {/* Vista Móvil - Cards */}
                   <div className="md:hidden space-y-4">
                     {compras?.data?.map((compra) => (
-                      <Card key={compra.id}>
+                      <Card key={compra.id} className="dark:bg-slate-900 dark:border-slate-800">
                         <CardContent className="p-4 space-y-3">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -1218,7 +1218,7 @@ export default function AdminDashboardPage() {
               tabIndex={0}
               onClick={() => setActiveTab('clientes')}
             >
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <div className="absolute top-0 right-0 p-4 opacity-10 dark:opacity-20 group-hover:opacity-20 transition-opacity">
                 <Users className="w-24 h-24 text-primary" />
               </div>
 
@@ -1247,7 +1247,7 @@ export default function AdminDashboardPage() {
               tabIndex={0}
               onClick={() => setActiveTab('ventas')}
             >
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <div className="absolute top-0 right-0 p-4 opacity-10 dark:opacity-20 group-hover:opacity-20 transition-opacity">
                 <ShoppingCart className="w-24 h-24 text-blue-500" />
               </div>
 
@@ -1276,7 +1276,7 @@ export default function AdminDashboardPage() {
               tabIndex={0}
               onClick={() => setActiveTab('analytics')}
             >
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <div className="absolute top-0 right-0 p-4 opacity-10 dark:opacity-20 group-hover:opacity-20 transition-opacity">
                 <Euro className="w-24 h-24 text-indigo-500" />
               </div>
 
