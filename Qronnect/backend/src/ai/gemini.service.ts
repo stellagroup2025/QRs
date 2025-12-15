@@ -149,38 +149,41 @@ export class GeminiService implements AiProvider {
   }
 
   const prompt = `Eres un analista de negocio experto. Analiza estos KPIs:
-    ${JSON.stringify(params.kpis)}
-    Contexto: ${params.contexto || ''}
+  async generateKpiAnalysis(params: any): Promise<any> {
+    if (!this.model) throw new Error('Gemini AI not configured');
+    const prompt = `Eres un analista de negocio experto. Analiza estos KPIs:
+    ${ JSON.stringify(params.kpis) }
+Contexto: ${ params.contexto || '' }
     
     Genera respuesta JSON siguiendo ESTRICTAMENTE este esquema:
-    {
-      "summary": "Resumen ejecutivo del desempeño general",
-      "highlights": [
-        { "metric": "Nombre métrica", "value": "Valor", "insight": "Breve explicación" }
-      ],
+{
+  "summary": "Resumen ejecutivo del desempeño general",
+    "highlights": [
+      { "metric": "Nombre métrica", "value": "Valor", "insight": "Breve explicación" }
+    ],
       "recommendations": [
-        { 
-          "texto": "Descripción detallada de la recomendación", 
-          "accionable": boolean, 
+        {
+          "texto": "Descripción detallada de la recomendación",
+          "accionable": boolean,
           "tipo_accion": "campana_email" | "promocion" | "ninguna"
         }
       ]
-    }`;
+} `;
 
     try {
-  const text = await this.callGeminiWithRetry(prompt, 'KPI_ANALYSIS');
-  return this.cleanAndParseJson(text, 'KPI_ANALYSIS') || { summary: text, highlights: [], recommendations: [] };
-} catch (e) {
-  this.logger.error(e);
-  throw e;
-}
+      const text = await this.callGeminiWithRetry(prompt, 'KPI_ANALYSIS');
+      return this.cleanAndParseJson(text, 'KPI_ANALYSIS') || { summary: text, highlights: [], recommendations: [] };
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
   }
 
   async generatePromoIdeas(params: any): Promise < any > {
   if(!this.model) throw new Error('Gemini AI not configured');
-  const prompt = `Ideas de promociones para ${params.sector}. 
-     Ticket: ${params.ticketMedio}. Visitas: ${params.frecuenciaVisitas}. Objetivo: ${params.objetivo}.
-     JSON: { ideas: [{ titulo, descripcion, condiciones, mensajeWhatsApp, textoCartel, estimadoImpacto }] }`;
+  const prompt = `Ideas de promociones para ${ params.sector }.
+Ticket: ${ params.ticketMedio }.Visitas: ${ params.frecuenciaVisitas }.Objetivo: ${ params.objetivo }.
+JSON: { ideas: [{ titulo, descripcion, condiciones, mensajeWhatsApp, textoCartel, estimadoImpacto }] } `;
 
   try {
     const text = await this.callGeminiWithRetry(prompt, 'PROMO_IDEAS');
@@ -190,9 +193,9 @@ export class GeminiService implements AiProvider {
 
   async generateEmailCampaignIdeas(params: any): Promise < any > {
   if(!this.model) throw new Error('Gemini AI not configured');
-  const prompt = `Campaña email para ${params.sector}. Segmento: ${params.segmentoDescripcion}.
-    Objetivo: ${params.objetivo}.
-    JSON: { asuntos: [], cuerpos: [{ variante, contenido, cta }], consejos: [] }`;
+  const prompt = `Campaña email para ${ params.sector }.Segmento: ${ params.segmentoDescripcion }.
+Objetivo: ${ params.objetivo }.
+JSON: { asuntos: [], cuerpos: [{ variante, contenido, cta }], consejos: [] } `;
 
   try {
     const text = await this.callGeminiWithRetry(prompt, 'EMAIL_CAMPAIGN');
@@ -203,7 +206,7 @@ export class GeminiService implements AiProvider {
   async generatePlanAccion(params: any): Promise < any > {
   if(!this.model) throw new Error('Gemini AI not configured');
   const prompt = `Plan acción para recomendación: "${params.recomendacion}".
-    JSON: { acciones: [{ tipo, titulo, descripcion, datos_prellenados, prioridad }], explicacion, impacto_estimado }`;
+  JSON: { acciones: [{ tipo, titulo, descripcion, datos_prellenados, prioridad }], explicacion, impacto_estimado } `;
 
   try {
     const text = await this.callGeminiWithRetry(prompt, 'PLAN_ACCION');
@@ -214,12 +217,12 @@ export class GeminiService implements AiProvider {
   async generarCampanaSMS(params: any): Promise < any > {
   if(!this.model) throw new Error('Gemini AI not configured');
   const prompt = `SMS MAX 160 chars.
-    Negocio: ${params.contextoNegocio}
-    Objetivo: ${params.objetivo}
-    Mensaje Clave: ${params.mensajeClave}
-    Tono: ${params.tono}
-    
-    JSON: { mensaje, sugerencias: [] }`;
+  Negocio: ${ params.contextoNegocio }
+Objetivo: ${ params.objetivo }
+    Mensaje Clave: ${ params.mensajeClave }
+Tono: ${ params.tono }
+
+JSON: { mensaje, sugerencias: [] } `;
 
   try {
     const text = await this.callGeminiWithRetry(prompt, 'SMS_CAMPAIGN');
@@ -244,16 +247,16 @@ export class GeminiService implements AiProvider {
   if(!this.model) throw new Error('Gemini AI not configured');
 
   const prompt = `Analiza el impacto de estas promociones en un negocio:
-PROMOCIONES: ${JSON.stringify(promociones)}
-KPIs: ${JSON.stringify(kpis)}
-COMPARATIVA: ${JSON.stringify(comparativa)}
+PROMOCIONES: ${ JSON.stringify(promociones) }
+KPIs: ${ JSON.stringify(kpis) }
+COMPARATIVA: ${ JSON.stringify(comparativa) }
 
 Devuelve JSON:
 {
   "resumen": "Análisis del impacto...",
-  "impacto": "positivo" | "neutral" | "negativo",
-  "recomendaciones": ["Recomendación 1", "Recomendación 2"]
-}`;
+    "impacto": "positivo" | "neutral" | "negativo",
+      "recomendaciones": ["Recomendación 1", "Recomendación 2"]
+} `;
 
   try {
     const text = await this.callGeminiWithRetry(prompt, 'ANALISIS_PROMOCIONES');
@@ -267,16 +270,16 @@ Devuelve JSON:
   async generateNextMonthPlan(tienda: any, kpis: any, analisisIA: any): Promise < any > {
   if(!this.model) throw new Error('Gemini AI not configured');
 
-  const prompt = `Plan acción próximo mes para ${tienda.nombre}.
-     KPIs: ${JSON.stringify(kpis)}
-     Análisis Previo: ${JSON.stringify(analisisIA)}
+  const prompt = `Plan acción próximo mes para ${ tienda.nombre }.
+KPIs: ${ JSON.stringify(kpis) }
+     Análisis Previo: ${ JSON.stringify(analisisIA) }
      
      Formato JSON:
-     {
-       "objetivos": [{ "objetivo": "...", "metrica": "...", "valor_objetivo": 0 }],
-       "acciones": [{ "accion": "...", "prioridad": "...", "implementable_sistema": true, "tipo": "..." }],
-       "kpis_monitorear": []
-     }`;
+{
+  "objetivos": [{ "objetivo": "...", "metrica": "...", "valor_objetivo": 0 }],
+    "acciones": [{ "accion": "...", "prioridad": "...", "implementable_sistema": true, "tipo": "..." }],
+      "kpis_monitorear": []
+} `;
 
   try {
     const text = await this.callGeminiWithRetry(prompt, 'PLAN_SIGUIENTE_MES');
@@ -292,20 +295,20 @@ Devuelve JSON:
   async generateSalesCoaching(context: any): Promise < any > {
   if(!this.model) throw new Error('Gemini AI not configured');
 
-  const prompt = `Actúa como el mejor Coach de Ventas del mundo (estilo Jordan Belfort pero ético).
+  const prompt = `Actúa como el mejor Coach de Ventas del mundo(estilo Jordan Belfort pero ético).
     Analiza la situación de este prospecto y dame una estrategia de CIERRE inmediata.
     
-    Estado Actual: ${context.stage}
-    Respuestas del Playbook: ${JSON.stringify(context.answers)}
-    Info Prospecto: ${JSON.stringify(context.lead)}
+    Estado Actual: ${ context.stage }
+    Respuestas del Playbook: ${ JSON.stringify(context.answers) }
+    Info Prospecto: ${ JSON.stringify(context.lead) }
     
     Genera un JSON con:
-    {
-      "analysis": "Breve análisis de la situación (1 frase)",
-      "strategy": "La estrategia psicológica a usar",
+{
+  "analysis": "Breve análisis de la situación (1 frase)",
+    "strategy": "La estrategia psicológica a usar",
       "script": "Un guion exacto de 1-2 frases para decir AHORA MISMO",
-      "action": "La siguiente acción física recomendada"
-    }
+        "action": "La siguiente acción física recomendada"
+}
     Mantenlo corto, directo y energizante.`;
 
   try {
@@ -320,19 +323,19 @@ Devuelve JSON:
   async generateNeuroMessage(context: any): Promise < any > {
   if(!this.model) throw new Error('Gemini AI not configured');
 
-  const prompt = `Eres experto en Copywriting y PNL (Programación Neuro-Lingüística).
-    Genera un mensaje de ${context.channel} (WhatsApp/Email) para este prospecto.
-    Objetivo: Moverlo de ${context.currentStatus} a ${context.targetStatus}.
+  const prompt = `Eres experto en Copywriting y PNL(Programación Neuro - Lingüística).
+    Genera un mensaje de ${ context.channel } (WhatsApp / Email) para este prospecto.
+  Objetivo: Moverlo de ${ context.currentStatus } a ${ context.targetStatus }.
+
+Datos:
+Nombre: ${ context.leadName }
+Negocio: ${ context.businessName }
+Dolor / Interés: ${ context.painPoint || 'Mejorar ventas' }
+Tono: ${ context.tone || 'Profesional pero cercano' }
     
-    Datos:
-    Nombre: ${context.leadName}
-    Negocio: ${context.businessName}
-    Dolor/Interés: ${context.painPoint || 'Mejorar ventas'}
-    Tono: ${context.tone || 'Profesional pero cercano'}
-    
-    Usa principios de persuasión (Escasez, Autoridad, Prueba Social) según aplique.
-    
-    JSON: { "message": "Texto del mensaje..." }`;
+    Usa principios de persuasión(Escasez, Autoridad, Prueba Social) según aplique.
+
+  JSON: { "message": "Texto del mensaje..." } `;
 
   try {
     const text = await this.callGeminiWithRetry(prompt, 'NEURO_MESSAGE');
