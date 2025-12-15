@@ -288,7 +288,6 @@ KPIs: ${ JSON.stringify(kpis) }
     this.logger.error('[INFORME] Error generando plan:', error);
     return { objetivos: [], kpis_monitorear: [] };
   }
-}
 
   // --- SALES INNOVATION METHODS ---
 
