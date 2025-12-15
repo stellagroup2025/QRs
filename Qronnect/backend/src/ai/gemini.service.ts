@@ -148,62 +148,72 @@ export class GeminiService implements AiProvider {
     }
   }
 
-  async generateKpiAnalysis(params: any): Promise<any> {
-    if (!this.model) throw new Error('Gemini AI not configured');
-
-    const prompt = `Eres un analista de negocio experto. Analiza estos KPIs:
+  const prompt = `Eres un analista de negocio experto. Analiza estos KPIs:
     ${JSON.stringify(params.kpis)}
     Contexto: ${params.contexto || ''}
     
-    Genera respuesta JSON con { summary, highlights: [], recommendations: [] }`;
+    Genera respuesta JSON siguiendo ESTRICTAMENTE este esquema:
+    {
+      "summary": "Resumen ejecutivo del desempeño general",
+      "highlights": [
+        { "metric": "Nombre métrica", "value": "Valor", "insight": "Breve explicación" }
+      ],
+      "recommendations": [
+        { 
+          "texto": "Descripción detallada de la recomendación", 
+          "accionable": boolean, 
+          "tipo_accion": "campana_email" | "promocion" | "ninguna"
+        }
+      ]
+    }`;
 
     try {
-      const text = await this.callGeminiWithRetry(prompt, 'KPI_ANALYSIS');
-      return this.cleanAndParseJson(text, 'KPI_ANALYSIS') || { summary: text, highlights: [], recommendations: [] };
-    } catch (e) {
-      this.logger.error(e);
-      throw e;
-    }
+  const text = await this.callGeminiWithRetry(prompt, 'KPI_ANALYSIS');
+  return this.cleanAndParseJson(text, 'KPI_ANALYSIS') || { summary: text, highlights: [], recommendations: [] };
+} catch (e) {
+  this.logger.error(e);
+  throw e;
+}
   }
 
-  async generatePromoIdeas(params: any): Promise<any> {
-    if (!this.model) throw new Error('Gemini AI not configured');
-    const prompt = `Ideas de promociones para ${params.sector}. 
+  async generatePromoIdeas(params: any): Promise < any > {
+  if(!this.model) throw new Error('Gemini AI not configured');
+  const prompt = `Ideas de promociones para ${params.sector}. 
      Ticket: ${params.ticketMedio}. Visitas: ${params.frecuenciaVisitas}. Objetivo: ${params.objetivo}.
      JSON: { ideas: [{ titulo, descripcion, condiciones, mensajeWhatsApp, textoCartel, estimadoImpacto }] }`;
 
-    try {
-      const text = await this.callGeminiWithRetry(prompt, 'PROMO_IDEAS');
-      return this.cleanAndParseJson(text, 'PROMO_IDEAS') || { ideas: [] };
-    } catch (e) { throw e; }
-  }
+  try {
+    const text = await this.callGeminiWithRetry(prompt, 'PROMO_IDEAS');
+    return this.cleanAndParseJson(text, 'PROMO_IDEAS') || { ideas: [] };
+  } catch(e) { throw e; }
+}
 
-  async generateEmailCampaignIdeas(params: any): Promise<any> {
-    if (!this.model) throw new Error('Gemini AI not configured');
-    const prompt = `Campaña email para ${params.sector}. Segmento: ${params.segmentoDescripcion}.
+  async generateEmailCampaignIdeas(params: any): Promise < any > {
+  if(!this.model) throw new Error('Gemini AI not configured');
+  const prompt = `Campaña email para ${params.sector}. Segmento: ${params.segmentoDescripcion}.
     Objetivo: ${params.objetivo}.
     JSON: { asuntos: [], cuerpos: [{ variante, contenido, cta }], consejos: [] }`;
 
-    try {
-      const text = await this.callGeminiWithRetry(prompt, 'EMAIL_CAMPAIGN');
-      return this.cleanAndParseJson(text, 'EMAIL_CAMPAIGN') || { asuntos: [], cuerpos: [], consejos: [] };
-    } catch (e) { throw e; }
-  }
+  try {
+    const text = await this.callGeminiWithRetry(prompt, 'EMAIL_CAMPAIGN');
+    return this.cleanAndParseJson(text, 'EMAIL_CAMPAIGN') || { asuntos: [], cuerpos: [], consejos: [] };
+  } catch(e) { throw e; }
+}
 
-  async generatePlanAccion(params: any): Promise<any> {
-    if (!this.model) throw new Error('Gemini AI not configured');
-    const prompt = `Plan acción para recomendación: "${params.recomendacion}".
+  async generatePlanAccion(params: any): Promise < any > {
+  if(!this.model) throw new Error('Gemini AI not configured');
+  const prompt = `Plan acción para recomendación: "${params.recomendacion}".
     JSON: { acciones: [{ tipo, titulo, descripcion, datos_prellenados, prioridad }], explicacion, impacto_estimado }`;
 
-    try {
-      const text = await this.callGeminiWithRetry(prompt, 'PLAN_ACCION');
-      return this.cleanAndParseJson(text, 'PLAN_ACCION') || { acciones: [], explicacion: '', impacto_estimado: '' };
-    } catch (e) { throw e; }
-  }
+  try {
+    const text = await this.callGeminiWithRetry(prompt, 'PLAN_ACCION');
+    return this.cleanAndParseJson(text, 'PLAN_ACCION') || { acciones: [], explicacion: '', impacto_estimado: '' };
+  } catch(e) { throw e; }
+}
 
-  async generarCampanaSMS(params: any): Promise<any> {
-    if (!this.model) throw new Error('Gemini AI not configured');
-    const prompt = `SMS MAX 160 chars.
+  async generarCampanaSMS(params: any): Promise < any > {
+  if(!this.model) throw new Error('Gemini AI not configured');
+  const prompt = `SMS MAX 160 chars.
     Negocio: ${params.contextoNegocio}
     Objetivo: ${params.objetivo}
     Mensaje Clave: ${params.mensajeClave}
@@ -211,29 +221,29 @@ export class GeminiService implements AiProvider {
     
     JSON: { mensaje, sugerencias: [] }`;
 
-    try {
-      const text = await this.callGeminiWithRetry(prompt, 'SMS_CAMPAIGN');
-      const parsed = this.cleanAndParseJson(text, 'SMS_CAMPAIGN');
+  try {
+    const text = await this.callGeminiWithRetry(prompt, 'SMS_CAMPAIGN');
+    const parsed = this.cleanAndParseJson(text, 'SMS_CAMPAIGN');
 
-      if (parsed) {
-        const mensaje = parsed.mensaje || '';
-        return {
-          mensaje,
-          caracteres: mensaje.length,
-          numSMS: Math.ceil(mensaje.length / 160) || 1,
-          sugerencias: parsed.sugerencias || []
-        };
-      }
+    if(parsed) {
+      const mensaje = parsed.mensaje || '';
+      return {
+        mensaje,
+        caracteres: mensaje.length,
+        numSMS: Math.ceil(mensaje.length / 160) || 1,
+        sugerencias: parsed.sugerencias || []
+      };
+    }
       return { mensaje: '', caracteres: 0, numSMS: 0, sugerencias: [] };
-    } catch (e) { throw e; }
-  }
+  } catch(e) { throw e; }
+}
 
   // --- New Methods for Report Analysis ---
 
-  async analyzePromoImpact(promociones: any[], kpis: any, comparativa: any): Promise<any> {
-    if (!this.model) throw new Error('Gemini AI not configured');
+  async analyzePromoImpact(promociones: any[], kpis: any, comparativa: any): Promise < any > {
+  if(!this.model) throw new Error('Gemini AI not configured');
 
-    const prompt = `Analiza el impacto de estas promociones en un negocio:
+  const prompt = `Analiza el impacto de estas promociones en un negocio:
 PROMOCIONES: ${JSON.stringify(promociones)}
 KPIs: ${JSON.stringify(kpis)}
 COMPARATIVA: ${JSON.stringify(comparativa)}
@@ -245,19 +255,19 @@ Devuelve JSON:
   "recomendaciones": ["Recomendación 1", "Recomendación 2"]
 }`;
 
-    try {
-      const text = await this.callGeminiWithRetry(prompt, 'ANALISIS_PROMOCIONES');
-      return this.cleanAndParseJson(text, 'ANALISIS_PROMOCIONES') || { resumen: text, impacto: 'neutral' };
-    } catch (error) {
-      this.logger.error('[INFORME] Error analizando promociones:', error);
-      return { resumen: 'Error analizando impacto', impacto: 'neutral' };
-    }
+  try {
+    const text = await this.callGeminiWithRetry(prompt, 'ANALISIS_PROMOCIONES');
+    return this.cleanAndParseJson(text, 'ANALISIS_PROMOCIONES') || { resumen: text, impacto: 'neutral' };
+  } catch(error) {
+    this.logger.error('[INFORME] Error analizando promociones:', error);
+    return { resumen: 'Error analizando impacto', impacto: 'neutral' };
   }
+}
 
-  async generateNextMonthPlan(tienda: any, kpis: any, analisisIA: any): Promise<any> {
-    if (!this.model) throw new Error('Gemini AI not configured');
+  async generateNextMonthPlan(tienda: any, kpis: any, analisisIA: any): Promise < any > {
+  if(!this.model) throw new Error('Gemini AI not configured');
 
-    const prompt = `Plan acción próximo mes para ${tienda.nombre}.
+  const prompt = `Plan acción próximo mes para ${tienda.nombre}.
      KPIs: ${JSON.stringify(kpis)}
      Análisis Previo: ${JSON.stringify(analisisIA)}
      
@@ -268,21 +278,21 @@ Devuelve JSON:
        "kpis_monitorear": []
      }`;
 
-    try {
-      const text = await this.callGeminiWithRetry(prompt, 'PLAN_SIGUIENTE_MES');
-      return this.cleanAndParseJson(text, 'PLAN_SIGUIENTE_MES') || { objetivos: [] };
-    } catch (error) {
-      this.logger.error('[INFORME] Error generando plan:', error);
-      return { objetivos: [], kpis_monitorear: [] };
-    }
+  try {
+    const text = await this.callGeminiWithRetry(prompt, 'PLAN_SIGUIENTE_MES');
+    return this.cleanAndParseJson(text, 'PLAN_SIGUIENTE_MES') || { objetivos: [] };
+  } catch(error) {
+    this.logger.error('[INFORME] Error generando plan:', error);
+    return { objetivos: [], kpis_monitorear: [] };
   }
+}
 
   // --- SALES INNOVATION METHODS ---
 
-  async generateSalesCoaching(context: any): Promise<any> {
-    if (!this.model) throw new Error('Gemini AI not configured');
+  async generateSalesCoaching(context: any): Promise < any > {
+  if(!this.model) throw new Error('Gemini AI not configured');
 
-    const prompt = `Actúa como el mejor Coach de Ventas del mundo (estilo Jordan Belfort pero ético).
+  const prompt = `Actúa como el mejor Coach de Ventas del mundo (estilo Jordan Belfort pero ético).
     Analiza la situación de este prospecto y dame una estrategia de CIERRE inmediata.
     
     Estado Actual: ${context.stage}
@@ -298,19 +308,19 @@ Devuelve JSON:
     }
     Mantenlo corto, directo y energizante.`;
 
-    try {
-      const text = await this.callGeminiWithRetry(prompt, 'SALES_COACHING');
-      return this.cleanAndParseJson(text, 'SALES_COACHING') || { strategy: 'No se pudo generar estrategia', script: '' };
-    } catch (error) {
-      this.logger.error('Error generating sales coaching:', error);
-      return { strategy: 'Error de conexión', script: '' };
-    }
+  try {
+    const text = await this.callGeminiWithRetry(prompt, 'SALES_COACHING');
+    return this.cleanAndParseJson(text, 'SALES_COACHING') || { strategy: 'No se pudo generar estrategia', script: '' };
+  } catch(error) {
+    this.logger.error('Error generating sales coaching:', error);
+    return { strategy: 'Error de conexión', script: '' };
   }
+}
 
-  async generateNeuroMessage(context: any): Promise<any> {
-    if (!this.model) throw new Error('Gemini AI not configured');
+  async generateNeuroMessage(context: any): Promise < any > {
+  if(!this.model) throw new Error('Gemini AI not configured');
 
-    const prompt = `Eres experto en Copywriting y PNL (Programación Neuro-Lingüística).
+  const prompt = `Eres experto en Copywriting y PNL (Programación Neuro-Lingüística).
     Genera un mensaje de ${context.channel} (WhatsApp/Email) para este prospecto.
     Objetivo: Moverlo de ${context.currentStatus} a ${context.targetStatus}.
     
@@ -324,12 +334,12 @@ Devuelve JSON:
     
     JSON: { "message": "Texto del mensaje..." }`;
 
-    try {
-      const text = await this.callGeminiWithRetry(prompt, 'NEURO_MESSAGE');
-      return this.cleanAndParseJson(text, 'NEURO_MESSAGE') || { message: '' };
-    } catch (error) {
-      this.logger.error('Error generating neuro message:', error);
-      return { message: '' };
-    }
+  try {
+    const text = await this.callGeminiWithRetry(prompt, 'NEURO_MESSAGE');
+    return this.cleanAndParseJson(text, 'NEURO_MESSAGE') || { message: '' };
+  } catch(error) {
+    this.logger.error('Error generating neuro message:', error);
+    return { message: '' };
   }
+}
 }
