@@ -364,14 +364,38 @@ export default function QrCodesPoolPage() {
 
         const designBase64 = canvas.toDataURL('image/jpeg', 0.9);
 
-        const x = startX + (col * cellWidth) + offsetX;
-        const y = startY + (row * cellHeight) + offsetY;
+        // Position Logic: Align to nearest corner
+        // Col 0 (Left) -> x = 0
+        // Col 1 (Right) -> x = pageWidth - stickerWidth
+        // Row 0 (Top) -> y = 0
+        // Row 1 (Bottom) -> y = pageHeight - stickerHeight
+
+        let x = 0;
+        let y = 0;
+
+        if (col === 0) {
+          x = 0; // Left
+        } else {
+          x = pageWidth - stickerWidth; // Right
+        }
+
+        if (row === 0) {
+          y = 0; // Top
+        } else {
+          y = pageHeight - stickerHeight; // Bottom
+        }
+
+        // Apply margins if they were non-zero (currently 0)
+        // x += (col === 0 ? margin : -margin);
+        // y += (row === 0 ? margin + titleSpace : -margin);
+        // implicit since margin is 0
 
         doc.addImage(designBase64, 'JPEG', x, y, stickerWidth, stickerHeight);
 
         doc.setFontSize(8);
         doc.setTextColor(100);
-        doc.text(qr.hash, x + (stickerWidth / 2), y + stickerHeight + 4, { align: 'center' });
+        // Adjust text position relative to new x,y
+        doc.text(qr.hash, x + (stickerWidth / 2), y + stickerHeight - 2, { align: 'center' }); // -2 to fit inside bottom edge if tight
 
         col++;
         if (col >= cols) {
