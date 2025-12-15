@@ -50,7 +50,7 @@ export function VersionUpdater() {
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 50 }}
-                    className="fixed bottom-4 right-4 z-50 max-w-sm w-full"
+                    className="fixed bottom-4 right-4 z-[9999] max-w-sm w-full"
                 >
                     <div className="bg-slate-900 border border-slate-800 text-white p-4 rounded-lg shadow-2xl flex flex-col gap-3">
                         <div className="flex items-start gap-3">
