@@ -265,8 +265,8 @@ export default function QrCodesPoolPage() {
       }
 
       // Config - 2x2 Layout (4 stickers per page)
-      const margin = 10;
-      const titleSpace = 15;
+      const margin = 0; // Full bleed
+      const titleSpace = 0; // No title
 
       const availableWidth = pageWidth - (2 * margin);
       const availableHeight = pageHeight - (2 * margin) - titleSpace;
@@ -283,6 +283,8 @@ export default function QrCodesPoolPage() {
       let stickerWidth, stickerHeight;
 
       // Calculate dimensions to fit/fill cell maintaining aspect ratio
+      // For stickers, we usually want to FILL the cell if it's the right shape, or FIT if not.
+      // Assuming we want to maximize size within the cell:
       if (templateAspect > cellAspect) {
         stickerHeight = cellHeight;
         stickerWidth = stickerHeight / templateAspect;
@@ -300,9 +302,9 @@ export default function QrCodesPoolPage() {
       let col = 0;
       let row = 0;
 
-      // Add Title
-      doc.setFontSize(16);
-      doc.text(pdfTitle, pageWidth / 2, 12, { align: 'center' });
+      // REMOVED Title
+      // doc.setFontSize(16);
+      // doc.text(pdfTitle, pageWidth / 2, 12, { align: 'center' });
 
       const canvas = document.createElement('canvas');
       canvas.width = templateImg.width;
@@ -315,8 +317,9 @@ export default function QrCodesPoolPage() {
 
         if (i > 0 && i % (cols * rows) === 0) {
           doc.addPage();
-          doc.setFontSize(10);
-          doc.text(pdfTitle, pageWidth / 2, 10, { align: 'center' });
+          // Title removed
+          // doc.setFontSize(10);
+          // doc.text(pdfTitle, pageWidth / 2, 10, { align: 'center' });
           col = 0;
           row = 0;
         }
