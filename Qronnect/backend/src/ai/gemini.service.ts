@@ -23,33 +23,69 @@ export class GeminiService implements AiProvider {
       this.model = null;
     } else {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      this.logger.log('✅ Google Gemini AI service initialized with model: gemini-1.5-flash');
-
-      // AUTO-DEBUG: List available models to find out what is wrong
-      this.listAvailableModels(apiKey);
+      // Initialize asynchronously
+      this.initializeModel(apiKey).catch(err => {
+        this.logger.error('Failed to initialize Gemini model', err);
+      });
     }
   }
 
-  private async listAvailableModels(apiKey: string) {
+  private async initializeModel(apiKey: string) {
     try {
-      // Direct REST call to list models since SDK might not expose it easily in all versions
+      this.logger.log('🔄 Detecting available Gemini models...');
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+
+      let selectedModelName = 'gemini-1.5-flash'; // Fallback default
+
       if (response.ok) {
         const data = await response.json();
-        this.logger.log('📋 AVAILABLE GEMINI MODELS:');
-        const models = (data.models || []).map((m: any) => m.name);
-        this.logger.log(JSON.stringify(models, null, 2));
+        const models = (data.models || []).map((m: any) => m.name.replace('models/', ''));
+
+        this.logger.log(`📋 Available models: ${models.join(', ')}`);
+
+        // Priority list
+        const candidates = [
+          'gemini-1.5-flash',
+          'gemini-1.5-flash-001',
+          'gemini-1.5-pro',
+          'gemini-1.5-pro-001',
+          'gemini-1.0-pro',
+          'gemini-pro'
+        ];
+
+        // Find the first candidate that exists in the available models
+        const bestMatch = candidates.find(c => models.includes(c));
+
+        if (bestMatch) {
+          selectedModelName = bestMatch;
+          this.logger.log(`✨ Selected optimal model: ${selectedModelName}`);
+        } else {
+          this.logger.warn(`⚠️ No preferred model found. Falling back to default: ${selectedModelName}`);
+        }
       } else {
-        this.logger.error(`❌ Failed to list models: ${response.status} ${response.statusText}`);
+        this.logger.error(`❌ Failed to list models (${response.status}). Using fallback: ${selectedModelName}`);
       }
-    } catch (e) {
-      this.logger.error('❌ Error listing models', e);
+
+      this.model = this.genAI.getGenerativeModel({ model: selectedModelName });
+      this.logger.log(`✅ Gemini Service ready with model: ${selectedModelName}`);
+    } catch (error) {
+      this.logger.error('❌ Error during model initialization', error);
+      // Fallback in case of error
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     }
   }
 
   private async callGeminiWithRetry(prompt: string, context: string): Promise<any> {
-    if (!this.model) throw new Error('Gemini AI not configured');
+    // Wait for initialization if needed (max 10 seconds)
+    if (!this.model && this.genAI) {
+      this.logger.log('⏳ Waiting for model initialization...');
+      for (let i = 0; i < 20; i++) {
+        if (this.model) break;
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+
+    if (!this.model) throw new Error('Gemini AI not configured or failed to initialize');
 
     let lastError: Error;
     for (let attempt = 0; attempt < this.MAX_RETRIES; attempt++) {
