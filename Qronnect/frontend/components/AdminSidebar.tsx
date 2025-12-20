@@ -223,7 +223,7 @@ export function AdminSidebar() {
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
-                <div className="flex flex-col h-full">
+                <div className="flex flex-col h-full overflow-hidden">
                     {/* Logo Section */}
                     <div className="h-16 flex items-center px-6 border-b">
                         {branding.logo_url && !branding.logo_url.includes('/brand/qronnect/') ? (
@@ -240,7 +240,7 @@ export function AdminSidebar() {
                     </div>
 
                     {/* Navigation Links */}
-                    <ScrollArea className="flex-1 py-6 px-3">
+                    <ScrollArea className="flex-1 min-h-0 py-6 px-3">
                         <div className="space-y-6">
                             {menuGroups.map((group) => (
                                 <div key={group.label}>
