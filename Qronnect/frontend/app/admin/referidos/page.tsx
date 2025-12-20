@@ -112,15 +112,15 @@ export default function ReferidosPage() {
 
   const cargarDatos = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
-      const tenant = localStorage.getItem('tenant_domain');
+      const domain = window.location.hostname.split('.')[0];
+      const token = localStorage.getItem(`admin_token_${domain}`) || localStorage.getItem('admin_token');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
       // Cargar programa
       const programaRes = await fetch(`${API_URL}/api/referidos/programa`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'X-Tenant-Domain': tenant || '',
+          'X-Tenant-Domain': domain,
         },
       });
 
@@ -149,7 +149,7 @@ export default function ReferidosPage() {
       const statsRes = await fetch(`${API_URL}/api/referidos/estadisticas`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'X-Tenant-Domain': tenant || '',
+          'X-Tenant-Domain': domain,
         },
       });
 
@@ -162,7 +162,7 @@ export default function ReferidosPage() {
       const referidosRes = await fetch(`${API_URL}/api/referidos/lista?limit=20`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'X-Tenant-Domain': tenant || '',
+          'X-Tenant-Domain': domain,
         },
       });
 
@@ -180,8 +180,8 @@ export default function ReferidosPage() {
   const guardarPrograma = async () => {
     setSaving(true);
     try {
-      const token = localStorage.getItem('admin_token');
-      const tenant = localStorage.getItem('tenant_domain');
+      const domain = window.location.hostname.split('.')[0];
+      const token = localStorage.getItem(`admin_token_${domain}`) || localStorage.getItem('admin_token');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
       const url = programa.id
@@ -208,7 +208,7 @@ export default function ReferidosPage() {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
-          'X-Tenant-Domain': tenant || '',
+          'X-Tenant-Domain': domain,
         },
         body: JSON.stringify(payload),
       });
