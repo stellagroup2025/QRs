@@ -113,7 +113,31 @@ export default function ReferidosPage() {
   const cargarDatos = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-      const tenant = localStorage.getItem('tenant_domain');
+      let tenant = localStorage.getItem('tenant_domain');
+
+      // Fallback: Si no hay tenant en localStorage, extraerlo del dominio actual
+      if (!tenant) {
+        const host = window.location.host;
+        const parts = host.split('.');
+
+        // Si es subdominio.qronnect.es -> usar subdominio
+        if (parts.length >= 2 && !host.startsWith('localhost')) {
+          tenant = parts[0];
+        }
+        // Si es subdominio.localhost:3000 -> usar subdominio
+        else if (parts.length > 1 && parts[1].startsWith('localhost')) {
+          tenant = parts[0];
+        }
+        // Si es localhost -> usar default
+        else {
+          tenant = 'lokeyokiera'; // fallback para desarrollo
+        }
+
+        console.log('⚠️ tenant_domain no encontrado en localStorage, usando:', tenant);
+        // Guardar para futuras peticiones
+        localStorage.setItem('tenant_domain', tenant);
+      }
+
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
       // Cargar programa
@@ -181,7 +205,31 @@ export default function ReferidosPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const tenant = localStorage.getItem('tenant_domain');
+      let tenant = localStorage.getItem('tenant_domain');
+
+      // Fallback: Si no hay tenant en localStorage, extraerlo del dominio actual
+      if (!tenant) {
+        const host = window.location.host;
+        const parts = host.split('.');
+
+        // Si es subdominio.qronnect.es -> usar subdominio
+        if (parts.length >= 2 && !host.startsWith('localhost')) {
+          tenant = parts[0];
+        }
+        // Si es subdominio.localhost:3000 -> usar subdominio
+        else if (parts.length > 1 && parts[1].startsWith('localhost')) {
+          tenant = parts[0];
+        }
+        // Si es localhost -> usar default
+        else {
+          tenant = 'lokeyokiera'; // fallback para desarrollo
+        }
+
+        console.log('⚠️ tenant_domain no encontrado en localStorage, usando:', tenant);
+        // Guardar para futuras peticiones
+        localStorage.setItem('tenant_domain', tenant);
+      }
+
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
       const url = programa.id
