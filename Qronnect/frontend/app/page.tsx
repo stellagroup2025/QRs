@@ -263,141 +263,99 @@ function TenantLandingPage() {
       {/* Hero Section */}
       <section
         id="main-content"
-        className='relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-50 bg-cover bg-center'
-        style={{ backgroundImage: config.hero_bg_url ? `url(${config.hero_bg_url})` : undefined }}
+        className='relative overflow-hidden bg-gray-50'
         aria-label="Sección principal del sitio"
       >
-        <div className='absolute inset-0 bg-grid-gray-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]' />
+        {/* Dynamic Background */}
+        {config.hero_bg_url ? (
+          <div
+            className="absolute inset-0 bg-cover bg-center z-0"
+            style={{ backgroundImage: `url(${config.hero_bg_url})` }}
+          />
+        ) : (
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[100px] opacity-20 animate-pulse"
+              style={{ backgroundColor: branding.color_primario }} />
+            <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[100px] opacity-20 animate-pulse"
+              style={{ backgroundColor: branding.color_primario, animationDelay: '1s' }} />
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
+          </div>
+        )}
 
-        <div className='relative container mx-auto px-4 py-12 md:py-20'>
-          <div className='max-w-6xl mx-auto'>
-            <div className='grid md:grid-cols-2 gap-10 items-center'>
+        {/* Overlay if image exists */}
+        {config.hero_bg_url && <div className="absolute inset-0 bg-white/80 z-0" />}
+
+        <div className='relative z-10 container mx-auto px-4 py-20 md:py-32'>
+          <div className='max-w-7xl mx-auto'>
+            <div className='grid md:grid-cols-2 gap-12 items-center'>
               <motion.div
-                initial={{ opacity: 0, x: -60 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
-                className='space-y-6'
+                className='space-y-8 order-2 md:order-1'
               >
-                {/* Logo con fallback a LogoQronnect */}
-                <motion.img
-                  initial={{ opacity: 0, scale: 0.8 }}
+                {/* Brand Badge */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6 }}
-                  src={logoSrc}
-                  alt={`Logo de ${displayBrandName} - Programa de fidelización con códigos QR`}
-                  className='h-14 md:h-16 w-auto object-contain'
-                  role="img"
-                  onError={(e) => {
-                    // Evitar bucle infinito de onError
-                    e.currentTarget.onerror = null
-                    e.currentTarget.src = '/LogoQronnect.png'
-                  }}
-                />
+                  transition={{ delay: 0.2 }}
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border bg-white/50 backdrop-blur-sm"
+                  style={{ borderColor: `${branding.color_primario}30`, color: branding.color_primario }}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>{brandingLoading ? "Cargando..." : displayBrandName}</span>
+                </motion.div>
 
-                <div className='space-y-4'>
-                  <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold leading-tight'>
-                    <span className='bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent'>
-                      {config.hero_titulo_principal}
-                    </span>
-                    <br />
-                    <span style={{ color: branding.color_primario }}>
-                      {config.hero_titulo_destacado}
+                <div className='space-y-6'>
+                  <h1 className='text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-gray-900'>
+                    {config.hero_titulo_principal}{' '}
+                    <span
+                      className="relative whitespace-nowrap"
+                    >
+                      <span className="relative z-10" style={{ color: branding.color_primario }}>
+                        {config.hero_titulo_destacado}
+                      </span>
+                      {/* Underline decoration */}
+                      <svg className="absolute -bottom-2 w-full h-3 left-0 z-0 opacity-40" viewBox="0 0 100 10" preserveAspectRatio="none">
+                        <path d="M0 5 Q 50 10 100 5" stroke={branding.color_primario} strokeWidth="6" fill="none" />
+                      </svg>
                     </span>
                   </h1>
 
-                  <p className='text-lg md:text-xl text-gray-600 leading-relaxed'>
+                  <p className='text-xl md:text-2xl text-gray-600 leading-relaxed max-w-lg'>
                     {config.hero_subtitulo}
                   </p>
                 </div>
 
-                <div className='flex flex-col sm:flex-row gap-3'>
-                  <Button
-                    asChild
-                    size='lg'
-                    className='text-base md:text-lg px-6 md:px-8 py-4 md:py-5 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5'
-                    style={{ backgroundColor: branding.color_primario }}
-                  >
-                    <Link
-                      href='/get-qr'
-                      className='flex items-center gap-2'
-                      aria-label="Obtener mi código QR de fidelización - Acción principal"
-                    >
-                      {config.hero_cta_principal}
-                      <ArrowRight className='w-5 h-5' aria-hidden="true" />
-                    </Link>
-                  </Button>
+                <motion.div
+                  initial={{ opacity: 0, x: 60 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+                  className='hidden md:block'
+                >
+                  <div className='relative'>
+                    {/* Glow de color */}
+                    <div
+                      className='absolute inset-0 rounded-3xl blur-3xl opacity-20'
+                      style={{ backgroundColor: branding.color_primario }}
+                    />
 
-                  <Button
-                    asChild
-                    size='lg'
-                    variant='outline'
-                    className='text-base md:text-lg px-6 md:px-8 py-4 md:py-5 border-2 transition-all duration-300 transform hover:-translate-y-0.5'
-                    style={{
-                      borderColor: branding.color_primario,
-                      color: branding.color_primario
-                    }}
-                  >
-                    <Link
-                      href='/login'
-                      aria-label="Iniciar sesión en mi cuenta"
-                    >
-                      {config.hero_cta_secundario}
-                    </Link>
-                  </Button>
-                </div>
-
-                <div className='flex items-center gap-6 pt-2'>
-                  <div className='flex -space-x-2' aria-hidden="true">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className='w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-semibold'
-                        style={{
-                          backgroundColor: hexToRgba(
-                            branding.color_primario,
-                            0.8 - i * 0.15
-                          )
-                        }}
-                      >
-                        {i}k
+                    {/* Card */}
+                    <div className='relative bg-white rounded-3xl shadow-2xl p-6 border border-gray-100'>
+                      <div className='aspect-square overflow-hidden rounded-2xl relative'>
+                        <Image
+                          src={config.hero_imagen_url || '/gente-de-negocios-dandose-la-mano-para-saludar.webp'}
+                          alt={config.hero_titulo_principal || `Imagen destacada de ${displayBrandName}`}
+                          fill
+                          className='object-cover'
+                          sizes='(max-width: 768px) 100vw, 50vw'
+                          priority={true}
+                          quality={90}
+                        />
                       </div>
-                    ))}
-                  </div>
-                  <div className='text-sm text-gray-600'>
-                    {config.hero_social_proof}
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: 60 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                className='hidden md:block'
-              >
-                <div className='relative'>
-                  {/* Glow de color */}
-                  <div
-                    className='absolute inset-0 rounded-3xl blur-3xl opacity-20'
-                    style={{ backgroundColor: branding.color_primario }}
-                  />
-
-                  {/* Card */}
-                  <div className='relative bg-white rounded-3xl shadow-2xl p-6 border border-gray-100'>
-                    <div className='aspect-square overflow-hidden rounded-2xl relative'>
-                      <Image
-                        src={config.hero_imagen_url || '/gente-de-negocios-dandose-la-mano-para-saludar.webp'}
-                        alt={config.hero_titulo_principal || `Imagen destacada de ${displayBrandName}`}
-                        fill
-                        className='object-cover'
-                        sizes='(max-width: 768px) 100vw, 50vw'
-                        priority={true}
-                        quality={90}
-                      />
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
             </div>
           </div>
         </div>
@@ -475,400 +433,250 @@ function TenantLandingPage() {
                   </div>
                 </motion.div>
               ))}
-            </motion.div>
+            </h3>
+            <p className='text-gray-600 leading-relaxed'>
+              {service.description}
+            </p>
           </motion.div>
-        </div>
-      </section>
+          )
+            })}
+        </motion.div>
+    </div>
+      </section >
 
-      {/* Beneficios */}
-      <section
-        className='py-12 md:py-16 bg-gradient-to-b from-gray-50 to-white bg-cover bg-center'
-        style={{ backgroundImage: config.beneficios_bg_url ? `url(${config.beneficios_bg_url})` : undefined }}
+    {/* Beneficios */ }
+    < section
+  className = 'py-12 md:py-16 bg-gradient-to-b from-gray-50 to-white bg-cover bg-center'
+  style = {{ backgroundImage: config.beneficios_bg_url ? `url(${config.beneficios_bg_url})` : undefined }
+}
       >
-        <div className='container mx-auto px-4'>
-          <div className='max-w-5xl mx-auto'>
-            <motion.div
-              initial='initial'
-              whileInView='animate'
-              viewport={{ once: true }}
-              variants={stagger}
-              className='grid md:grid-cols-2 gap-10 items-center'
-            >
-              <motion.div variants={fadeInUp} className='space-y-6'>
-                <div className='space-y-2'>
-                  <h2 className='text-3xl md:text-4xl font-bold'>
-                    <span className='text-gray-900'>{config.beneficios_titulo}</span>
-                  </h2>
-                  <p className='text-lg text-gray-600'>
-                    {config.beneficios_subtitulo}
-                  </p>
-                </div>
+  <div className='container mx-auto px-4'>
+    <div className='max-w-5xl mx-auto'>
+      <motion.div
+        initial='initial'
+        whileInView='animate'
+        viewport={{ once: true }}
+        variants={stagger}
+        className='grid md:grid-cols-2 gap-10 items-center'
+      >
+        <motion.div variants={fadeInUp} className='space-y-6'>
+          <div className='space-y-2'>
+            <h2 className='text-3xl md:text-4xl font-bold'>
+              <span className='text-gray-900'>{config.beneficios_titulo}</span>
+            </h2>
+            <p className='text-lg text-gray-600'>
+              {config.beneficios_subtitulo}
+            </p>
+          </div>
 
-                <div className='space-y-3'>
-                  {benefits.map((benefit, index) => (
-                    <motion.div
-                      key={index}
-                      variants={fadeInUp}
-                      className='flex items-start gap-3 p-3 rounded-xl hover:bg-white transition-colors duration-300'
-                    >
-                      <div
-                        className='w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5'
-                        style={{ backgroundColor: branding.color_primario }}
-                      >
-                        <Check className='w-4 h-4 text-white' />
-                      </div>
-                      <p className='text-gray-700 text-sm md:text-base font-medium'>
-                        {benefit}
-                      </p>
-                    </motion.div>
-                  ))}
+          <div className='space-y-3'>
+            {benefits.map((benefit, index) => (
+              <motion.div
+                key={index}
+                variants={fadeInUp}
+                className='flex items-start gap-3 p-3 rounded-xl hover:bg-white transition-colors duration-300'
+              >
+                <div
+                  className='w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5'
+                  style={{ backgroundColor: branding.color_primario }}
+                >
+                  <Check className='w-4 h-4 text-white' />
                 </div>
+                <p className='text-gray-700 text-sm md:text-base font-medium'>
+                  {benefit}
+                </p>
               </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
-              <motion.div variants={fadeInUp} className='relative'>
-                {metrics.length > 0 && (
-                  <>
-                    <div
-                      className='absolute -inset-3 rounded-3xl blur-2xl opacity-20'
-                      style={{ backgroundColor: branding.color_primario }}
-                    />
-                    <div className='relative bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 border border-gray-100 shadow-xl'>
-                      <AnimatePresence mode='wait'>
-                        {mainMetric && (
-                          <motion.div
-                            key={mainMetric.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.4 }}
-                            className='space-y-6'
-                          >
-                            {/* BLOQUE PRINCIPAL (número + texto juntos) */}
-                            <div className='text-center space-y-1'>
+        <motion.div variants={fadeInUp} className='relative'>
+          {metrics.length > 0 && (
+            <>
+              <div
+                className='absolute -inset-3 rounded-3xl blur-2xl opacity-20'
+                style={{ backgroundColor: branding.color_primario }}
+              />
+
+
+              {/* Beneficios */}
+              < section
+                className='py-12 md:py-16 bg-gradient-to-b from-gray-50 to-white bg-cover bg-center'
+                style={{ backgroundImage: config.beneficios_bg_url ? `url(${config.beneficios_bg_url})` : undefined }
+                }
+              >
+                <div className='container mx-auto px-4'>
+                  <div className='max-w-5xl mx-auto'>
+                    <motion.div
+                      initial='initial'
+                      whileInView='animate'
+                      viewport={{ once: true }}
+                      variants={stagger}
+                      className='grid md:grid-cols-2 gap-10 items-center'
+                    >
+                      <motion.div variants={fadeInUp} className='space-y-6'>
+                        <div className='space-y-2'>
+                          <h2 className='text-3xl md:text-4xl font-bold'>
+                            <span className='text-gray-900'>{config.beneficios_titulo}</span>
+                          </h2>
+                          <p className='text-lg text-gray-600'>
+                            {config.beneficios_subtitulo}
+                          </p>
+                        </div>
+
+                        <div className='space-y-3'>
+                          {benefits.map((benefit, index) => (
+                            <motion.div
+                              key={index}
+                              variants={fadeInUp}
+                              className='flex items-start gap-3 p-3 rounded-xl hover:bg-white transition-colors duration-300'
+                            >
                               <div
-                                className='text-5xl font-bold'
-                                style={{ color: branding.color_primario }}
+                                className='w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5'
+                                style={{ backgroundColor: branding.color_primario }}
                               >
-                                {mainMetric.value}
-                              </div>
-                              <div className='text-gray-600 text-sm'>
-                                {mainMetric.label}
+                                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-12 mb-12 text-center md:text-left'>
+                                  {/* Branding */}
+                                  <div className='space-y-4'>
+                                    <img
+                                      src={logoSrc}
+                                      alt={displayBrandName}
+                                      className='h-10 mx-auto md:mx-0 w-auto object-contain'
+                                      onError={(e) => {
+                                        // Fallback a tu logo si falla el del cliente
+                                        e.currentTarget.onerror = null
+                                        e.currentTarget.src = '/LogoQronnect.png'
+                                      }}
+                                    />
+                                    <p className='text-gray-400 text-sm leading-relaxed'>
+                                      {displayBrandName}
+                                    </p>
+                                  </div>
+
+                                  {/* Producto */}
+                                  <div>
+                                    <h3 className='font-semibold mb-4 text-sm md:text-base text-white'>
+                                      Producto
+                                    </h3>
+                                    <ul className='space-y-2 text-gray-400 text-sm'>
+                                      <li>
+                                        <Link
+                                          href='#'
+                                          className='hover:text-white transition-colors'
+                                        >
+                                          Características
+                                        </Link>
+                                      </li>
+                                      <li>
+                                        <Link
+                                          href='#'
+                                          className='hover:text-white transition-colors'
+                                        >
+                                          Precios
+                                        </Link>
+                                      </li>
+                                      <li>
+                                        <Link
+                                          href='#'
+                                          className='hover:text-white transition-colors'
+                                        >
+                                          Casos de uso
+                                        </Link>
+                                      </li>
+                                    </ul>
+                                  </div>
+
+                                  {/* Empresa */}
+                                  <div>
+                                    <h3 className='font-semibold mb-4 text-sm md:text-base text-white'>
+                                      Empresa
+                                    </h3>
+                                    <ul className='space-y-2 text-gray-400 text-sm'>
+                                      <li>
+                                        <Link
+                                          href='#'
+                                          className='hover:text-white transition-colors'
+                                        >
+                                          Sobre nosotros
+                                        </Link>
+                                      </li>
+                                      <li>
+                                        <Link
+                                          href='#'
+                                          className='hover:text-white transition-colors'
+                                        >
+                                          Blog
+                                        </Link>
+                                      </li>
+                                      <li>
+                                        <Link
+                                          href='#'
+                                          className='hover:text-white transition-colors'
+                                        >
+                                          Contacto
+                                        </Link>
+                                      </li>
+                                    </ul>
+                                  </div>
+
+                                  {/* Acceso */}
+                                  <div>
+                                    <h3 className='font-semibold mb-4 text-sm md:text-base text-white'>
+                                      Acceso
+                                    </h3>
+                                    <ul className='space-y-2 text-gray-400 text-sm'>
+                                      <li>
+                                        <Link
+                                          href='/login'
+                                          className='hover:text-white transition-colors'
+                                        >
+                                          Iniciar sesión
+                                        </Link>
+                                      </li>
+                                      <li>
+                                        <Link
+                                          href='/get-qr'
+                                          className='hover:text-white transition-colors'
+                                        >
+                                          Registrarse
+                                        </Link>
+                                      </li>
+                                      <li>
+                                        <Link
+                                          href='/recuperar'
+                                          className='hover:text-white transition-colors'
+                                        >
+                                          Recuperar cuenta
+                                        </Link>
+                                      </li>
+                                    </ul>
+                                  </div>
+                                </div>
+
+                                {/* LINEA SEPARADORA */}
+                                <div className='border-t border-gray-800 pt-8 text-center text-gray-400 text-sm space-y-4'>
+                                  {/* COPYRIGHT */}
+                                  <p>
+                                    &copy; {new Date().getFullYear()} {displayBrandName}. Todos los
+                                    derechos reservados.
+                                  </p>
+
+                                  {/* STELLAGROUP */}
+                                  <p className='text-xs md:text-sm'>
+                                    Producto desarrollado por{' '}
+                                    <Link
+                                      href='https://stellagroup.es'
+                                      target='_blank'
+                                      className='text-blue-400 hover:text-blue-300 underline decoration-blue-400/40 hover:decoration-blue-300/60 transition-colors'
+                                    >
+                                      StellaGroup
+                                    </Link>
+                                    .
+                                  </p>
+                                </div>
                               </div>
                             </div>
-
-                            {/* BLOQUES SECUNDARIOS (número + texto juntos) */}
-                            {secondaryMetrics.length > 0 && (
-                              <div className='grid grid-cols-2 gap-4'>
-                                {secondaryMetrics.map((metric) => (
-                                  <div
-                                    key={metric.id}
-                                    className='text-center space-y-1'
-                                  >
-                                    <div className='text-2xl font-bold text-gray-900'>
-                                      {metric.value}
-                                    </div>
-                                    <div className='text-xs text-gray-600'>
-                                      {metric.label}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonios */}
-      <section
-        className='py-12 md:py-16 bg-white bg-cover bg-center'
-        style={{ backgroundImage: config.testimonios_bg_url ? `url(${config.testimonios_bg_url})` : undefined }}
-      >
-        <div className='container mx-auto px-4'>
-          <motion.div
-            initial='initial'
-            whileInView='animate'
-            viewport={{ once: true }}
-            variants={stagger}
-            className='max-w-6xl mx-auto'
-          >
-            <motion.div
-              variants={fadeInUp}
-              className='text-center mb-10 md:mb-12'
-            >
-              <h2 className='text-3xl md:text-4xl font-bold mb-4'>
-                <span className='text-gray-900'>{config.testimonios_titulo.split(' ').slice(0, -2).join(' ')} </span>
-                <span style={{ color: branding.color_primario }}>
-                  {config.testimonios_titulo.split(' ').slice(-2).join(' ')}
-                </span>
-              </h2>
-            </motion.div>
-
-            <motion.div
-              variants={stagger}
-              className='grid md:grid-cols-3 gap-6 md:gap-8'
-            >
-              {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={index}
-                  variants={fadeInUp}
-                  whileHover={{ y: -4 }}
-                  className='bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-300'
-                  role="article"
-                  aria-label={`Testimonio de ${testimonial.name}`}
-                >
-                  <div
-                    className='flex gap-1 mb-4'
-                    role="img"
-                    aria-label={`Calificación: ${testimonial.rating} de 5 estrellas`}
-                  >
-                    {Array.from({ length: testimonial.rating }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className='w-5 h-5 sm:w-4 sm:h-4 fill-current'
-                        style={{ color: branding.color_primario }}
-                        aria-hidden="true"
-                      />
-                    ))}
-                  </div>
-                  <p className='text-gray-700 text-sm md:text-base leading-relaxed mb-4 italic'>
-                    "{testimonial.content}"
-                  </p>
-                  <div className='flex items-center gap-3'>
-                    <div
-                      className='w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold'
-                      style={{ backgroundColor: branding.color_primario }}
-                    >
-                      {testimonial.name.charAt(0)}
-                    </div>
-                    <div>
-                      <div className='font-semibold text-gray-900 text-sm md:text-base'>
-                        {testimonial.name}
-                      </div>
-                      <div className='text-xs text-gray-600'>
-                        {testimonial.role}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* CTA Final */}
-      <section
-        className='py-12 md:py-16 relative overflow-hidden bg-cover bg-center'
-        style={{ backgroundImage: config.cta_final_bg_url ? `url(${config.cta_final_bg_url})` : undefined }}
-      >
-        <div
-          className='absolute inset-0 opacity-5'
-          style={{ backgroundColor: branding.color_primario }}
-        />
-        <div className='relative container mx-auto px-4'>
-          <motion.div
-            initial='initial'
-            whileInView='animate'
-            viewport={{ once: true }}
-            variants={fadeInUp}
-            className='max-w-4xl mx-auto text-center space-y-6'
-          >
-            <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold'>
-              <span className='text-gray-900'>{config.cta_final_titulo_1} </span>
-              <br />
-              <span style={{ color: branding.color_primario }}>
-                {config.cta_final_titulo_2}
-              </span>
-            </h2>
-            <p className='text-lg md:text-xl text-gray-600 max-w-2xl mx-auto'>
-              {config.cta_final_subtitulo}
-            </p>
-            <div className='flex flex-col sm:flex-row gap-3 justify-center pt-2'>
-              <Button
-                asChild
-                size='lg'
-                className='text-base md:text-lg px-8 md:px-10 py-4 md:py-5 text-white shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1'
-                style={{ backgroundColor: branding.color_primario }}
-              >
-                <Link href='/get-qr' className='flex items-center gap-2'>
-                  {config.cta_final_boton_principal}
-                  <ArrowRight className='w-5 h-5' />
-                </Link>
-              </Button>
-              {config.cta_final_boton_secundario && (
-                <Button
-                  asChild
-                  size='lg'
-                  variant='outline'
-                  className='text-base md:text-lg px-8 md:px-10 py-4 md:py-5 border-2 transition-all duration-300 transform hover:-translate-y-1'
-                  style={{
-                    borderColor: branding.color_primario,
-                    color: branding.color_primario
-                  }}
-                >
-                  <Link href='/login'>{config.cta_final_boton_secundario}</Link>
-                </Button>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className='bg-gray-900 text-white py-12'>
-        <div className='container mx-auto px-4'>
-          <div className='max-w-6xl mx-auto'>
-            {/* GRID PRINCIPAL */}
-            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-12 mb-12 text-center md:text-left'>
-              {/* Branding */}
-              <div className='space-y-4'>
-                <img
-                  src={logoSrc}
-                  alt={displayBrandName}
-                  className='h-10 mx-auto md:mx-0 w-auto object-contain'
-                  onError={(e) => {
-                    // Fallback a tu logo si falla el del cliente
-                    e.currentTarget.onerror = null
-                    e.currentTarget.src = '/LogoQronnect.png'
-                  }}
-                />
-                <p className='text-gray-400 text-sm leading-relaxed'>
-                  {displayBrandName}
-                </p>
-              </div>
-
-              {/* Producto */}
-              <div>
-                <h3 className='font-semibold mb-4 text-sm md:text-base text-white'>
-                  Producto
-                </h3>
-                <ul className='space-y-2 text-gray-400 text-sm'>
-                  <li>
-                    <Link
-                      href='#'
-                      className='hover:text-white transition-colors'
-                    >
-                      Características
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href='#'
-                      className='hover:text-white transition-colors'
-                    >
-                      Precios
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href='#'
-                      className='hover:text-white transition-colors'
-                    >
-                      Casos de uso
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Empresa */}
-              <div>
-                <h3 className='font-semibold mb-4 text-sm md:text-base text-white'>
-                  Empresa
-                </h3>
-                <ul className='space-y-2 text-gray-400 text-sm'>
-                  <li>
-                    <Link
-                      href='#'
-                      className='hover:text-white transition-colors'
-                    >
-                      Sobre nosotros
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href='#'
-                      className='hover:text-white transition-colors'
-                    >
-                      Blog
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href='#'
-                      className='hover:text-white transition-colors'
-                    >
-                      Contacto
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Acceso */}
-              <div>
-                <h3 className='font-semibold mb-4 text-sm md:text-base text-white'>
-                  Acceso
-                </h3>
-                <ul className='space-y-2 text-gray-400 text-sm'>
-                  <li>
-                    <Link
-                      href='/login'
-                      className='hover:text-white transition-colors'
-                    >
-                      Iniciar sesión
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href='/get-qr'
-                      className='hover:text-white transition-colors'
-                    >
-                      Registrarse
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href='/recuperar'
-                      className='hover:text-white transition-colors'
-                    >
-                      Recuperar cuenta
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* LINEA SEPARADORA */}
-            <div className='border-t border-gray-800 pt-8 text-center text-gray-400 text-sm space-y-4'>
-              {/* COPYRIGHT */}
-              <p>
-                &copy; {new Date().getFullYear()} {displayBrandName}. Todos los
-                derechos reservados.
-              </p>
-
-              {/* STELLAGROUP */}
-              <p className='text-xs md:text-sm'>
-                Producto desarrollado por{' '}
-                <Link
-                  href='https://stellagroup.es'
-                  target='_blank'
-                  className='text-blue-400 hover:text-blue-300 underline decoration-blue-400/40 hover:decoration-blue-300/60 transition-colors'
-                >
-                  StellaGroup
-                </Link>
-                .
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
-  )
+              </footer >
+                      </div >
+                      )
 }
