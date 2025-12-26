@@ -377,8 +377,18 @@ export default function LandingConfigPage() {
                     <div className="space-y-3">
                       <h4 className="font-semibold">Lista de Beneficios</h4>
                       {[1, 2, 3, 4, 5, 6].map((num) => (
-                        <div key={num} className="space-y-2">
-                          <Label htmlFor={`beneficio_${num}`}>Beneficio {num}</Label>
+                        <div key={num} className="space-y-2 p-3 border rounded-md">
+                          <div className="flex items-center justify-between mb-2">
+                            <Label htmlFor={`beneficio_${num}`} className="font-medium">Beneficio {num}</Label>
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                id={`beneficio_${num}_activo`}
+                                checked={config[`beneficio_${num}_activo` as keyof LandingConfig] as boolean ?? true}
+                                onCheckedChange={(checked) => updateField(`beneficio_${num}_activo` as keyof LandingConfig, checked)}
+                              />
+                              <Label htmlFor={`beneficio_${num}_activo`} className="text-xs text-muted-foreground">Visible</Label>
+                            </div>
+                          </div>
                           <Input
                             id={`beneficio_${num}`}
                             value={config[`beneficio_${num}` as keyof LandingConfig] as string || ""}

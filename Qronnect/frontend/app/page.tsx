@@ -202,13 +202,13 @@ function TenantLandingPage() {
   ].filter(service => service.active)
 
   const benefits = [
-    config.beneficio_1,
-    config.beneficio_2,
-    config.beneficio_3,
-    config.beneficio_4,
-    config.beneficio_5,
-    config.beneficio_6,
-  ]
+    { text: config.beneficio_1, active: config.beneficio_1_activo ?? true },
+    { text: config.beneficio_2, active: config.beneficio_2_activo ?? true },
+    { text: config.beneficio_3, active: config.beneficio_3_activo ?? true },
+    { text: config.beneficio_4, active: config.beneficio_4_activo ?? true },
+    { text: config.beneficio_5, active: config.beneficio_5_activo ?? true },
+    { text: config.beneficio_6, active: config.beneficio_6_activo ?? true },
+  ].filter(b => b.active && b.text).map(b => b.text)
 
   const testimonials = [
     {

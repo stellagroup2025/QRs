@@ -44,11 +44,17 @@ export interface LandingConfig {
   beneficios_titulo: string
   beneficios_subtitulo: string
   beneficio_1: string
+  beneficio_1_activo: boolean
   beneficio_2: string
+  beneficio_2_activo: boolean
   beneficio_3: string
+  beneficio_3_activo: boolean
   beneficio_4: string
+  beneficio_4_activo: boolean
   beneficio_5: string
+  beneficio_5_activo: boolean
   beneficio_6: string
+  beneficio_6_activo: boolean
 
   // Estadísticas
   estadistica_principal_numero: string
@@ -129,11 +135,17 @@ const defaultConfig: LandingConfig = {
   beneficios_subtitulo:
     'Beneficios reales que impactan directamente en tu negocio',
   beneficio_1: 'Aumenta la retención de clientes hasta un 40%',
+  beneficio_1_activo: true,
   beneficio_2: 'Reduce costos operativos eliminando tarjetas físicas',
+  beneficio_2_activo: true,
   beneficio_3: 'Acceso a métricas en tiempo real',
+  beneficio_3_activo: true,
   beneficio_4: 'Integración sencilla con tu sistema actual',
+  beneficio_4_activo: true,
   beneficio_5: 'Soporte técnico incluido',
+  beneficio_5_activo: true,
   beneficio_6: 'Actualizaciones automáticas sin costo adicional',
+  beneficio_6_activo: true,
 
   estadistica_principal_numero: '40%',
   estadistica_principal_texto: 'Incremento promedio en retención',
