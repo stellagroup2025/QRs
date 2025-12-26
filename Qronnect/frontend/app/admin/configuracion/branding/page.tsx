@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Paintbrush, Upload, Store, Save, Loader2, Image as ImageIcon, X } from 'lucide-react'
+import { Paintbrush, Upload, Store, Save, Loader2, Image as ImageIcon, X, AlertCircle } from 'lucide-react'
 import Image from 'next/image'
 
 interface BrandingConfig {
@@ -15,6 +15,36 @@ interface BrandingConfig {
   color_primario: string
   color_secundario: string
   color_acento: string
+}
+
+// Componente helper para mostrar logo con fallback en caso de error
+const LogoDisplay = ({ src, className, fallbackClass }: { src?: string, className?: string, fallbackClass?: string }) => {
+  const [error, setError] = useState(false)
+
+  // Reset error when src changes
+  useEffect(() => {
+    setError(false)
+  }, [src])
+
+  if (!src || error) {
+    return (
+      <div className={`flex items-center justify-center bg-gray-100 dark:bg-slate-800 rounded-full ${fallbackClass}`}>
+        <Store className="w-1/2 h-1/2 text-gray-400" />
+      </div>
+    )
+  }
+
+  return (
+    <div className={`relative ${className}`}>
+      {/* Intento con img estándar para máxima compatibilidad si Next/Image falla */}
+      <img
+        src={src}
+        alt="Logo"
+        className="w-full h-full object-contain"
+        onError={() => setError(true)}
+      />
+    </div>
+  )
 }
 
 export default function ConfiguracionBrandingPage() {
@@ -234,11 +264,10 @@ export default function ConfiguracionBrandingPage() {
                   <div className="relative w-32 h-32 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800 flex items-center justify-center overflow-hidden flex-shrink-0 group">
                     {config.logo_url ? (
                       <>
-                        <Image
+                        <LogoDisplay
                           src={config.logo_url}
-                          alt="Logo actual"
-                          fill
-                          className="object-contain p-2"
+                          className="w-full h-full p-2"
+                          fallbackClass="w-full h-full"
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Button
@@ -252,10 +281,13 @@ export default function ConfiguracionBrandingPage() {
                         </div>
                       </>
                     ) : (
-                      <ImageIcon className="w-10 h-10 text-gray-300" />
+                      <div className="text-center p-4">
+                        <ImageIcon className="w-8 h-8 mx-auto text-gray-300 mb-2" />
+                        <span className="text-xs text-gray-400">Sin logo</span>
+                      </div>
                     )}
                     {uploadingLogo && (
-                      <div className="absolute inset-0 bg-white/80 dark:bg-black/50 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-white/80 dark:bg-black/50 flex items-center justify-center z-10">
                         <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                       </div>
                     )}
@@ -281,6 +313,9 @@ export default function ConfiguracionBrandingPage() {
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       Formato recomendado: PNG o SVG con fondo transparente. <br />
                       Tamaño máximo: 2MB.
+                    </p>
+                    <p className="text-[10px] text-gray-300 truncate max-w-xs select-all">
+                      {config.logo_url ? `URL: ${config.logo_url.substring(0, 30)}...` : ''}
                     </p>
                   </div>
                 </div>
@@ -407,15 +442,18 @@ export default function ConfiguracionBrandingPage() {
                 <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
 
                 <div className="relative z-10 flex flex-col items-center text-center">
-                  {config.logo_url ? (
-                    <div className="mb-4 bg-white/90 p-3 rounded-full shadow-lg">
-                      <img src={config.logo_url} alt="Logo" className="w-12 h-12 object-contain" />
-                    </div>
-                  ) : (
-                    <div className="mb-4 bg-white/20 p-3 rounded-full">
-                      <Store className="w-8 h-8 text-white" />
-                    </div>
-                  )}
+                  <div className="mb-4 bg-white/90 p-3 rounded-full shadow-lg">
+                    {config.logo_url ? (
+                      <LogoDisplay
+                        src={config.logo_url}
+                        className="w-12 h-12"
+                        fallbackClass="w-full h-full"
+                      // This fallback is generic, we can improve styling
+                      />
+                    ) : (
+                      <Store className="w-8 h-8 text-gray-400" />
+                    )}
+                  </div>
 
                   <h4 className="text-2xl font-bold mb-1 tracking-tight">{config.nombre_comercial || 'Tu Negocio'}</h4>
                   <p className="text-sm opacity-90 mb-6 font-light">
