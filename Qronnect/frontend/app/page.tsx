@@ -298,7 +298,7 @@ function TenantLandingPage() {
                   <h1 className='text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-gray-900'>
                     {config.hero_titulo_principal}{' '}
                     <span
-                      className="relative whitespace-nowrap"
+                      className="relative inline-block"
                     >
                       <span className="relative z-10 bg-clip-text text-transparent bg-gradient-to-r"
                         style={{
