@@ -12,15 +12,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Store,
   Sparkles,
-  Users,
-  TrendingUp,
-  Shield,
-  Zap,
-  Gift,
-  QrCode,
-  Check,
-  Star,
-  ArrowRight
+  Users, Gift, TrendingUp, QrCode, Shield, Zap, Check, Star, ArrowRight,
+  Heart, CheckCircle, Calendar, Clock, MapPin, Phone, Mail, Globe,
+  Award, ThumbsUp, Camera, Video, Music, Smile, ShoppingBag, CreditCard, Truck
 } from 'lucide-react'
 import { VisuallyHidden } from '@/components/ui/visually-hidden'
 
@@ -148,6 +142,24 @@ function TenantLandingPage() {
     QrCode,
     Shield,
     Zap,
+    Heart,
+    Star,
+    CheckCircle,
+    Calendar,
+    Clock,
+    MapPin,
+    Phone,
+    Mail,
+    Globe,
+    Award,
+    ThumbsUp,
+    Camera,
+    Video,
+    Music,
+    Smile,
+    ShoppingBag,
+    CreditCard,
+    Truck,
   }
 
   const services = [
@@ -155,33 +167,39 @@ function TenantLandingPage() {
       icon: iconMap[config.servicio_1_icono] || Users,
       title: config.servicio_1_titulo,
       description: config.servicio_1_descripcion,
+      active: config.servicio_1_activo ?? true,
     },
     {
       icon: iconMap[config.servicio_2_icono] || Gift,
       title: config.servicio_2_titulo,
       description: config.servicio_2_descripcion,
+      active: config.servicio_2_activo ?? true,
     },
     {
       icon: iconMap[config.servicio_3_icono] || TrendingUp,
       title: config.servicio_3_titulo,
       description: config.servicio_3_descripcion,
+      active: config.servicio_3_activo ?? true,
     },
     {
       icon: iconMap[config.servicio_4_icono] || QrCode,
       title: config.servicio_4_titulo,
       description: config.servicio_4_descripcion,
+      active: config.servicio_4_activo ?? true,
     },
     {
       icon: iconMap[config.servicio_5_icono] || Shield,
       title: config.servicio_5_titulo,
       description: config.servicio_5_descripcion,
+      active: config.servicio_5_activo ?? true,
     },
     {
       icon: iconMap[config.servicio_6_icono] || Zap,
       title: config.servicio_6_titulo,
       description: config.servicio_6_descripcion,
+      active: config.servicio_6_activo ?? true,
     },
-  ]
+  ].filter(service => service.active)
 
   const benefits = [
     config.beneficio_1,

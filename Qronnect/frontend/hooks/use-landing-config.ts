@@ -18,21 +18,27 @@ export interface LandingConfig {
   servicio_1_titulo: string
   servicio_1_descripcion: string
   servicio_1_icono: string
+  servicio_1_activo: boolean
   servicio_2_titulo: string
   servicio_2_descripcion: string
   servicio_2_icono: string
+  servicio_2_activo: boolean
   servicio_3_titulo: string
   servicio_3_descripcion: string
   servicio_3_icono: string
+  servicio_3_activo: boolean
   servicio_4_titulo: string
   servicio_4_descripcion: string
   servicio_4_icono: string
+  servicio_4_activo: boolean
   servicio_5_titulo: string
   servicio_5_descripcion: string
   servicio_5_icono: string
+  servicio_5_activo: boolean
   servicio_6_titulo: string
   servicio_6_descripcion: string
   servicio_6_icono: string
+  servicio_6_activo: boolean
 
   // Beneficios
   beneficios_titulo: string
@@ -92,26 +98,32 @@ const defaultConfig: LandingConfig = {
   servicio_1_descripcion:
     'Sistema completo para gestionar tu base de clientes de forma eficiente y personalizada.',
   servicio_1_icono: 'Users',
+  servicio_1_activo: true,
   servicio_2_titulo: 'Programa de Fidelización',
   servicio_2_descripcion:
     'Recompensa a tus clientes habituales y aumenta su lealtad con nuestro sistema de puntos.',
   servicio_2_icono: 'Gift',
+  servicio_2_activo: true,
   servicio_3_titulo: 'Análisis y Métricas',
   servicio_3_descripcion:
     'Obtén insights valiosos sobre el comportamiento de tus clientes y optimiza tu negocio.',
   servicio_3_icono: 'TrendingUp',
+  servicio_3_activo: true,
   servicio_4_titulo: 'Tarjetas Digitales QR',
   servicio_4_descripcion:
     'Olvídate de las tarjetas físicas. Todo digital, fácil y accesible desde el móvil.',
   servicio_4_icono: 'QrCode',
+  servicio_4_activo: true,
   servicio_5_titulo: 'Seguridad Garantizada',
   servicio_5_descripcion:
     'Tus datos y los de tus clientes protegidos con los más altos estándares de seguridad.',
   servicio_5_icono: 'Shield',
+  servicio_5_activo: true,
   servicio_6_titulo: 'Rápido y Eficiente',
   servicio_6_descripcion:
     'Implementación inmediata. Empieza a usar el sistema en minutos, no en semanas.',
   servicio_6_icono: 'Zap',
+  servicio_6_activo: true,
 
   beneficios_titulo: '¿Por qué elegirnos?',
   beneficios_subtitulo:

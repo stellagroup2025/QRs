@@ -64,16 +64,37 @@ export function LandingPreview({ config, deviceType = 'desktop' }: LandingPrevie
       icon: iconMap[config.servicio_1_icono || 'Users'] || Users,
       title: config.servicio_1_titulo || 'Servicio 1',
       description: config.servicio_1_descripcion || 'Descripción del servicio 1',
+      active: config.servicio_1_activo ?? true,
     },
     {
       icon: iconMap[config.servicio_2_icono || 'Gift'] || Gift,
       title: config.servicio_2_titulo || 'Servicio 2',
       description: config.servicio_2_descripcion || 'Descripción del servicio 2',
+      active: config.servicio_2_activo ?? true,
     },
     {
       icon: iconMap[config.servicio_3_icono || 'TrendingUp'] || TrendingUp,
       title: config.servicio_3_titulo || 'Servicio 3',
       description: config.servicio_3_descripcion || 'Descripción del servicio 3',
+      active: config.servicio_3_activo ?? true,
+    },
+    {
+      icon: iconMap[config.servicio_4_icono || 'QrCode'] || QrCode,
+      title: config.servicio_4_titulo || 'Servicio 4',
+      description: config.servicio_4_descripcion || 'Descripción del servicio 4',
+      active: config.servicio_4_activo ?? true,
+    },
+    {
+      icon: iconMap[config.servicio_5_icono || 'Shield'] || Shield,
+      title: config.servicio_5_titulo || 'Servicio 5',
+      description: config.servicio_5_descripcion || 'Descripción del servicio 5',
+      active: config.servicio_5_activo ?? true,
+    },
+    {
+      icon: iconMap[config.servicio_6_icono || 'Zap'] || Zap,
+      title: config.servicio_6_titulo || 'Servicio 6',
+      description: config.servicio_6_descripcion || 'Descripción del servicio 6',
+      active: config.servicio_6_activo ?? true,
     },
   ]
 
@@ -155,7 +176,7 @@ export function LandingPreview({ config, deviceType = 'desktop' }: LandingPrevie
               </p>
             </div>
             <div className="grid grid-cols-3 gap-3">
-              {services.map((service, index) => (
+              {services.filter(s => s.active).map((service, index) => (
                 <div key={index} className="border rounded p-3 space-y-2">
                   <div
                     className="w-8 h-8 rounded flex items-center justify-center"

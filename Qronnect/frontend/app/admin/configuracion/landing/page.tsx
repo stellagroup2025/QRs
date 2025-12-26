@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
@@ -283,7 +284,17 @@ export default function LandingConfigPage() {
 
                     {[1, 2, 3, 4, 5, 6].map((num) => (
                       <div key={num} className="space-y-3 p-4 border rounded-lg">
-                        <h4 className="font-semibold">Servicio {num}</h4>
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-semibold">Servicio {num}</h4>
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              id={`servicio_${num}_activo`}
+                              checked={config[`servicio_${num}_activo` as keyof LandingConfig] as boolean ?? true}
+                              onCheckedChange={(checked) => updateField(`servicio_${num}_activo` as keyof LandingConfig, checked)}
+                            />
+                            <Label htmlFor={`servicio_${num}_activo`}>Visible</Label>
+                          </div>
+                        </div>
 
                         <div className="grid md:grid-cols-3 gap-4">
                           <div className="space-y-2">
