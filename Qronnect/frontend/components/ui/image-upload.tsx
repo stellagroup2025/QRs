@@ -18,6 +18,34 @@ interface ImageUploadProps {
     aspectRatio?: 'square' | 'video' | 'auto'
 }
 
+// Inner component to handle image errors safely
+const ImagePreviewWithFallback = ({ src }: { src: string }) => {
+    const [error, setError] = useState(false);
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full w-full bg-red-50 text-red-500 p-4 rounded-md text-center">
+                <ImageIcon className="h-10 w-10 mb-2 opacity-50" />
+                <p className="text-xs font-bold">Error de Carga</p>
+                <p className="text-[10px] mt-1 text-muted-foreground leading-tight">La imagen se subió pero no es accesible.</p>
+                <p className="text-[10px] mt-2 font-medium bg-red-100 px-2 py-1 rounded">
+                    Verifica que el bucket &apos;branding&apos; en Supabase sea PÚBLICO.
+                </p>
+            </div>
+        )
+    }
+
+    return (
+        <Image
+            src={src}
+            alt="Preview"
+            fill
+            className="object-contain rounded-md"
+            onError={() => setError(true)}
+        />
+    )
+}
+
 export function ImageUpload({
     value,
     onChange,
@@ -66,7 +94,7 @@ export function ImageUpload({
             const data = await response.json()
             onChange(data.url)
             toast({
-                title: 'Imagen subida correctament',
+                title: 'Imagen subida correctamente',
                 description: 'La imagen se ha guardado exitosamente.',
             })
         } catch (error) {
@@ -120,17 +148,12 @@ export function ImageUpload({
                         <Loader2 className="h-8 w-8 animate-spin" />
                         <span className="text-sm">Subiendo...</span>
                     </div>
-                ) : value ? (
+                ) : value && value.trim() !== '' ? (
                     <div className="relative w-full h-full flex items-center justify-center min-h-[200px]">
                         <div className="relative w-full h-full">
-                            <Image
-                                src={value}
-                                alt="Preview"
-                                fill
-                                className="object-contain rounded-md"
-                            />
+                            <ImagePreviewWithFallback src={value} />
                         </div>
-                        <div className="absolute top-2 right-2 flex gap-2">
+                        <div className="absolute top-2 right-2 flex gap-2 z-10">
                             <Button
                                 type="button"
                                 variant="destructive"
@@ -142,7 +165,7 @@ export function ImageUpload({
                                 <X className="h-4 w-4" />
                             </Button>
                         </div>
-                        <div className="absolute bottom-2 right-2">
+                        <div className="absolute bottom-2 right-2 z-10">
                             <Button
                                 type="button"
                                 variant="secondary"
