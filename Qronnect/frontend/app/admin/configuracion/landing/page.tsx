@@ -15,7 +15,12 @@ import { LandingPreview } from "@/components/LandingPreview"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 
-const iconOptions = ["Users", "Gift", "TrendingUp", "QrCode", "Shield", "Zap", "Store"]
+const iconOptions = [
+  "Award", "Calendar", "Camera", "CheckCircle", "Clock", "CreditCard",
+  "Gift", "Globe", "Heart", "Mail", "MapPin", "Music", "Phone",
+  "QrCode", "Shield", "ShoppingBag", "Smile", "Star", "Store",
+  "ThumbsUp", "TrendingUp", "Truck", "Users", "Video", "Zap"
+]
 
 export default function LandingConfigPage() {
   const [config, setConfig] = useState<Partial<LandingConfig>>({})
