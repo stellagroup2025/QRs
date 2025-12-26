@@ -110,9 +110,15 @@ export async function actualizarProgramaSello(
 export async function eliminarProgramaSello(
   id: string,
   token: string,
-  domain: string
+  domain: string,
+  force = false
 ): Promise<void> {
-  const response = await fetch(`${API_URL}/api/sellos/programas/${id}`, {
+  const url = new URL(`${API_URL}/api/sellos/programas/${id}`);
+  if (force) {
+    url.searchParams.append('force', 'true');
+  }
+
+  const response = await fetch(url.toString(), {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,

@@ -26,7 +26,7 @@ import { ClientAuthGuard } from '../auth/guards/client-auth.guard';
 @Controller('sellos')
 @ApiBearerAuth()
 export class SellosController {
-  constructor(private readonly sellosService: SellosService) {}
+  constructor(private readonly sellosService: SellosService) { }
 
   // ============================================
   // PROGRAMAS DE SELLOS (Admin)
@@ -88,11 +88,16 @@ export class SellosController {
   @UseGuards(AdminAuthGuard)
   @Delete('programas/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar (desactivar) un programa de sellos' })
+  @ApiOperation({ summary: 'Eliminar un programa de sellos (Force: borrar todo)' })
   @ApiResponse({ status: 204, description: 'Programa eliminado' })
-  async eliminarPrograma(@Request() req, @Param('id') id: string) {
+  async eliminarPrograma(
+    @Request() req,
+    @Param('id') id: string,
+    @Query('force') force?: string,
+  ) {
     const idTienda = req.user.tienda_id;
-    await this.sellosService.eliminarPrograma(id, idTienda);
+    const isForce = force === 'true';
+    await this.sellosService.eliminarPrograma(id, idTienda, isForce);
   }
 
   @UseGuards(AdminAuthGuard)

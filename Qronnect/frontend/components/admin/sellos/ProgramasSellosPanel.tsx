@@ -58,18 +58,36 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
     setModalAbierto(true);
   };
 
-  const handleEliminar = async (id: string, nombre: string) => {
-    if (!confirm(`¿Estás seguro de desactivar el programa "${nombre}"?`)) {
+  const handleEliminar = async (programa: ProgramaSellos) => {
+    // Caso 1: Programa Activo -> Soft Delete (Desactivar)
+    if (programa.activo) {
+      if (!confirm(`¿Estás seguro de desactivar el programa "${programa.nombre}"?\n\nLos clientes ya no podrán verlo, pero se conservará el historial.`)) {
+        return;
+      }
+
+      try {
+        await eliminarProgramaSello(programa.id, token, domain, false);
+        toast.success('Programa desactivado exitosamente');
+        cargarProgramas();
+      } catch (error) {
+        console.error('Error al desactivar programa:', error);
+        toast.error('Error al desactivar programa');
+      }
+      return;
+    }
+
+    // Caso 2: Programa Inactivo -> Hard Delete (Borrar Definitivamente)
+    if (!confirm(`⚠ ¿ELIMINAR DEFINITIVAMENTE "${programa.nombre}"?\n\nEsta acción NO se puede deshacer.\n\nSe borrarán:\n- Todas las tarjetas de clientes asociadas\n- Todo el historial de sellos entregados\n- El programa de sellos`)) {
       return;
     }
 
     try {
-      await eliminarProgramaSello(id, token, domain);
-      toast.success('Programa eliminado/desactivado correctamente');
+      await eliminarProgramaSello(programa.id, token, domain, true); // force = true
+      toast.success('Programa y todos sus datos eliminados definitivamente');
       cargarProgramas();
     } catch (error) {
       console.error('Error al eliminar programa:', error);
-      toast.error('Error al desactivar programa');
+      toast.error('Error al eliminar programa');
     }
   };
 
@@ -252,7 +270,7 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleEliminar(programa.id, programa.nombre)}
+                  onClick={() => handleEliminar(programa)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

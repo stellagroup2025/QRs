@@ -139,10 +139,75 @@ export class SellosService {
    */
   /**
    * Eliminar un programa de sellos
-   * - Si NO tiene tarjetas asociadas: Hard Delete (se borra de la DB)
-   * - Si TIENE tarjetas asociadas: Soft Delete (activo = false)
+   * - force = false (default):
+   *    - Si NO tiene tarjetas asociadas: Hard Delete.
+   *    - Si TIENE tarjetas asociadas: Soft Delete (desactivar).
+   * - force = true:
+   *    - HARD DELETE CASCADA (Borra historial, tarjetas y programa).
    */
-  async eliminarPrograma(idPrograma: string, idTienda: string): Promise<void> {
+  async eliminarPrograma(
+    idPrograma: string,
+    idTienda: string,
+    force = false,
+  ): Promise<void> {
+    if (force) {
+      this.logger.warn(
+        `FORCE DELETE: Eliminando programa ${idPrograma} y todas sus dependencias`,
+      );
+
+      // 1. Eliminar sellos otorgados (historial) de las tarjetas del programa
+      // Primero obtenemos los IDs de las tarjetas para borrar sus sellos
+      const { data: tarjetas } = await this.getSupabase()
+        .from('tarjetas_sellos_clientes')
+        .select('id')
+        .eq('id_programa', idPrograma)
+        .eq('id_tienda', idTienda);
+
+      if (tarjetas && tarjetas.length > 0) {
+        const idsTarjetas = tarjetas.map((t) => t.id);
+        const { error: errorSellos } = await this.getSupabase()
+          .from('sellos_otorgados')
+          .delete()
+          .in('id_tarjeta', idsTarjetas);
+
+        if (errorSellos) {
+          throw new BadRequestException(
+            `Error al borrar historial de sellos: ${errorSellos.message}`,
+          );
+        }
+      }
+
+      // 2. Eliminar las tarjetas
+      const { error: errorTarjetas } = await this.getSupabase()
+        .from('tarjetas_sellos_clientes')
+        .delete()
+        .eq('id_programa', idPrograma)
+        .eq('id_tienda', idTienda);
+
+      if (errorTarjetas) {
+        throw new BadRequestException(
+          `Error al borrar tarjetas de clientes: ${errorTarjetas.message}`,
+        );
+      }
+
+      // 3. Eliminar el programa
+      const { error: errorPrograma } = await this.getSupabase()
+        .from('programas_sellos')
+        .delete()
+        .eq('id', idPrograma)
+        .eq('id_tienda', idTienda);
+
+      if (errorPrograma) {
+        throw new BadRequestException(
+          `Error al borrar programa: ${errorPrograma.message}`,
+        );
+      }
+
+      return;
+    }
+
+    // --- Lógica Smart Delete (Default) ---
+
     // 1. Verificar si hay tarjetas asociadas
     const { count, error: countError } = await this.getSupabase()
       .from('tarjetas_sellos_clientes')
@@ -160,7 +225,7 @@ export class SellosService {
     const tieneTarjetas = count !== null && count > 0;
 
     if (!tieneTarjetas) {
-      // HARD DELETE
+      // HARD DELETE (Sin uso)
       this.logger.log(`Hard deleting programa ${idPrograma} (sin uso)`);
       const { error } = await this.getSupabase()
         .from('programas_sellos')
@@ -174,7 +239,7 @@ export class SellosService {
         );
       }
     } else {
-      // SOFT DELETE
+      // SOFT DELETE (En uso)
       this.logger.log(`Soft deleting programa ${idPrograma} (en uso)`);
       const { error } = await this.getSupabase()
         .from('programas_sellos')
