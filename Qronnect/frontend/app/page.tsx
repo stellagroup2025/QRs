@@ -509,23 +509,35 @@ function TenantLandingPage() {
                   {config.beneficios_subtitulo}
                 </motion.p>
 
-                <motion.div variants={stagger} className='space-y-4'>
+                {/* PREMIUM GRID OF CARDS (Redesign) */}
+                <motion.div
+                  variants={stagger}
+                  className='grid sm:grid-cols-2 gap-4'
+                >
                   {benefits.map((benefit, index) => (
                     <motion.div
                       key={index}
                       variants={fadeInUp}
-                      className='flex items-start gap-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all group'
+                      className='flex flex-col p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1'
                       style={{
-                        borderLeft: index === 0 ? `4px solid ${safeColorAcento}` : '1px solid transparent'
+                        borderTop: `4px solid ${safeColorAcento}`
                       }}
                     >
-                      <div
-                        className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-1 transition-colors"
-                        style={{ backgroundColor: `${safeColorAcento}20` }}
-                      >
-                        <CheckCircle className="w-4 h-4" style={{ color: safeColorAcento }} />
+                      <div className="mb-3 flex justify-between items-start">
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-inner"
+                          style={{ backgroundColor: `${safeColorAcento}15` }}
+                        >
+                          <CheckCircle className="w-5 h-5" style={{ color: safeColorAcento }} />
+                        </div>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
+                          <ArrowRight className="w-4 h-4 text-gray-300" />
+                        </div>
                       </div>
-                      <span className='text-lg text-gray-700 font-medium group-hover:text-gray-900 transition-colors'>{benefit}</span>
+
+                      <span className='text-gray-800 font-bold text-lg leading-tight group-hover:text-gray-900 transition-colors'>
+                        {benefit}
+                      </span>
                     </motion.div>
                   ))}
                 </motion.div>
