@@ -225,17 +225,19 @@ export function LandingPreview({ config, deviceType = 'desktop' }: LandingPrevie
           </div>
 
           {/* Estadística Preview */}
-          <div className="border rounded p-4 text-center space-y-1">
-            <div
-              className="text-3xl font-bold"
-              style={{ color: branding.color_primario }}
-            >
-              {config.estadistica_principal_numero || '40%'}
+          {config.estadistica_principal_numero && (
+            <div className="border rounded p-4 text-center space-y-1">
+              <div
+                className="text-3xl font-bold"
+                style={{ color: branding.color_primario }}
+              >
+                {config.estadistica_principal_numero}
+              </div>
+              <div className="text-xs text-gray-600">
+                {config.estadistica_principal_texto || 'Métrica principal'}
+              </div>
             </div>
-            <div className="text-xs text-gray-600">
-              {config.estadistica_principal_texto || 'Métrica principal'}
-            </div>
-          </div>
+          )}
 
           {/* Testimonio Preview */}
           <div className="border rounded p-4 space-y-3">
@@ -296,15 +298,17 @@ export function LandingPreview({ config, deviceType = 'desktop' }: LandingPrevie
               >
                 {config.cta_final_boton_principal || 'Botón principal'}
               </div>
-              <div
-                className="px-4 py-2 rounded border text-sm font-medium"
-                style={{
-                  borderColor: branding.color_primario,
-                  color: branding.color_primario,
-                }}
-              >
-                {config.cta_final_boton_secundario || 'Botón secundario'}
-              </div>
+              {config.cta_final_boton_secundario && (
+                <div
+                  className="px-4 py-2 rounded border text-sm font-medium"
+                  style={{
+                    borderColor: branding.color_primario,
+                    color: branding.color_primario,
+                  }}
+                >
+                  {config.cta_final_boton_secundario}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -82,11 +82,12 @@ function TenantLandingPage() {
       value: config.estadistica_2_numero,
       label: config.estadistica_2_texto
     }
-  ]
+  ].filter(m => m.value && m.value.trim() !== '')
 
   const [activeMetric, setActiveMetric] = useState(0)
 
   useEffect(() => {
+    if (metrics.length <= 1) return;
     const interval = setInterval(() => {
       setActiveMetric((prev) => (prev + 1) % metrics.length)
     }, 4000)
@@ -94,11 +95,13 @@ function TenantLandingPage() {
     return () => clearInterval(interval)
   }, [metrics.length])
 
-  const mainMetric = metrics[activeMetric]
-  const secondaryMetrics = [
-    metrics[(activeMetric + 1) % metrics.length],
-    metrics[(activeMetric + 2) % metrics.length]
-  ]
+  const mainMetric = metrics.length > 0 ? metrics[activeMetric] : null
+  const secondaryMetrics = metrics.length >= 3
+    ? [
+      metrics[(activeMetric + 1) % metrics.length],
+      metrics[(activeMetric + 2) % metrics.length]
+    ]
+    : []
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -502,52 +505,60 @@ function TenantLandingPage() {
               </motion.div>
 
               <motion.div variants={fadeInUp} className='relative'>
-                <div
-                  className='absolute -inset-3 rounded-3xl blur-2xl opacity-20'
-                  style={{ backgroundColor: branding.color_primario }}
-                />
-                <div className='relative bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 border border-gray-100 shadow-xl'>
-                  <AnimatePresence mode='wait'>
-                    <motion.div
-                      key={mainMetric.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.4 }}
-                      className='space-y-6'
-                    >
-                      {/* BLOQUE PRINCIPAL (número + texto juntos) */}
-                      <div className='text-center space-y-1'>
-                        <div
-                          className='text-5xl font-bold'
-                          style={{ color: branding.color_primario }}
-                        >
-                          {mainMetric.value}
-                        </div>
-                        <div className='text-gray-600 text-sm'>
-                          {mainMetric.label}
-                        </div>
-                      </div>
-
-                      {/* BLOQUES SECUNDARIOS (número + texto juntos) */}
-                      <div className='grid grid-cols-2 gap-4'>
-                        {secondaryMetrics.map((metric) => (
-                          <div
-                            key={metric.id}
-                            className='text-center space-y-1'
+                {metrics.length > 0 && (
+                  <>
+                    <div
+                      className='absolute -inset-3 rounded-3xl blur-2xl opacity-20'
+                      style={{ backgroundColor: branding.color_primario }}
+                    />
+                    <div className='relative bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 border border-gray-100 shadow-xl'>
+                      <AnimatePresence mode='wait'>
+                        {mainMetric && (
+                          <motion.div
+                            key={mainMetric.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.4 }}
+                            className='space-y-6'
                           >
-                            <div className='text-2xl font-bold text-gray-900'>
-                              {metric.value}
+                            {/* BLOQUE PRINCIPAL (número + texto juntos) */}
+                            <div className='text-center space-y-1'>
+                              <div
+                                className='text-5xl font-bold'
+                                style={{ color: branding.color_primario }}
+                              >
+                                {mainMetric.value}
+                              </div>
+                              <div className='text-gray-600 text-sm'>
+                                {mainMetric.label}
+                              </div>
                             </div>
-                            <div className='text-xs text-gray-600'>
-                              {metric.label}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
+
+                            {/* BLOQUES SECUNDARIOS (número + texto juntos) */}
+                            {secondaryMetrics.length > 0 && (
+                              <div className='grid grid-cols-2 gap-4'>
+                                {secondaryMetrics.map((metric) => (
+                                  <div
+                                    key={metric.id}
+                                    className='text-center space-y-1'
+                                  >
+                                    <div className='text-2xl font-bold text-gray-900'>
+                                      {metric.value}
+                                    </div>
+                                    <div className='text-xs text-gray-600'>
+                                      {metric.label}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </>
+                )}
               </motion.div>
             </motion.div>
           </div>
@@ -665,18 +676,20 @@ function TenantLandingPage() {
                   <ArrowRight className='w-5 h-5' />
                 </Link>
               </Button>
-              <Button
-                asChild
-                size='lg'
-                variant='outline'
-                className='text-base md:text-lg px-8 md:px-10 py-4 md:py-5 border-2 transition-all duration-300 transform hover:-translate-y-1'
-                style={{
-                  borderColor: branding.color_primario,
-                  color: branding.color_primario
-                }}
-              >
-                <Link href='/login'>{config.cta_final_boton_secundario}</Link>
-              </Button>
+              {config.cta_final_boton_secundario && (
+                <Button
+                  asChild
+                  size='lg'
+                  variant='outline'
+                  className='text-base md:text-lg px-8 md:px-10 py-4 md:py-5 border-2 transition-all duration-300 transform hover:-translate-y-1'
+                  style={{
+                    borderColor: branding.color_primario,
+                    color: branding.color_primario
+                  }}
+                >
+                  <Link href='/login'>{config.cta_final_boton_secundario}</Link>
+                </Button>
+              )}
             </div>
           </motion.div>
         </div>
