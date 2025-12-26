@@ -355,4 +355,4 @@ export function LandingPreview({ config, deviceType = 'desktop' }: LandingPrevie
     </div>
   )
 }
-```
+
