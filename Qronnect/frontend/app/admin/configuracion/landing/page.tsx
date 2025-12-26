@@ -302,6 +302,17 @@ export default function LandingConfigPage() {
                       </div>
                     </div>
 
+                    <div className="space-y-4 pt-4">
+                      <Label>Imagen de Fondo</Label>
+                      <ImageUpload
+                        value={config.servicios_bg_url}
+                        onChange={(url) => updateField("servicios_bg_url", url)}
+                        type="servicios_bg"
+                        aspectRatio="video"
+                        description="Imagen de fondo para la sección de servicios."
+                      />
+                    </div>
+
                     <Separator />
 
                     {[1, 2, 3, 4, 5, 6].map((num) => (
@@ -392,6 +403,17 @@ export default function LandingConfigPage() {
                           placeholder="Beneficios que marcan la diferencia"
                         />
                       </div>
+                    </div>
+
+                    <div className="space-y-4 pt-4">
+                      <Label>Imagen de Fondo</Label>
+                      <ImageUpload
+                        value={config.beneficios_bg_url}
+                        onChange={(url) => updateField("beneficios_bg_url", url)}
+                        type="beneficios_bg"
+                        aspectRatio="video"
+                        description="Imagen de fondo para la sección de beneficios."
+                      />
                     </div>
 
                     <Separator />
@@ -507,6 +529,17 @@ export default function LandingConfigPage() {
                       />
                     </div>
 
+                    <div className="space-y-4 pt-4">
+                      <Label>Imagen de Fondo</Label>
+                      <ImageUpload
+                        value={config.testimonios_bg_url}
+                        onChange={(url) => updateField("testimonios_bg_url", url)}
+                        type="testimonios_bg"
+                        aspectRatio="video"
+                        description="Imagen de fondo para la sección de testimonios."
+                      />
+                    </div>
+
                     <Separator />
 
                     {[1, 2, 3].map((num) => (
@@ -599,6 +632,17 @@ export default function LandingConfigPage() {
                         onChange={(e) => updateField("cta_final_subtitulo", e.target.value)}
                         placeholder="Únete a cientos de comercios que ya están creciendo con nosotros"
                         rows={2}
+                      />
+                    </div>
+
+                    <div className="space-y-4 pt-4">
+                      <Label>Imagen de Fondo</Label>
+                      <ImageUpload
+                        value={config.cta_final_bg_url}
+                        onChange={(url) => updateField("cta_final_bg_url", url)}
+                        type="cta_final_bg"
+                        aspectRatio="video"
+                        description="Imagen de fondo para la sección de Call to Action."
                       />
                     </div>
 
