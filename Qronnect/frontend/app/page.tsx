@@ -247,7 +247,8 @@ function TenantLandingPage() {
       {/* Hero Section */}
       <section
         id="main-content"
-        className='relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-50'
+        className='relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-50 bg-cover bg-center'
+        style={{ backgroundImage: config.hero_bg_url ? `url(${config.hero_bg_url})` : undefined }}
         aria-label="Sección principal del sitio"
       >
         <div className='absolute inset-0 bg-grid-gray-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]' />
@@ -369,13 +370,13 @@ function TenantLandingPage() {
                   <div className='relative bg-white rounded-3xl shadow-2xl p-6 border border-gray-100'>
                     <div className='aspect-square overflow-hidden rounded-2xl relative'>
                       <Image
-                        src='/gente-de-negocios-dandose-la-mano-para-saludar.webp'
-                        alt='Dos profesionales estrechándose la mano en un entorno moderno, simbolizando la confianza y colaboración en programas de fidelización'
+                        src={config.hero_imagen_url || '/gente-de-negocios-dandose-la-mano-para-saludar.webp'}
+                        alt='Imagen Principal'
                         fill
                         className='object-cover'
                         sizes='(max-width: 768px) 100vw, 50vw'
-                        priority={false}
-                        quality={85}
+                        priority={true}
+                        quality={90}
                       />
                     </div>
                   </div>
@@ -388,7 +389,8 @@ function TenantLandingPage() {
 
       {/* Servicios / Soluciones */}
       <section
-        className='py-12 md:py-16 bg-white'
+        className='py-12 md:py-16 bg-white bg-cover bg-center'
+        style={{ backgroundImage: config.servicios_bg_url ? `url(${config.servicios_bg_url})` : undefined }}
         aria-labelledby="servicios-heading"
       >
         <div className='container mx-auto px-4'>
@@ -463,7 +465,10 @@ function TenantLandingPage() {
       </section>
 
       {/* Beneficios */}
-      <section className='py-12 md:py-16 bg-gradient-to-b from-gray-50 to-white'>
+      <section
+        className='py-12 md:py-16 bg-gradient-to-b from-gray-50 to-white bg-cover bg-center'
+        style={{ backgroundImage: config.beneficios_bg_url ? `url(${config.beneficios_bg_url})` : undefined }}
+      >
         <div className='container mx-auto px-4'>
           <div className='max-w-5xl mx-auto'>
             <motion.div
@@ -566,7 +571,10 @@ function TenantLandingPage() {
       </section>
 
       {/* Testimonios */}
-      <section className='py-12 md:py-16 bg-white'>
+      <section
+        className='py-12 md:py-16 bg-white bg-cover bg-center'
+        style={{ backgroundImage: config.testimonios_bg_url ? `url(${config.testimonios_bg_url})` : undefined }}
+      >
         <div className='container mx-auto px-4'>
           <motion.div
             initial='initial'
@@ -641,7 +649,10 @@ function TenantLandingPage() {
       </section>
 
       {/* CTA Final */}
-      <section className='py-12 md:py-16 relative overflow-hidden'>
+      <section
+        className='py-12 md:py-16 relative overflow-hidden bg-cover bg-center'
+        style={{ backgroundImage: config.cta_final_bg_url ? `url(${config.cta_final_bg_url})` : undefined }}
+      >
         <div
           className='absolute inset-0 opacity-5'
           style={{ backgroundColor: branding.color_primario }}

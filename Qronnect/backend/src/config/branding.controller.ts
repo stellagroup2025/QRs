@@ -151,7 +151,11 @@ export class BrandingController {
       throw new BadRequestException('No se proporciono ningun archivo');
     }
 
-    const validTypes = ['logo', 'favicon', 'og_image'];
+    const validTypes = [
+      'logo', 'favicon', 'og_image',
+      'hero_image', 'hero_bg',
+      'servicios_bg', 'beneficios_bg', 'testimonios_bg', 'cta_final_bg'
+    ];
     if (!type || !validTypes.includes(type)) {
       throw new BadRequestException(`Tipo invalido. Debe ser: ${validTypes.join(', ')}`);
     }

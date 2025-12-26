@@ -14,6 +14,7 @@ import { Loader2, Save, Eye, Monitor, Smartphone, Tablet } from "lucide-react"
 import { LandingConfig } from "@/hooks/use-landing-config"
 import { LandingPreview } from "@/components/LandingPreview"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { ImageUpload } from "@/components/ui/image-upload"
 
 
 const iconOptions = [

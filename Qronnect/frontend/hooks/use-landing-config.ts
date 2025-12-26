@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react'
 import { useBrandingContext } from '@/components/BrandingProvider'
 
 export interface LandingConfig {
+  // Imágenes
+  hero_imagen_url?: string
+  hero_bg_url?: string
+  servicios_bg_url?: string
+  beneficios_bg_url?: string
+  testimonios_bg_url?: string
+  cta_final_bg_url?: string
+
   // Hero Section
   hero_titulo_principal: string
   hero_titulo_destacado: string

@@ -12,7 +12,7 @@ export class BrandingService {
   async uploadFile(
     idTienda: string,
     file: Express.Multer.File,
-    type: 'logo' | 'favicon' | 'og_image',
+    type: 'logo' | 'favicon' | 'og_image' | 'hero_image' | 'hero_bg' | 'servicios_bg' | 'beneficios_bg' | 'testimonios_bg' | 'cta_final_bg',
   ): Promise<{ url: string }> {
     const client = this.supabase.getAdminClient();
 
@@ -22,9 +22,11 @@ export class BrandingService {
       throw new BadRequestException('Tipo de archivo no permitido');
     }
 
-    // Validar tamano (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      throw new BadRequestException('El archivo no puede superar 2MB');
+    // Validar tamano (max 5MB para fondos, 2MB para resto)
+    const isBackground = type.includes('_bg');
+    const maxSize = isBackground ? 5 * 1024 * 1024 : 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new BadRequestException(`El archivo no puede superar ${isBackground ? '5MB' : '2MB'}`);
     }
 
     // Generar nombre unico para el archivo
@@ -59,16 +61,47 @@ export class BrandingService {
     const url = publicUrl.publicUrl;
     console.log(`  - URL: ${url}`);
 
-    // Actualizar la tienda con la nueva URL
-    const updateField = type === 'logo' ? 'logo_url' : type === 'favicon' ? 'favicon_url' : 'og_image_url';
-    const { error: updateError } = await client
-      .from('tiendas')
-      .update({ [updateField]: url })
-      .eq('id', idTienda);
+    // Determinar tabla y campo a actualizar
+    const isLandingImage = [
+      'hero_image', 'hero_bg',
+      'servicios_bg', 'beneficios_bg', 'testimonios_bg', 'cta_final_bg'
+    ].includes(type);
 
-    if (updateError) {
-      console.error('[UPDATE ERROR]', updateError);
-      // No lanzar error - el archivo ya esta subido
+    let table = 'tiendas';
+    let field = '';
+
+    if (isLandingImage) {
+      table = 'landing_config';
+      // Mapeo directo: type 'hero_image' -> column 'hero_imagen_url', type 'hero_bg' -> 'hero_bg_url'
+      if (type === 'hero_image') field = 'hero_imagen_url';
+      else field = `${type}_url`;
+    } else {
+      // Branding types
+      if (type === 'logo') field = 'logo_url';
+      else if (type === 'favicon') field = 'favicon_url';
+      else if (type === 'og_image') field = 'og_image_url';
+    }
+
+    if (field) {
+      const { error: updateError } = await client
+        .from(table)
+        .update({ [field]: url })
+        .eq('id_tienda', idTienda) // landing_config usa id_tienda
+        .eq(table === 'tiendas' ? 'id' : 'id_tienda', idTienda); // tiendas usa id
+
+      // Correction: tiendas table uses 'id', landing_config uses 'id_tienda'
+      const matchQuery = table === 'tiendas' ? { id: idTienda } : { id_tienda: idTienda };
+
+      const { error: finalUpdateError } = await client
+        .from(table)
+        .update({ [field]: url })
+        .match(matchQuery);
+
+      if (finalUpdateError) {
+        console.error('[UPDATE ERROR]', finalUpdateError);
+        // Si falla update en landing_config es posible que no exista el registro.
+        // Pero landing_config se autocrea en get/update. Deberia existir.
+      }
     }
 
     console.log(`[UPLOAD] Subida completada: ${url}`);
