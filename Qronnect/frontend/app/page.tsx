@@ -277,7 +277,11 @@ function TenantLandingPage() {
             <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[100px] opacity-20 animate-pulse"
               style={{ backgroundColor: branding.color_primario }} />
             <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[100px] opacity-20 animate-pulse"
-              style={{ backgroundColor: branding.color_primario, animationDelay: '1s' }} />
+              style={{ backgroundColor: branding.color_secundario || branding.color_primario, animationDelay: '1s' }} />
+            {/* Accent color sprinkle */}
+            <div className="absolute top-[40%] right-[20%] w-[20%] h-[20%] rounded-full blur-[80px] opacity-10"
+              style={{ backgroundColor: branding.color_acento || branding.color_primario }} />
+
             <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
           </div>
         )}
@@ -299,8 +303,8 @@ function TenantLandingPage() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border bg-white/50 backdrop-blur-sm"
-                  style={{ borderColor: `${branding.color_primario}30`, color: branding.color_primario }}
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border bg-white/50 backdrop-blur-sm shadow-sm"
+                  style={{ borderColor: `${branding.color_acento}40`, color: branding.color_acento || branding.color_primario }}
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>{brandingLoading ? "Cargando..." : displayBrandName}</span>
@@ -312,12 +316,16 @@ function TenantLandingPage() {
                     <span
                       className="relative whitespace-nowrap"
                     >
-                      <span className="relative z-10" style={{ color: branding.color_primario }}>
+                      <span className="relative z-10 bg-clip-text text-transparent bg-gradient-to-r"
+                        style={{
+                          backgroundImage: `linear-gradient(to right, ${branding.color_primario}, ${branding.color_secundario || branding.color_primario})`
+                        }}
+                      >
                         {config.hero_titulo_destacado}
                       </span>
                       {/* Underline decoration */}
                       <svg className="absolute -bottom-2 w-full h-3 left-0 z-0 opacity-40" viewBox="0 0 100 10" preserveAspectRatio="none">
-                        <path d="M0 5 Q 50 10 100 5" stroke={branding.color_primario} strokeWidth="6" fill="none" />
+                        <path d="M0 5 Q 50 10 100 5" stroke={branding.color_acento || branding.color_primario} strokeWidth="6" fill="none" />
                       </svg>
                     </span>
                   </h1>
@@ -342,7 +350,7 @@ function TenantLandingPage() {
                       variant='outline'
                       size='lg'
                       className='h-14 px-8 text-lg rounded-full border-2 hover:bg-gray-50 transition-colors'
-                      style={{ color: branding.color_primario, borderColor: branding.color_primario }}
+                      style={{ color: branding.color_secundario || branding.color_primario, borderColor: branding.color_secundario || branding.color_primario }}
                     >
                       <Link href='/login'>{config.hero_cta_secundario}</Link>
                     </Button>
@@ -366,9 +374,11 @@ function TenantLandingPage() {
                 className='order-1 md:order-2 relative'
               >
                 <div className="relative">
-                  {/* Abstract Shapes behind image */}
-                  <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-20 animate-bounce" style={{ backgroundColor: branding.color_primario, animationDuration: '3s' }} />
-                  <div className="absolute -bottom-10 -left-10 w-24 h-24 rounded-full opacity-20 animate-bounce" style={{ backgroundColor: branding.color_primario, animationDuration: '4s', animationDelay: '1s' }} />
+                  {/* Abstract Shapes behind image using multiple brand colors */}
+                  <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-20 animate-bounce"
+                    style={{ backgroundColor: branding.color_acento || branding.color_primario, animationDuration: '3s' }} />
+                  <div className="absolute -bottom-10 -left-10 w-24 h-24 rounded-full opacity-20 animate-bounce"
+                    style={{ backgroundColor: branding.color_secundario || branding.color_primario, animationDuration: '4s', animationDelay: '1s' }} />
 
                   <div className='relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white/50 bg-white rotate-2 hover:rotate-0 transition-transform duration-500'>
                     <div className='aspect-[4/5] relative'>
@@ -406,6 +416,11 @@ function TenantLandingPage() {
           <div className="absolute inset-0 bg-cover bg-center opacity-10" style={{ backgroundImage: `url(${config.servicios_bg_url})` }} />
         )}
 
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-1/3 h-1/3 opacity-5 bg-gradient-to-bl from-transparent to-transparent pointer-events-none"
+          style={{ backgroundImage: `radial-gradient(circle at top right, ${branding.color_secundario}, transparent)` }}
+        />
+
         <div className='container mx-auto px-4 relative z-10'>
           <motion.div
             initial='initial'
@@ -419,7 +434,10 @@ function TenantLandingPage() {
               id="servicios-heading"
               className='text-3xl md:text-5xl font-bold mb-6 tracking-tight text-gray-900'
             >
-              {config.servicios_titulo}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r"
+                style={{ backgroundImage: `linear-gradient(to right, ${branding.color_primario}, ${branding.color_secundario || branding.color_primario})` }}>
+                {config.servicios_titulo}
+              </span>
             </motion.h2>
             <motion.p variants={fadeInUp} className='text-xl text-gray-600'>
               {config.servicios_subtitulo}
@@ -443,11 +461,17 @@ function TenantLandingPage() {
                 >
                   <div
                     className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                    style={{ boxShadow: `0 0 0 2px ${branding.color_primario}10` }}
+                    style={{
+                      boxShadow: `0 10px 40px -10px ${branding.color_secundario || branding.color_primario}30`,
+                      border: `1px solid ${branding.color_secundario || branding.color_primario}40`
+                    }}
                   />
                   <div
-                    className='w-14 h-14 rounded-xl flex items-center justify-center mb-6 transition-colors duration-300'
-                    style={{ backgroundColor: `${branding.color_primario}10`, color: branding.color_primario }}
+                    className='w-14 h-14 rounded-xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110'
+                    style={{
+                      backgroundColor: `${branding.color_secundario || branding.color_primario}10`,
+                      color: branding.color_acento || branding.color_primario
+                    }}
                   >
                     <Icon className='w-7 h-7' />
                   </div>
@@ -474,8 +498,13 @@ function TenantLandingPage() {
           <div className="absolute inset-0 bg-cover bg-center opacity-5" style={{ backgroundImage: `url(${config.beneficios_bg_url})` }} />
         )}
 
-        {/* Decorative Grid */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `radial-gradient(${branding.color_primario} 2px, transparent 2px)`, backgroundSize: '32px 32px' }} />
+        {/* Decorative Grid with Secondary Color */}
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `radial-gradient(${branding.color_secundario || branding.color_primario} 2px, transparent 2px)`,
+            backgroundSize: '32px 32px'
+          }}
+        />
 
         <div className='container mx-auto px-4 relative z-10'>
           <div className='max-w-6xl mx-auto'>
@@ -487,6 +516,14 @@ function TenantLandingPage() {
               className='grid md:grid-cols-2 gap-16 items-center'
             >
               <div className='order-2 md:order-1'>
+                <motion.div variants={fadeInUp} className="inline-block px-3 py-1 mb-4 text-xs font-semibold tracking-wider uppercase rounded-full bg-white border"
+                  style={{
+                    borderColor: branding.color_acento || branding.color_primario,
+                    color: branding.color_acento || branding.color_primario
+                  }}
+                >
+                  Beneficios Exclusivos
+                </motion.div>
                 <motion.h2 variants={fadeInUp} className='text-3xl md:text-5xl font-bold mb-6 tracking-tight text-gray-900'>
                   {config.beneficios_titulo}
                 </motion.h2>
@@ -499,15 +536,18 @@ function TenantLandingPage() {
                     <motion.div
                       key={index}
                       variants={fadeInUp}
-                      className='flex items-start gap-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow'
+                      className='flex items-start gap-4 p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all group'
+                      style={{
+                        borderLeft: index === 0 ? `4px solid ${branding.color_acento || branding.color_primario}` : '1px solid transparent'
+                      }}
                     >
                       <div
-                        className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-1"
-                        style={{ backgroundColor: `${branding.color_primario}20` }}
+                        className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-1 transition-colors"
+                        style={{ backgroundColor: `${branding.color_acento || branding.color_primario}20` }}
                       >
-                        <CheckCircle className="w-4 h-4" style={{ color: branding.color_primario }} />
+                        <CheckCircle className="w-4 h-4" style={{ color: branding.color_acento || branding.color_primario }} />
                       </div>
-                      <span className='text-lg text-gray-700 font-medium'>{benefit}</span>
+                      <span className='text-lg text-gray-700 font-medium group-hover:text-gray-900 transition-colors'>{benefit}</span>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -522,14 +562,20 @@ function TenantLandingPage() {
                       initial={{ opacity: 0, x: 50 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.1 }}
-                      className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center gap-4"
+                      className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-4 relative overflow-hidden group"
                     >
-                      <div className="h-12 w-1 rounded-full" style={{ backgroundColor: branding.color_primario }} />
+                      <div className="absolute right-0 top-0 w-24 h-24 opacity-5 rounded-bl-full transition-transform group-hover:scale-110"
+                        style={{ backgroundColor: i % 2 === 0 ? branding.color_primario : (branding.color_secundario || branding.color_primario) }}
+                      />
+
+                      <div className="h-12 w-1.5 rounded-full"
+                        style={{ backgroundColor: i % 2 === 0 ? branding.color_primario : (branding.color_acento || branding.color_secundario) }} />
                       <div>
-                        <div className="text-4xl font-bold tracking-tight" style={{ color: branding.color_primario }}>
+                        <div className="text-4xl font-extrabold tracking-tight"
+                          style={{ color: i % 2 === 0 ? branding.color_primario : (branding.color_secundario || branding.color_primario) }}>
                           {metric.value}
                         </div>
-                        <div className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+                        <div className="text-sm font-bold text-gray-400 uppercase tracking-wider">
                           {metric.label}
                         </div>
                       </div>
@@ -537,8 +583,12 @@ function TenantLandingPage() {
                   ))}
                 </div>
 
-                {/* Decorative background blobs */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br from-gray-200/50 to-transparent rounded-full blur-3xl -z-10" />
+                {/* Decorative background blobs - Gradient involving secondary color */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br opacity-30 rounded-full blur-3xl -z-10"
+                  style={{
+                    backgroundImage: `linear-gradient(to bottom right, ${branding.color_primario}, ${branding.color_secundario || '#fff'}, transparent)`
+                  }}
+                />
               </div>
             </motion.div>
           </div>
@@ -564,7 +614,7 @@ function TenantLandingPage() {
                 <h2 className='text-3xl md:text-5xl font-bold mb-4 text-gray-900 tracking-tight'>
                   {config.testimonios_titulo}
                 </h2>
-                <div className="h-1.5 w-24 mx-auto rounded-full" style={{ backgroundColor: branding.color_primario }} />
+                <div className="h-1.5 w-24 mx-auto rounded-full" style={{ backgroundColor: branding.color_acento || branding.color_primario }} />
               </motion.div>
             </div>
 
@@ -577,7 +627,8 @@ function TenantLandingPage() {
                   transition={{ delay: index * 0.1 }}
                   className='bg-gray-50 p-8 rounded-3xl relative hover:bg-white hover:shadow-xl transition-all duration-300 group ring-1 ring-transparent hover:ring-gray-100'
                 >
-                  <div className="absolute top-8 right-8 text-6xl opacity-10 font-serif leading-none select-none" style={{ color: branding.color_primario }}>"</div>
+                  <div className="absolute top-8 right-8 text-6xl opacity-20 font-serif leading-none select-none transition-transform group-hover:scale-110 group-hover:opacity-30"
+                    style={{ color: branding.color_acento || branding.color_primario }}>"</div>
 
                   <div className="flex gap-1 mb-6">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -594,12 +645,18 @@ function TenantLandingPage() {
                   </p>
 
                   <div className="flex items-center gap-4 pt-6 border-t border-gray-200/50">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-md" style={{ backgroundColor: branding.color_primario }}>
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-md ring-2 ring-offset-2 ring-transparent group-hover:ring-offset-2"
+                      style={{
+                        backgroundColor: branding.color_secundario || branding.color_primario,
+                        // Dynamic style for ring needs to be inline as Tailwind classes are static
+                        boxShadow: `0 4px 6px -1px ${branding.color_secundario}40`
+                      }}
+                    >
                       {testimonial.name?.charAt(0) || 'U'}
                     </div>
                     <div>
                       <div className="font-bold text-gray-900">{testimonial.name}</div>
-                      <div className="text-sm text-gray-500">{testimonial.role}</div>
+                      <div className="text-sm" style={{ color: branding.color_primario }}>{testimonial.role}</div>
                     </div>
                   </div>
                 </motion.div>
@@ -617,7 +674,14 @@ function TenantLandingPage() {
           <div className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay" style={{ backgroundImage: `url(${config.cta_final_bg_url})` }} />
         ) : (
           <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,_var(--tw-gradient-stops))] from-gray-700 via-gray-900 to-black" />
+            {/* Dynamic background using Secondary Color instead of just black/gray */}
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,_var(--tw-gradient-stops))]"
+              style={{
+                '--tw-gradient-from': branding.color_secundario || '#374151',
+                '--tw-gradient-to': '#111827',
+                '--tw-gradient-stops': `var(--tw-gradient-from), var(--tw-gradient-to)`
+              } as any}
+            />
           </div>
         )}
 
@@ -674,7 +738,8 @@ function TenantLandingPage() {
                   asChild
                   variant='outline'
                   size='lg'
-                  className='text-lg px-12 py-8 rounded-full bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all'
+                  className='text-lg px-12 py-8 rounded-full bg-transparent text-white hover:bg-white/10 hover:text-white backdrop-blur-md transition-all'
+                  style={{ borderColor: branding.color_acento || '#fff' }}
                 >
                   <Link href='/demo'>{config.cta_final_boton_secundario}</Link>
                 </Button>
