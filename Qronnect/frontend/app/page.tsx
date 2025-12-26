@@ -236,6 +236,22 @@ function TenantLandingPage() {
 
   return (
     <div className='min-h-screen bg-white'>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            "name": displayBrandName,
+            "description": config.hero_subtitulo || `Programa de fidelización de ${displayBrandName}`,
+            "image": [
+              config.hero_imagen_url || undefined,
+              branding.logo_url || undefined
+            ].filter(Boolean),
+            "url": typeof window !== 'undefined' ? window.location.href : undefined,
+          })
+        }}
+      />
       {/* Skip Link para accesibilidad */}
       <a
         href="#main-content"
@@ -371,7 +387,7 @@ function TenantLandingPage() {
                     <div className='aspect-square overflow-hidden rounded-2xl relative'>
                       <Image
                         src={config.hero_imagen_url || '/gente-de-negocios-dandose-la-mano-para-saludar.webp'}
-                        alt='Imagen Principal'
+                        alt={config.hero_titulo_principal || `Imagen destacada de ${displayBrandName}`}
                         fill
                         className='object-cover'
                         sizes='(max-width: 768px) 100vw, 50vw'
