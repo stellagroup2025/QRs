@@ -25,6 +25,7 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
   const [modalPlantillasAbierto, setModalPlantillasAbierto] = useState(false);
   const [programaEditar, setProgramaEditar] = useState<ProgramaSellos | null>(null);
   const [programaDesdePlantilla, setProgramaDesdePlantilla] = useState<CrearProgramaSellosRequest | null>(null);
+  const [mostrarInactivos, setMostrarInactivos] = useState(false);
 
   useEffect(() => {
     cargarProgramas();
@@ -33,7 +34,7 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
   const cargarProgramas = async () => {
     try {
       setLoading(true);
-      const data = await obtenerProgramasSellos(token, domain);
+      const data = await obtenerProgramasSellos(token, domain); // Trae todos (activos e inactivos)
       setProgramas(data);
     } catch (error) {
       console.error('Error al cargar programas:', error);
@@ -42,6 +43,8 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
       setLoading(false);
     }
   };
+
+  const programasFiltrados = programas.filter(p => mostrarInactivos || p.activo);
 
   const handleCrear = () => {
     setProgramaEditar(null);
@@ -62,7 +65,7 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
 
     try {
       await eliminarProgramaSello(id, token, domain);
-      toast.success('Programa desactivado exitosamente');
+      toast.success('Programa eliminado/desactivado correctamente');
       cargarProgramas();
     } catch (error) {
       console.error('Error al eliminar programa:', error);
@@ -112,6 +115,23 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
             <Sparkles className="mr-2 h-4 w-4 text-yellow-500" />
             Ver Plantillas
           </Button>
+          <Button
+            variant="outline"
+            onClick={() => setMostrarInactivos(!mostrarInactivos)}
+            className="w-full sm:w-auto"
+          >
+            {mostrarInactivos ? (
+              <>
+                <EyeOff className="mr-2 h-4 w-4" />
+                Ocultar Inactivos
+              </>
+            ) : (
+              <>
+                <Eye className="mr-2 h-4 w-4" />
+                Ver Inactivos
+              </>
+            )}
+          </Button>
           <Button onClick={handleCrear} className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Programa
@@ -146,7 +166,7 @@ export function ProgramasSellosPanel({ token, domain }: ProgramasSellosPanelProp
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {programas.map((programa) => (
+          {programasFiltrados.map((programa) => (
             <Card key={programa.id} className="p-6 dark:bg-slate-900 dark:border-slate-800">
               {/* Header con color */}
               <div

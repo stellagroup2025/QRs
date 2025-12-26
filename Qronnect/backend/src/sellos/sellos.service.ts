@@ -19,7 +19,7 @@ import {
 export class SellosService {
   private readonly logger = new Logger(SellosService.name);
 
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService) { }
 
   /**
    * Obtiene el cliente admin de Supabase
@@ -137,17 +137,56 @@ export class SellosService {
   /**
    * Eliminar (desactivar) un programa de sellos
    */
+  /**
+   * Eliminar un programa de sellos
+   * - Si NO tiene tarjetas asociadas: Hard Delete (se borra de la DB)
+   * - Si TIENE tarjetas asociadas: Soft Delete (activo = false)
+   */
   async eliminarPrograma(idPrograma: string, idTienda: string): Promise<void> {
-    const { error } = await this.getSupabase()
-      .from('programas_sellos')
-      .update({ activo: false })
-      .eq('id', idPrograma)
+    // 1. Verificar si hay tarjetas asociadas
+    const { count, error: countError } = await this.getSupabase()
+      .from('tarjetas_sellos_clientes')
+      .select('id', { count: 'exact', head: true })
+      .eq('id_programa', idPrograma)
       .eq('id_tienda', idTienda);
 
-    if (error) {
+    if (countError) {
+      this.logger.error('Error al verificar uso del programa', countError);
       throw new BadRequestException(
-        `Error al eliminar programa: ${error.message}`,
+        `Error al verificar programa: ${countError.message}`,
       );
+    }
+
+    const tieneTarjetas = count !== null && count > 0;
+
+    if (!tieneTarjetas) {
+      // HARD DELETE
+      this.logger.log(`Hard deleting programa ${idPrograma} (sin uso)`);
+      const { error } = await this.getSupabase()
+        .from('programas_sellos')
+        .delete()
+        .eq('id', idPrograma)
+        .eq('id_tienda', idTienda);
+
+      if (error) {
+        throw new BadRequestException(
+          `Error al eliminar programa: ${error.message}`,
+        );
+      }
+    } else {
+      // SOFT DELETE
+      this.logger.log(`Soft deleting programa ${idPrograma} (en uso)`);
+      const { error } = await this.getSupabase()
+        .from('programas_sellos')
+        .update({ activo: false, visible_cliente: false })
+        .eq('id', idPrograma)
+        .eq('id_tienda', idTienda);
+
+      if (error) {
+        throw new BadRequestException(
+          `Error al desactivar programa: ${error.message}`,
+        );
+      }
     }
   }
 
