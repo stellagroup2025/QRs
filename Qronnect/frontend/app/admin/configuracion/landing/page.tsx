@@ -212,6 +212,27 @@ export default function LandingConfigPage() {
                       />
                     </div>
 
+                    <div className="space-y-4">
+                      <Label>Imágenes</Label>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <ImageUpload
+                          label="Imagen Principal (Hero)"
+                          description="Reemplaza la imagen por defecto del apretón de manos."
+                          value={config.hero_imagen_url}
+                          onChange={(url) => updateField("hero_imagen_url", url)}
+                          type="hero_image"
+                        />
+                        <ImageUpload
+                          label="Fondo de Sección"
+                          description="Imagen de fondo (opcional) para la sección Hero."
+                          value={config.hero_bg_url}
+                          onChange={(url) => updateField("hero_bg_url", url)}
+                          type="hero_bg"
+                          aspectRatio="video"
+                        />
+                      </div>
+                    </div>
+
                     <Separator />
 
                     <div className="grid md:grid-cols-2 gap-4">
