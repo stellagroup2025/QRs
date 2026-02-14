@@ -43,7 +43,7 @@ export default function PartnersPage() {
                             </h1>
                             <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
                                 Añade una capa de fidelización con IA a tus clientes sin carga operativa.
-                                Reduce el churn y aumenta el LTV de tu cartera de agencias.
+                                Perfecto para Agencias, Consultores Independientes y Comerciales Autónomos.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 h-12 text-lg">
@@ -61,12 +61,15 @@ export default function PartnersPage() {
                     </div>
                 </section>
 
-                {/* The Agency Problem */}
+                {/* The Agency & Freelance Problem */}
                 <section id="solution" className="py-20 bg-white">
                     <div className="container mx-auto px-4 max-w-6xl">
                         <div className="grid md:grid-cols-2 gap-16 items-center">
                             <div>
-                                <h2 className="text-3xl font-bold mb-6 text-slate-900">El problema no es captar clientes. <br /><span className="text-red-500">Es que se queden.</span></h2>
+                                <h2 className="text-3xl font-bold mb-6 text-slate-900">
+                                    Ya seas Agencia o Freelance: <br />
+                                    <span className="text-red-500">¿Tus clientes renuevan?</span>
+                                </h2>
                                 <div className="space-y-6">
                                     <div className="flex gap-4">
                                         <div className="mt-1 bg-red-100 p-2 rounded-lg h-fit">
@@ -163,59 +166,142 @@ export default function PartnersPage() {
 }
 
 function ProfitCalculator() {
-    const [clients, setClients] = useState(10)
+    const [newClientsPerMonth, setNewClientsPerMonth] = useState(2)
     const [price, setPrice] = useState(99)
+    const [churnRate, setChurnRate] = useState(5) // 5% churn
     const marginPercent = 0.40 // 40% margin
 
-    const monthlyRevenue = clients * price
-    const partnerProfit = monthlyRevenue * marginPercent
+    // Projection Logic (Simplified Compound Growth)
+    const calculateProjection = (months: number) => {
+        let activeClients = 0
+        let monthlyRevenue = 0
+
+        for (let i = 1; i <= months; i++) {
+            // New clients added
+            activeClients += newClientsPerMonth
+            // Churn (clients lost)
+            const lostClients = Math.floor(activeClients * (churnRate / 100))
+            activeClients -= lostClients
+            // Validation
+            if (activeClients < 0) activeClients = 0
+        }
+
+        const mrr = activeClients * price
+        const partnerMrr = mrr * marginPercent
+        return { activeClients, mrr, partnerMrr }
+    }
+
+    const year1 = calculateProjection(12)
+    const year2 = calculateProjection(24)
+
+    // Valuation Multiplier (SaaS typical for agencies: 3x ARR)
+    const annualRecurringRevenue = year1.partnerMrr * 12
+    const valuation = annualRecurringRevenue * 3
 
     return (
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-2xl grid md:grid-cols-2 gap-12">
-            <div className="space-y-8">
-                <div>
-                    <div className="flex justify-between mb-2">
-                        <label className="text-slate-300 font-medium">Clientes Activos</label>
-                        <span className="text-white font-bold text-lg">{clients}</span>
+        <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
+            <div className="grid lg:grid-cols-2 gap-12">
+                {/* Inputs */}
+                <div className="space-y-8">
+                    <div>
+                        <div className="flex justify-between mb-4">
+                            <label className="text-slate-300 font-medium flex items-center gap-2">
+                                <Users className="w-4 h-4 text-blue-500" />
+                                Clientes Nuevos / Mes
+                            </label>
+                            <span className="text-white font-bold text-xl">{newClientsPerMonth}</span>
+                        </div>
+                        <Slider
+                            defaultValue={[2]}
+                            max={20}
+                            step={1}
+                            onValueChange={(val: number[]) => setNewClientsPerMonth(val[0])}
+                            className="py-4"
+                        />
+                        <p className="text-xs text-slate-500 mt-2">Capacidad de venta realista de tu agencia.</p>
                     </div>
-                    <Slider
-                        defaultValue={[10]}
-                        max={100}
-                        step={1}
-                        onValueChange={(val: number[]) => setClients(val[0])}
-                        className="py-4"
-                    />
-                </div>
-                <div>
-                    <div className="flex justify-between mb-2">
-                        <label className="text-slate-300 font-medium">PVP Mensual por Cliente (€)</label>
-                        <span className="text-white font-bold text-lg">{price}€</span>
+
+                    <div>
+                        <div className="flex justify-between mb-4">
+                            <label className="text-slate-300 font-medium flex items-center gap-2">
+                                <Zap className="w-4 h-4 text-yellow-500" />
+                                PVP Mensual (€)
+                            </label>
+                            <span className="text-white font-bold text-xl">{price}€</span>
+                        </div>
+                        <Slider
+                            defaultValue={[99]}
+                            max={500}
+                            step={10}
+                            onValueChange={(val: number[]) => setPrice(val[0])}
+                            className="py-4"
+                        />
+                        <p className="text-xs text-slate-500 mt-2">Precio que cobras al cliente final (tú controlas el margen).</p>
                     </div>
-                    <Slider
-                        defaultValue={[99]}
-                        max={500}
-                        step={10}
-                        onValueChange={(val: number[]) => setPrice(val[0])}
-                        className="py-4"
-                    />
-                </div>
-            </div>
-            <div className="flex flex-col justify-center space-y-6">
-                <div className="bg-blue-600/20 border border-blue-500/30 p-6 rounded-xl">
-                    <p className="text-blue-200 text-sm font-semibold uppercase tracking-wider mb-1">Tu Beneficio Mensual Recurrente</p>
-                    <p className="text-4xl font-bold text-white">
-                        {partnerProfit.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
-                        <span className="text-sm text-slate-300 font-normal ml-2">/mes</span>
-                    </p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-white/5 rounded-xl">
-                        <p className="text-slate-400 text-xs uppercase mb-1">Facturación Total</p>
-                        <p className="text-xl font-bold text-white">{monthlyRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}</p>
+
+                    <div>
+                        <div className="flex justify-between mb-4">
+                            <label className="text-slate-300 font-medium flex items-center gap-2">
+                                <TrendingUp className="w-4 h-4 text-red-500" />
+                                Churn Mensual Estimado (%)
+                            </label>
+                            <span className="text-white font-bold text-xl">{churnRate}%</span>
+                        </div>
+                        <Slider
+                            defaultValue={[5]}
+                            max={20}
+                            step={1}
+                            onValueChange={(val: number[]) => setChurnRate(val[0])}
+                            className="py-4"
+                        />
+                        <p className="text-xs text-slate-500 mt-2">Tasa de cancelación mensual. Sé honesto (5% es estándar).</p>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-xl">
-                        <p className="text-slate-400 text-xs uppercase mb-1">Margen Partner</p>
-                        <p className="text-xl font-bold text-green-400">{marginPercent * 100}%</p>
+                </div>
+
+                {/* Outputs / Asset Dashboard */}
+                <div className="flex flex-col space-y-6">
+                    {/* Main ARR Card */}
+                    <div className="bg-gradient-to-br from-blue-900/50 to-slate-800 border border-blue-500/30 p-8 rounded-2xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-blue-500/30 transition-all"></div>
+                        <p className="text-blue-300 text-sm font-bold uppercase tracking-widest mb-2">Ingreso Recurrente (Mes 12)</p>
+                        <p className="text-5xl font-extrabold text-white mb-1">
+                            {year1.partnerMrr.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
+                            <span className="text-xl text-slate-400 font-normal ml-2">/mes</span>
+                        </p>
+                        <p className="text-emerald-400 text-sm font-medium flex items-center gap-1 mt-2">
+                            <TrendingUp className="w-3 h-3" />
+                            {year1.activeClients} Clientes Activos
+                        </p>
+                    </div>
+
+                    {/* Secondary Metrics Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Year 2 Projection */}
+                        <div className="p-6 bg-slate-800/50 rounded-2xl border border-slate-700/50">
+                            <p className="text-slate-400 text-xs uppercase font-bold tracking-wider mb-2">Proyección Mes 24</p>
+                            <p className="text-2xl font-bold text-white group-hover:text-blue-200 transition-colors">
+                                {year2.partnerMrr.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
+                                <span className="text-xs text-slate-500 ml-1">/mes</span>
+                            </p>
+                        </div>
+                        {/* Portfolio Valuation */}
+                        <div className="p-6 bg-slate-800/50 rounded-2xl border border-slate-700/50 relative overflow-hidden">
+                            <div className="absolute inset-0 bg-yellow-500/5"></div>
+                            <p className="text-yellow-500/80 text-xs uppercase font-bold tracking-wider mb-2 flex items-center gap-1">
+                                <Zap className="w-3 h-3" /> Valor de Cartera
+                            </p>
+                            <p className="text-2xl font-bold text-white">
+                                {valuation.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
+                            </p>
+                            <p className="text-[10px] text-slate-500 mt-1">Si vendieras tu agencia (3x ARR)</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-slate-800/30 p-4 rounded-xl border border-dashed border-slate-700">
+                        <p className="text-xs text-slate-400 text-center">
+                            *Cálculo basado en modelo de acumulación con churn compuesto. <br />
+                            El interés compuesto es la fuerza más poderosa del universo.
+                        </p>
                     </div>
                 </div>
             </div>
