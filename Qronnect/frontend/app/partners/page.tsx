@@ -14,7 +14,7 @@ export default function PartnersPage() {
             {/* Navigation (Simplified for B2B) */}
             <nav className="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2">
+                    <Link href="/partners" className="flex items-center gap-2">
                         <img src="/LogoQronnect.png" alt="Qronnect" className="h-8 w-auto" />
                         <span className="font-bold text-lg tracking-tight">Partners</span>
                     </Link>
@@ -30,8 +30,12 @@ export default function PartnersPage() {
 
             <main>
                 {/* Hero Section */}
-                <section className="py-20 md:py-32 border-b border-slate-100 bg-slate-50/50">
-                    <div className="container mx-auto px-4 max-w-5xl text-center">
+                <section className="py-20 md:py-32 border-b border-slate-100 bg-slate-50/50 relative overflow-hidden">
+                    {/* Tech Grid Background - Adds "serious tech" vibe */}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+                    <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-blue-400 opacity-20 blur-[100px]"></div>
+
+                    <div className="container mx-auto px-4 max-w-5xl text-center relative z-10">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -39,19 +43,21 @@ export default function PartnersPage() {
                         >
                             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 text-slate-900 leading-tight">
                                 Convierte la retención en tu <br className="hidden md:block" />
-                                <span className="text-blue-600">mayor fuente de ingresos.</span>
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                                    mayor fuente de ingresos.
+                                </span>
                             </h1>
                             <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
                                 Añade una capa de fidelización con IA a tus clientes sin carga operativa.
                                 Perfecto para Agencias, Consultores Independientes y Comerciales Autónomos.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 h-12 text-lg">
+                                <Button asChild size="lg" className="bg-slate-900 hover:bg-slate-800 text-white px-8 h-12 text-lg shadow-lg hover:shadow-xl transition-all">
                                     <Link href="https://calendly.com/omarsomoza93/30min" target="_blank">
                                         Agendar Sesión de Estrategia
                                     </Link>
                                 </Button>
-                                <Button asChild variant="outline" size="lg" className="h-12 text-lg border-slate-300 text-slate-700 hover:bg-white">
+                                <Button asChild variant="outline" size="lg" className="h-12 text-lg border-slate-200 text-slate-700 hover:bg-white hover:text-blue-600 hover:border-blue-200">
                                     <Link href="#calculator">
                                         Calcular Margen
                                     </Link>
@@ -214,17 +220,22 @@ export default function PartnersPage() {
                 </section>
 
                 {/* Product Lab */}
-                <section className="py-20 bg-white border-b border-slate-100">
-                    <div className="container mx-auto px-4 max-w-5xl text-center">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-semibold mb-6">
-                            <Zap className="w-4 h-4" />
-                            Product Lab
+                <section className="py-24 bg-slate-950 text-white relative overflow-hidden">
+                    {/* Background glow */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-600/20 blur-[120px] rounded-full"></div>
+
+                    <div className="container mx-auto px-4 max-w-4xl text-center relative z-10">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300 text-sm font-semibold mb-8 backdrop-blur-md">
+                            <Zap className="w-4 h-4 text-blue-400" />
+                            <span className="uppercase tracking-widest text-xs">Qronnect Product Lab</span>
                         </div>
-                        <h2 className="text-3xl font-bold mb-4 text-slate-900">Desarrollo Ágil para tus Clientes</h2>
-                        <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
+                        <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">
+                            Desarrollo Ágil para <span className="text-blue-400">Tus Clientes</span>
+                        </h2>
+                        <p className="text-xl text-slate-400 mb-10 leading-relaxed">
                             ¿Necesitas algo específico? No somos una herramienta estática.
-                            Nuestro equipo de <strong>Product Lab</strong> puede adaptar funcionalidades o lanzar MVPs exclusivos
-                            basados en el feedback real de tu cartera de clientes.
+                            Nuestro equipo de <strong className="text-white">Product Lab</strong> puede adaptar funcionalidades o
+                            lanzar MVPs exclusivos basados en el feedback real de tu cartera.
                         </p>
                     </div>
                 </section>
