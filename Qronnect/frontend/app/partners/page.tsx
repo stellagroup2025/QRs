@@ -22,7 +22,7 @@ export default function PartnersPage() {
                         <Link href="#calculator" className="text-sm font-medium text-slate-600 hover:text-slate-900">Calculadora</Link>
                         <Link href="#solution" className="text-sm font-medium text-slate-600 hover:text-slate-900">Por qué Qronnect</Link>
                         <Button asChild variant="default" size="sm" className="bg-slate-900 text-white hover:bg-slate-800">
-                            <Link href="https://calendly.com/omniscient-wow/30min" target="_blank">Agendar Estrategia</Link>
+                            <Link href="https://calendly.com/omarsomoza93/30min" target="_blank">Agendar Estrategia</Link>
                         </Button>
                     </div>
                 </div>
@@ -47,7 +47,7 @@ export default function PartnersPage() {
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 h-12 text-lg">
-                                    <Link href="https://calendly.com/omniscient-wow/30min" target="_blank">
+                                    <Link href="https://calendly.com/omarsomoza93/30min" target="_blank">
                                         Agendar Sesión de Estrategia
                                     </Link>
                                 </Button>
@@ -238,7 +238,7 @@ export default function PartnersPage() {
                             Sin compromisos, de experto a experto.
                         </p>
                         <Button asChild size="lg" className="bg-slate-900 hover:bg-slate-800 text-white px-10 h-14 text-lg rounded-full shadow-xl hover:shadow-2xl transition-all">
-                            <Link href="https://calendly.com/omniscient-wow/30min" target="_blank">
+                            <Link href="https://calendly.com/omarsomoza93" target="_blank">
                                 Agendar Sesión Partner
                             </Link>
                         </Button>
