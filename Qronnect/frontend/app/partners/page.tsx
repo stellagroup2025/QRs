@@ -16,13 +16,24 @@ export default function PartnersPage() {
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <Link href="/partners" className="flex items-center gap-2">
                         <img src="/LogoQronnect.png" alt="Qronnect" className="h-8 w-auto" />
-                        <span className="font-bold text-lg tracking-tight">Partners</span>
+                        <span className="font-bold text-lg tracking-tight hidden xs:block">Partners</span>
                     </Link>
+
+                    {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-6">
                         <Link href="#calculator" className="text-sm font-medium text-slate-600 hover:text-slate-900">Calculadora</Link>
                         <Link href="#solution" className="text-sm font-medium text-slate-600 hover:text-slate-900">Por qué Qronnect</Link>
                         <Button asChild variant="default" size="sm" className="bg-slate-900 text-white hover:bg-slate-800">
                             <Link href="https://calendly.com/omarsomoza93/30min" target="_blank">Agendar Estrategia</Link>
+                        </Button>
+                    </div>
+
+                    {/* Mobile CTA (Visible on small screens) */}
+                    <div className="md:hidden flex items-center">
+                        <Button asChild variant="default" size="sm" className="bg-slate-900 text-white hover:bg-slate-800 text-xs px-3">
+                            <Link href="https://calendly.com/omarsomoza93/30min" target="_blank">
+                                Agendar
+                            </Link>
                         </Button>
                     </div>
                 </div>
@@ -303,7 +314,7 @@ function ProfitCalculator() {
     const valuation = annualRecurringRevenue * 3
 
     return (
-        <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl">
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl">
             <div className="grid lg:grid-cols-2 gap-12">
                 {/* Inputs */}
                 <div className="space-y-8">
