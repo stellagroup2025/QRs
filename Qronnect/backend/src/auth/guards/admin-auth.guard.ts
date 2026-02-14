@@ -1,5 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { SupabaseService } from '../../supabase/supabase.service';
+import { JwtTokenService } from '../jwt-token.service';
 import { TenantContext } from '../../tenant/entities/tenant-context.entity';
 
 /**
@@ -15,7 +16,10 @@ import { TenantContext } from '../../tenant/entities/tenant-context.entity';
  */
 @Injectable()
 export class AdminAuthGuard implements CanActivate {
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private supabaseService: SupabaseService,
+    private jwtTokenService: JwtTokenService,
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -34,13 +38,8 @@ export class AdminAuthGuard implements CanActivate {
     }
 
     try {
-      // Decodificar el token base64
-      const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf-8'));
-
-      // Verificar que el token no haya expirado
-      if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
-        throw new UnauthorizedException('Token expirado');
-      }
+      // Verificar y decodificar el token JWT firmado
+      const decoded = this.jwtTokenService.verifyToken(token);
 
       // Verificar que el token es para un admin
       if (decoded.role !== 'admin') {

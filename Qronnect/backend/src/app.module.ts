@@ -37,6 +37,7 @@ import { QrCodesModule } from './qr-codes/qr-codes.module';
 import { ComercialesModule } from './comerciales/comerciales.module';
 import { PlanesModule } from './planes/planes.module';
 import { ProspectosModule } from './prospectos/prospectos.module';
+import { PartnersModule } from './partners/partners.module';
 
 @Module({
   imports: [
@@ -128,6 +129,7 @@ import { ProspectosModule } from './prospectos/prospectos.module';
     ComercialesModule,
     PlanesModule,
     ProspectosModule,
+    PartnersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -156,6 +158,11 @@ export class AppModule implements NestModule {
         { path: 'comerciales/(.*)', method: RequestMethod.ALL },
         { path: 'api/comerciales', method: RequestMethod.ALL },
         { path: 'api/comerciales/(.*)', method: RequestMethod.ALL },
+        // Excluir rutas de partners (globales, acceso superadmin)
+        { path: 'partners', method: RequestMethod.ALL },
+        { path: 'partners/(.*)', method: RequestMethod.ALL },
+        { path: 'api/partners', method: RequestMethod.ALL },
+        { path: 'api/partners/(.*)', method: RequestMethod.ALL },
         // Excluir rutas de planes (globales)
         { path: 'api/planes', method: RequestMethod.ALL },
         { path: 'api/planes/(.*)', method: RequestMethod.ALL },

@@ -120,6 +120,99 @@ export default function PartnersPage() {
                     </div>
                 </section>
 
+                {/* 🔥 What IS Qronnect? — Product Explanation Section */}
+                <section className="py-20 bg-white border-b border-slate-100">
+                    <div className="container mx-auto px-4 max-w-6xl">
+                        <div className="text-center mb-16">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-semibold mb-4">
+                                <BarChart3 className="w-4 h-4" />
+                                El Producto
+                            </div>
+                            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">
+                                ¿Qué es exactamente <span className="text-blue-600">Qronnect</span>?
+                            </h2>
+                            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+                                Una plataforma white-label de fidelización para negocios locales.
+                                Tus clientes la ofrecen a <i>sus</i> clientes finales para que vuelvan más y gasten más.
+                            </p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {/* Card 1: QR & Loyalty */}
+                            <div className="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-blue-200 hover:shadow-lg transition-all duration-300">
+                                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors">
+                                    <Zap className="w-6 h-6 text-blue-600 group-hover:text-white transition-colors" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-3 text-slate-900">Sistema de Puntos con QR</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    Los clientes finales escanean un QR en el local, acumulan puntos por cada compra,
+                                    y canjean recompensas. <strong>Sin apps, sin tarjetas, sin complicaciones.</strong>
+                                </p>
+                            </div>
+
+                            {/* Card 2: Gamification */}
+                            <div className="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-purple-200 hover:shadow-lg transition-all duration-300">
+                                <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center mb-6 group-hover:bg-purple-600 transition-colors">
+                                    <TrendingUp className="w-6 h-6 text-purple-600 group-hover:text-white transition-colors" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-3 text-slate-900">Gamificación & Sellos</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    Tarjetas de sellos digitales, ruletas de premios (gacha) y retos que convierten
+                                    visitas rutinarias en <strong>una experiencia adictiva</strong>.
+                                </p>
+                            </div>
+
+                            {/* Card 3: Referrals */}
+                            <div className="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-green-200 hover:shadow-lg transition-all duration-300">
+                                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mb-6 group-hover:bg-green-600 transition-colors">
+                                    <Users className="w-6 h-6 text-green-600 group-hover:text-white transition-colors" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-3 text-slate-900">Referidos Integrados</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    Cada cliente se convierte en embajador. Comparte un enlace, trae un amigo,
+                                    <strong> ambos ganan</strong>. Adquisición orgánica sin coste en ads.
+                                </p>
+                            </div>
+
+                            {/* Card 4: AI Analytics */}
+                            <div className="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-amber-200 hover:shadow-lg transition-all duration-300">
+                                <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mb-6 group-hover:bg-amber-600 transition-colors">
+                                    <LineChart className="w-6 h-6 text-amber-600 group-hover:text-white transition-colors" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-3 text-slate-900">Analytics con IA</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    Dashboard con métricas reales: frecuencia de visita, ticket medio, predicción de churn.
+                                    <strong> Informes automáticos</strong> generados con Gemini AI.
+                                </p>
+                            </div>
+
+                            {/* Card 5: White-Label */}
+                            <div className="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-lg transition-all duration-300">
+                                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mb-6 group-hover:bg-slate-900 transition-colors">
+                                    <CheckCircle className="w-6 h-6 text-slate-600 group-hover:text-white transition-colors" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-3 text-slate-900">100% White-Label</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    Cada tienda tiene su propio dominio, colores y branding.
+                                    Tu cliente nunca ve la marca Qronnect — <strong>tú eres el héroe</strong>.
+                                </p>
+                            </div>
+
+                            {/* Card 6: Campañas SMS / Email */}
+                            <div className="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-rose-200 hover:shadow-lg transition-all duration-300">
+                                <div className="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center mb-6 group-hover:bg-rose-600 transition-colors">
+                                    <ArrowRight className="w-6 h-6 text-rose-600 group-hover:text-white transition-colors" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-3 text-slate-900">Campañas SMS & Email</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    Envía promociones segmentadas a la base de datos del negocio.
+                                    <strong> Sin dependencia de Meta Ads ni Google</strong> — datos propios.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Product Lab */}
                 <section className="py-20 bg-white border-b border-slate-100">
                     <div className="container mx-auto px-4 max-w-5xl text-center">

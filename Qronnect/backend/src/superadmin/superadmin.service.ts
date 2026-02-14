@@ -7,6 +7,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
+import { JwtTokenService } from '../auth/jwt-token.service';
 import { SmsService } from '../sms/sms.service';
 import { EmailService } from '../email/email.service';
 import { CreateTiendaDto } from './dto/create-tienda.dto';
@@ -22,11 +23,12 @@ import * as bcrypt from 'bcrypt';
 export class SuperAdminService {
   constructor(
     private readonly supabaseService: SupabaseService,
+    private readonly jwtTokenService: JwtTokenService,
     private readonly smsService: SmsService,
     private readonly emailService: EmailService,
     @Inject(forwardRef(() => InformesService))
     private readonly informesService: InformesService,
-  ) {}
+  ) { }
 
   /**
    * Enviar código OTP por email para autenticación (DESARROLLO)
@@ -230,24 +232,18 @@ export class SuperAdminService {
       fecha: new Date().toISOString(),
     });
 
-    // Para desarrollo, generamos tokens simples
-    // En producción, estos serían JWT firmados con secret
-    const access_token = Buffer.from(
-      JSON.stringify({
-        sub: superadmin.supabase_user_id,
-        email: superadmin.email,
-        role: 'superadmin',
-        exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hora
-      }),
-    ).toString('base64');
+    // Generar tokens JWT firmados
+    const access_token = this.jwtTokenService.signToken({
+      sub: superadmin.supabase_user_id,
+      email: superadmin.email,
+      role: 'superadmin',
+    }, 3600); // 1 hour
 
-    const refresh_token = Buffer.from(
-      JSON.stringify({
-        sub: superadmin.supabase_user_id,
-        email: superadmin.email,
-        type: 'refresh',
-      }),
-    ).toString('base64');
+    const refresh_token = this.jwtTokenService.signToken({
+      sub: superadmin.supabase_user_id,
+      email: superadmin.email,
+      type: 'refresh',
+    }, 7 * 24 * 3600); // 7 days
 
     return {
       access_token,
@@ -1253,12 +1249,12 @@ export class SuperAdminService {
       modo: limites?.ia_modo || 'global',
       limites: limites?.ia_modo === 'global'
         ? {
-            limite_mensual: limites?.ia_limite_mensual || 50,
-            consumo_actual: limites?.ia_consumo_actual || 0,
-            restantes:
-              (limites?.ia_limite_mensual || 50) - (limites?.ia_consumo_actual || 0),
-            ultimo_reset: limites?.ia_ultimo_reset,
-          }
+          limite_mensual: limites?.ia_limite_mensual || 50,
+          consumo_actual: limites?.ia_consumo_actual || 0,
+          restantes:
+            (limites?.ia_limite_mensual || 50) - (limites?.ia_consumo_actual || 0),
+          ultimo_reset: limites?.ia_ultimo_reset,
+        }
         : null,
       estadisticas: stats || {},
     };
@@ -1335,18 +1331,15 @@ export class SuperAdminService {
       throw new BadRequestException('La tienda está inactiva');
     }
 
-    // Generar token de admin (similar a admin.service.ts login)
-    const access_token = Buffer.from(
-      JSON.stringify({
-        sub: superadminId, // Usamos el ID del superadmin
-        tienda_id: tienda.id,
-        dominio: tienda.dominio, // Añadir dominio para usar en X-Tenant-Domain
-        email: 'superadmin@access',
-        role: 'admin',
-        superadmin_access: true, // Flag para identificar que es acceso de superadmin
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 2, // 2 horas
-      }),
-    ).toString('base64');
+    // Generar token JWT firmado de admin (impersonación)
+    const access_token = this.jwtTokenService.signToken({
+      sub: superadminId,
+      tienda_id: tienda.id,
+      dominio: tienda.dominio,
+      email: 'superadmin@access',
+      role: 'admin',
+      superadmin_access: true,
+    }, 2 * 3600); // 2 hours
 
     // Registrar en audit log
     await this.registrarAuditLog(superadminId, 'acceso_tienda_como_admin', 'tienda', tiendaId, {

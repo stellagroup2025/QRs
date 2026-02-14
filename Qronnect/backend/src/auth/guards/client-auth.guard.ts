@@ -1,14 +1,18 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { SupabaseService } from '../../supabase/supabase.service';
+import { JwtTokenService } from '../jwt-token.service';
 import { TenantContext } from '../../tenant/entities/tenant-context.entity';
 
 /**
  * Guard de autenticación para clientes
- * Valida tokens generados por el sistema de login con OTP
+ * Valida tokens JWT firmados generados por el sistema de login con OTP
  */
 @Injectable()
 export class ClientAuthGuard implements CanActivate {
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private supabaseService: SupabaseService,
+    private jwtTokenService: JwtTokenService,
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -30,15 +34,11 @@ export class ClientAuthGuard implements CanActivate {
 
     let decoded: any;
     try {
-      // Decodificar token base64
-      const decodedString = Buffer.from(token, 'base64').toString('utf-8');
-      decoded = JSON.parse(decodedString);
+      // Verificar y decodificar el token JWT firmado
+      decoded = this.jwtTokenService.verifyToken(token);
     } catch (error) {
-      throw new UnauthorizedException('Token malformado');
+      throw new UnauthorizedException('Token malformado o expirado');
     }
-
-    // Token sin expiración - las sesiones de clientes nunca expiran
-    // La única forma de invalidar es desactivando el cliente en BD
 
     // Verificar rol
     if (decoded.role !== 'cliente') {
@@ -53,8 +53,6 @@ export class ClientAuthGuard implements CanActivate {
     // Verificar que el cliente existe y está activo
     const supabase = this.supabaseService.getAdminClient();
 
-    console.log('🔐 Verificando cliente:', { clienteId: decoded.sub, tiendaId: tenant.id, tenantDominio: tenant.dominio });
-
     const { data: cliente, error } = await supabase
       .from('clientes')
       .select('*')
@@ -63,15 +61,12 @@ export class ClientAuthGuard implements CanActivate {
       .eq('activo', true)
       .single();
 
-    console.log('📊 Resultado búsqueda cliente:', { cliente: cliente ? { id: cliente.id, nombre: cliente.nombre, email_validado: cliente.email_validado } : null, error });
-
     if (error || !cliente) {
       throw new UnauthorizedException('Cliente no encontrado o inactivo');
     }
 
-    // ⚠️ VERIFICAR QUE EL EMAIL ESTÉ VALIDADO
+    // Verificar que el email esté validado
     if (!cliente.email_validado) {
-      console.log('❌ Cliente sin email validado:', cliente.email);
       throw new UnauthorizedException('Debes validar tu email antes de poder acceder. Revisa tu bandeja de entrada.');
     }
 

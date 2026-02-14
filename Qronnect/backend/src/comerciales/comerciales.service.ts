@@ -3,19 +3,24 @@ import {
     UnauthorizedException,
     BadRequestException,
     NotFoundException,
+    ForbiddenException,
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
+import { JwtTokenService } from '../auth/jwt-token.service';
 import { LoginComercialDto, CreateComercialDto } from './dto/comerciales.dto';
 import * as bcrypt from 'bcrypt';
 import { EmailService } from '../email/email.service';
 import { QrCodesService } from '../qr-codes/qr-codes.service';
+import { PartnersService } from '../partners/partners.service';
 
 @Injectable()
 export class ComercialesService {
     constructor(
         private supabaseService: SupabaseService,
+        private jwtTokenService: JwtTokenService,
         private emailService: EmailService,
         private qrCodesService: QrCodesService,
+        private partnersService: PartnersService,
     ) { }
 
     /**
@@ -46,19 +51,17 @@ export class ComercialesService {
             .update({ ultimo_acceso: new Date().toISOString() })
             .eq('id', comercial.id);
 
-        // Generar JWT (Simulado para coincidir con Auth Guard)
+        // Generar JWT firmado
         const payload = {
             sub: comercial.id,
             email: comercial.email,
             role: 'comercial',
-            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 // 24 horas
         };
 
-        const access_token = Buffer.from(JSON.stringify(payload)).toString('base64');
-        const token = `header.${access_token}.signature`;
+        const access_token = this.jwtTokenService.signToken(payload, 24 * 3600); // 24 hours
 
         return {
-            access_token: token,
+            access_token,
             comercial: {
                 id: comercial.id,
                 nombre: comercial.nombre,
@@ -134,6 +137,17 @@ export class ComercialesService {
     async createTienda(comercialId: string, tiendaData: any) {
         const supabase = this.supabaseService.getAdminClient();
 
+        // 0. Validar límite de licencias del partner (si el comercial está vinculado a uno)
+        const { data: comercial } = await supabase
+            .from('comerciales')
+            .select('partner_id')
+            .eq('id', comercialId)
+            .single();
+
+        if (comercial?.partner_id) {
+            await this.partnersService.validateLicenseLimit(comercial.partner_id);
+        }
+
         // 1. Validar dominio
         const { data: existente } = await supabase
             .from('tiendas')
@@ -180,6 +194,7 @@ export class ComercialesService {
                 configuracion: { puntos_por_euro: 1 },
                 activo: true,
                 comercial_id: comercialId,
+                partner_id: comercial?.partner_id || null,
             })
             .select()
             .single();
@@ -345,7 +360,7 @@ export class ComercialesService {
             exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hora de acceso
         };
 
-        const access_token = Buffer.from(JSON.stringify(tokenPayload)).toString('base64');
+        const access_token = this.jwtTokenService.signToken(tokenPayload, 3600); // 1 hour
 
         // 4. Construir URL de redirección
         // Redirigir a una ruta especial del frontend de la tienda que procese el token

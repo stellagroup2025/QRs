@@ -780,6 +780,7 @@ function TenantLandingPage() {
                 <li><Link href="#" className="hover:text-white transition-colors">Blog</Link></li>
                 <li><Link href="#" className="hover:text-white transition-colors">Carreras</Link></li>
                 <li><Link href="#" className="hover:text-white transition-colors">Contacto</Link></li>
+                <li><Link href="/partners" className="hover:text-white transition-colors">Programa Partners</Link></li>
               </ul>
             </div>
 

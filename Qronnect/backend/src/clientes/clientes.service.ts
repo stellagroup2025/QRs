@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../supabase/supabase.service';
+import { JwtTokenService } from '../auth/jwt-token.service';
 import { EmailService } from '../email/email.service';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { ClienteResponseDto } from './dto/cliente-response.dto';
@@ -26,11 +27,12 @@ export class ClientesService {
   constructor(
     private supabaseService: SupabaseService,
     private configService: ConfigService,
+    private jwtTokenService: JwtTokenService,
     private emailService: EmailService,
     @Inject(forwardRef(() => ReferidosService))
     private referidosService: ReferidosService,
     private regalosService: RegalosService,
-  ) {}
+  ) { }
 
   /**
    * Obtiene el cliente por supabase_user_id para una tienda específica
@@ -644,17 +646,13 @@ export class ClientesService {
       .update({ ultima_visita: new Date().toISOString() })
       .eq('id', cliente.id);
 
-    // Generar token sin expiración
-    // El token solo se invalida si el cliente es desactivado en BD
-    const access_token = Buffer.from(
-      JSON.stringify({
-        sub: cliente.id,
-        tienda_id: cliente.id_tienda,
-        email: cliente.email,
-        role: 'cliente',
-        // Sin campo 'exp' - sesión permanente
-      }),
-    ).toString('base64');
+    // Generar token JWT firmado (sin expiración — sesión permanente)
+    const access_token = this.jwtTokenService.signToken({
+      sub: cliente.id,
+      tienda_id: cliente.id_tienda,
+      email: cliente.email,
+      role: 'cliente',
+    });
 
     console.log('  - Login exitoso - Email validado ✅');
 
@@ -1340,17 +1338,12 @@ export class ClientesService {
       // No fallar la validación por error en regalo
     }
 
-    // Generar JWT access_token para auto-login
-    console.log('🔐 Generando access_token para auto-login...');
-    const access_token = Buffer.from(
-      JSON.stringify({
-        sub: cliente.id,
-        tienda_id: cliente.id_tienda,
-        email: cliente.email,
-        role: 'cliente',
-        // Sin campo 'exp' - sesión permanente
-      }),
-    ).toString('base64');
+    const access_token = this.jwtTokenService.signToken({
+      sub: cliente.id,
+      tienda_id: cliente.id_tienda,
+      email: cliente.email,
+      role: 'cliente',
+    });
 
     console.log('✅ Access token generado para auto-login');
 

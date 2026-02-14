@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
+import { JwtTokenService } from '../auth/jwt-token.service';
 import { DashboardResumenDto } from './dto/dashboard-resumen.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
 import { ListClientesDto } from './dto/list-clientes.dto';
@@ -20,7 +21,10 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AdminService {
-  constructor(private supabaseService: SupabaseService) { }
+  constructor(
+    private supabaseService: SupabaseService,
+    private jwtTokenService: JwtTokenService,
+  ) { }
 
   /**
    * Login de administrador de tienda
@@ -84,16 +88,13 @@ export class AdminService {
       .update({ ultimo_acceso: new Date().toISOString() })
       .eq('id', admin.id);
 
-    // Generar token (desarrollo)
-    const access_token = Buffer.from(
-      JSON.stringify({
-        sub: admin.id,
-        tienda_id: admin.id_tienda,
-        email: admin.email,
-        role: 'admin',
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 8, // 8 horas
-      }),
-    ).toString('base64');
+    // Generar token JWT firmado
+    const access_token = this.jwtTokenService.signToken({
+      sub: admin.id,
+      tienda_id: admin.id_tienda,
+      email: admin.email,
+      role: 'admin',
+    }, 8 * 3600); // 8 hours
 
     return {
       access_token,
