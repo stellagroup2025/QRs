@@ -1869,9 +1869,8 @@ export function ProductLandingPage() {
                   >
                     <span className='font-semibold text-gray-900 pr-4'>{faq.question}</span>
                     <ChevronDown
-                      className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 ${
-                        openFaq === index ? 'transform rotate-180' : ''
-                      }`}
+                      className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 ${openFaq === index ? 'transform rotate-180' : ''
+                        }`}
                     />
                   </button>
                   {openFaq === index && (
@@ -2028,6 +2027,7 @@ export function ProductLandingPage() {
                 <h3 className='font-semibold mb-4 text-white'>Empresa</h3>
                 <ul className='space-y-3 text-gray-400 text-sm'>
                   <li><Link href='https://stellagroup.es' target='_blank' className='hover:text-white transition-colors'>Sobre StellaGroup</Link></li>
+                  <li><Link href='/partners' className='hover:text-white transition-colors'>Partners</Link></li>
                   <li><Link href='mailto:sales@qronnect.com' className='hover:text-white transition-colors'>Contacto</Link></li>
                   <li><Link href='#' className='hover:text-white transition-colors'>Blog</Link></li>
                   <li><Link href='/admin/login' className='hover:text-white transition-colors'>Admin</Link></li>

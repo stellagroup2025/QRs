@@ -5,6 +5,7 @@ import { TiendasService } from './tiendas.service';
 import { ConfigurarRegaloBienvenidaDto } from './dto/configurar-regalo-bienvenida.dto';
 import { ConfigurarIADto } from './dto/configurar-ia.dto';
 import { ConfigurarInfoTiendaDto } from './dto/configurar-info-tienda.dto';
+import { ConfigurarPuntosDto } from './dto/configurar-puntos.dto';
 import { AdminAuthGuard } from '../auth/guards/admin-auth.guard';
 import { CurrentTienda } from '../auth/decorators/current-tienda.decorator';
 
@@ -108,5 +109,23 @@ export class TiendasController {
   @ApiResponse({ status: 200, description: 'Información obtenida', type: ConfigurarInfoTiendaDto })
   getInfoTienda(@CurrentTienda() tiendaId: string) {
     return this.tiendasService.getInfoTienda(tiendaId);
+  }
+
+  @Put('config/puntos')
+  @ApiOperation({ summary: 'Configurar sistema de puntos' })
+  @ApiResponse({ status: 200, description: 'Configuración actualizada' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  configurarPuntos(
+    @CurrentTienda() tiendaId: string,
+    @Body() dto: ConfigurarPuntosDto,
+  ) {
+    return this.tiendasService.updatePuntosConfig(tiendaId, dto);
+  }
+
+  @Get('config/puntos')
+  @ApiOperation({ summary: 'Obtener configuración de puntos' })
+  @ApiResponse({ status: 200, description: 'Configuración obtenida', type: ConfigurarPuntosDto })
+  getPuntosConfig(@CurrentTienda() tiendaId: string) {
+    return this.tiendasService.getPuntosConfig(tiendaId);
   }
 }

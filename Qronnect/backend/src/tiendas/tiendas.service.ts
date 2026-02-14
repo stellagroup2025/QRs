@@ -3,13 +3,14 @@ import { SupabaseService } from '../supabase/supabase.service';
 import { ConfigurarRegaloBienvenidaDto } from './dto/configurar-regalo-bienvenida.dto';
 import { ConfigurarIADto } from './dto/configurar-ia.dto';
 import { ConfigurarInfoTiendaDto } from './dto/configurar-info-tienda.dto';
+import { ConfigurarPuntosDto } from './dto/configurar-puntos.dto';
 
 /**
  * Servicio para gestionar tiendas
  */
 @Injectable()
 export class TiendasService {
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(private supabaseService: SupabaseService) { }
 
   /**
    * Obtiene una tienda por su ID
@@ -397,5 +398,59 @@ export class TiendasService {
     const cierreMinutos = horaCierre * 60 + minCierre;
 
     return horaActualMinutos >= aperturaMinutos && horaActualMinutos <= cierreMinutos;
+  }
+
+  /**
+   * Configura el sistema de puntos de la tienda
+   */
+  async updatePuntosConfig(tiendaId: string, dto: ConfigurarPuntosDto) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const { data, error } = await supabase
+      .from('tiendas')
+      .update({
+        puntos_por_euro: dto.puntos_por_euro,
+        puntos_bienvenida: dto.puntos_bienvenida,
+      })
+      .eq('id', tiendaId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error configurando puntos:', error);
+      throw new BadRequestException('Error al configurar puntos');
+    }
+
+    return {
+      success: true,
+      message: 'Configuración de puntos actualizada correctamente',
+      config: {
+        puntos_por_euro: data.puntos_por_euro,
+        puntos_bienvenida: data.puntos_bienvenida,
+      },
+    };
+  }
+
+  /**
+   * Obtiene la configuración de puntos de la tienda
+   */
+  async getPuntosConfig(tiendaId: string) {
+    const supabase = this.supabaseService.getAdminClient();
+
+    const { data, error } = await supabase
+      .from('tiendas')
+      .select('puntos_por_euro, puntos_bienvenida')
+      .eq('id', tiendaId)
+      .single();
+
+    if (error) {
+      console.error('Error obteniendo configuración de puntos:', error);
+      throw new BadRequestException('Error al obtener configuración de puntos');
+    }
+
+    return {
+      puntos_por_euro: data.puntos_por_euro || 10,
+      puntos_bienvenida: data.puntos_bienvenida || 0,
+    };
   }
 }
