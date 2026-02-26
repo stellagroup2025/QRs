@@ -451,7 +451,7 @@ export default function SuperAdminTiendasPage() {
                 </div>
 
                 {/* Vista Desktop - Tabla */}
-                <div className="hidden lg:block overflow-x-auto">
+                <div className="hidden lg:block w-full overflow-visible pb-16">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -464,7 +464,7 @@ export default function SuperAdminTiendasPage() {
                         <TableHead className="text-center">Compras</TableHead>
                         <TableHead className="text-right">Facturado</TableHead>
                         <TableHead className="text-center">Estado</TableHead>
-                        <TableHead className="text-right min-w-[200px]">Acciones</TableHead>
+                        <TableHead className="text-right w-[250px] pr-4">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -572,8 +572,8 @@ export default function SuperAdminTiendasPage() {
                               {tienda.activo ? 'Activa' : 'Inactiva'}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right whitespace-nowrap min-w-[200px]">
-                            <div className="flex items-center justify-end space-x-2">
+                          <TableCell className="text-right w-[250px] pr-4">
+                            <div className="flex items-center justify-end gap-1">
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -587,7 +587,7 @@ export default function SuperAdminTiendasPage() {
                                 size="sm"
                                 onClick={() => handleViewTienda(tienda)}
                                 title="Ver panel de admin de la tienda"
-                                className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/50"
+                                className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/50 flex-shrink-0"
                               >
                                 <Eye className="h-4 w-4 mr-1" />
                                 Ver
