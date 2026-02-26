@@ -328,8 +328,8 @@ export default function SuperAdminTiendasPage() {
                               tienda.plan === 'enterprise'
                                 ? 'default'
                                 : tienda.plan === 'profesional'
-                                ? 'secondary'
-                                : 'outline'
+                                  ? 'secondary'
+                                  : 'outline'
                             }
                             className="flex-shrink-0 ml-2"
                           >
@@ -497,8 +497,8 @@ export default function SuperAdminTiendasPage() {
                                 tienda.plan === 'enterprise'
                                   ? 'default'
                                   : tienda.plan === 'profesional'
-                                  ? 'secondary'
-                                  : 'outline'
+                                    ? 'secondary'
+                                    : 'outline'
                               }
                             >
                               {tienda.plan}
@@ -583,12 +583,14 @@ export default function SuperAdminTiendasPage() {
                                 <QrCode className="h-4 w-4" />
                               </Button>
                               <Button
-                                variant="ghost"
-                                size="icon"
+                                variant="outline"
+                                size="sm"
                                 onClick={() => handleViewTienda(tienda)}
                                 title="Ver panel de admin de la tienda"
+                                className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/50"
                               >
-                                <Eye className="h-4 w-4" />
+                                <Eye className="h-4 w-4 mr-1" />
+                                Ver
                               </Button>
                               <Button
                                 variant="ghost"

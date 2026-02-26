@@ -357,7 +357,10 @@ export default function AdminDashboardPage() {
   const fetchTiendaInfo = async (token: string) => {
     try {
       // Decodificar el token para obtener el tienda_id
-      const payload = JSON.parse(atob(token))
+      // El token es un JWT: header.payload.signature
+      const base64Url = token.includes('.') ? token.split('.')[1] : token;
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(base64))
 
       console.log('🔍 [fetchTiendaInfo] Token payload:', payload)
       console.log('🌐 [fetchTiendaInfo] Current hostname:', window.location.hostname)
