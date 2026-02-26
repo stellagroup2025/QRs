@@ -14,7 +14,7 @@ const BrandingContext = createContext<BrandingContextValue | null>(null)
 
 export function BrandingProvider({ children }: { children: React.ReactNode }) {
   const tenantDomain = getTenantDomain()
-  const { branding, loading, error } = useBranding(tenantDomain)
+  const { branding, loading, error } = useBranding(tenantDomain || undefined)
 
   console.log('🏪 [BRANDING] Provider iniciado:', {
     tenantDomain,
@@ -66,19 +66,18 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Actualizar favicon dinámicamente
-      if (branding.favicon_url) {
-        const faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement
-        if (faviconLink) {
-          faviconLink.href = branding.favicon_url
-          console.log('🖼️ [BRANDING] Favicon actualizado:', branding.favicon_url)
-        } else {
-          // Crear el link si no existe
-          const newFavicon = document.createElement('link')
-          newFavicon.rel = 'icon'
-          newFavicon.href = branding.favicon_url
-          document.head.appendChild(newFavicon)
-          console.log('🖼️ [BRANDING] Favicon creado:', branding.favicon_url)
-        }
+      const faviconToSet = branding.favicon_url || 'https://qronnect.es/favicon.ico'
+      const faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement
+      if (faviconLink) {
+        faviconLink.href = faviconToSet
+        console.log('🖼️ [BRANDING] Favicon actualizado:', faviconToSet)
+      } else {
+        // Crear el link si no existe
+        const newFavicon = document.createElement('link')
+        newFavicon.rel = 'icon'
+        newFavicon.href = faviconToSet
+        document.head.appendChild(newFavicon)
+        console.log('🖼️ [BRANDING] Favicon creado:', faviconToSet)
       }
     }
   }, [branding, loading])

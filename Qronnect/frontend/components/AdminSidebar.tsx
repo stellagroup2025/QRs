@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import {
     LayoutDashboard,
     Users,
@@ -293,10 +294,14 @@ export function AdminSidebar() {
                     </ScrollArea>
 
                     {/* Footer / User Profile */}
-                    <div className="p-4 border-t bg-gray-50/50 dark:bg-slate-900/50 dark:border-slate-800">
+                    <div className="p-4 border-t bg-gray-50/50 dark:bg-slate-900/50 dark:border-slate-800 space-y-2">
+                        <div className="flex justify-between items-center px-4 py-2 text-sm text-gray-500">
+                            <span>Modo</span>
+                            <ThemeToggle />
+                        </div>
                         <Button
                             variant="ghost"
-                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
                             onClick={handleLogout}
                         >
                             <LogOut className="mr-2 h-4 w-4" />

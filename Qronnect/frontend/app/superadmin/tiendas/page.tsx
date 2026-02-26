@@ -572,7 +572,7 @@ export default function SuperAdminTiendasPage() {
                               {tienda.activo ? 'Activa' : 'Inactiva'}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right whitespace-nowrap min-w-[200px]">
                             <div className="flex items-center justify-end space-x-2">
                               <Button
                                 variant="ghost"
