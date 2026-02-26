@@ -220,7 +220,7 @@ export function AdminSidebar() {
             {/* Sidebar Container */}
             <aside
                 className={cn(
-                    "fixed inset-y-0 left-0 z-40 w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r dark:border-slate-800 shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:block",
+                    "fixed inset-y-0 left-0 z-40 w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r dark:border-slate-800 shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:block",
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >

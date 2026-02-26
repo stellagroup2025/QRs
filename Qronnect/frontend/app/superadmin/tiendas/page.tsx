@@ -456,15 +456,10 @@ export default function SuperAdminTiendasPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Tienda</TableHead>
-                        <TableHead>Dominio</TableHead>
-                        <TableHead>Plan</TableHead>
-                        <TableHead className="text-center">Modo SMS</TableHead>
-                        <TableHead className="text-center">Sender ID</TableHead>
-                        <TableHead className="text-center">Clientes</TableHead>
-                        <TableHead className="text-center">Compras</TableHead>
-                        <TableHead className="text-right">Facturado</TableHead>
-                        <TableHead className="text-center">Estado</TableHead>
-                        <TableHead className="text-right w-[250px] pr-4">Acciones</TableHead>
+                        <TableHead className="w-[120px]">Plan / Estado</TableHead>
+                        <TableHead className="text-center w-[150px]">SMS Config</TableHead>
+                        <TableHead className="text-center w-[200px]">Métricas</TableHead>
+                        <TableHead className="text-right w-[180px] pr-4">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -473,106 +468,92 @@ export default function SuperAdminTiendasPage() {
                           <TableCell>
                             <div>
                               <p className="font-semibold">{tienda.nombre}</p>
-                              <p className="text-xs text-muted-foreground">
-                                <Calendar className="h-3 w-3 inline mr-1" />
-                                {new Date(tienda.creado_en).toLocaleDateString('es-ES')}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <p className="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
-                                {tienda.dominio}.qronnect.com
-                              </p>
-                              {tienda.dominio_personalizado && (
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {tienda.dominio_personalizado}
+                              <div className="flex flex-col gap-1 mt-1">
+                                <div className="flex flex-col gap-0.5">
+                                  <p className="font-mono text-xs text-muted-foreground break-all">
+                                    {tienda.dominio}.qronnect.com
+                                  </p>
+                                  {tienda.dominio_personalizado && (
+                                    <p className="font-mono text-[11px] text-blue-600 dark:text-blue-400 break-all">
+                                      {tienda.dominio_personalizado}
+                                    </p>
+                                  )}
+                                </div>
+                                <p className="text-[10px] text-muted-foreground flex items-center mt-0.5">
+                                  <Calendar className="h-3 w-3 mr-1" />
+                                  Registrada: {new Date(tienda.creado_en).toLocaleDateString('es-ES')}
                                 </p>
-                              )}
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge
-                              variant={
-                                tienda.plan === 'enterprise'
-                                  ? 'default'
-                                  : tienda.plan === 'profesional'
-                                    ? 'secondary'
-                                    : 'outline'
-                              }
-                            >
-                              {tienda.plan}
-                            </Badge>
+                            <div className="flex flex-col gap-2 items-start">
+                              <Badge
+                                variant={
+                                  tienda.plan === 'enterprise'
+                                    ? 'default'
+                                    : tienda.plan === 'profesional'
+                                      ? 'secondary'
+                                      : 'outline'
+                                }
+                                className="text-xs shrink-0"
+                              >
+                                {tienda.plan}
+                              </Badge>
+                              <Badge variant={tienda.activo ? 'default' : 'destructive'} className="text-xs shrink-0">
+                                {tienda.activo ? 'Activa' : 'Inactiva'}
+                              </Badge>
+                            </div>
                           </TableCell>
                           <TableCell className="text-center">
-                            {tienda.sms_activo ? (
-                              <div className="flex flex-col items-center gap-1">
+                            <div className="flex flex-col items-center justify-center gap-2">
+                              {tienda.sms_activo ? (
                                 <Badge
                                   variant={tienda.sms_modo === 'global' ? 'default' : 'secondary'}
-                                  className="text-xs"
+                                  className="text-[10px]"
                                 >
-                                  {tienda.sms_modo === 'global' ? (
-                                    <>
-                                      <Globe2 className="h-3 w-3 mr-1" />
-                                      Global
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Building2 className="h-3 w-3 mr-1" />
-                                      Propio
-                                    </>
-                                  )}
+                                  {tienda.sms_modo === 'global' ? 'Global' : 'Propio'}
                                 </Badge>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">
-                                <MessageSquare className="h-3 w-3 inline opacity-50" /> Inactivo
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <button
-                              onClick={() => handleOpenSenderIDModal(tienda)}
-                              className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded px-2 py-1 transition-colors"
-                            >
-                              {tienda.sender_id ? (
-                                <div className="flex items-center justify-center space-x-1">
-                                  <Smartphone className="h-4 w-4 text-green-600" />
-                                  <span className="font-mono text-sm font-semibold">{tienda.sender_id}</span>
-                                </div>
                               ) : (
-                                <span className="text-xs text-muted-foreground hover:text-blue-600 hover:underline">
-                                  Configurar
+                                <span className="text-[10px] text-muted-foreground flex items-center">
+                                  <MessageSquare className="h-3 w-3 mr-1 opacity-50" /> Inactivo
                                 </span>
                               )}
-                            </button>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <div className="flex items-center justify-center space-x-1">
-                              <Users className="h-4 w-4 text-muted-foreground" />
-                              <span>{tienda.total_clientes}</span>
+                              <button
+                                onClick={() => handleOpenSenderIDModal(tienda)}
+                                className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded px-1.5 py-0.5 transition-colors"
+                              >
+                                {tienda.sender_id ? (
+                                  <span className="font-mono text-xs font-semibold text-green-600 dark:text-green-400">
+                                    {tienda.sender_id}
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-blue-600 hover:underline">
+                                    Configurar
+                                  </span>
+                                )}
+                              </button>
                             </div>
                           </TableCell>
-                          <TableCell className="text-center">
-                            <div className="flex items-center justify-center space-x-1">
-                              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                              <span>{tienda.total_compras}</span>
+                          <TableCell>
+                            <div className="flex flex-col gap-1.5 text-xs">
+                              <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" /> Clientes</span>
+                                <span className="font-medium">{tienda.total_clientes}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground flex items-center gap-1"><ShoppingCart className="h-3 w-3" /> Compras</span>
+                                <span className="font-medium">{tienda.total_compras}</span>
+                              </div>
+                              <div className="flex items-center justify-between border-t pt-1 mt-0.5">
+                                <span className="text-muted-foreground font-semibold flex items-center gap-1"><Euro className="h-3 w-3" /> Total</span>
+                                <span className="font-bold">
+                                  {tienda.total_facturado.toLocaleString('es-ES', { minimumFractionDigits: 0 })}
+                                </span>
+                              </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end space-x-1">
-                              <Euro className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-semibold">
-                                {tienda.total_facturado.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge variant={tienda.activo ? 'default' : 'destructive'}>
-                              {tienda.activo ? 'Activa' : 'Inactiva'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right w-[250px] pr-4">
+                          <TableCell className="text-right w-[180px] pr-4 align-middle">
                             <div className="flex items-center justify-end gap-1">
                               <Button
                                 variant="ghost"
@@ -589,8 +570,8 @@ export default function SuperAdminTiendasPage() {
                                 title="Ver panel de admin de la tienda"
                                 className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/50 flex-shrink-0"
                               >
-                                <Eye className="h-4 w-4 mr-1" />
-                                Ver
+                                <Eye className="h-4 w-4 mr-1 ml-0" />
+                                <span className="hidden xl:inline">Ver</span>
                               </Button>
                               <Button
                                 variant="ghost"
