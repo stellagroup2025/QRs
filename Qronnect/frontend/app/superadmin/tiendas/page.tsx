@@ -464,7 +464,7 @@ export default function SuperAdminTiendasPage() {
                         <TableHead className="text-center">Compras</TableHead>
                         <TableHead className="text-right">Facturado</TableHead>
                         <TableHead className="text-center">Estado</TableHead>
-                        <TableHead className="text-right">Acciones</TableHead>
+                        <TableHead className="text-right min-w-[200px]">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
