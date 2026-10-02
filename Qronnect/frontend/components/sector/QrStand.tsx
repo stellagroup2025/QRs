@@ -20,7 +20,7 @@ export function QrStand({ sector }: { sector: SectorData }) {
             fgColor="#16121A"
             className="mx-auto mt-3"
           />
-          <p className="mt-3 text-[10px] font-medium leading-snug text-[var(--s-ink)]/80">{sector.finalCta.qrCaption}</p>
+          <p className="mt-3 text-[10px] font-medium leading-snug text-[var(--s-ink)]/80">{sector.qrStand.caption}</p>
         </div>
       </div>
       <div className="h-3 w-52 rounded-b-xl bg-white/80 shadow-md" />

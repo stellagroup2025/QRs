@@ -28,82 +28,62 @@ export interface SectorPromo {
   icon: SectorIcon
 }
 
-/** Fila de texto + foto que alterna de lado */
-export interface SectorStory {
-  titleStart: string
-  titleHighlight: string
-  lead: string
-  body: string
-  photo: string
-}
-
 export interface SectorData {
   slug: string
   /** Nombre del sector para menús, breadcrumbs y SEO */
   nombre: string
   seo: { title: string; description: string; keywords: string[] }
-  /**
-   * Paleta: principal (botones y cabecera), tinta (titulares), fondos suaves y
-   * dos acentos para iconos y cifras
-   */
+  /** Paleta del sector: principal (botones), tinta (titulares) y fondo suave */
   palette: {
     primary: string
     primaryOn: string
     ink: string
     soft: string
     softer: string
-    accents: [string, string]
+    /** Si se indica, el hero es una tarjeta oscura de este color con la foto de fondo */
+    dark?: string
   }
-  /** Nombre ficticio del negocio que aparece en la tarjeta, el panel y el expositor */
+  /** Nombre ficticio del negocio que aparece en el móvil y en el expositor */
   demoBusiness: { name: string; tagline: string }
   hero: {
-    eyebrow: string
     titleStart: string
     titleHighlight: string
     subtitle: string
-    /** Frase corta bajo el botón que quita fricción */
+    /** Frase corta bajo los botones que quita fricción */
     reassurance: string
+    features: SectorFeature[]
     photo: string
   }
-  /** Tarjeta de sellos que se ve en el móvil del hero */
-  stampCard: {
-    icon: SectorIcon
-    line1: string
-    line2: string
-    total: number
-    filled: string[]
+  /** Lo que ve la clienta en el móvil */
+  phone: {
+    points: number
+    progressLabel: string
+    progress: number
+    items: { icon: SectorIcon; label: string }[]
+    reward: { title: string; photo: string }
   }
-  /** Cifras del panel del negocio que asoma detrás del móvil */
-  dashboard: { redemptions: string; newMembers: string; members: string }
-  proof: { text: string; stats: SectorStat[] }
-  features: { eyebrow: string; title1: string; title2: string; items: SectorFeature[] }
-  stories: SectorStory[]
+  rewardBanner: { title: string; titleHighlight?: string; text: string; cta: string; photo: string }
+  valueProps: SectorFeature[]
+  stats: SectorStat[]
+  /** Nota al pie de las cifras (son resultados orientativos) */
+  statsFootnote: string
+  /** Los tres pasos de "Así de fácil" */
   steps: SectorFeature[]
+  services: { title: string; items: string[]; photo: string }
   promos: { titleStart: string; titleHighlight: string; items: SectorPromo[] }
+  qrStand: { caption: string; photo: string }
   testimonial: { quote: string; author: string; role: string; photo: string }
-  /** Resultados que se citan junto al testimonio (con nota al pie) */
-  results: { stats: SectorStat[]; footnote: string }
-  finalCta: { titleStart: string; titleHighlight: string; subtitle: string; qrCaption: string }
+  platform: SectorFeature[]
+  finalCta: {
+    titleStart: string
+    titleHighlight: string
+    titleEnd: string
+    subtitle: string
+    photo: string
+    notifications?: { icon: SectorIcon; title: string; text: string }[]
+  }
   faq: { q: string; a: string }[]
 }
-
-const commonSteps = (who: string, place: string): SectorFeature[] => [
-  {
-    icon: 'qr',
-    title: 'Escanea y únete',
-    text: `${who} escanea el QR de tu mostrador y se registra en 30 segundos, sin descargar ninguna app.`,
-  },
-  {
-    icon: 'stamp',
-    title: 'Suma sellos y puntos',
-    text: 'En cada visita enseña su QR desde el móvil y tu equipo le suma el sello o los puntos al momento.',
-  },
-  {
-    icon: 'gift',
-    title: 'Disfruta su premio',
-    text: `Al completar la tarjeta recibe su cupón y lo canjea en ${place}. Y vuelta a empezar.`,
-  },
-]
 
 const estetica: SectorData = {
   slug: 'estetica',
@@ -111,7 +91,7 @@ const estetica: SectorData = {
   seo: {
     title: 'Programa de fidelización para centros de estética y salones de uñas',
     description:
-      'Convierte cada visita en una clienta fiel: tarjeta de sellos digital, puntos, promociones y referidos para tu salón de estética, uñas o peluquería. Sin apps.',
+      'Convierte cada visita en una clienta fiel: puntos y sellos digitales, promociones automáticas y referidos para tu salón de estética, uñas o peluquería. Sin apps.',
     keywords: [
       'fidelización centro de estética',
       'programa de puntos salón de uñas',
@@ -123,74 +103,64 @@ const estetica: SectorData = {
   palette: {
     primary: '#E0115F',
     primaryOn: '#FFFFFF',
-    ink: '#3B0A26',
+    ink: '#4A0D2E',
     soft: '#FCE4EC',
-    softer: '#FFF4F7',
-    accents: ['#8B5CF6', '#F59E0B'],
+    softer: '#FFF5F8',
   },
   demoBusiness: { name: 'Tu Salón', tagline: 'Estética & Uñas' },
   hero: {
-    eyebrow: 'Fidelización para centros de estética',
     titleStart: 'Belleza que siempre',
     titleHighlight: 'vuelve',
     subtitle:
-      'Qronnect convierte la tarjeta de cartón en un programa de fidelización digital para tu salón: sellos, puntos, promociones y clientas que vuelven.',
+      'Convierte cada visita en una clienta fiel con un programa de puntos, promociones y experiencias diseñadas para tu salón de estética y uñas.',
     reassurance: 'Tus clientas no descargan ninguna app.',
+    features: [
+      { icon: 'gift', title: 'Puntos y sellos digitales', text: 'Premia cada visita, tratamiento o compra.' },
+      { icon: 'megaphone', title: 'Promociones automáticas', text: 'Atrae más reservas en los días que necesitas.' },
+      { icon: 'users', title: 'Más clientas fieles', text: 'Programa de referidos y recomendaciones.' },
+      { icon: 'chart', title: 'Todo en una plataforma', text: 'Campañas, historial y métricas de tu salón.' },
+    ],
     photo: '/sectores/estetica/hero.webp',
   },
-  stampCard: {
-    icon: 'sparkles',
-    line1: '5 MANICURAS',
-    line2: 'LA 6ª GRATIS',
-    total: 6,
-    filled: ['02/09', '16/09', '30/09', '14/10'],
-  },
-  dashboard: { redemptions: '312', newMembers: '1.240', members: '1.618' },
-  proof: {
-    text: 'Una tarjeta de sellos con la imagen de tu salón, siempre en el móvil de tus clientas.',
-    stats: [
-      { value: '30 s', label: 'para que una clienta se registre' },
-      { value: '0', label: 'apps que descargar' },
-      { value: '100 %', label: 'con tu logo y tus colores' },
-    ],
-  },
-  features: {
-    eyebrow: 'Todo lo que necesitas para fidelizar',
-    title1: 'Más que una tarjeta de sellos.',
-    title2: 'Una experiencia que hace volver.',
+  phone: {
+    points: 320,
+    progressLabel: 'A 1 visita de tu recompensa',
+    progress: 0.82,
     items: [
-      { icon: 'stamp', title: 'Sellos y puntos digitales', text: 'Premia cada visita, tratamiento o compra.' },
-      { icon: 'megaphone', title: 'Promociones automáticas', text: 'Llena los huecos de la agenda en los días flojos.' },
-      { icon: 'users', title: 'Referidos', text: 'Tus clientas invitan a sus amigas y ganáis las dos.' },
-      { icon: 'mail', title: 'Campañas por email y SMS', text: 'Avisa de novedades y ofertas en un par de clics.' },
-      { icon: 'gift', title: 'Regalo de bienvenida y cumpleaños', text: 'Un detalle que se recuerda y hace reservar.' },
-      { icon: 'chart', title: 'Informes de tu salón', text: 'Quién vuelve, cuánto gasta y qué funciona.' },
+      { icon: 'tag', label: 'Promociones exclusivas' },
+      { icon: 'stamp', label: 'Mi tarjeta de sellos' },
+      { icon: 'history', label: 'Tu historial' },
+      { icon: 'users', label: 'Invita a una amiga' },
     ],
+    reward: { title: 'Tu próxima manicura gratis', photo: '/sectores/estetica/manicura.webp' },
   },
-  stories: [
-    {
-      titleStart: 'Gana la',
-      titleHighlight: 'segunda visita',
-      lead: 'Una clienta nueva es solo el principio.',
-      body: 'Con un regalo de bienvenida y su tarjeta de sellos desde el primer día, tiene un motivo para volver a reservar contigo y no con el salón de al lado.',
-      photo: '/sectores/estetica/hero.webp',
-    },
-    {
-      titleStart: 'Llena la agenda en los',
-      titleHighlight: 'días flojos',
-      lead: 'Los martes por la mañana también pueden ir llenos.',
-      body: 'Lanza una promoción para los días con huecos y avisa a tus clientas por email o SMS. Ellas reciben la oferta en el móvil y tú, las reservas.',
-      photo: '/sectores/estetica/manicura.webp',
-    },
-    {
-      titleStart: 'Tus clientas, tus mejores',
-      titleHighlight: 'embajadoras',
-      lead: 'La recomendación de una amiga vale más que cualquier anuncio.',
-      body: 'Cada clienta tiene su código para invitar a otras. Cuando la amiga se registra, las dos reciben su premio y tú, una clienta nueva.',
-      photo: '/sectores/estetica/amigas.webp',
-    },
+  rewardBanner: {
+    title: 'Tu próxima manicura gratis',
+    text: 'Acumula puntos en cada visita y disfruta de recompensas exclusivas.',
+    cta: 'Descubre los premios',
+    photo: '/sectores/estetica/manicura.webp',
+  },
+  valueProps: [
+    { icon: 'gem', title: 'Premia a tus clientas', text: 'Puntos por cada visita, tratamiento o compra.' },
+    { icon: 'megaphone', title: 'Lanza promociones al instante', text: 'Atrae más reservas en los días que necesites.' },
+    { icon: 'users', title: 'Convierte clientas en embajadoras', text: 'Programa de referidos y recompensas.' },
   ],
-  steps: commonSteps('Tu clienta', 'tu salón'),
+  stats: [
+    { value: '+40%*', label: 'clientas recurrentes' },
+    { value: '+25%*', label: 'aumento del ticket medio' },
+    { value: '-60%*', label: 'tiempo en gestión manual' },
+  ],
+  statsFootnote: '*Resultados orientativos de salones que usan Qronnect. Dependen de cada negocio.',
+  steps: [
+    { icon: 'qr', title: 'Escanea y se une', text: 'Tu clienta escanea el QR del mostrador y se registra en 30 segundos.' },
+    { icon: 'stamp', title: 'Suma en cada visita', text: 'Enseña su QR en el móvil y tu equipo le suma el sello o los puntos.' },
+    { icon: 'gift', title: 'Disfruta su premio', text: 'Al completar la tarjeta recibe su cupón y lo canjea en tu salón.' },
+  ],
+  services: {
+    title: 'Tratamientos que premian tu confianza',
+    items: ['Faciales', 'Manicura y pedicura', 'Depilación', 'Pestañas y cejas', 'Y mucho más'],
+    photo: '/sectores/estetica/pestanas.webp',
+  },
   promos: {
     titleStart: 'Promociones que',
     titleHighlight: 'encantan',
@@ -200,6 +170,7 @@ const estetica: SectorData = {
       { title: 'Días especiales', text: 'Promociones exclusivas', photo: '/sectores/estetica/facial.webp', icon: 'tag' },
     ],
   },
+  qrStand: { caption: 'Escanea y empieza a acumular puntos', photo: '/sectores/estetica/expositor.webp' },
   testimonial: {
     quote:
       'Desde que tenemos Qronnect nuestras clientas vuelven mucho más y además reservan más tratamientos.',
@@ -207,19 +178,25 @@ const estetica: SectorData = {
     role: 'Propietaria de salón de uñas',
     photo: '/sectores/estetica/testimonio.webp',
   },
-  results: {
-    stats: [
-      { value: '+40%*', label: 'clientas recurrentes' },
-      { value: '+25%*', label: 'ticket medio' },
-      { value: '-60%*', label: 'tiempo de gestión manual' },
-    ],
-    footnote: '*Resultados orientativos de salones que usan Qronnect. Dependen de cada negocio.',
-  },
+  platform: [
+    { icon: 'gift', title: 'Puntos y sellos' },
+    { icon: 'tag', title: 'Promociones personalizadas' },
+    { icon: 'share', title: 'Referidos' },
+    { icon: 'mail', title: 'Campañas email/SMS' },
+    { icon: 'chart', title: 'Informes y KPIs' },
+    { icon: 'phone', title: 'Todo en el móvil de tus clientas' },
+  ],
   finalCta: {
     titleStart: 'Convierte cada visita en una',
-    titleHighlight: 'historia que continúa',
-    subtitle: 'Empieza hoy a fidelizar a tus clientas con Qronnect.',
-    qrCaption: 'Escanea y empieza a acumular puntos',
+    titleHighlight: 'historia',
+    titleEnd: 'que continúa',
+    subtitle: 'Empieza hoy a fidelizar con Qronnect.',
+    photo: '/sectores/estetica/esmalte.webp',
+    notifications: [
+      { icon: 'users', title: 'Nueva clienta', text: '+100 puntos de bienvenida' },
+      { icon: 'calendar', title: 'Visita registrada', text: 'Manicura semipermanente' },
+      { icon: 'gift', title: '¡Recompensa desbloqueada!', text: 'Tu próxima manicura gratis' },
+    ],
   },
   faq: [
     {
@@ -262,80 +239,80 @@ const cafeterias: SectorData = {
     ink: '#2B1A10',
     soft: '#FBE7D6',
     softer: '#FFF8F1',
-    accents: ['#0F9488', '#D97706'],
+    dark: '#20140D',
   },
   demoBusiness: { name: 'Tu Cafetería', tagline: 'Buenos cafés, mejores momentos' },
   hero: {
-    eyebrow: 'Fidelización para cafeterías',
     titleStart: 'Convierte cada café en un',
     titleHighlight: 'cliente fiel',
     subtitle:
-      'Qronnect cambia la tarjeta de sellos de cartón por una digital con la imagen de tu cafetería. Más visitas, más ticket y clientes que siempre vuelven.',
+      'Un programa de puntos, promociones y experiencias diseñado para cafeterías que quieren más visitas, más ticket y clientes que siempre vuelven.',
     reassurance: 'Tus clientes no descargan ninguna app.',
+    features: [
+      { icon: 'gift', title: 'Puntos y sellos digitales', text: 'Premia cada visita, bebida o compra.' },
+      { icon: 'megaphone', title: 'Promociones automáticas', text: 'Atrae más clientes en tus horas valle.' },
+      { icon: 'users', title: 'Más clientes recurrentes', text: 'Programa de referidos y recomendaciones.' },
+      { icon: 'chart', title: 'Todo en una plataforma', text: 'Campañas, historial, informes y KPIs.' },
+    ],
     photo: '/sectores/cafeterias/hero.webp',
   },
-  stampCard: {
-    icon: 'coffee',
-    line1: 'COMPRA 6 CAFÉS',
-    line2: 'EL 7º GRATIS',
-    total: 6,
-    filled: ['02/01', '05/01', '15/01', '19/01', '22/01'],
-  },
-  dashboard: { redemptions: '1.031', newMembers: '1.560', members: '1.722' },
-  proof: {
-    text: 'La tarjeta de "10 cafés, 1 gratis" de siempre, pero digital, con tu marca y sin cartones que se pierden.',
-    stats: [
-      { value: '30 s', label: 'para que un cliente se registre' },
-      { value: '0', label: 'apps que descargar' },
-      { value: '100 %', label: 'con tu logo y tus colores' },
-    ],
-  },
-  features: {
-    eyebrow: 'Todo lo que necesitas para fidelizar',
-    title1: 'Más que una tarjeta de sellos.',
-    title2: 'Un motivo para volver cada día.',
+  phone: {
+    points: 120,
+    progressLabel: 'A 1 café de tu café gratis',
+    progress: 0.9,
     items: [
-      { icon: 'stamp', title: 'Sellos y puntos digitales', text: 'Premia cada café, desayuno o compra.' },
-      { icon: 'clock', title: 'Promociones en horas valle', text: 'Llena las horas flojas con ofertas para socios.' },
-      { icon: 'users', title: 'Referidos', text: 'Tus clientes traen a sus amigos y ganáis todos.' },
-      { icon: 'mail', title: 'Campañas por email y SMS', text: 'Programa los envíos para el día y la hora que quieras.' },
-      { icon: 'gift', title: 'Regalo de bienvenida y cumpleaños', text: 'Un café o un dulce que se recuerda.' },
-      { icon: 'chart', title: 'Informes de tu cafetería', text: 'Visitas, ticket medio y qué promociones funcionan.' },
+      { icon: 'stamp', label: 'Mi tarjeta de sellos' },
+      { icon: 'tag', label: 'Promociones exclusivas' },
+      { icon: 'history', label: 'Tu historial' },
+      { icon: 'users', label: 'Invita a un amigo' },
     ],
+    reward: { title: 'Tu próximo café gratis', photo: '/sectores/cafeterias/cafe.webp' },
   },
-  stories: [
-    {
-      titleStart: 'Gana la',
-      titleHighlight: 'segunda visita',
-      lead: 'El primer café es solo el principio.',
-      body: 'Con su tarjeta de sellos desde el primer día y un regalo de bienvenida, tu cliente tiene un motivo para elegir tu cafetería una y otra vez.',
-      photo: '/sectores/cafeterias/hero.webp',
-    },
-    {
-      titleStart: 'Llena tus',
-      titleHighlight: 'horas valle',
-      lead: 'Las cuatro de la tarde también pueden tener cola.',
-      body: 'Crea un 2x1 o un café gratis para las horas flojas y avisa a tus socios por email o SMS justo cuando más lo necesitas.',
-      photo: '/sectores/cafeterias/helado.webp',
-    },
-    {
-      titleStart: 'Más que un café,',
-      titleHighlight: 'una comunidad',
-      lead: 'Los clientes habituales son los que hacen barrio.',
-      body: 'Premia a los que vienen cada día, celebra sus cumpleaños y deja que traigan a sus amigos con su código de invitación.',
-      photo: '/sectores/cafeterias/latte.webp',
-    },
+  rewardBanner: {
+    title: 'Tu próximo café',
+    titleHighlight: 'gratis',
+    text: 'Acumula puntos en cada compra y disfruta de recompensas exclusivas.',
+    cta: 'Descubre los premios',
+    photo: '/sectores/cafeterias/cafe.webp',
+  },
+  valueProps: [
+    { icon: 'gift', title: 'Premia a tus clientes', text: 'Puntos por cada bebida, producto o visita.' },
+    { icon: 'calendar', title: 'Lanza promociones al instante', text: 'Descuentos en horas valle o productos seleccionados.' },
+    { icon: 'users', title: 'Convierte clientes en embajadores', text: 'Programa de referidos y recomendaciones.' },
+    { icon: 'chart', title: 'Conoce a tus clientes', text: 'Informes y KPIs de tu cafetería.' },
   ],
-  steps: commonSteps('Tu cliente', 'tu cafetería'),
+  stats: [
+    { value: '+40%*', label: 'clientes recurrentes' },
+    { value: '+25%*', label: 'aumento del ticket medio' },
+    { value: '-60%*', label: 'tiempo en gestión manual' },
+  ],
+  statsFootnote: '*Resultados orientativos de cafeterías que usan Qronnect. Dependen de cada negocio.',
+  steps: [
+    { icon: 'qr', title: 'Escanea y se une', text: 'Tu cliente escanea el QR de la barra y se registra en 30 segundos.' },
+    { icon: 'coffee', title: 'Suma en cada café', text: 'Enseña su QR en el móvil y tu equipo le suma el sello o los puntos.' },
+    { icon: 'gift', title: 'Disfruta su premio', text: 'Al completar la tarjeta recibe su cupón y lo canjea en tu cafetería.' },
+  ],
+  services: {
+    title: 'Promociones que llenan tu cafetería',
+    items: [
+      '2x1 en horas valle',
+      'Café gratis por cumpleaños',
+      'Menús especiales',
+      'Cupones por tiempo limitado',
+      'Promociones para nuevos clientes',
+    ],
+    photo: '/sectores/cafeterias/helado.webp',
+  },
   promos: {
     titleStart: 'Recompensas que',
     titleHighlight: 'encantan',
     items: [
-      { title: 'Acumula 10 cafés', text: '1 café gratis', photo: '/sectores/cafeterias/croissant.webp', icon: 'coffee' },
-      { title: 'Cumpleaños', text: 'Postre gratis', photo: '/sectores/cafeterias/tarta.webp', icon: 'gift' },
-      { title: 'Ofertas exclusivas', text: 'Solo para socios', photo: '/sectores/cafeterias/batidos.webp', icon: 'tag' },
+      { title: 'Acumula 10 cafés', text: '1 café gratis', photo: '/sectores/cafeterias/croissant.webp', icon: 'gift' },
+      { title: 'Cumpleaños', text: 'Postre gratis', photo: '/sectores/cafeterias/tarta.webp', icon: 'star' },
+      { title: 'Ofertas exclusivas', text: 'Solo para miembros', photo: '/sectores/cafeterias/batidos.webp', icon: 'tag' },
     ],
   },
+  qrStand: { caption: 'Escanea y empieza a acumular puntos', photo: '/sectores/cafeterias/granos.webp' },
   testimonial: {
     quote:
       'Desde que tenemos Qronnect, nuestros clientes vuelven mucho más y el ticket medio ha aumentado notablemente.',
@@ -343,19 +320,21 @@ const cafeterias: SectorData = {
     role: 'Propietario de cafetería',
     photo: '/sectores/cafeterias/testimonio.webp',
   },
-  results: {
-    stats: [
-      { value: '+40%*', label: 'clientes recurrentes' },
-      { value: '+25%*', label: 'ticket medio' },
-      { value: '-60%*', label: 'tiempo de gestión manual' },
-    ],
-    footnote: '*Resultados orientativos de cafeterías que usan Qronnect. Dependen de cada negocio.',
-  },
+  platform: [
+    { icon: 'gift', title: 'Puntos y sellos' },
+    { icon: 'tag', title: 'Promociones personalizadas' },
+    { icon: 'share', title: 'Referidos' },
+    { icon: 'calendar', title: 'Campañas programadas' },
+    { icon: 'mail', title: 'Email y SMS' },
+    { icon: 'chart', title: 'Informes y KPIs' },
+    { icon: 'phone', title: 'Todo en el móvil de tus clientes' },
+  ],
   finalCta: {
-    titleStart: 'Tu próximo cliente fiel',
-    titleHighlight: 'está a un café',
-    subtitle: 'Fideliza, sorprende y haz que vuelvan. Empieza hoy con Qronnect.',
-    qrCaption: 'Escanea y empieza a acumular puntos',
+    titleStart: 'Más que un café,',
+    titleHighlight: 'una comunidad',
+    titleEnd: '',
+    subtitle: 'Fideliza, sorprende y haz que vuelvan.',
+    photo: '/sectores/cafeterias/latte.webp',
   },
   faq: [
     {
@@ -368,7 +347,7 @@ const cafeterias: SectorData = {
     },
     {
       q: '¿Sirve para llenar las horas flojas?',
-      a: 'Puedes lanzar promociones y programar campañas por email o SMS para los días y horas que más lo necesites.',
+      a: 'Puedes lanzar promociones y campañas por email o SMS a tus clientes para los días y horas que más lo necesites.',
     },
     {
       q: '¿Qué pasa con los datos de mis clientes?',
