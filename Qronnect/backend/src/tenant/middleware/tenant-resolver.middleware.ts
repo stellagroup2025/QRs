@@ -21,6 +21,8 @@ export class TenantResolverMiddleware implements NestMiddleware {
       /^\/api\/comerciales/,
       /^\/comerciales/,
       /^\/api\/planes/,
+      // Webhooks de Twilio: llegan al host del backend, no al de una tienda
+      /^\/api\/sms\/webhook/,
     ];
 
     // Si la ruta está excluida, continuar sin resolver tenant

@@ -9,6 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../supabase/supabase.service';
 import { JwtTokenService } from '../auth/jwt-token.service';
+import { LoginAttemptsService } from '../auth/login-attempts.service';
 import { EmailService } from '../email/email.service';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { ClienteResponseDto } from './dto/cliente-response.dto';
@@ -32,6 +33,7 @@ export class ClientesService {
     @Inject(forwardRef(() => ReferidosService))
     private referidosService: ReferidosService,
     private regalosService: RegalosService,
+    private loginAttemptsService: LoginAttemptsService,
   ) { }
 
   /**
@@ -450,8 +452,8 @@ export class ClientesService {
       throw new NotFoundException('Cliente no encontrado en esta tienda');
     }
 
-    // Generar código de 6 dígitos
-    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generar código de 6 dígitos (generador criptográfico)
+    const codigo = crypto.randomInt(100000, 1000000).toString();
 
     // Guardar código en la tabla email_otps (reutilizamos la misma tabla)
     const { error: otpError } = await supabase.from('email_otps').insert({
@@ -464,8 +466,6 @@ export class ClientesService {
       console.error('Error al guardar OTP:', otpError);
       throw new Error('No se pudo enviar el código');
     }
-
-    console.log('  - Código generado:', codigo);
 
     // Obtener nombre y dominio de la tienda
     const { data: tienda } = await supabase
@@ -595,8 +595,10 @@ export class ClientesService {
 
     console.log('🔐 [VERIFY LOGIN CODE]');
     console.log('  - Email:', verifyDto.email);
-    console.log('  - Código:', verifyDto.codigo);
     console.log('  - Tenant ID:', tenantId);
+
+    const attemptsKey = `cliente-otp:${tenantId}:${verifyDto.email.toLowerCase()}`;
+    this.loginAttemptsService.assertNotLocked(attemptsKey);
 
     // Verificar el código OTP
     const { data: otp, error: otpError } = await supabase
@@ -610,8 +612,11 @@ export class ClientesService {
       .single();
 
     if (otpError || !otp) {
+      this.loginAttemptsService.registerFailure(attemptsKey);
       throw new UnauthorizedException('Código inválido o expirado');
     }
+
+    this.loginAttemptsService.reset(attemptsKey);
 
     // Obtener el cliente
     const { data: cliente, error: clienteError } = await supabase

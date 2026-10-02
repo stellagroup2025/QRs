@@ -10,6 +10,10 @@ async function bootstrap() {
   });
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
+  // Render/Railway ponen un proxy delante: confiar en X-Forwarded-For para que
+  // el rate limiting use la IP real del cliente y no la del proxy
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   // Habilitar CORS para permitir requests del frontend
   // Permite localhost y subdominios (*.localhost) para desarrollo
   app.enableCors({

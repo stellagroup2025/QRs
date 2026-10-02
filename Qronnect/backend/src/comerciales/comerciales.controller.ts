@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Get, UseGuards, Request, Param } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ComercialesService } from './comerciales.service';
 import { LoginComercialDto, CreateComercialDto } from './dto/comerciales.dto';
@@ -11,6 +12,7 @@ export class ComercialesController {
     constructor(private readonly comercialesService: ComercialesService) { }
 
     @Post('auth/login')
+    @Throttle({ default: { limit: 5, ttl: 60_000 } })
     @ApiOperation({ summary: 'Login para agentes comerciales' })
     @ApiResponse({ status: 200, description: 'Login exitoso' })
     @ApiResponse({ status: 401, description: 'Credenciales inválidas' })

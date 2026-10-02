@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 import { SupabaseService } from '../supabase/supabase.service';
 import { EmailService } from '../email/email.service';
 import { RegalosService } from './regalos.service';
@@ -283,7 +284,7 @@ export class ReferidosService {
     const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let sufijo = '';
     for (let i = 0; i < 4; i++) {
-      sufijo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+      sufijo += caracteres.charAt(crypto.randomInt(caracteres.length));
     }
 
     return `${prefijo}-${sufijo}`;

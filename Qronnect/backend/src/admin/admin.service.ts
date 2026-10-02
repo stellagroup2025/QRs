@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { JwtTokenService } from '../auth/jwt-token.service';
+import { LoginAttemptsService } from '../auth/login-attempts.service';
 import { DashboardResumenDto } from './dto/dashboard-resumen.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
 import { ListClientesDto } from './dto/list-clientes.dto';
@@ -18,12 +19,14 @@ import {
   RangoPuntos,
 } from './dto/analytics.dto';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AdminService {
   constructor(
     private supabaseService: SupabaseService,
     private jwtTokenService: JwtTokenService,
+    private loginAttemptsService: LoginAttemptsService,
   ) { }
 
   /**
@@ -42,8 +45,10 @@ export class AdminService {
 
     console.log('🔍 [ADMIN LOGIN DEBUG]');
     console.log('  - Email:', loginDto.email);
-    console.log('  - PIN recibido:', loginDto.pin);
     console.log('  - Tenant ID:', tenantId);
+
+    const attemptsKey = `admin-pin:${tenantId}:${loginDto.email.toLowerCase()}`;
+    this.loginAttemptsService.assertNotLocked(attemptsKey);
 
     // IMPORTANTE: Ahora buscamos en usuarios_tienda en lugar de admin_users
     // porque el superadmin crea usuarios en usuarios_tienda
@@ -64,18 +69,21 @@ export class AdminService {
     console.log('  - Error de búsqueda:', adminError);
     if (admin) {
       console.log('  - Tienda:', admin.tienda?.nombre);
-      console.log('  - PIN hash en BD:', admin.pin_hash);
     }
 
     if (adminError || !admin) {
+      this.loginAttemptsService.registerFailure(attemptsKey);
       throw new UnauthorizedException('Email o PIN incorrecto');
     }
 
     // Verificar PIN
     const pinValido = await bcrypt.compare(loginDto.pin, admin.pin_hash);
     if (!pinValido) {
+      this.loginAttemptsService.registerFailure(attemptsKey);
       throw new UnauthorizedException('Email o PIN incorrecto');
     }
+
+    this.loginAttemptsService.reset(attemptsKey);
 
     // Verificar que la tienda esté activa
     if (!admin.tienda || !admin.tienda.activo) {
@@ -226,7 +234,6 @@ export class AdminService {
     console.log('========================================');
     console.log(`Usuario: ${nombre}`);
     console.log(`Email: ${email}`);
-    console.log(`Nuevo PIN: ${nuevoPin}`);
     console.log('========================================\n');
   }
 
@@ -948,7 +955,7 @@ export class AdminService {
     // Generar código único para el cupón usando la función de la BD
     // El código se generará automáticamente por el trigger si existe,
     // o lo generamos manualmente
-    const codigoBase = Math.random().toString(36).substring(2, 14).toUpperCase();
+    const codigoBase = crypto.randomBytes(6).toString('hex').toUpperCase();
 
     // Crear el cupón (tabla: canjes)
     const { data: cupon, error: cuponError } = await supabase

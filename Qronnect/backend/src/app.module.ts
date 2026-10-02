@@ -1,5 +1,7 @@
 import { Module, MiddlewareConsumer, NestModule, RequestMethod } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -46,6 +48,15 @@ import { PartnersModule } from './partners/partners.module';
       isGlobal: true, // Hace que ConfigService esté disponible en toda la app
       envFilePath: '.env',
     }),
+
+    // Límite de peticiones por IP (los endpoints de login aplican límites más estrictos con @Throttle)
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60_000,
+        limit: 120,
+      },
+    ]),
 
     // Módulo de integración con Supabase
     SupabaseModule,
@@ -132,7 +143,13 @@ import { PartnersModule } from './partners/partners.module';
     PartnersModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   /**

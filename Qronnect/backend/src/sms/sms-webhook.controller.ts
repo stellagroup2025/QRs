@@ -1,6 +1,8 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiResponse, ApiExcludeEndpoint } from '@nestjs/swagger';
 import { SmsService } from './sms.service';
+import { TwilioSignatureGuard } from './guards/twilio-signature.guard';
 
 /**
  * Controlador de webhooks de SMS (Twilio)
@@ -8,6 +10,8 @@ import { SmsService } from './sms.service';
  */
 @ApiTags('SMS Webhooks')
 @Controller('sms/webhook')
+@UseGuards(TwilioSignatureGuard)
+@SkipThrottle() // Las peticiones llegan desde IPs de Twilio y ya están autenticadas por firma
 export class SmsWebhookController {
   constructor(private readonly smsService: SmsService) {}
 
@@ -47,9 +51,6 @@ export class SmsWebhookController {
     },
   ) {
     console.log('\n📨 [WEBHOOK TWILIO] Mensaje entrante recibido');
-    console.log(`  - From: ${twilioPayload.From}`);
-    console.log(`  - To: ${twilioPayload.To}`);
-    console.log(`  - Body: ${twilioPayload.Body}`);
     console.log(`  - MessageSid: ${twilioPayload.MessageSid}`);
 
     // Procesar mensaje STOP
@@ -93,7 +94,6 @@ export class SmsWebhookController {
     console.log('\n📊 [WEBHOOK TWILIO] Actualización de estado');
     console.log(`  - MessageSid: ${twilioPayload.MessageSid}`);
     console.log(`  - Status: ${twilioPayload.MessageStatus}`);
-    console.log(`  - To: ${twilioPayload.To}`);
 
     if (twilioPayload.ErrorCode) {
       console.error(`  ❌ Error: ${twilioPayload.ErrorCode} - ${twilioPayload.ErrorMessage}`);

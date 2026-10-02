@@ -39,7 +39,7 @@ RESEND_FROM_EMAIL=noreply@qronnect.es
 RESEND_WILDCARD_ENABLED=false
 
 # GOOGLE GEMINI
-GEMINI_API_KEY=AIzaSyDVMHkj_Eazcd59MHdpO8yCCKm2zk1Z3SQ
+GEMINI_API_KEY=[tu-api-key-de-gemini]
 
 # APP CONFIG
 NODE_ENV=production
