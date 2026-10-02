@@ -12,6 +12,22 @@ interface BrandingContextValue {
 
 const BrandingContext = createContext<BrandingContextValue | null>(null)
 
+/**
+ * Devuelve blanco o tinta según qué contraste mejor con el color "r g b" dado,
+ * para que el texto sobre colores de marca claros siga siendo legible
+ */
+function readableOn(rgb: string): string {
+  const [r, g, b] = rgb.split(' ').map(Number).map((c) => {
+    const s = c / 255
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  })
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  // Contraste con blanco vs. con la tinta (#161311, luminancia ~0.007)
+  const withWhite = 1.05 / (luminance + 0.05)
+  const withInk = (luminance + 0.05) / 0.057
+  return withWhite >= withInk ? '255 255 255' : '22 19 17'
+}
+
 export function BrandingProvider({ children }: { children: React.ReactNode }) {
   const tenantDomain = getTenantDomain()
   const { branding, loading, error } = useBranding(tenantDomain || undefined)
@@ -53,6 +69,9 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
       root.style.setProperty('--brand-primary', primaryRgb)
       root.style.setProperty('--brand-secondary', secondaryRgb)
       root.style.setProperty('--brand-accent', accentRgb)
+      root.style.setProperty('--brand-primary-on', readableOn(primaryRgb))
+      root.style.setProperty('--brand-secondary-on', readableOn(secondaryRgb))
+      root.style.setProperty('--brand-accent-on', readableOn(accentRgb))
 
       console.log('🎨 [BRANDING] Variables CSS aplicadas:', {
         '--brand-primary': root.style.getPropertyValue('--brand-primary'),

@@ -43,6 +43,14 @@
   --brand-primary: 0 0 0;
   --brand-secondary: 102 102 102;
   --brand-accent: 0 102 204;
+  /* Color de texto legible sobre cada color de marca (blanco o tinta) */
+  --brand-primary-on: 255 255 255;
+  --brand-secondary-on: 255 255 255;
+  --brand-accent-on: 255 255 255;
+
+  /* Neutros de la landing y la app del cliente */
+  --ink: 22 19 17;
+  --paper: 248 245 240;
 }
 
 .dark {
@@ -83,6 +91,17 @@
 @theme inline {
   --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-display: var(--font-bricolage), "Geist", system-ui, sans-serif;
+
+  /* Colores de marca de la tienda: bg-brand, text-brand-on, bg-brand/10... */
+  --color-brand: rgb(var(--brand-primary));
+  --color-brand-on: rgb(var(--brand-primary-on));
+  --color-brand-2: rgb(var(--brand-secondary));
+  --color-brand-2-on: rgb(var(--brand-secondary-on));
+  --color-brand-3: rgb(var(--brand-accent));
+  --color-brand-3-on: rgb(var(--brand-accent-on));
+  --color-ink: rgb(var(--ink));
+  --color-paper: rgb(var(--paper));
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
