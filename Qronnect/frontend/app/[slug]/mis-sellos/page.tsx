@@ -66,7 +66,7 @@ export default function MisSellosPage() {
   if (loading) {
     return (
       <div className="min-h-screen">
-        <ClientNav slug={slug} />
+        <ClientNav />
         <div className="flex items-center justify-center h-[calc(100vh-64px)]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -80,7 +80,7 @@ export default function MisSellosPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <ClientNav slug={slug} />
+      <ClientNav />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <MisTarjetasSellos idCliente={clienteId} token={token} slug={slug} />
       </div>

@@ -88,7 +88,7 @@ export function SegmentacionClientes({
         const data = await response.json()
         setClientes(data.data || [])
         // Seleccionar todos por defecto
-        const todosIds = new Set(data.data.map((c: Cliente) => c.id))
+        const todosIds = new Set<string>(data.data.map((c: Cliente) => c.id))
         setClientesSeleccionados(todosIds)
         onClientesSeleccionados(Array.from(todosIds))
       }

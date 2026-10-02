@@ -13,10 +13,11 @@ import { CheckCircle2, AlertCircle, Gift, Search, Loader2 } from 'lucide-react';
 
 interface CanjearCuponModalProps {
   token: string;
+  domain: string;
   onClose: (canjeado: boolean) => void;
 }
 
-export function CanjearCuponModal({ token, onClose }: CanjearCuponModalProps) {
+export function CanjearCuponModal({ token, domain, onClose }: CanjearCuponModalProps) {
   const [codigo, setCodigo] = useState('');
   const [verificando, setVerificando] = useState(false);
   const [canjeando, setCanjeando] = useState(false);
@@ -36,7 +37,7 @@ export function CanjearCuponModal({ token, onClose }: CanjearCuponModalProps) {
     setResultado(null);
 
     try {
-      const tarjeta = await verificarCuponSello(codigo.trim().toUpperCase(), token);
+      const tarjeta = await verificarCuponSello(codigo.trim().toUpperCase(), token, domain);
       setTarjetaVerificada(tarjeta);
 
       if (!tarjeta.puede_canjear) {
@@ -74,7 +75,8 @@ export function CanjearCuponModal({ token, onClose }: CanjearCuponModalProps) {
     try {
       const respuesta = await canjearCuponSello(
         { codigo_cupon: codigo.trim().toUpperCase() },
-        token
+        token,
+        domain
       );
 
       if (respuesta.success) {

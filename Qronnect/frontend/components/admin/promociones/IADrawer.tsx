@@ -58,13 +58,10 @@ export function IADrawerPromociones({
             </TabsList>
 
             <TabsContent value="generador" className="mt-4">
+              {/* GeneradorPromos no avisa al crear borradores: el drawer sigue abierto para crear varios */}
               <GeneradorPromos
                 tenantDomain={tenantDomain}
                 adminToken={adminToken}
-                onPromoCreada={() => {
-                  onPromocionCreada?.()
-                  setOpen(false)
-                }}
               />
             </TabsContent>
           </Tabs>

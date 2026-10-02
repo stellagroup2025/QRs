@@ -150,7 +150,7 @@ export function RegistrarVentaDialogMejorado({
                     qrbox: { width: 250, height: 250 },
                     aspectRatio: 1.0,
                   },
-                  (decodedText, decodedResult) => {
+                  (decodedText: string) => {
                     // Éxito al escanear
                     console.log('✅ QR escaneado:', decodedText)
                     setCodigoQr(decodedText)
@@ -166,7 +166,7 @@ export function RegistrarVentaDialogMejorado({
                       }).catch(console.error)
                     }
                   },
-                  (errorMessage) => {
+                  () => {
                     // Errores normales durante escaneo (cuando no hay QR en vista)
                     // No hacer nada, es normal
                   }

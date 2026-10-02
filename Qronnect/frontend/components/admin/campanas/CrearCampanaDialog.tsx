@@ -263,7 +263,7 @@ export function CrearCampanaDialog({
       resetForm()
     } catch (error) {
       console.error(`Error ${isEditMode ? 'editando' : 'creando'} campaña:`, error)
-      alert(`Error: ${error.message}`)
+      alert(`Error: ${error instanceof Error ? error.message : String(error)}`)
     } finally {
       setLoading(false)
     }

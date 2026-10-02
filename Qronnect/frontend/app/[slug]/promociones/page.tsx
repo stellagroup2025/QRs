@@ -348,7 +348,7 @@ export default function PromocionesPage() {
 
                           {/* Footer Info */}
                           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                            {promo.cantidad_disponible !== null && (
+                            {promo.cantidad_disponible != null && (
                               <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
                                 <Users className="h-3.5 w-3.5" />
                                 <span>

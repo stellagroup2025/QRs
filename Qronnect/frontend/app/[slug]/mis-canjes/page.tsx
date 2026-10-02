@@ -86,7 +86,8 @@ export default function MisCanjesPage() {
         width: 400,
         margin: 2,
         color: {
-          dark: hexToRgb(branding.color_primario).replace('rgb(', '').replace(')', '').split(',').map(Number),
+          // qrcode solo acepta colores en hexadecimal
+          dark: /^#[0-9a-f]{6}$/i.test(branding.color_primario) ? branding.color_primario : '#000000',
           light: '#FFFFFF',
         },
       })

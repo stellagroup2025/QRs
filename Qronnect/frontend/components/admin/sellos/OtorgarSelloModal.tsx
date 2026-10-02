@@ -16,6 +16,7 @@ interface OtorgarSelloModalProps {
   idCliente: string;
   nombreCliente: string;
   token: string;
+  domain: string;
   onClose: (otorgado: boolean) => void;
 }
 
@@ -23,6 +24,7 @@ export function OtorgarSelloModal({
   idCliente,
   nombreCliente,
   token,
+  domain,
   onClose,
 }: OtorgarSelloModalProps) {
   const [programas, setProgramas] = useState<ProgramaSellos[]>([]);
@@ -38,7 +40,7 @@ export function OtorgarSelloModal({
 
   const cargarProgramas = async () => {
     try {
-      const data = await obtenerProgramasSellos(token, true); // Solo activos
+      const data = await obtenerProgramasSellos(token, domain, true); // Solo activos
       setProgramas(data);
       if (data.length > 0) {
         setProgramaSeleccionado(data[0].id);
@@ -67,7 +69,7 @@ export function OtorgarSelloModal({
         notas: notas.trim() || undefined,
       };
 
-      const respuesta = await otorgarSello(request, token);
+      const respuesta = await otorgarSello(request, token, domain);
 
       if (respuesta.success) {
         setResultado(respuesta);

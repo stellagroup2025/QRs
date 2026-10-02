@@ -19,7 +19,11 @@ import {
   CheckCircle,
   Download,
   Instagram,
+  Sparkles,
+  Check,
+  Gift,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { QRCodeSVG } from 'qrcode.react';
 import { ClientNav } from '@/components/ClientNav';
@@ -342,7 +346,7 @@ export default function MisReferidosPage() {
   if (loading) {
     return (
       <>
-        <ClientNav slug={slug} />
+        <ClientNav />
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="mb-8">
             <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2" />
@@ -379,7 +383,7 @@ export default function MisReferidosPage() {
 
   return (
     <>
-      <ClientNav slug={slug} />
+      <ClientNav />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Invita a tus Amigos</h1>

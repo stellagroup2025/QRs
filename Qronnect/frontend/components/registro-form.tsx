@@ -80,7 +80,7 @@ export function RegistroForm() {
           telefono: data.telefono,
           codigo_postal: data.codigo_postal || undefined,
           fecha_nacimiento: data.fecha_nacimiento || undefined,
-          genero: data.genero && data.genero !== "" ? data.genero : undefined,
+          genero: data.genero || undefined,
           codigo_referido: codigoReferido || undefined, // Incluir código de referido si existe
         }),
       })
