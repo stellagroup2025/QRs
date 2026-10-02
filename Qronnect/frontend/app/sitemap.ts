@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next'
+import { SECTORES } from '@/lib/sectores'
 
 /**
  * Sitemap dinámico para Qronnect
@@ -29,6 +30,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
+    // Landings de venta por sector
+    ...Object.keys(SECTORES).map((slug) => ({
+      url: `${baseUrl}/para/${slug}`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    })),
     // Páginas legales (importantes para SEO y confianza)
     {
       url: `${baseUrl}/privacidad`,
