@@ -1,4 +1,5 @@
 import { ArrowRight, ChevronRight, Home, QrCode, Star, Ticket, User } from 'lucide-react'
+import type { CSSProperties } from 'react'
 import type { SectorData } from '@/lib/sectores'
 import { cn } from '@/lib/utils'
 import { LotusMark, SECTOR_ICONS } from './sector-icons'
@@ -14,7 +15,8 @@ export function PhoneMockup({ sector, className }: { sector: SectorData; classNa
         'relative w-[290px] rounded-[48px] bg-[#16121A] p-[11px] shadow-[0_40px_80px_-30px_rgba(74,13,46,0.55)]',
         className,
       )}
-      aria-label={`Vista de la app de ${demoBusiness.name} en el móvil de una clienta`}
+      style={{ '--s-ink': sector.palette.ink } as CSSProperties}
+      aria-label={`Vista de la app de ${demoBusiness.name} en el móvil`}
       role="img"
     >
       <div className="relative overflow-hidden rounded-[38px] bg-white">

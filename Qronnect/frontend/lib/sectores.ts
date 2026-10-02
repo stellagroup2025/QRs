@@ -33,7 +33,15 @@ export interface SectorData {
   nombre: string
   seo: { title: string; description: string; keywords: string[] }
   /** Paleta del sector: principal (botones), tinta (titulares) y fondo suave */
-  palette: { primary: string; primaryOn: string; ink: string; soft: string; softer: string }
+  palette: {
+    primary: string
+    primaryOn: string
+    ink: string
+    soft: string
+    softer: string
+    /** Si se indica, el hero es una tarjeta oscura de este color con la foto de fondo */
+    dark?: string
+  }
   /** Nombre ficticio del negocio que aparece en el móvil y en el expositor */
   demoBusiness: { name: string; tagline: string }
   hero: {
@@ -51,7 +59,7 @@ export interface SectorData {
     items: { icon: SectorIcon; label: string }[]
     reward: { title: string; photo: string }
   }
-  rewardBanner: { title: string; text: string; cta: string; photo: string }
+  rewardBanner: { title: string; titleHighlight?: string; text: string; cta: string; photo: string }
   valueProps: SectorFeature[]
   stats: SectorStat[]
   services: { title: string; items: string[]; photo: string }
@@ -65,7 +73,7 @@ export interface SectorData {
     titleEnd: string
     subtitle: string
     photo: string
-    notifications: { icon: SectorIcon; title: string; text: string }[]
+    notifications?: { icon: SectorIcon; title: string; text: string }[]
   }
   faq: { q: string; a: string }[]
 }
@@ -165,7 +173,7 @@ const estetica: SectorData = {
     { icon: 'phone', title: 'Todo en el móvil de tus clientas' },
   ],
   finalCta: {
-    titleStart: 'Convierte cada visita',
+    titleStart: 'Convierte cada visita en una',
     titleHighlight: 'historia',
     titleEnd: 'que continúa',
     subtitle: 'Empieza hoy a fidelizar con Qronnect.',
@@ -196,8 +204,140 @@ const estetica: SectorData = {
   ],
 }
 
+const cafeterias: SectorData = {
+  slug: 'cafeterias',
+  nombre: 'Cafeterías',
+  seo: {
+    title: 'Programa de fidelización para cafeterías: tarjeta de sellos y puntos digitales',
+    description:
+      'Convierte cada café en un cliente fiel: tarjeta de sellos digital, puntos, promociones para tus horas valle y referidos para tu cafetería. Sin apps ni tarjetas de cartón.',
+    keywords: [
+      'fidelización cafetería',
+      'tarjeta de sellos digital café',
+      'programa de puntos cafetería',
+      'café gratis cada 10',
+      'marketing para cafeterías',
+    ],
+  },
+  palette: {
+    primary: '#E8641B',
+    primaryOn: '#FFFFFF',
+    ink: '#2B1A10',
+    soft: '#FBE7D6',
+    softer: '#FFF8F1',
+    dark: '#20140D',
+  },
+  demoBusiness: { name: 'Tu Cafetería', tagline: 'Buenos cafés, mejores momentos' },
+  hero: {
+    titleStart: 'Convierte cada café en un',
+    titleHighlight: 'cliente fiel',
+    subtitle:
+      'Un programa de puntos, promociones y experiencias diseñado para cafeterías que quieren más visitas, más ticket y clientes que siempre vuelven.',
+    features: [
+      { icon: 'gift', title: 'Puntos y sellos digitales', text: 'Premia cada visita, bebida o compra.' },
+      { icon: 'megaphone', title: 'Promociones automáticas', text: 'Atrae más clientes en tus horas valle.' },
+      { icon: 'users', title: 'Más clientes recurrentes', text: 'Programa de referidos y recomendaciones.' },
+      { icon: 'chart', title: 'Todo en una plataforma', text: 'Campañas, historial, informes y KPIs.' },
+    ],
+    photo: '/sectores/cafeterias/hero.webp',
+  },
+  phone: {
+    points: 120,
+    progressLabel: 'A 1 café de tu café gratis',
+    progress: 0.9,
+    items: [
+      { icon: 'stamp', label: 'Mi tarjeta de sellos' },
+      { icon: 'tag', label: 'Promociones exclusivas' },
+      { icon: 'history', label: 'Tu historial' },
+      { icon: 'users', label: 'Invita a un amigo' },
+    ],
+    reward: { title: 'Tu próximo café gratis', photo: '/sectores/cafeterias/cafe.webp' },
+  },
+  rewardBanner: {
+    title: 'Tu próximo café',
+    titleHighlight: 'gratis',
+    text: 'Acumula puntos en cada compra y disfruta de recompensas exclusivas.',
+    cta: 'Descubre los premios',
+    photo: '/sectores/cafeterias/cafe.webp',
+  },
+  valueProps: [
+    { icon: 'gift', title: 'Premia a tus clientes', text: 'Puntos por cada bebida, producto o visita.' },
+    { icon: 'calendar', title: 'Lanza promociones al instante', text: 'Descuentos en horas valle o productos seleccionados.' },
+    { icon: 'users', title: 'Convierte clientes en embajadores', text: 'Programa de referidos y recomendaciones.' },
+    { icon: 'chart', title: 'Conoce a tus clientes', text: 'Informes y KPIs de tu cafetería.' },
+  ],
+  stats: [
+    { value: '+40%', label: 'clientes recurrentes' },
+    { value: '+25%', label: 'aumento del ticket medio' },
+    { value: '-60%', label: 'tiempo en gestión manual' },
+  ],
+  services: {
+    title: 'Promociones que llenan tu cafetería',
+    items: [
+      '2x1 en horas valle',
+      'Café gratis por cumpleaños',
+      'Menús especiales',
+      'Cupones por tiempo limitado',
+      'Promociones para nuevos clientes',
+    ],
+    photo: '/sectores/cafeterias/helado.webp',
+  },
+  promos: {
+    titleStart: 'Recompensas que',
+    titleHighlight: 'encantan',
+    items: [
+      { title: 'Acumula 10 cafés', text: '1 café gratis', photo: '/sectores/cafeterias/croissant.webp', icon: 'gift' },
+      { title: 'Cumpleaños', text: 'Postre gratis', photo: '/sectores/cafeterias/tarta.webp', icon: 'star' },
+      { title: 'Ofertas exclusivas', text: 'Solo para miembros', photo: '/sectores/cafeterias/batidos.webp', icon: 'tag' },
+    ],
+  },
+  qrStand: { caption: 'Escanea y empieza a acumular puntos', photo: '/sectores/cafeterias/granos.webp' },
+  testimonial: {
+    quote:
+      'Desde que tenemos Qronnect, nuestros clientes vuelven mucho más y el ticket medio ha aumentado notablemente.',
+    author: 'Carlos R.',
+    role: 'Propietario de cafetería',
+    photo: '/sectores/cafeterias/testimonio.webp',
+  },
+  platform: [
+    { icon: 'gift', title: 'Puntos y sellos' },
+    { icon: 'tag', title: 'Promociones personalizadas' },
+    { icon: 'share', title: 'Referidos' },
+    { icon: 'calendar', title: 'Campañas programadas' },
+    { icon: 'mail', title: 'Email y SMS' },
+    { icon: 'chart', title: 'Informes y KPIs' },
+    { icon: 'phone', title: 'Todo en el móvil de tus clientes' },
+  ],
+  finalCta: {
+    titleStart: 'Más que un café,',
+    titleHighlight: 'una comunidad',
+    titleEnd: '',
+    subtitle: 'Fideliza, sorprende y haz que vuelvan.',
+    photo: '/sectores/cafeterias/latte.webp',
+  },
+  faq: [
+    {
+      q: '¿Mis clientes tienen que descargar una app?',
+      a: 'No. Se registran en 30 segundos desde el móvil escaneando tu QR y su tarjeta funciona en el navegador.',
+    },
+    {
+      q: '¿Puedo hacer la típica tarjeta de "10 cafés, 1 gratis"?',
+      a: 'Sí. Creas una tarjeta de sellos digital con el número de sellos y el premio que quieras, y tu equipo pone el sello al escanear el QR del cliente.',
+    },
+    {
+      q: '¿Sirve para llenar las horas flojas?',
+      a: 'Puedes lanzar promociones y campañas por email o SMS a tus clientes para los días y horas que más lo necesites.',
+    },
+    {
+      q: '¿Qué pasa con los datos de mis clientes?',
+      a: 'Son tuyos. Se tratan conforme al RGPD y cada cliente puede darse de baja de las comunicaciones cuando quiera.',
+    },
+  ],
+}
+
 export const SECTORES: Record<string, SectorData> = {
   [estetica.slug]: estetica,
+  [cafeterias.slug]: cafeterias,
 }
 
 export function getSector(slug: string): SectorData | undefined {
