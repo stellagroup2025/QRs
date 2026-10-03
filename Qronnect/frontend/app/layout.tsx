@@ -2,7 +2,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { headers } from "next/headers"
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google"
+import { Bricolage_Grotesque, Geist, Geist_Mono, Instrument_Serif } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { WebVitals } from "@/components/web-vitals"
@@ -26,6 +26,13 @@ const _display = Bricolage_Grotesque({
   subsets: ["latin"],
   axes: ["opsz", "wdth"],
   variable: "--font-bricolage",
+})
+// Cursiva de acento para la palabra destacada de los titulares de las landings de sector
+const _accent = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: "italic",
+  variable: "--font-instrument",
 })
 
 // Base sin metadataBase (lo añadimos dinámico en generateMetadata)
@@ -182,7 +189,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`font-sans antialiased ${_geist.className} ${_display.variable}`}>
+      <body className={`font-sans antialiased ${_geist.className} ${_display.variable} ${_accent.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

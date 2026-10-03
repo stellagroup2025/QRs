@@ -92,6 +92,7 @@
   --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
   --font-display: var(--font-bricolage), "Geist", system-ui, sans-serif;
+  --font-accent: var(--font-instrument), Georgia, serif;
 
   /* Colores de marca de la tienda: bg-brand, text-brand-on, bg-brand/10... */
   --color-brand: rgb(var(--brand-primary));
