@@ -65,6 +65,18 @@ export class CrearProgramaReferidosDto {
   @IsOptional()
   puntos_para_referido?: number;
 
+  @ApiProperty({ description: 'Puntos para quien invita cuando su amigo hace la primera compra', example: 50, required: false })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  puntos_primera_compra_referidor?: number;
+
+  @ApiProperty({ description: 'Puntos para el amigo en su primera compra', example: 25, required: false })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  puntos_primera_compra_referido?: number;
+
   @ApiProperty({
     description: 'Array de recompensas por objetivos',
     type: [RecompensaReferidoDto],

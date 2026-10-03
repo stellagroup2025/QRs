@@ -224,6 +224,24 @@ export class ComprasService {
       // En producción, considera usar transacciones o mecanismos de retry
     }
 
+    // 5b. Premio de referidos por la primera compra (solo la primera vez y si vino con un código).
+    // Va después de actualizar los puntos porque la función suma sobre el saldo guardado.
+    let puntosPrimeraCompra = 0;
+    try {
+      const { data: premio, error: premioError } = await supabase.rpc('premiar_primera_compra_referido', {
+        p_cliente_id: clienteId,
+        p_tienda_id: tiendaId,
+      });
+      if (premioError) {
+        console.error('Error al dar el premio de primera compra de referidos:', premioError);
+      } else if (premio?.premiado) {
+        puntosPrimeraCompra = premio.puntos_referido || 0;
+      }
+    } catch (error) {
+      // No fallar la compra si el premio de referidos falla
+      console.error('Error al dar el premio de primera compra de referidos:', error);
+    }
+
     // 6. Consultar si se otorgó algún sello en esta compra (para el email)
     let selloInfo: {
       sellosGanados: number;
@@ -324,7 +342,7 @@ export class ComprasService {
           }
         : undefined,
       puntos_otorgados: puntosOtorgados,
-      puntos_totales_cliente: nuevosPuntosTotales,
+      puntos_totales_cliente: nuevosPuntosTotales + puntosPrimeraCompra,
       fecha: compra.fecha,
     };
   }

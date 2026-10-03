@@ -489,10 +489,10 @@ export default function MisReferidosPage() {
               return (
                 <li key={idx} className="flex items-center gap-3 px-5 py-4">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/10 font-semibold">
-                    {ref.nombre.charAt(0).toUpperCase()}
+                    {(ref.nombre || '?').charAt(0).toUpperCase()}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{ref.nombre}</p>
+                    <p className="truncate font-medium">{ref.nombre || 'Amigo'}</p>
                     <p className="text-sm text-ink/55">
                       {fecha ? `Se unió el ${new Date(fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}` : 'Se unió'}
                       {ref.recompensa_obtenida ? ` · ${ref.recompensa_obtenida}` : ''}

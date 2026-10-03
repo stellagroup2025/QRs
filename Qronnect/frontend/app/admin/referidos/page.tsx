@@ -50,7 +50,7 @@ interface ProgramaReferidos {
       referidor: Recompensa;
       referido: Recompensa;
     };
-    por_primera_compra?: {
+    por_primera_compra: {
       referidor: Recompensa;
       referido: Recompensa;
     };
@@ -85,8 +85,8 @@ export default function ReferidosPage() {
         referido: { tipo: 'puntos', valor: 30 },
       },
       por_primera_compra: {
-        referidor: { tipo: 'puntos', valor: 100 },
-        referido: { tipo: 'cupon', valor: 10 },
+        referidor: { tipo: 'puntos', valor: 0 },
+        referido: { tipo: 'puntos', valor: 0 },
       },
     },
     milestones: [],
@@ -139,6 +139,10 @@ export default function ReferidosPage() {
                 referidor: { tipo: 'puntos', valor: data.puntos_por_referido || 0 },
                 // Sin valor propio, el amigo recibe lo mismo que quien invita
                 referido: { tipo: 'puntos', valor: data.puntos_para_referido ?? data.puntos_por_referido ?? 0 },
+              },
+              por_primera_compra: {
+                referidor: { tipo: 'puntos', valor: data.puntos_primera_compra_referidor ?? 0 },
+                referido: { tipo: 'puntos', valor: data.puntos_primera_compra_referido ?? 0 },
               },
             },
             milestones: data.recompensas || [],
@@ -206,6 +210,8 @@ export default function ReferidosPage() {
         // El backend espera puntos_por_referido (número)
         puntos_por_referido: programa.recompensas?.por_registro?.referidor?.valor ?? 0,
         puntos_para_referido: programa.recompensas?.por_registro?.referido?.valor ?? 0,
+        puntos_primera_compra_referidor: programa.recompensas?.por_primera_compra?.referidor?.valor ?? 0,
+        puntos_primera_compra_referido: programa.recompensas?.por_primera_compra?.referido?.valor ?? 0,
         // El backend espera recompensas (array de objetivos/milestones)
         recompensas: Array.isArray(programa.milestones) ? programa.milestones : [],
       };
@@ -418,6 +424,49 @@ export default function ReferidosPage() {
                       />
                     </div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Premio en su primera compra</CardTitle>
+                <CardDescription>
+                  Cuando el amigo compra por primera vez. Se da una sola vez por amigo; déjalo en 0 si no quieres este premio.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {([
+                    ['referidor', 'Para quien invita', 'Puntos extra cuando su amigo hace la primera compra.'],
+                    ['referido', 'Para el amigo', 'Puntos extra en su primera compra, además de los de la compra.'],
+                  ] as const).map(([quien, titulo, texto]) => (
+                    <div key={quien} className="space-y-4 rounded-lg border p-4">
+                      <h4 className="font-medium">{titulo}</h4>
+                      <p className="text-sm text-muted-foreground">{texto}</p>
+                      <div className="space-y-2">
+                        <Label htmlFor={`primera-compra-${quien}`}>Puntos</Label>
+                        <Input
+                          id={`primera-compra-${quien}`}
+                          type="number"
+                          min={0}
+                          value={programa.recompensas.por_primera_compra[quien].valor}
+                          onChange={(e) =>
+                            setPrograma({
+                              ...programa,
+                              recompensas: {
+                                ...programa.recompensas,
+                                por_primera_compra: {
+                                  ...programa.recompensas.por_primera_compra,
+                                  [quien]: { tipo: 'puntos', valor: Math.max(0, parseInt(e.target.value) || 0) },
+                                },
+                              },
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

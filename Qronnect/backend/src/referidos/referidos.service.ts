@@ -32,6 +32,8 @@ export class ReferidosService {
         activo: dto.activo !== false,
         puntos_por_referido: dto.puntos_por_referido,
         puntos_para_referido: dto.puntos_para_referido,
+        puntos_primera_compra_referidor: dto.puntos_primera_compra_referidor,
+        puntos_primera_compra_referido: dto.puntos_primera_compra_referido,
         recompensas: dto.recompensas || [],
         vigencia_desde: dto.vigencia_desde || new Date().toISOString(),
         vigencia_hasta: dto.vigencia_hasta,
@@ -83,6 +85,8 @@ export class ReferidosService {
         activo: dto.activo,
         puntos_por_referido: dto.puntos_por_referido,
         puntos_para_referido: dto.puntos_para_referido,
+        puntos_primera_compra_referidor: dto.puntos_primera_compra_referidor,
+        puntos_primera_compra_referido: dto.puntos_primera_compra_referido,
         recompensas: dto.recompensas,
         vigencia_hasta: dto.vigencia_hasta,
       })
@@ -392,7 +396,16 @@ export class ReferidosService {
       throw new BadRequestException('Error al obtener referidos');
     }
 
-    return data || [];
+    // Campos que lee "Mis amigos" en la app del cliente (la vista usa referido_nombre, etc.)
+    return (data || []).map((r: any) => {
+      const puntos = (r.puntos_otorgados_referidor || 0) + (r.puntos_primera_compra_referidor || 0);
+      return {
+        ...r,
+        nombre: r.referido_nombre || 'Amigo',
+        primera_compra: !!r.fecha_primera_compra,
+        recompensa_obtenida: puntos > 0 ? `+${puntos} puntos` : '',
+      };
+    });
   }
 
   /**
