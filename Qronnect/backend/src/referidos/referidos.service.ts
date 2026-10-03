@@ -31,6 +31,7 @@ export class ReferidosService {
         descripcion: dto.descripcion,
         activo: dto.activo !== false,
         puntos_por_referido: dto.puntos_por_referido,
+        puntos_para_referido: dto.puntos_para_referido,
         recompensas: dto.recompensas || [],
         vigencia_desde: dto.vigencia_desde || new Date().toISOString(),
         vigencia_hasta: dto.vigencia_hasta,
@@ -81,6 +82,7 @@ export class ReferidosService {
         descripcion: dto.descripcion,
         activo: dto.activo,
         puntos_por_referido: dto.puntos_por_referido,
+        puntos_para_referido: dto.puntos_para_referido,
         recompensas: dto.recompensas,
         vigencia_hasta: dto.vigencia_hasta,
       })

@@ -137,7 +137,8 @@ export default function ReferidosPage() {
             recompensas: {
               por_registro: {
                 referidor: { tipo: 'puntos', valor: data.puntos_por_referido || 0 },
-                referido: { tipo: 'puntos', valor: 0 },
+                // Sin valor propio, el amigo recibe lo mismo que quien invita
+                referido: { tipo: 'puntos', valor: data.puntos_para_referido ?? data.puntos_por_referido ?? 0 },
               },
             },
             milestones: data.recompensas || [],
@@ -204,6 +205,7 @@ export default function ReferidosPage() {
         activo: programa.activo ?? false,
         // El backend espera puntos_por_referido (número)
         puntos_por_referido: programa.recompensas?.por_registro?.referidor?.valor ?? 0,
+        puntos_para_referido: programa.recompensas?.por_registro?.referido?.valor ?? 0,
         // El backend espera recompensas (array de objetivos/milestones)
         recompensas: Array.isArray(programa.milestones) ? programa.milestones : [],
       };
@@ -354,47 +356,20 @@ export default function ReferidosPage() {
 
             <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
-                <CardTitle>Recompensas por Registro</CardTitle>
-                <CardDescription>Cuando un amigo se registra</CardDescription>
+                <CardTitle>Premio al registrarse</CardTitle>
+                <CardDescription>Cuando un amigo se une con un código</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Referidor */}
                   <div className="space-y-4 p-4 border rounded-lg">
-                    <h4 className="font-medium">Para quien refiere</h4>
+                    <h4 className="font-medium">Para quien invita</h4>
+                    <p className="text-sm text-muted-foreground">Puntos por cada amigo que se registra con su código.</p>
                     <div className="space-y-2">
-                      <Label>Tipo</Label>
-                      <Select
-                        value={programa.recompensas.por_registro.referidor.tipo}
-                        onValueChange={(value: any) =>
-                          setPrograma({
-                            ...programa,
-                            recompensas: {
-                              ...programa.recompensas,
-                              por_registro: {
-                                ...programa.recompensas.por_registro,
-                                referidor: {
-                                  ...programa.recompensas.por_registro.referidor,
-                                  tipo: value,
-                                },
-                              },
-                            },
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="puntos">Puntos</SelectItem>
-                          <SelectItem value="cupon">Cupón (%)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Valor</Label>
+                      <Label>Puntos</Label>
                       <Input
                         type="number"
+                        min={0}
                         value={programa.recompensas.por_registro.referidor.valor}
                         onChange={(e) =>
                           setPrograma({
@@ -405,7 +380,7 @@ export default function ReferidosPage() {
                                 ...programa.recompensas.por_registro,
                                 referidor: {
                                   ...programa.recompensas.por_registro.referidor,
-                                  valor: parseInt(e.target.value),
+                                  valor: Math.max(0, parseInt(e.target.value) || 0),
                                 },
                               },
                             },
@@ -417,40 +392,13 @@ export default function ReferidosPage() {
 
                   {/* Referido */}
                   <div className="space-y-4 p-4 border rounded-lg">
-                    <h4 className="font-medium">Para el nuevo cliente</h4>
+                    <h4 className="font-medium">Para el amigo</h4>
+                    <p className="text-sm text-muted-foreground">Puntos de regalo al registrarse, además del regalo de bienvenida.</p>
                     <div className="space-y-2">
-                      <Label>Tipo</Label>
-                      <Select
-                        value={programa.recompensas.por_registro.referido.tipo}
-                        onValueChange={(value: any) =>
-                          setPrograma({
-                            ...programa,
-                            recompensas: {
-                              ...programa.recompensas,
-                              por_registro: {
-                                ...programa.recompensas.por_registro,
-                                referido: {
-                                  ...programa.recompensas.por_registro.referido,
-                                  tipo: value,
-                                },
-                              },
-                            },
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="puntos">Puntos</SelectItem>
-                          <SelectItem value="cupon">Cupón (%)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Valor</Label>
+                      <Label>Puntos</Label>
                       <Input
                         type="number"
+                        min={0}
                         value={programa.recompensas.por_registro.referido.valor}
                         onChange={(e) =>
                           setPrograma({
@@ -461,7 +409,7 @@ export default function ReferidosPage() {
                                 ...programa.recompensas.por_registro,
                                 referido: {
                                   ...programa.recompensas.por_registro.referido,
-                                  valor: parseInt(e.target.value),
+                                  valor: Math.max(0, parseInt(e.target.value) || 0),
                                 },
                               },
                             },
@@ -477,7 +425,7 @@ export default function ReferidosPage() {
             <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Milestones (Objetivos)</CardTitle>
+                  <CardTitle>Objetivos con regalo</CardTitle>
                   <CardDescription>Recompensas especiales por alcanzar objetivos</CardDescription>
                 </div>
                 <Dialog open={dialogMilestone} onOpenChange={setDialogMilestone}>
@@ -524,14 +472,14 @@ export default function ReferidosPage() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label>Valor</Label>
+                        <Label>Puntos</Label>
                         <Input
                           type="number"
                           value={nuevoMilestone.valor}
                           onChange={(e) =>
                             setNuevoMilestone({
                               ...nuevoMilestone,
-                              valor: parseInt(e.target.value),
+                              valor: Math.max(0, parseInt(e.target.value) || 0),
                             })
                           }
                         />
