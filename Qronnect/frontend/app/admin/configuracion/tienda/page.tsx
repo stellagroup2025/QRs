@@ -203,7 +203,7 @@ export default function ConfiguracionTiendaPage() {
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Store className="h-8 w-8" />
-              Información de la Tienda
+              Datos del negocio
             </h1>
             <p className="text-muted-foreground mt-1">
               Configura la información que verán tus clientes

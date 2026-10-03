@@ -162,7 +162,7 @@ export default function GestionPremiosPage() {
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Sparkles className="h-8 w-8" />
-              Gestión de Premios
+              Premios de la máquina
             </h1>
             <p className="text-muted-foreground mt-1">
               Configura los premios disponibles y sus probabilidades

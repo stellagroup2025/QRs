@@ -208,7 +208,7 @@ export default function ConfiguracionIAPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <Brain className="h-8 w-8 text-purple-600" />
-            Configuración de IA
+            Ajustes de IA
           </h1>
           <p className="text-gray-600 mt-2">
             Configura el contexto de tu negocio para que la IA genere contenido personalizado

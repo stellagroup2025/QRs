@@ -250,7 +250,6 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
           <Button
             size="sm"
             onClick={() => setDialogOpen(true)}
-            style={{ backgroundColor: hexToRgb(branding.color_primario) }}
             className="text-white"
           >
             <Plus className="h-4 w-4 sm:mr-1" />
@@ -270,7 +269,6 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
             <Button
               size="sm"
               onClick={() => setDialogOpen(true)}
-              style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               className="text-white"
             >
               <Plus className="h-4 w-4 mr-1" />
@@ -288,7 +286,7 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
             return (
               <Card
                 key={campana.id}
-                className={`overflow-hidden transition-opacity dark:bg-slate-900 dark:border-slate-800 ${campana.estado === 'cancelada' ? 'opacity-60' : ''}`}
+                className={`overflow-hidden transition-opacity ${campana.estado === 'cancelada' ? 'opacity-60' : ''}`}
               >
                 <CardContent className="p-3">
                   {/* Header de la card */}
@@ -513,7 +511,6 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
                 {campanaSeleccionada.estado === 'borrador' && (
                   <Button
                     className="flex-1 text-white"
-                    style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                     onClick={() => {
                       setVerDialogOpen(false)
                       setCampanaSeleccionada(campanaSeleccionada)
@@ -575,7 +572,6 @@ export function CampanasPanel({ adminToken, tenantDomain, onRefreshNeeded }: Cam
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleEnviar}
-              style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               className="text-white"
             >
               Enviar ahora

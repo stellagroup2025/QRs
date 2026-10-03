@@ -27,7 +27,7 @@ import {
   Keyboard
 } from 'lucide-react'
 import { useBrandingContext } from '@/components/BrandingProvider'
-import { hexToRgb } from '@/lib/brand-colors'
+import { hexToRgb, withAlpha } from '@/lib/brand-colors'
 import { useToast } from '@/hooks/use-toast'
 import { useMediaQuery } from '@/hooks/use-media-query'
 
@@ -704,7 +704,7 @@ export function RegistrarVentaDialogMejorado({
           <div className="py-8 text-center space-y-4 animate-in fade-in zoom-in duration-300">
             <div
               className="h-16 w-16 mx-auto rounded-full flex items-center justify-center"
-              style={{ backgroundColor: `${hexToRgb(branding.color_acento)}20` }}
+              style={{ backgroundColor: withAlpha(branding.color_acento, 0.12) }}
             >
               <CheckCircle2
                 className="h-10 w-10"
@@ -722,7 +722,7 @@ export function RegistrarVentaDialogMejorado({
               )}
               <div
                 className="mt-4 p-3 rounded-lg"
-                style={{ backgroundColor: `${hexToRgb(branding.color_acento)}10` }}
+                style={{ backgroundColor: withAlpha(branding.color_acento, 0.08) }}
               >
                 <p
                   className="text-2xl font-bold"
@@ -883,7 +883,6 @@ export function RegistrarVentaDialogMejorado({
                         type="button"
                         onClick={buscarClientePorQrManual}
                         disabled={searching || !codigoQr.trim()}
-                        style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                         className="text-white"
                       >
                         {searching ? (
@@ -1147,7 +1146,6 @@ export function RegistrarVentaDialogMejorado({
                 type="button"
                 onClick={() => setPaso(3)}
                 className="text-white"
-                style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               >
                 Continuar
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -1160,7 +1158,7 @@ export function RegistrarVentaDialogMejorado({
             {/* Resumen del cliente */}
             <div
               className="p-3 rounded-lg"
-              style={{ backgroundColor: `${hexToRgb(branding.color_primario)}10` }}
+              style={{ backgroundColor: withAlpha(branding.color_primario, 0.08) }}
             >
               <p className="text-sm font-medium">{clienteSeleccionado?.nombre}</p>
               <p className="text-xs text-gray-600">{clienteSeleccionado?.email}</p>
@@ -1216,7 +1214,7 @@ export function RegistrarVentaDialogMejorado({
             {importe && parseFloat(importe) > 0 && (
               <div
                 className="p-4 rounded-lg space-y-2"
-                style={{ backgroundColor: `${hexToRgb(branding.color_acento)}10` }}
+                style={{ backgroundColor: withAlpha(branding.color_acento, 0.08) }}
               >
                 <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>

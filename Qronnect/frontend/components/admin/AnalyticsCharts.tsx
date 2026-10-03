@@ -18,7 +18,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { useBrandingContext } from '@/components/BrandingProvider'
-import { hexToRgb } from '@/lib/brand-colors'
+import { hexToRgb, withAlpha } from '@/lib/brand-colors'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -327,7 +327,7 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
                           <Badge
                             variant="secondary"
                             className="text-xs"
-                            style={{ backgroundColor: hexToRgb(branding.color_acento) + '20', color: hexToRgb(branding.color_acento) }}
+                            style={{ backgroundColor: withAlpha(branding.color_acento, 0.12), color: hexToRgb(branding.color_acento) }}
                           >
                             {cliente.puntos_totales}
                           </Badge>

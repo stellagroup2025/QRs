@@ -11,6 +11,14 @@ export function hexToRgb(hex: string): string {
 }
 
 /**
+ * Color de marca con transparencia, ej. withAlpha('#C2410C', 0.1) → 'rgba(194, 65, 12, 0.1)'.
+ * (Concatenar dígitos a hexToRgb(), como `${hexToRgb(c)}10`, da un color CSS inválido.)
+ */
+export function withAlpha(hex: string, alpha: number): string {
+  return hexToRgb(hex).replace('rgb(', 'rgba(').replace(')', `, ${alpha})`)
+}
+
+/**
  * Hook de utilidad para obtener estilos de marca para inline styles
  * Úsalo cuando necesites aplicar colores de marca con inline styles
  */

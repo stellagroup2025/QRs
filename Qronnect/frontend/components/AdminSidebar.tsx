@@ -1,45 +1,43 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { useBrandingContext } from '@/components/BrandingProvider'
-import { hexToRgb } from '@/lib/brand-colors'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 import {
-    LayoutDashboard,
-    Users,
-    ShoppingCart,
-    UserPlus,
-    Gift,
-    Mail,
-    CreditCard,
-    Target, // Gacha alternative? Dices
-    Dices,
-    Store,
-    Paintbrush,
-    Coins,
-    Package,
-    Globe,
     Brain,
-    Sparkles,
-    User,
+    Coins,
+    Dices,
+    Gift,
+    Globe,
+    LayoutDashboard,
     LogOut,
+    Mail,
     Menu,
+    Package,
+    Paintbrush,
+    Plus,
+    QrCode,
+    ShoppingCart,
+    Sparkles,
+    Stamp,
+    Store,
+    Ticket,
+    User,
+    UserPlus,
+    Wand2,
+    Users,
     X,
-    ChevronRight,
-    QrCode
+    type LucideIcon,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { useBrandingContext } from '@/components/BrandingProvider'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface SidebarItem {
     title: string
-    href: string // Can be a path or a path?tab=...
-    icon: React.ComponentType<{ className?: string }>
-    badge?: string
-    external?: boolean // If true, it forces a full page load navigation or just acts as standard link
+    /** Ruta, o ruta con ?tab=... para las secciones del escritorio */
+    href: string
+    icon: LucideIcon
 }
 
 interface SidebarGroup {
@@ -47,157 +45,98 @@ interface SidebarGroup {
     items: SidebarItem[]
 }
 
-const menuGroups: SidebarGroup[] = [
+const MENU: SidebarGroup[] = [
     {
-        label: 'Principal',
+        label: 'Día a día',
         items: [
-            {
-                title: 'Dashboard',
-                href: '/admin/dashboard', // Defaults to Analytics now
-                icon: LayoutDashboard,
-            },
-            {
-                title: 'QR Código',
-                href: '/admin/dashboard?tab=qr',
-                icon: QrCode,
-            },
+            { title: 'Resumen', href: '/admin/dashboard', icon: LayoutDashboard },
+            { title: 'Clientes', href: '/admin/dashboard?tab=clientes', icon: Users },
+            { title: 'Ventas', href: '/admin/dashboard?tab=ventas', icon: ShoppingCart },
+            { title: 'QR de registro', href: '/admin/dashboard?tab=qr', icon: QrCode },
         ],
     },
     {
-        label: 'Gestión',
+        label: 'Fidelización',
         items: [
-            {
-                title: 'Clientes',
-                href: '/admin/dashboard?tab=clientes',
-                icon: Users,
-            },
-            {
-                title: 'Ventas',
-                href: '/admin/dashboard?tab=ventas',
-                icon: ShoppingCart,
-            },
-            {
-                title: 'Referidos',
-                href: '/admin/referidos',
-                icon: UserPlus,
-                badge: 'Nuevo',
-            },
+            { title: 'Premios por puntos', href: '/admin/dashboard?tab=promociones', icon: Gift },
+            { title: 'Tarjetas de sellos', href: '/admin/dashboard?tab=sellos', icon: Stamp },
+            { title: 'Regalos', href: '/admin/configuracion/regalos', icon: Ticket },
+            { title: 'Máquina de premios', href: '/admin/configuracion/gacha', icon: Dices },
+            { title: 'Referidos', href: '/admin/referidos', icon: UserPlus },
         ],
     },
     {
-        label: 'Marketing',
+        label: 'Comunicación',
         items: [
-            {
-                title: 'Promociones',
-                href: '/admin/dashboard?tab=promociones',
-                icon: Gift,
-            },
-            {
-                title: 'Campañas',
-                href: '/admin/dashboard?tab=campanas',
-                icon: Mail,
-            },
-            {
-                title: 'Sellos',
-                href: '/admin/dashboard?tab=sellos',
-                icon: CreditCard,
-            },
-            {
-                title: 'Regalos Bienvenida',
-                href: '/admin/configuracion/regalos',
-                icon: Target, // Or Gift
-            },
-            {
-                title: 'Gacha',
-                href: '/admin/configuracion/gacha',
-                icon: Dices,
-                badge: 'Nuevo',
-            },
+            { title: 'Campañas', href: '/admin/dashboard?tab=campanas', icon: Mail },
+            { title: 'Asistente IA', href: '/admin/dashboard?tab=ia', icon: Sparkles },
         ],
     },
     {
-        label: 'Configuración',
+        label: 'Tu negocio',
         items: [
-            {
-                title: 'Tienda',
-                href: '/admin/configuracion/tienda',
-                icon: Store,
-            },
-            {
-                title: 'Branding',
-                href: '/admin/configuracion/branding',
-                icon: Paintbrush,
-            },
-            {
-                title: 'Puntos',
-                href: '/admin/configuracion/puntos',
-                icon: Coins,
-            },
-            {
-                title: 'Productos',
-                href: '/admin/configuracion/productos',
-                icon: Package,
-                badge: 'Nuevo',
-            },
-            {
-                title: 'Landing Page',
-                href: '/admin/configuracion/landing',
-                icon: Globe,
-            },
-            {
-                title: 'Inteligencia Artificial',
-                href: '/admin/configuracion/ia',
-                icon: Brain,
-            },
-            {
-                title: 'Onboarding',
-                href: '/admin/onboarding',
-                icon: Sparkles,
-            },
-            {
-                title: 'Mi Cuenta',
-                href: '/admin/configuracion/cuenta',
-                icon: User,
-            },
+            { title: 'Datos del negocio', href: '/admin/configuracion/tienda', icon: Store },
+            { title: 'Imagen de marca', href: '/admin/configuracion/branding', icon: Paintbrush },
+            { title: 'Página para clientes', href: '/admin/configuracion/landing', icon: Globe },
+            { title: 'Puntos', href: '/admin/configuracion/puntos', icon: Coins },
+            { title: 'Productos', href: '/admin/configuracion/productos', icon: Package },
+            { title: 'Ajustes de IA', href: '/admin/configuracion/ia', icon: Brain },
+            { title: 'Asistente de alta', href: '/admin/onboarding', icon: Wand2 },
+            { title: 'Mi cuenta', href: '/admin/configuracion/cuenta', icon: User },
         ],
     },
 ]
 
+/** Abre el formulario de "Registrar venta" que vive en AdminShell */
+export function abrirRegistrarVenta() {
+    window.dispatchEvent(new CustomEvent('open-sale-modal'))
+}
+
+function StoreMark() {
+    const { branding } = useBrandingContext()
+    const hasLogo = branding.logo_url && !branding.logo_url.includes('/brand/qronnect/')
+
+    return (
+        <Link href="/admin/dashboard" className="flex min-w-0 items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand font-display text-sm font-bold text-brand-on">
+                {hasLogo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={branding.logo_url!} alt="" className="h-full w-full bg-white object-contain p-1" />
+                ) : (
+                    (branding.nombre_comercial || 'Q').charAt(0).toUpperCase()
+                )}
+            </span>
+            <span className="min-w-0 leading-tight">
+                <span className="block truncate font-display text-[15px] font-semibold text-foreground">
+                    {branding.nombre_comercial || 'Mi negocio'}
+                </span>
+                <span className="block text-xs text-muted-foreground">Panel de gestión</span>
+            </span>
+        </Link>
+    )
+}
+
 export function AdminSidebar() {
     const pathname = usePathname()
     const searchParams = useSearchParams()
-    const { branding } = useBrandingContext()
-    const [isOpen, setIsOpen] = useState(false) // Mobile state
+    const [isOpen, setIsOpen] = useState(false)
 
-    // Brand colors
-    const primaryColor = hexToRgb(branding.color_primario)
+    // Cerrar el menú del móvil al cambiar de pantalla
+    useEffect(() => {
+        setIsOpen(false)
+    }, [pathname, searchParams])
 
-    // Determine active state with improved logic
     const isItemActive = (itemHref: string) => {
-        // 1. Check exact path match first
-        if (pathname === itemHref) return true
-
-        // 2. Split item href into path and query
         const [itemPath, itemQuery] = itemHref.split('?')
+        const currentTab = searchParams.get('tab')
 
-        // 3. If standard route (no query params in itemHref)
-        // Active if pathname starts with itemPath (handling nested routes)
-        if (!itemQuery) {
-            // Special case for dashboard root
-            if (itemPath === '/admin/dashboard' && pathname === '/admin/dashboard' && !searchParams.get('tab')) return true
-
-            return pathname === itemPath || (itemPath !== '/admin/dashboard' && pathname.startsWith(itemPath))
-        }
-
-        // 4. If tab route
-        // Active if matches pathname AND tab param
         if (itemQuery) {
-            const itemTab = new URLSearchParams(itemQuery).get('tab')
-            const currentTab = searchParams.get('tab')
-            return pathname === itemPath && currentTab === itemTab
+            return pathname === itemPath && currentTab === new URLSearchParams(itemQuery).get('tab')
         }
-
-        return false
+        if (itemPath === '/admin/dashboard') {
+            return pathname === itemPath && (!currentTab || currentTab === 'analytics')
+        }
+        return pathname === itemPath || pathname.startsWith(`${itemPath}/`)
     }
 
     const handleLogout = () => {
@@ -206,116 +145,123 @@ export function AdminSidebar() {
         window.location.href = '/admin/login'
     }
 
+    const nav = (
+        <div className="flex h-full flex-col">
+            <div className="flex h-16 shrink-0 items-center justify-between gap-2 px-4">
+                <StoreMark />
+                <button
+                    type="button"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent lg:hidden"
+                    onClick={() => setIsOpen(false)}
+                    aria-label="Cerrar menú"
+                >
+                    <X className="h-5 w-5" />
+                </button>
+            </div>
+
+            <div className="px-3 pb-2">
+                <button
+                    type="button"
+                    onClick={() => {
+                        setIsOpen(false)
+                        abrirRegistrarVenta()
+                    }}
+                    className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+                >
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    Registrar venta
+                </button>
+            </div>
+
+            <nav aria-label="Panel de gestión" className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+                <div className="space-y-6">
+                    {MENU.map((group) => (
+                        <div key={group.label}>
+                            <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
+                                {group.label}
+                            </p>
+                            <ul className="space-y-0.5">
+                                {group.items.map((item) => {
+                                    const active = isItemActive(item.href)
+                                    const Icon = item.icon
+                                    return (
+                                        <li key={item.href}>
+                                            <Link
+                                                href={item.href}
+                                                aria-current={active ? 'page' : undefined}
+                                                className={cn(
+                                                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                                                    active
+                                                        ? 'bg-accent text-foreground'
+                                                        : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground',
+                                                )}
+                                            >
+                                                <Icon className={cn('h-4 w-4 shrink-0', active && 'text-brand')} aria-hidden="true" />
+                                                <span className="truncate">{item.title}</span>
+                                            </Link>
+                                        </li>
+                                    )
+                                })}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+            </nav>
+
+            <div className="flex items-center gap-1 border-t p-3">
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex h-9 flex-1 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                >
+                    <LogOut className="h-4 w-4" aria-hidden="true" />
+                    Cerrar sesión
+                </button>
+                <ThemeToggle />
+            </div>
+        </div>
+    )
+
     return (
         <>
-            {/* Mobile Toggle Button */}
-            <button
-                type="button"
-                className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-md text-gray-600"
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            {/* Móvil: barra superior con menú y botón de venta */}
+            <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between gap-3 border-b bg-background/90 px-3 backdrop-blur-lg lg:hidden">
+                <button
+                    type="button"
+                    className="flex h-10 w-10 items-center justify-center rounded-lg text-foreground hover:bg-accent"
+                    onClick={() => setIsOpen(true)}
+                    aria-label="Abrir menú"
+                >
+                    <Menu className="h-5 w-5" />
+                </button>
+                <div className="min-w-0 flex-1">
+                    <StoreMark />
+                </div>
+                <button
+                    type="button"
+                    onClick={abrirRegistrarVenta}
+                    className="flex h-10 items-center gap-1.5 rounded-xl bg-primary px-3 text-sm font-semibold text-primary-foreground"
+                >
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    Venta
+                </button>
+            </div>
 
-            {/* Sidebar Container */}
+            {/* Escritorio: menú fijo. Móvil: cajón lateral */}
             <aside
                 className={cn(
-                    "fixed inset-y-0 left-0 z-40 w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r dark:border-slate-800 shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:block",
-                    isOpen ? "translate-x-0" : "-translate-x-full"
+                    'fixed inset-y-0 left-0 z-50 w-64 border-r bg-card transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0',
+                    isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full',
                 )}
             >
-                <div className="flex flex-col h-full overflow-hidden">
-                    {/* Logo Section */}
-                    <div className="h-16 flex items-center px-6 border-b">
-                        {branding.logo_url && !branding.logo_url.includes('/brand/qronnect/') ? (
-                            <img
-                                src={branding.logo_url}
-                                alt={branding.nombre_comercial}
-                                className="h-8 w-auto max-w-[150px] object-contain"
-                            />
-                        ) : (
-                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
-                                {branding.nombre_comercial || 'Panel Admin'}
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Navigation Links */}
-                    <ScrollArea className="flex-1 min-h-0 py-6 px-3">
-                        <div className="space-y-6">
-                            {menuGroups.map((group) => (
-                                <div key={group.label}>
-                                    <h4 className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                        {group.label}
-                                    </h4>
-                                    <div className="space-y-1">
-                                        {group.items.map((item) => {
-                                            const active = isItemActive(item.href)
-                                            const Icon = item.icon
-
-                                            return (
-                                                <Link
-                                                    key={item.href}
-                                                    href={item.href}
-                                                    onClick={() => setIsOpen(false)} // Close on mobile click
-                                                    className={cn(
-                                                        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 group relative overflow-hidden",
-                                                        active
-                                                            ? "text-primary bg-primary/10"
-                                                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-slate-800"
-                                                    )}
-                                                    style={active ? {
-                                                        color: `rgb(${primaryColor})`,
-                                                        backgroundColor: `rgba(${primaryColor}, 0.1)`
-                                                    } : undefined}
-                                                >
-                                                    <Icon className="h-4 w-4 shrink-0 transition-colors" />
-                                                    <span className="flex-1 truncate">{item.title}</span>
-                                                    {item.badge && (
-                                                        <span
-                                                            className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-green-100 text-green-700"
-                                                        >
-                                                            {item.badge}
-                                                        </span>
-                                                    )}
-                                                    {active && (
-                                                        <div
-                                                            className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full"
-                                                            style={{ backgroundColor: `rgb(${primaryColor})` }}
-                                                        />
-                                                    )}
-                                                </Link>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </ScrollArea>
-
-                    {/* Footer / User Profile */}
-                    <div className="p-4 border-t bg-gray-50/50 dark:bg-slate-900/50 dark:border-slate-800 space-y-2">
-                        <div className="flex justify-between items-center px-4 py-2 text-sm text-gray-500">
-                            <span>Modo</span>
-                            <ThemeToggle />
-                        </div>
-                        <Button
-                            variant="ghost"
-                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
-                            onClick={handleLogout}
-                        >
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Cerrar Sesión
-                        </Button>
-                    </div>
-                </div>
+                {nav}
             </aside>
 
-            {/* Mobile Overlay */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden"
+                    className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] lg:hidden"
                     onClick={() => setIsOpen(false)}
+                    aria-hidden="true"
                 />
             )}
         </>

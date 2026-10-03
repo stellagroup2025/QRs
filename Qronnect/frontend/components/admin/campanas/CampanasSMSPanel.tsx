@@ -217,7 +217,6 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
             <Button
               size="sm"
               onClick={() => setModalOpen(true)}
-              style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               className="text-white"
             >
               <Plus className="h-4 w-4 sm:mr-1" />
@@ -243,7 +242,6 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
               <Button
                 size="sm"
                 onClick={() => setModalOpen(true)}
-                style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                 className="text-white"
               >
                 <Plus className="h-4 w-4 mr-1" />

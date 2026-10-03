@@ -112,7 +112,7 @@ export default function ConfiguracionGachaPage() {
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Dices className="h-8 w-8" />
-              Gacha - Máquina de Premios
+              Máquina de premios
             </h1>
             <p className="text-muted-foreground mt-1">
               Sistema de premios aleatorios para gamificar tu programa de fidelización

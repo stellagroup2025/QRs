@@ -226,9 +226,9 @@ export default function RegalosPage() {
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Regalos de Bienvenida</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Regalos</h1>
           <p className="text-gray-600 mt-2">
-            Configura regalos automáticos para nuevos clientes al registrarse
+            Regalos automáticos para tus clientes: de bienvenida, por invitar amigos y por objetivos
           </p>
         </div>
 

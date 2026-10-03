@@ -243,7 +243,6 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
               setDialogOpen(true)
             }}
             className="gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-all"
-            style={{ backgroundColor: hexToRgb(branding.color_primario) }}
           >
             <Plus className="h-4 w-4" />
             Nueva Promoción
@@ -286,7 +285,7 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
-                <Card className={`h-full group hover:shadow-lg transition-all duration-300 overflow-hidden border-l-4 dark:bg-slate-900 dark:border-slate-800 ${!promo.activo ? 'opacity-70 border-l-slate-300' : 'border-l-primary'}`}
+                <Card className={`h-full group hover:shadow-lg transition-all duration-300 overflow-hidden border-l-4 ${!promo.activo ? 'opacity-70 border-l-slate-300' : 'border-l-primary'}`}
                   style={{ borderLeftColor: promo.activo ? hexToRgb(branding.color_primario) : undefined }}
                 >
                   <CardContent className="p-0">

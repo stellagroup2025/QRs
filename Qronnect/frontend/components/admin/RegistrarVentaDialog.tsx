@@ -351,7 +351,6 @@ export function RegistrarVentaDialog({ open, onOpenChange, onSuccess }: Registra
                       type="button"
                       onClick={handleBuscarPorEmail}
                       disabled={searchingEmail || !email.trim()}
-                      style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                       className="text-white"
                     >
                       {searchingEmail ? (
@@ -402,7 +401,6 @@ export function RegistrarVentaDialog({ open, onOpenChange, onSuccess }: Registra
                 disabled={!clienteEncontrado}
                 onClick={() => setPaso(2)}
                 className="text-white"
-                style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               >
                 Continuar
               </Button>
@@ -456,7 +454,6 @@ export function RegistrarVentaDialog({ open, onOpenChange, onSuccess }: Registra
                 type="submit"
                 disabled={loading || !importe || parseFloat(importe) <= 0}
                 className="text-white"
-                style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               >
                 {loading ? (
                   <>

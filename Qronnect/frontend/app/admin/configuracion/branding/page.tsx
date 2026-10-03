@@ -206,7 +206,7 @@ export default function ConfiguracionBrandingPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Configuración de Branding</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Imagen de marca</h1>
           <p className="text-muted-foreground text-sm">
             Personaliza la identidad visual de tu marca
           </p>

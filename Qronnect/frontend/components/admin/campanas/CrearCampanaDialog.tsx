@@ -509,7 +509,6 @@ export function CrearCampanaDialog({
             <Button
               onClick={handleNextStep}
               disabled={!puedeAvanzar}
-              style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               className="text-white"
             >
               Siguiente
@@ -518,7 +517,6 @@ export function CrearCampanaDialog({
             <Button
               onClick={handleCrearCampana}
               disabled={loading}
-              style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               className="text-white"
             >
               {loading ? (

@@ -121,7 +121,7 @@ export default function ConfiguracionPuntosPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Sistema de Puntos</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Puntos</h1>
             <p className="text-muted-foreground text-sm">
               Configura cómo los clientes ganan puntos en tu programa de fidelización
             </p>

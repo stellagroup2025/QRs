@@ -123,7 +123,6 @@ export function ValidarCanjeDialog({
             <Button
               type="submit"
               className="w-full text-white"
-              style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               disabled={loading || codigo.length < 12}
             >
               {loading ? (
@@ -216,7 +215,6 @@ export function ValidarCanjeDialog({
               <Button
                 onClick={handleClose}
                 className="w-full text-white"
-                style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               >
                 Cerrar
               </Button>

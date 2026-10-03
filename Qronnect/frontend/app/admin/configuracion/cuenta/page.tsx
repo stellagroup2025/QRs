@@ -140,8 +140,8 @@ export default function CuentaPage() {
 
       <div className="max-w-4xl mx-auto p-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mi Cuenta</h1>
-          <p className="text-muted-foreground">Gestiona tu informacion personal y seguridad</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mi cuenta</h1>
+          <p className="text-muted-foreground">Gestiona tu información personal y tu contraseña</p>
         </div>
 
         <div className="grid gap-6">
