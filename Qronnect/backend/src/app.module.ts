@@ -40,6 +40,7 @@ import { ComercialesModule } from './comerciales/comerciales.module';
 import { PlanesModule } from './planes/planes.module';
 import { ProspectosModule } from './prospectos/prospectos.module';
 import { PartnersModule } from './partners/partners.module';
+import { ContactoModule } from './contacto/contacto.module';
 
 @Module({
   imports: [
@@ -141,6 +142,7 @@ import { PartnersModule } from './partners/partners.module';
     PlanesModule,
     ProspectosModule,
     PartnersModule,
+    ContactoModule,
   ],
   controllers: [AppController],
   providers: [
@@ -183,6 +185,8 @@ export class AppModule implements NestModule {
         // Excluir rutas de planes (globales)
         { path: 'api/planes', method: RequestMethod.ALL },
         { path: 'api/planes/(.*)', method: RequestMethod.ALL },
+        // Excluir el formulario de contacto de la web (se envía desde qronnect.es, sin tienda)
+        { path: 'api/contacto', method: RequestMethod.ALL },
         // Excluir health check (no necesita tenant)
         { path: 'health', method: RequestMethod.ALL },
         { path: 'api/health', method: RequestMethod.ALL },

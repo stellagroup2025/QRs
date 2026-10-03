@@ -27,6 +27,8 @@ services:
         sync: false
       - key: RESEND_FROM_EMAIL
         sync: false
+      - key: CONTACT_EMAIL
+        sync: false # Dónde llegan las solicitudes del formulario de contacto de la web (por defecto sales@qronnect.com)
       - key: SMS_ACCOUNT_SID
         sync: false
       - key: SMS_AUTH_TOKEN

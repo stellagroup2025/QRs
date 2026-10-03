@@ -37,6 +37,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     })),
+    // Formulario de contacto para negocios
+    {
+      url: `${baseUrl}/contacto`,
+      lastModified: currentDate,
+      changeFrequency: 'yearly' as const,
+      priority: 0.7,
+    },
     // Páginas legales (importantes para SEO y confianza)
     {
       url: `${baseUrl}/privacidad`,

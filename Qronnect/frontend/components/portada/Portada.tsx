@@ -9,11 +9,8 @@ import { PhoneMockup } from '@/components/sector/PhoneMockup'
 import { HowItWorks } from '@/components/sector/HowItWorks'
 import { SectorGrid } from '@/components/sector/SectorGrid'
 
-/**
- * Destino de los botones de captación. Provisional: abre un email a ventas,
- * hasta que exista un formulario de contacto para negocios.
- */
-const CONTACT_HREF = `mailto:sales@qronnect.com?subject=${encodeURIComponent('Quiero Qronnect para mi negocio')}`
+/** Destino de los botones de captación: el formulario de contacto */
+const CONTACT_HREF = '/contacto?origen=/'
 const CTA_LABEL = 'Quiero Qronnect en mi negocio'
 
 const NAV = [
@@ -337,7 +334,7 @@ export function Portada() {
                   ))}
                 </ul>
                 <a
-                  href={`mailto:sales@qronnect.com?subject=${encodeURIComponent(`Quiero el plan ${plan.nombre} de Qronnect`)}`}
+                  href={`/contacto?plan=${encodeURIComponent(plan.nombre)}&origen=/`}
                   className={cn(
                     'mt-8 inline-flex min-h-12 items-center justify-center rounded-full px-5 text-sm font-semibold transition-colors',
                     plan.destacado

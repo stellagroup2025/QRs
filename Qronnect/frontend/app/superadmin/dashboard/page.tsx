@@ -17,7 +17,8 @@ import {
   FileText,
   QrCode,
   ShieldCheck,
-  Zap
+  Zap,
+  Inbox,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import CountUp from 'react-countup'
@@ -322,6 +323,20 @@ export default function SuperAdminDashboard() {
                 <div>
                   <CardTitle className="text-lg font-bold">Equipo Comercial</CardTitle>
                   <CardDescription>Gestión de agentes</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+
+          <Card className="group hover:shadow-2xl transition-all duration-300 cursor-pointer border-l-4 border-l-teal-600" onClick={() => router.push('/superadmin/solicitudes')}>
+            <CardHeader>
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-2xl group-hover:scale-110 transition-transform">
+                  <Inbox className="h-6 w-6 text-teal-700 dark:text-teal-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-bold">Solicitudes de contacto</CardTitle>
+                  <CardDescription>Negocios que piden información desde la web</CardDescription>
                 </div>
               </div>
             </CardHeader>

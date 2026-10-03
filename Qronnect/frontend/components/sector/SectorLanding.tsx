@@ -8,13 +8,9 @@ import { SectorPhoto } from './SectorPhoto'
 import { PhoneMockup } from './PhoneMockup'
 import { HowItWorks } from './HowItWorks'
 
-/**
- * Destino de los botones de captación. Provisional: abre un email a ventas con el sector
- * en el asunto, hasta que exista un formulario de contacto para negocios.
- */
+/** Destino de los botones de captación: el formulario de contacto, con el sector ya elegido */
 function contactHref(sector: SectorData) {
-  const subject = encodeURIComponent(`Quiero Qronnect para mi negocio (${sector.nombre})`)
-  return `mailto:sales@qronnect.com?subject=${subject}`
+  return `/contacto?sector=${sector.slug}&origen=/para/${sector.slug}`
 }
 
 /** Etiqueta pequeña en mayúsculas espaciadas que abre cada bloque */
