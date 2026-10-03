@@ -6,7 +6,7 @@ import { CreateCampanaDto } from './dto/create-campana.dto';
 import { UpdateCampanaDto } from './dto/update-campana.dto';
 import { FiltrosSegmentacionDto } from './dto/filtros-segmentacion.dto';
 import { PreviewDestinatariosDto } from './dto/preview-destinatarios.dto';
-import { SugerenciasFiltrosDto } from './dto/sugerencias-filtros.dto';
+import { RangoSugerencia, SugerenciasFiltrosDto } from './dto/sugerencias-filtros.dto';
 
 @Injectable()
 export class CampanasService {
@@ -621,9 +621,75 @@ export class CampanasService {
   }
 
   /**
-   * Devuelve sugerencias predefinidas de filtros para ayudar al usuario
+   * Ticket medio de cada cliente de la tienda (solo clientes con alguna compra),
+   * calculado desde la tabla compras: la tabla clientes no guarda este dato.
    */
-  async getSugerenciasFiltros(): Promise<SugerenciasFiltrosDto> {
+  private async ticketsMediosPorCliente(tiendaId: string): Promise<Map<string, number>> {
+    const client = this.supabase.getAdminClient();
+    const { data, error } = await client
+      .from('compras')
+      .select('id_cliente, importe')
+      .eq('id_tienda', tiendaId);
+
+    const totales = new Map<string, { suma: number; n: number }>();
+    if (error || !data) return new Map();
+
+    for (const compra of data) {
+      if (!compra.id_cliente) continue;
+      const t = totales.get(compra.id_cliente) ?? { suma: 0, n: 0 };
+      t.suma += parseFloat(compra.importe) || 0;
+      t.n += 1;
+      totales.set(compra.id_cliente, t);
+    }
+
+    return new Map([...totales].map(([id, t]) => [id, t.suma / t.n]));
+  }
+
+  /**
+   * Rangos de ticket medio adaptados al negocio: se cortan por los percentiles 33, 66 y 90
+   * de los tickets de sus clientes (no es lo mismo una cafetería que una tienda de ropa).
+   * Con pocos datos se usan los rangos genéricos.
+   */
+  static rangosTicketMedio(tickets: number[]): RangoSugerencia[] {
+    const genericos: RangoSugerencia[] = [
+      { label: 'Compras pequeñas (<30€)', min: 0, max: 30, descripcion: 'Clientes con ticket medio bajo' },
+      { label: 'Compras medianas (30-100€)', min: 30, max: 100, descripcion: 'Clientes con ticket medio moderado' },
+      { label: 'Compras grandes (>100€)', min: 100, descripcion: 'Clientes con ticket medio alto' },
+      { label: 'VIP (>200€)', min: 200, descripcion: 'Clientes premium con compras grandes' },
+    ];
+
+    const valores = tickets.filter((t) => Number.isFinite(t) && t > 0).sort((a, b) => a - b);
+    if (valores.length < 10) return genericos;
+
+    const percentil = (p: number) => valores[Math.min(valores.length - 1, Math.floor(p * valores.length))];
+    // Redondeo a cifras "de ticket": de euro en euro hasta 20 €, de 5 en 5 hasta 100 €, luego de 10 en 10
+    const redondear = (v: number) => (v < 20 ? Math.round(v) : v < 100 ? Math.round(v / 5) * 5 : Math.round(v / 10) * 10);
+
+    const corte1 = Math.max(1, redondear(percentil(0.33)));
+    const corte2 = redondear(percentil(0.66));
+    const corte3 = redondear(percentil(0.9));
+    // Si casi todos gastan lo mismo, no hay tres grupos que distinguir
+    if (corte2 <= corte1) return genericos;
+
+    const euros = (v: number) => `${v.toLocaleString('es-ES')}€`;
+    const rangos: RangoSugerencia[] = [
+      { label: `Ticket bajo (<${euros(corte1)})`, min: 0, max: corte1, descripcion: 'El tercio de clientes que menos gasta por visita' },
+      { label: `Ticket medio (${corte1}-${euros(corte2)})`, min: corte1, max: corte2, descripcion: 'Clientes con un gasto por visita habitual en tu negocio' },
+      { label: `Ticket alto (>${euros(corte2)})`, min: corte2, descripcion: 'El tercio de clientes que más gasta por visita' },
+    ];
+    if (corte3 > corte2) {
+      rangos.push({ label: `Los que más gastan (>${euros(corte3)})`, min: corte3, descripcion: 'El 10% de clientes con el ticket medio más alto' });
+    }
+    return rangos;
+  }
+
+  /**
+   * Devuelve sugerencias de filtros para ayudar al usuario. Los rangos de ticket medio
+   * se calculan con los datos de la tienda; el resto son fijos.
+   */
+  async getSugerenciasFiltros(tiendaId?: string): Promise<SugerenciasFiltrosDto> {
+    const tickets = tiendaId ? [...(await this.ticketsMediosPorCliente(tiendaId)).values()] : [];
+
     return {
       edad: [
         { label: 'Jóvenes (18-30)', min: 18, max: 30, descripcion: 'Clientes entre 18 y 30 años' },
@@ -631,26 +697,7 @@ export class CampanasService {
         { label: 'Mayores (51-70)', min: 51, max: 70, descripcion: 'Clientes entre 51 y 70 años' },
         { label: 'Todas las edades', min: 18, max: 100, descripcion: 'Sin filtro de edad' },
       ],
-      ticket_medio: [
-        {
-          label: 'Compras pequeñas (<30€)',
-          min: 0,
-          max: 30,
-          descripcion: 'Clientes con ticket medio bajo',
-        },
-        {
-          label: 'Compras medianas (30-100€)',
-          min: 30,
-          max: 100,
-          descripcion: 'Clientes con ticket medio moderado',
-        },
-        {
-          label: 'Compras grandes (>100€)',
-          min: 100,
-          descripcion: 'Clientes con ticket medio alto',
-        },
-        { label: 'VIP (>200€)', min: 200, descripcion: 'Clientes premium con compras grandes' },
-      ],
+      ticket_medio: CampanasService.rangosTicketMedio(tickets),
       num_visitas: [
         { label: 'Nuevos (1-3 visitas)', min: 1, max: 3, descripcion: 'Clientes nuevos' },
         {
@@ -860,35 +907,28 @@ export class CampanasService {
       });
     }
 
-    // Segmentos por comportamiento de compra
-    const ticketBajo = clientes.filter((c) => (c.ticket_medio || 0) < 30).length;
-    const ticketMedio = clientes.filter(
-      (c) => (c.ticket_medio || 0) >= 30 && (c.ticket_medio || 0) < 100,
-    ).length;
-    const ticketAlto = clientes.filter((c) => (c.ticket_medio || 0) >= 100).length;
+    // Segmentos por comportamiento de compra: ticket medio real (desde compras) y los mismos
+    // rangos adaptados al negocio que en las sugerencias de filtros
+    const ticketsPorCliente = await this.ticketsMediosPorCliente(tiendaId);
+    const rangosTicket = CampanasService.rangosTicketMedio([...ticketsPorCliente.values()]).slice(0, 3);
+    for (const [i, rango] of rangosTicket.entries()) {
+      const esUltimo = i === rangosTicket.length - 1;
+      const cantidad = clientes.filter((c) => {
+        const ticket = ticketsPorCliente.get(c.id);
+        if (ticket === undefined) return false;
+        if (rango.min !== undefined && ticket < rango.min) return false;
+        // Límite superior exclusivo para no contar dos veces a quien cae justo en el corte
+        if (!esUltimo && rango.max !== undefined && ticket >= rango.max) return false;
+        return true;
+      }).length;
 
-    if (ticketBajo > 0) {
-      segmentos.push({
-        descripcion: `Ticket medio bajo (<30€) - ${ticketBajo} clientes (${Math.round((ticketBajo / totalClientes) * 100)}%)`,
-        porcentaje: Math.round((ticketBajo / totalClientes) * 100),
-        cantidad: ticketBajo,
-      });
-    }
-
-    if (ticketMedio > 0) {
-      segmentos.push({
-        descripcion: `Ticket medio (30-100€) - ${ticketMedio} clientes (${Math.round((ticketMedio / totalClientes) * 100)}%)`,
-        porcentaje: Math.round((ticketMedio / totalClientes) * 100),
-        cantidad: ticketMedio,
-      });
-    }
-
-    if (ticketAlto > 0) {
-      segmentos.push({
-        descripcion: `Ticket alto (>100€) - ${ticketAlto} clientes (${Math.round((ticketAlto / totalClientes) * 100)}%)`,
-        porcentaje: Math.round((ticketAlto / totalClientes) * 100),
-        cantidad: ticketAlto,
-      });
+      if (cantidad > 0) {
+        segmentos.push({
+          descripcion: `${rango.label} - ${cantidad} clientes (${Math.round((cantidad / totalClientes) * 100)}%)`,
+          porcentaje: Math.round((cantidad / totalClientes) * 100),
+          cantidad,
+        });
+      }
     }
 
     // Segmentos por frecuencia
