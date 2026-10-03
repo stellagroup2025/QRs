@@ -143,8 +143,8 @@ export function AnalistaKPIs({ tenantDomain, adminToken, onCreateCampaign, onCre
 
       <CardContent className="space-y-4">
         {/* Selector de período y botón */}
-        <div className="flex items-end gap-3">
-          <div className="flex-1">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="min-w-0 flex-1">
             <label className="text-sm font-medium mb-1.5 block">Período a analizar</label>
             <Select value={periodo} onValueChange={(v) => setPeriodo(v as any)}>
               <SelectTrigger>

@@ -194,7 +194,7 @@ export default function ConfiguracionBrandingPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4 md:p-6 lg:p-8">
+      <div className="">
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
         </div>
@@ -203,7 +203,7 @@ export default function ConfiguracionBrandingPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { eur } from '@/lib/format'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -147,7 +148,7 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
 
   const getValorLabel = (tipo: string, valor: number) => {
     switch (tipo) {
-      case 'descuento_fijo': return `€${valor.toFixed(0)}`
+      case 'descuento_fijo': return `${valor.toLocaleString('es-ES')} €`
       case 'descuento_porcentaje': return `${valor}%`
       case 'producto_gratis': return 'Gratis'
       default: return valor.toString()

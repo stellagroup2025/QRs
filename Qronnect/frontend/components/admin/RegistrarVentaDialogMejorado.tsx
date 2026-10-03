@@ -983,8 +983,8 @@ export function RegistrarVentaDialogMejorado({
                           <div className="flex items-center justify-between gap-2">
                             <Badge variant="secondary" className="text-xs">
                               {cupon.descuento_porcentaje
-                                ? `${cupon.descuento_porcentaje}% OFF`
-                                : `€${cupon.descuento_fijo} OFF`
+                                ? `-${cupon.descuento_porcentaje}%`
+                                : `-${eur(cupon.descuento_fijo)}`
                               }
                             </Badge>
                             <Button
@@ -1057,12 +1057,12 @@ export function RegistrarVentaDialogMejorado({
                                 </Badge>
                                 {promo.descuento_porcentaje && (
                                   <Badge className="text-xs bg-purple-100 text-purple-700">
-                                    {promo.descuento_porcentaje}% OFF
+                                    -{promo.descuento_porcentaje}%
                                   </Badge>
                                 )}
                                 {promo.descuento_fijo && (
                                   <Badge className="text-xs bg-purple-100 text-purple-700">
-                                    €{promo.descuento_fijo} OFF
+                                    -{eur(promo.descuento_fijo)}
                                   </Badge>
                                 )}
                               </div>
@@ -1202,7 +1202,7 @@ export function RegistrarVentaDialogMejorado({
                     <Badge variant="secondary" className="text-xs mt-2">
                       {cuponSeleccionado.descuento_porcentaje
                         ? `${cuponSeleccionado.descuento_porcentaje}% de descuento`
-                        : `€${cuponSeleccionado.descuento_fijo} de descuento`
+                        : `${eur(cuponSeleccionado.descuento_fijo)} de descuento`
                       }
                     </Badge>
                   </div>

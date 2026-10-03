@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { eur } from '@/lib/format'
 import {
   Dialog,
   DialogContent,
@@ -466,7 +467,7 @@ export function CrearCampanaDialog({
                           <div className="text-right text-sm">
                             <p>{cliente.puntos_totales} pts</p>
                             <p className="text-muted-foreground">
-                              {cliente.num_compras} compras · €{cliente.ticket_medio}
+                              {cliente.num_compras} compras · {eur(cliente.ticket_medio)}
                             </p>
                           </div>
                         </div>

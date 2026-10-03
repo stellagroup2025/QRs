@@ -649,6 +649,22 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
+      {/* Título de las secciones que no lo traen de su propio panel */}
+      {(() => {
+        const titulos: Record<string, [string, string]> = {
+          clientes: ['Clientes', 'Quién se ha unido a tu club y cómo compra.'],
+          ventas: ['Ventas', 'Todas las compras registradas con puntos.'],
+          campanas: ['Campañas', 'Emails y SMS para que tus clientes vuelvan.'],
+        }
+        const t = titulos[activeTab]
+        return t ? (
+          <div>
+            <h1>{t[0]}</h1>
+            <p className="mt-1 text-muted-foreground">{t[1]}</p>
+          </div>
+        ) : null
+      })()}
+
       {/* Tabs Content Wrapper */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         {/* Navigation is now handled by AdminSidebar */}
@@ -744,7 +760,7 @@ export default function AdminDashboardPage() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <CardTitle>Gestión de Clientes</CardTitle>
+                  <CardTitle>Listado</CardTitle>
                   <CardDescription>
                     {data?.total_clientes || 0} clientes registrados
                   </CardDescription>
@@ -955,7 +971,7 @@ export default function AdminDashboardPage() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <CardTitle>Registro de Ventas</CardTitle>
+                  <CardTitle>Historial</CardTitle>
                   <CardDescription>
                     {data?.total_compras || 0} compras registradas
                   </CardDescription>
@@ -1136,9 +1152,9 @@ export default function AdminDashboardPage() {
         {/* Promociones Tab */}
         <TabsContent value="promociones" className="space-y-6">
           <div className="mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Promociones</h2>
-            <p className="text-sm text-muted-foreground">
-              Gestiona las promociones y recompensas para tus clientes
+            <h1>Premios por puntos</h1>
+            <p className="mt-1 text-muted-foreground">
+              Lo que tus clientes pueden conseguir canjeando sus puntos.
             </p>
           </div>
 

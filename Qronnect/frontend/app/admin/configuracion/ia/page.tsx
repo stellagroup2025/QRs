@@ -193,7 +193,7 @@ export default function ConfiguracionIAPage() {
 
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto"></div>
             <p className="mt-4 text-gray-600">Cargando configuración...</p>
           </div>
         </div>
@@ -204,7 +204,7 @@ export default function ConfiguracionIAPage() {
   return (
     <>
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="max-w-6xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <Brain className="h-8 w-8 text-purple-600" />

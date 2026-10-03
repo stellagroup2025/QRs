@@ -123,9 +123,9 @@ export default function CuentaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <div className="">
 
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="max-w-4xl">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
@@ -135,10 +135,10 @@ export default function CuentaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="">
 
 
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mi cuenta</h1>
           <p className="text-muted-foreground">Gestiona tu información personal y tu contraseña</p>

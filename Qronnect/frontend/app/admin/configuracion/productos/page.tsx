@@ -362,10 +362,10 @@ export default function ProductosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
+    <div className="">
 
 
-      <main className="container mx-auto px-4 py-8">
+      <div>
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
@@ -384,7 +384,7 @@ export default function ProductosPage() {
         </div>
 
         {/* Filtros */}
-        <Card className="mb-6 dark:bg-slate-900 dark:border-slate-800">
+        <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
@@ -419,7 +419,7 @@ export default function ProductosPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : productosFiltrados.length === 0 ? (
-          <Card className="py-12 dark:bg-slate-900 dark:border-slate-800">
+          <Card className="py-12">
             <CardContent className="text-center">
               <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">
@@ -447,7 +447,7 @@ export default function ProductosPage() {
               return (
                 <Card
                   key={producto.id}
-                  className={`transition-all hover:shadow-md ${!producto.activo ? 'opacity-60' : ''} dark:bg-slate-900 dark:border-slate-800`}
+                  className={`transition-all hover:shadow-md ${!producto.activo ? 'opacity-60' : ''}`}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
@@ -532,7 +532,7 @@ export default function ProductosPage() {
                     return (
                       <Card
                         key={tipo.value}
-                        className={`cursor-pointer transition-all p-4 dark:bg-slate-900 dark:border-slate-800 ${formData.tipo === tipo.value
+                        className={`cursor-pointer transition-all p-4 ${formData.tipo === tipo.value
                           ? 'ring-2 ring-primary border-primary'
                           : 'hover:border-primary/50'
                           }`}
@@ -793,7 +793,7 @@ export default function ProductosPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </main>
+      </div>
     </div>
   )
 }
