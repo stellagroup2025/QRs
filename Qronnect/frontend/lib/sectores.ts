@@ -129,6 +129,9 @@ export interface SectorData {
   faq: { q: string; a: string }[]
 }
 
+/** Lo mínimo para pintar el móvil de ejemplo y el "Cómo funciona" (también lo usa la portada) */
+export type SectorShowcase = Pick<SectorData, 'slug' | 'palette' | 'demoBusiness' | 'phone' | 'howItWorks'>
+
 const estetica: SectorData = {
   slug: 'estetica',
   nombre: 'Estética y belleza',
@@ -212,7 +215,7 @@ const estetica: SectorData = {
         icon: 'users',
         title: 'Referidos',
         subtitle: 'Tus clientas traen a sus amigas.',
-        text: 'Cada clienta tiene su código. Cuando invita a una amiga, las dos ganan y tú sumas una clienta nueva.',
+        text: 'Cada clienta tiene su código. Cuando invita a una amiga, ella gana puntos, su amiga se lleva el regalo de bienvenida y tú sumas una clienta nueva.',
       },
     ],
   },
@@ -234,7 +237,7 @@ const estetica: SectorData = {
     items: [
       { label: 'Tarjeta de sellos', title: '6ª manicura gratis', text: 'El clásico, sin cartón y siempre a mano.', photo: '/sectores/estetica/manicura.webp' },
       { label: 'Cumpleaños', title: 'Un detalle en su mes', text: 'Un regalo que se recuerda y hace reservar.', photo: '/sectores/estetica/cumpleanos.webp' },
-      { label: 'Referidos', title: 'Trae a una amiga', text: 'Y ganad puntos las dos.', photo: '/sectores/estetica/amigas.webp' },
+      { label: 'Referidos', title: 'Trae a una amiga', text: 'Ella suma puntos y su amiga estrena regalo.', photo: '/sectores/estetica/amigas.webp' },
       { label: 'Días flojos', title: 'Martes de facial', text: 'Una oferta para llenar la agenda.', photo: '/sectores/estetica/facial.webp' },
     ],
     ctaTitle: '¿Qué programa encaja en tu salón?',
@@ -383,7 +386,7 @@ const cafeterias: SectorData = {
         icon: 'users',
         title: 'Referidos',
         subtitle: 'Tus clientes traen a sus amigos.',
-        text: 'Cada cliente tiene su código. Cuando invita a un amigo, los dos ganan y tú sumas un cliente nuevo.',
+        text: 'Cada cliente tiene su código. Cuando invita a un amigo, él gana puntos, su amigo se lleva el regalo de bienvenida y tú sumas un cliente nuevo.',
       },
     ],
   },
@@ -570,7 +573,7 @@ const deporte: SectorData = {
         icon: 'users',
         title: 'Referidos',
         subtitle: 'Entrenar acompañado engancha.',
-        text: 'Cada cliente tiene su código. Cuando trae a un amigo, los dos ganan y tú sumas un socio nuevo.',
+        text: 'Cada cliente tiene su código. Cuando trae a un amigo, él gana puntos, su amigo se lleva el regalo de bienvenida y tú sumas un socio nuevo.',
       },
     ],
   },
@@ -579,7 +582,7 @@ const deporte: SectorData = {
     items: [
       { label: 'Tarjeta de sellos', title: '10ª clase gratis', text: 'Premia a quien no falla ni una semana.', photo: '/sectores/deporte/pilates.webp' },
       { label: 'Cumpleaños', title: 'Una sesión de regalo', text: 'Un detalle en su mes que se recuerda.', photo: '/sectores/deporte/cumple.webp' },
-      { label: 'Referidos', title: 'Trae a un amigo', text: 'Y ganad puntos los dos.', photo: '/sectores/deporte/amigo.webp' },
+      { label: 'Referidos', title: 'Trae a un amigo', text: 'Él suma puntos y su amigo estrena regalo.', photo: '/sectores/deporte/amigo.webp' },
       { label: 'Horas flojas', title: 'Mediodías con premio', text: 'Una oferta para llenar la sala a mediodía.', photo: '/sectores/deporte/sala.webp' },
     ],
     ctaTitle: '¿Qué programa encaja en tu centro?',
@@ -745,7 +748,7 @@ const tiendas: SectorData = {
         icon: 'users',
         title: 'Referidos',
         subtitle: 'El boca a boca, con premio.',
-        text: 'Cada cliente tiene su código. Cuando trae a un amigo, los dos ganan y tú sumas un cliente nuevo.',
+        text: 'Cada cliente tiene su código. Cuando trae a un amigo, él gana puntos, su amigo se lleva el regalo de bienvenida y tú sumas un cliente nuevo.',
       },
     ],
   },
@@ -754,7 +757,7 @@ const tiendas: SectorData = {
     items: [
       { label: 'Puntos', title: 'Cupón de 10 €', text: 'Al llegar a los puntos que tú decidas.', photo: '/sectores/tiendas/boutique.webp' },
       { label: 'Cumpleaños', title: 'Un regalo en su mes', text: 'Un detalle que trae una visita.', photo: '/sectores/tiendas/flores.webp' },
-      { label: 'Referidos', title: 'Trae a un amigo', text: 'Y ganad puntos los dos.', photo: '/sectores/tiendas/ropa.webp' },
+      { label: 'Referidos', title: 'Trae a un amigo', text: 'Él suma puntos y su amigo estrena regalo.', photo: '/sectores/tiendas/ropa.webp' },
       { label: 'Solo socios', title: 'Novedades primero', text: 'Avisa antes a los de casa.', photo: '/sectores/tiendas/cosmetica.webp' },
     ],
     ctaTitle: '¿Qué programa encaja en tu tienda?',

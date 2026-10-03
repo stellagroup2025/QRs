@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { isRootDomain } from '@/lib/tenant'
-import { ProductLandingPage } from '@/components/ProductLandingPage'
+import { Portada } from '@/components/portada/Portada'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { useLandingConfig } from '@/hooks/use-landing-config'
 import { LoyaltyPass } from '@/components/brand/LoyaltyPass'
@@ -25,7 +25,7 @@ export default function HomePage() {
 
   // Si es dominio raíz de Qronnect, mostrar landing de producto
   if (isRoot) {
-    return <ProductLandingPage />
+    return <Portada />
   }
 
   // Si no, es un tenant - mostrar landing personalizada

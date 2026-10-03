@@ -2,11 +2,11 @@
 
 import { QRCodeSVG } from 'qrcode.react'
 import { ArrowRight, Check, Gift, Mail, ScanLine, Upload } from 'lucide-react'
-import type { HowVisual, SectorData } from '@/lib/sectores'
+import type { HowVisual, SectorShowcase } from '@/lib/sectores'
 import { LotusMark } from './sector-icons'
 
 /** Pequeñas ilustraciones en HTML de cada paso; no son capturas reales de la app */
-function Visual({ kind, sector }: { kind: HowVisual; sector: SectorData }) {
+function Visual({ kind, sector }: { kind: HowVisual; sector: SectorShowcase }) {
   const reward = sector.phone.reward.title
 
   switch (kind) {
@@ -37,7 +37,7 @@ function Visual({ kind, sector }: { kind: HowVisual; sector: SectorData }) {
         <div className="rounded-2xl bg-white p-3 text-center shadow-sm ring-1 ring-black/5">
           <LotusMark className="mx-auto h-4 w-5 text-[var(--s-primary)]" />
           <p className="font-display text-[11px] font-bold text-[var(--s-ink)]">{sector.demoBusiness.name}</p>
-          <QRCodeSVG value={`https://qronnect.es/para/${sector.slug}`} size={86} level="M" className="mx-auto mt-2" />
+          <QRCodeSVG value={sector.slug ? `https://qronnect.es/para/${sector.slug}` : 'https://qronnect.es'} size={86} level="M" className="mx-auto mt-2" />
           <p className="mt-2 text-[9px] text-black/55">Escanea y únete al club</p>
         </div>
       )
@@ -106,7 +106,7 @@ function Visual({ kind, sector }: { kind: HowVisual; sector: SectorData }) {
  * "Cómo funciona": seis pasos con quién hace cada uno (tú, tu equipo, tu cliente)
  * y una ilustración, para que un negocio entienda el sistema completo de un vistazo
  */
-export function HowItWorks({ sector }: { sector: SectorData }) {
+export function HowItWorks({ sector }: { sector: SectorShowcase }) {
   const { howItWorks } = sector
 
   return (

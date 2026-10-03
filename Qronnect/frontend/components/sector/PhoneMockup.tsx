@@ -1,12 +1,12 @@
 import { ArrowRight, ChevronRight, Home, QrCode, Star, Ticket, User } from 'lucide-react'
 import type { CSSProperties } from 'react'
-import type { SectorData } from '@/lib/sectores'
+import type { SectorShowcase } from '@/lib/sectores'
 import { cn } from '@/lib/utils'
 import { LotusMark, SECTOR_ICONS } from './sector-icons'
 import { SectorPhoto } from './SectorPhoto'
 
 /** Móvil con la app que ve la clienta, construido en HTML (no es una captura) */
-export function PhoneMockup({ sector, className }: { sector: SectorData; className?: string }) {
+export function PhoneMockup({ sector, className }: { sector: SectorShowcase; className?: string }) {
   const { phone, demoBusiness } = sector
 
   return (
