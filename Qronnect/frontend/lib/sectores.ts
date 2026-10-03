@@ -36,6 +36,16 @@ export interface SectorIdea {
   photo: string
 }
 
+/** Ilustración en HTML de cada paso de "Cómo funciona" */
+export type HowVisual = 'setup' | 'qr' | 'signup' | 'scan' | 'reward' | 'results'
+
+export interface HowStep {
+  who: string
+  title: string
+  text: string
+  visual: HowVisual
+}
+
 export interface SectorData {
   slug: string
   /** Nombre del sector para menús, breadcrumbs y SEO */
@@ -90,8 +100,9 @@ export interface SectorData {
     result: string
     pillars: SectorPillar[]
   }
+  /** Explicación paso a paso de cómo funciona, del lado del negocio y del cliente */
+  howItWorks: { title: string; intro: string; steps: HowStep[] }
   ideas: { label: string; items: SectorIdea[]; ctaTitle: string; ctaText: string }
-  steps: SectorFeature[]
   included: { title: string; items: SectorFeature[] }
   fit: { forWho: string[]; notFor: string[] }
   stats: SectorStat[]
@@ -196,6 +207,19 @@ const estetica: SectorData = {
       },
     ],
   },
+  howItWorks: {
+    title: 'Así funciona en tu salón',
+    intro:
+      'Todo gira alrededor de un QR: tu clienta lo escanea una vez para unirse y, desde ahí, en cada visita tu equipo le suma sellos o puntos escaneando el QR de su móvil.',
+    steps: [
+      { who: 'Tú', visual: 'setup', title: 'Configuras tu programa', text: 'En el asistente de alta eliges tu logo y colores, cuántos puntos da cada euro, el regalo de bienvenida y el premio por invitar a una amiga.' },
+      { who: 'Tú', visual: 'qr', title: 'Pones tu QR en el salón', text: 'Descargas tu QR y lo colocas en el mostrador, el espejo o la tarjeta de cita.' },
+      { who: 'Tu clienta', visual: 'signup', title: 'Lo escanea y se une', text: 'Con la cámara del móvil, deja su nombre y su email en 30 segundos. Sin descargar ninguna app.' },
+      { who: 'Tu equipo', visual: 'scan', title: 'Suma en cada visita', text: 'Al cobrar, escanea el QR de su móvil y le suma el sello o los puntos de ese tratamiento.' },
+      { who: 'Tu clienta', visual: 'reward', title: 'Recibe su premio', text: 'Al completar la tarjeta le llega su cupón, por ejemplo la sexta manicura gratis, y lo canjea en tu salón.' },
+      { who: 'Tú', visual: 'results', title: 'Ves quién vuelve', text: 'Desde tu panel ves visitas, clientas y premios, y lanzas promociones por email o SMS cuando quieras.' },
+    ],
+  },
   ideas: {
     label: 'Ideas que funcionan en salones',
     items: [
@@ -207,11 +231,6 @@ const estetica: SectorData = {
     ctaTitle: '¿Qué programa encaja en tu salón?',
     ctaText: 'Cuéntanos cómo trabajas y te proponemos la tarjeta, las promociones y los premios que mejor encajan contigo.',
   },
-  steps: [
-    { icon: 'qr', title: 'Escanea y se une', text: 'Tu clienta escanea el QR del mostrador y se registra en 30 segundos.' },
-    { icon: 'stamp', title: 'Suma en cada visita', text: 'Enseña su QR en el móvil y tu equipo le suma el sello o los puntos.' },
-    { icon: 'gift', title: 'Disfruta su premio', text: 'Al completar la tarjeta recibe su cupón y lo canjea en tu salón.' },
-  ],
   included: {
     title: 'Lo que tienes desde el primer día',
     items: [
@@ -359,6 +378,19 @@ const cafeterias: SectorData = {
       },
     ],
   },
+  howItWorks: {
+    title: 'Así funciona en tu cafetería',
+    intro:
+      'Todo gira alrededor de un QR: tu cliente lo escanea una vez para unirse y, desde ahí, en cada café tu equipo le suma el sello o los puntos escaneando el QR de su móvil.',
+    steps: [
+      { who: 'Tú', visual: 'setup', title: 'Configuras tu programa', text: 'En el asistente de alta eliges tu logo y colores, cuántos puntos da cada euro, el regalo de bienvenida y el premio por traer a un amigo.' },
+      { who: 'Tú', visual: 'qr', title: 'Pones tu QR en la barra', text: 'Descargas tu QR y lo colocas en la barra, las mesas o junto a la caja.' },
+      { who: 'Tu cliente', visual: 'signup', title: 'Lo escanea y se une', text: 'Con la cámara del móvil, deja su nombre y su email en 30 segundos. Sin descargar ninguna app.' },
+      { who: 'Tu equipo', visual: 'scan', title: 'Suma en cada café', text: 'Al cobrar, escanea el QR de su móvil y le suma el sello o los puntos de su consumición.' },
+      { who: 'Tu cliente', visual: 'reward', title: 'Recibe su premio', text: 'Al completar la tarjeta le llega su cupón, por ejemplo su café gratis, y lo canjea en la barra.' },
+      { who: 'Tú', visual: 'results', title: 'Ves quién vuelve', text: 'Desde tu panel ves visitas, clientes y premios, y programas promociones por email o SMS para tus horas valle.' },
+    ],
+  },
   ideas: {
     label: 'Ideas que funcionan en cafeterías',
     items: [
@@ -370,11 +402,6 @@ const cafeterias: SectorData = {
     ctaTitle: '¿Qué programa encaja en tu cafetería?',
     ctaText: 'Cuéntanos cómo trabajas y te proponemos la tarjeta, las promociones y los premios que mejor encajan contigo.',
   },
-  steps: [
-    { icon: 'qr', title: 'Escanea y se une', text: 'Tu cliente escanea el QR de la barra y se registra en 30 segundos.' },
-    { icon: 'coffee', title: 'Suma en cada café', text: 'Enseña su QR en el móvil y tu equipo le suma el sello o los puntos.' },
-    { icon: 'gift', title: 'Disfruta su premio', text: 'Al completar la tarjeta recibe su cupón y lo canjea en tu cafetería.' },
-  ],
   included: {
     title: 'Lo que tienes desde el primer día',
     items: [

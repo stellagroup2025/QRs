@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { LotusMark, SECTOR_ICONS } from './sector-icons'
 import { SectorPhoto } from './SectorPhoto'
 import { PhoneMockup } from './PhoneMockup'
+import { HowItWorks } from './HowItWorks'
 
 /**
  * Destino de los botones de captación. Provisional: abre un email a ventas con el sector
@@ -118,7 +119,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
           <div className="flex flex-col items-start gap-3 lg:items-end">
             <CtaButton href={cta}>{ctaLabel}</CtaButton>
             <p className="text-sm text-white/55">{sector.hero.reassurance}</p>
-            <a href="#metodo" className="inline-flex items-center gap-2 text-sm font-medium text-white/85 hover:text-white">
+            <a href="#como-funciona" className="inline-flex items-center gap-2 text-sm font-medium text-white/85 hover:text-white">
               Cómo funciona
               <ArrowDown className="h-4 w-4" aria-hidden="true" />
             </a>
@@ -130,6 +131,9 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
           <PhoneMockup sector={sector} className="scale-90" />
         </div>
       </section>
+
+      {/* ───────── Cómo funciona, paso a paso ───────── */}
+      <HowItWorks sector={sector} />
 
       {/* ───────── Problema ───────── */}
       <section aria-labelledby="problema-title" className="px-5 py-24 text-center sm:px-8 md:py-32">
@@ -209,33 +213,11 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
         </div>
       </section>
 
-      {/* ───────── Cómo funciona + qué incluye ───────── */}
-      <section aria-labelledby="pasos-title" className="px-5 py-24 sm:px-8 md:py-32">
+      {/* ───────── Qué incluye y para quién es ───────── */}
+      <section aria-labelledby="incluye-title" className="px-5 py-24 sm:px-8 md:py-32">
         <div className="mx-auto max-w-6xl">
-          <div className="text-center">
-            <Label>Así de fácil para tus clientes</Label>
-            <h2 id="pasos-title" className="mx-auto mt-4 max-w-3xl font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl">
-              Sin apps, sin tarjetas de cartón. <span className="text-[var(--s-ink)]/40">Solo su móvil.</span>
-            </h2>
-          </div>
-
-          <ol className="mt-14 grid gap-4 md:grid-cols-3">
-            {sector.steps.map((step, i) => {
-              const Icon = SECTOR_ICONS[step.icon]
-              return (
-                <li key={step.title} className="rounded-2xl border border-[var(--s-ink)]/10 bg-white p-7">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold tracking-[0.2em] text-[var(--s-primary)]">0{i + 1} — PASO</p>
-                    <Icon className="h-5 w-5 text-[var(--s-ink)]/40" aria-hidden="true" />
-                  </div>
-                  <h3 className="mt-5 font-display text-xl font-bold">{step.title}</h3>
-                  <p className="mt-2 leading-relaxed text-[var(--s-ink)]/65">{step.text}</p>
-                </li>
-              )
-            })}
-          </ol>
-
-          <Label className="mt-20 text-center">{sector.included.title}</Label>
+          <Label className="text-center">{sector.included.title}</Label>
+          <h2 id="incluye-title" className="sr-only">{sector.included.title}</h2>
           <ul className="mt-6 grid gap-4 sm:grid-cols-2">
             {sector.included.items.map((item, i) => (
               <li key={item.title} className="rounded-2xl border border-[var(--s-ink)]/10 bg-white p-7">
