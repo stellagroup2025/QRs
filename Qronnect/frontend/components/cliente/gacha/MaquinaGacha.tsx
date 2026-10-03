@@ -88,7 +88,7 @@ export function MaquinaGacha({ config, puntosActuales, onTiradaRealizada, slug }
 
   return (
     <>
-      <Card className="p-8 text-center relative overflow-hidden">
+      <Card className="relative overflow-hidden rounded-3xl border-ink/[0.07] p-8 text-center shadow-none">
         {/* Background decorativo */}
         <div
           className="absolute inset-0 opacity-5"
@@ -113,10 +113,6 @@ export function MaquinaGacha({ config, puntosActuales, onTiradaRealizada, slug }
             </div>
           </div>
 
-          {/* Nombre */}
-          <h2 className="text-3xl font-bold mb-2">{config.nombre}</h2>
-          <p className="text-muted-foreground mb-6">{config.descripcion}</p>
-
           {/* Costo */}
           <div className="inline-flex items-center gap-2 bg-muted px-6 py-3 rounded-full mb-6">
             <Coins className="h-5 w-5" style={{ color: config.color_primario }} />
@@ -127,13 +123,13 @@ export function MaquinaGacha({ config, puntosActuales, onTiradaRealizada, slug }
           {/* Puntos actuales */}
           <div className="mb-6">
             <p className="text-sm text-muted-foreground">Tus puntos actuales</p>
-            <p className="text-2xl font-bold">{puntosActuales}</p>
+            <p className="font-display text-3xl font-bold tabular-nums">{puntosActuales}</p>
           </div>
 
           {/* Botón */}
           <Button
             size="lg"
-            className="text-lg px-8 py-6"
+            className="h-14 rounded-full px-8 text-base font-semibold text-white"
             style={{ backgroundColor: config.color_primario }}
             onClick={handleTirar}
             disabled={!puedeJugar || tirando}

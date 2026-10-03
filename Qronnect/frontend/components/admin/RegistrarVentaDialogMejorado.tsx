@@ -312,7 +312,15 @@ export function RegistrarVentaDialogMejorado({
     }
   }
 
-  async function buscarClientePorQr(qrCode: string) {
+  async function buscarClientePorQr(qrLeido: string) {
+    // El QR del cliente puede ser su ID o el enlace .../admin/dashboard?open_sale=true&cliente_id=<ID>
+    let qrCode = qrLeido.trim()
+    try {
+      const idEnEnlace = new URL(qrCode).searchParams.get('cliente_id')
+      if (idEnEnlace) qrCode = idEnEnlace
+    } catch {
+      // No es un enlace: se usa tal cual
+    }
     setSearching(true)
     try {
       const token = localStorage.getItem('admin_token')
