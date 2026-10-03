@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getAdminTenantDomain } from '@/lib/tenant';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,8 +43,7 @@ export function FormularioPremioGacha({ open, onClose, premio, onGuardado }: For
 
     try {
       const token = localStorage.getItem('admin_token');
-      const domain = window.location.hostname.split('.')[0];
-      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
+      const tenant = getAdminTenantDomain();
 
       if (!token) {
         throw new Error('No autenticado');

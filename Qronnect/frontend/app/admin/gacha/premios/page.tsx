@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getAdminTenantDomain } from '@/lib/tenant';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -47,8 +48,7 @@ export default function GestionPremiosPage() {
   const cargarPremios = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-      const domain = window.location.hostname.split('.')[0];
-      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
+      const tenant = getAdminTenantDomain();
 
       if (!token) return;
 
@@ -81,8 +81,7 @@ export default function GestionPremiosPage() {
 
     try {
       const token = localStorage.getItem('admin_token');
-      const domain = window.location.hostname.split('.')[0];
-      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
+      const tenant = getAdminTenantDomain();
 
       if (!token) return;
 
@@ -107,8 +106,7 @@ export default function GestionPremiosPage() {
   const handleInsertarPredefinidos = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-      const domain = window.location.hostname.split('.')[0];
-      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
+      const tenant = getAdminTenantDomain();
 
       if (!token) return;
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { eur } from '@/lib/format'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -84,7 +85,7 @@ export function ValidarCanjeDialog({
 
   const getValorLabel = (tipo: string, valor: number) => {
     switch (tipo) {
-      case 'descuento_fijo': return `€${valor.toFixed(2)}`
+      case 'descuento_fijo': return eur(valor)
       case 'descuento_porcentaje': return `${valor}%`
       case 'producto_gratis': return 'Gratis'
       default: return valor.toString()

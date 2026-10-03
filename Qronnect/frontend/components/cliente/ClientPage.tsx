@@ -24,7 +24,7 @@ export function ClientPage({
   return (
     <>
       <ClientNav />
-      <main className="min-h-screen bg-paper pb-32 text-ink md:pb-16">
+      <div className="min-h-screen bg-paper pb-32 text-ink md:pb-16">
         <div className={cn('mx-auto max-w-2xl px-4 pt-6 sm:px-6 md:pt-10', className)}>
           {(title || actions) && (
             <header className="mb-6 flex items-start justify-between gap-4">
@@ -37,7 +37,7 @@ export function ClientPage({
           )}
           {children}
         </div>
-      </main>
+      </div>
     </>
   )
 }

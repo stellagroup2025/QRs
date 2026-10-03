@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { eur } from '@/lib/format'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   LineChart,
@@ -171,7 +172,7 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
                     border: '1px solid #e5e7eb',
                     borderRadius: '6px',
                   }}
-                  formatter={(value: number) => [`€${value.toFixed(2)}`, 'Facturación']}
+                  formatter={(value: number) => [eur(value), 'Facturación']}
                 />
                 <Line
                   type="monotone"
@@ -283,7 +284,7 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
         </Card>
 
         {/* Top 10 Clientes VIP */}
-        <Card className="overflow-hidden dark:bg-slate-900 dark:border-slate-800">
+        <Card className="overflow-hidden">
           <ChartHeader
             title="Top 10 Clientes VIP"
             description="Clientes con mayor facturación total"
@@ -312,13 +313,13 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
                           {index > 2 && index + 1}
                         </TableCell>
                         <TableCell className="px-2 sm:px-4">
-                          <div className="max-w-[120px] sm:max-w-none">
+                          <div className="max-w-[140px] sm:max-w-[220px]">
                             <p className="font-medium text-sm truncate">{cliente.nombre}</p>
                             <p className="text-xs text-muted-foreground truncate hidden sm:block">{cliente.email}</p>
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-medium px-2 sm:px-4 whitespace-nowrap">
-                          €{cliente.total_gastado.toFixed(0)}
+                          {eur(cliente.total_gastado)}
                         </TableCell>
                         <TableCell className="text-right px-2 sm:px-4 hidden sm:table-cell">
                           {cliente.num_compras}

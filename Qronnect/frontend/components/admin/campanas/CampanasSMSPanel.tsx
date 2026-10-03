@@ -83,7 +83,14 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
       }
 
       const data = await res.json()
-      setCampanas(data)
+      // La tabla guarda fecha_enviada y no registra entregas: se estiman como enviados - fallidos
+      setCampanas(
+        (Array.isArray(data) ? data : []).map((c: any) => ({
+          ...c,
+          fecha_envio: c.fecha_envio ?? c.fecha_enviada,
+          entregados: c.entregados ?? Math.max(0, (c.enviados || 0) - (c.fallidos || 0)),
+        })),
+      )
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -302,7 +309,7 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
                     </div>
 
                     {/* Barra de progreso de entrega */}
-                    {campana.enviados && campana.enviados > 0 && (
+                    {(campana.enviados ?? 0) > 0 && (
                       <div className="mb-2">
                         <div className="flex items-center gap-2">
                           <div className="flex-1 bg-gray-200 rounded-full h-1.5">
@@ -317,7 +324,7 @@ export function CampanasSMSPanel({ adminToken, tenantDomain }: CampanasSMSPanelP
                             {campana.entregados || 0}/{campana.enviados}
                           </span>
                         </div>
-                        {campana.fallidos && campana.fallidos > 0 && (
+                        {(campana.fallidos ?? 0) > 0 && (
                           <div className="flex items-center gap-1 mt-1 text-xs text-red-500">
                             <XCircle className="h-3 w-3" />
                             {campana.fallidos} fallidos

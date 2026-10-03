@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getAdminTenantDomain } from '@/lib/tenant';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -57,17 +58,17 @@ interface ProgramaReferidos {
   milestones: Milestone[];
 }
 
+/** Lo que devuelve la función estadisticas_referidos de la base de datos */
 interface Estadisticas {
   total_referidos: number;
-  este_mes: number;
+  referidos_este_mes: number;
+  puntos_otorgados: number;
   top_referidores: Array<{
-    cliente: string;
+    cliente_id: string;
+    nombre: string;
     codigo: string;
     total_referidos: number;
-    puntos_ganados: number;
   }>;
-  conversion_rate: number;
-  recompensas_otorgadas: number;
 }
 
 export default function ReferidosPage() {
@@ -92,10 +93,9 @@ export default function ReferidosPage() {
   });
   const [estadisticas, setEstadisticas] = useState<Estadisticas>({
     total_referidos: 0,
-    este_mes: 0,
+    referidos_este_mes: 0,
+    puntos_otorgados: 0,
     top_referidores: [],
-    conversion_rate: 0,
-    recompensas_otorgadas: 0,
   });
   const [referidos, setReferidos] = useState<any[]>([]);
   const [dialogMilestone, setDialogMilestone] = useState(false);
@@ -113,30 +113,7 @@ export default function ReferidosPage() {
   const cargarDatos = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-      let tenant = localStorage.getItem('tenant_domain');
-
-      // Fallback: Si no hay tenant en localStorage, extraerlo del dominio actual
-      if (!tenant) {
-        const host = window.location.host;
-        const parts = host.split('.');
-
-        // Si es subdominio.qronnect.es -> usar subdominio
-        if (parts.length >= 2 && !host.startsWith('localhost')) {
-          tenant = parts[0];
-        }
-        // Si es subdominio.localhost:3000 -> usar subdominio
-        else if (parts.length > 1 && parts[1].startsWith('localhost')) {
-          tenant = parts[0];
-        }
-        // Si es localhost -> usar default
-        else {
-          tenant = 'lokeyokiera'; // fallback para desarrollo
-        }
-
-        console.log('⚠️ tenant_domain no encontrado en localStorage, usando:', tenant);
-        // Guardar para futuras peticiones
-        localStorage.setItem('tenant_domain', tenant);
-      }
+      const tenant = getAdminTenantDomain();
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -179,7 +156,12 @@ export default function ReferidosPage() {
 
       if (statsRes.ok) {
         const stats = await statsRes.json();
-        setEstadisticas(stats);
+        setEstadisticas({
+          total_referidos: stats?.total_referidos ?? 0,
+          referidos_este_mes: stats?.referidos_este_mes ?? 0,
+          puntos_otorgados: stats?.puntos_otorgados ?? 0,
+          top_referidores: Array.isArray(stats?.top_referidores) ? stats.top_referidores : [],
+        });
       }
 
       // Cargar lista de referidos
@@ -205,30 +187,7 @@ export default function ReferidosPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('admin_token');
-      let tenant = localStorage.getItem('tenant_domain');
-
-      // Fallback: Si no hay tenant en localStorage, extraerlo del dominio actual
-      if (!tenant) {
-        const host = window.location.host;
-        const parts = host.split('.');
-
-        // Si es subdominio.qronnect.es -> usar subdominio
-        if (parts.length >= 2 && !host.startsWith('localhost')) {
-          tenant = parts[0];
-        }
-        // Si es subdominio.localhost:3000 -> usar subdominio
-        else if (parts.length > 1 && parts[1].startsWith('localhost')) {
-          tenant = parts[0];
-        }
-        // Si es localhost -> usar default
-        else {
-          tenant = 'lokeyokiera'; // fallback para desarrollo
-        }
-
-        console.log('⚠️ tenant_domain no encontrado en localStorage, usando:', tenant);
-        // Guardar para futuras peticiones
-        localStorage.setItem('tenant_domain', tenant);
-      }
+      const tenant = getAdminTenantDomain();
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -637,7 +596,7 @@ export default function ReferidosPage() {
 
           {/* TAB: Estadísticas */}
           <TabsContent value="estadisticas" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="dark:bg-slate-900 dark:border-slate-800">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Total Referidos</CardTitle>
@@ -652,27 +611,16 @@ export default function ReferidosPage() {
                   <CardTitle className="text-sm font-medium">Este Mes</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{estadisticas.este_mes}</div>
+                  <div className="text-2xl font-bold">{estadisticas.referidos_este_mes}</div>
                 </CardContent>
               </Card>
 
               <Card className="dark:bg-slate-900 dark:border-slate-800">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Tasa de Conversión</CardTitle>
+                  <CardTitle className="text-sm font-medium">Puntos otorgados</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {(estadisticas.conversion_rate * 100).toFixed(1)}%
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="dark:bg-slate-900 dark:border-slate-800">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Recompensas Otorgadas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{estadisticas.recompensas_otorgadas}</div>
+                  <div className="text-2xl font-bold">{estadisticas.puntos_otorgados.toLocaleString('es-ES')}</div>
                 </CardContent>
               </Card>
             </div>
@@ -697,13 +645,12 @@ export default function ReferidosPage() {
                             {idx + 1}
                           </div>
                           <div>
-                            <p className="font-medium">{ref.cliente}</p>
+                            <p className="font-medium">{ref.nombre}</p>
                             <p className="text-sm text-gray-500">Código: {ref.codigo}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold">{ref.total_referidos} referidos</p>
-                          <p className="text-sm text-gray-500">{ref.puntos_ganados} puntos ganados</p>
+                          <p className="font-bold">{ref.total_referidos} {ref.total_referidos === 1 ? 'referido' : 'referidos'}</p>
                         </div>
                       </div>
                     ))}
@@ -737,9 +684,10 @@ export default function ReferidosPage() {
                           </p>
                         </div>
                         <div className="text-right text-sm text-gray-500">
-                          <p>{new Date(ref.fecha_registro).toLocaleDateString()}</p>
+                          <p>{new Date(ref.creado_en ?? ref.fecha_registro).toLocaleDateString('es-ES')}</p>
                           <p className="text-xs">
-                            {ref.primera_compra ? '✓ Primera compra' : 'Sin compra'}
+                            {ref.estado === 'completado' ? 'Completado' : 'Pendiente'}
+                            {ref.puntos_otorgados_referidor ? ` · +${ref.puntos_otorgados_referidor} pts` : ''}
                           </p>
                         </div>
                       </div>

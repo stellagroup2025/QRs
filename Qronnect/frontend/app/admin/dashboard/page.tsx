@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { eur } from '@/lib/format'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import CountUp from 'react-countup'
@@ -838,7 +839,7 @@ export default function AdminDashboardPage() {
                             <TableCell className="text-right">{cliente.total_compras || 0}</TableCell>
                             <TableCell className="text-right text-sm">
                               {cliente.ticket_medio !== undefined
-                                ? `${cliente.ticket_medio.toFixed(2)} €`
+                                ? eur(cliente.ticket_medio)
                                 : '-'}
                             </TableCell>
                             <TableCell className="text-right text-sm text-muted-foreground">
@@ -888,7 +889,7 @@ export default function AdminDashboardPage() {
                               <span className="text-muted-foreground">Ticket medio:</span>
                               <p className="font-medium">
                                 {cliente.ticket_medio !== undefined
-                                  ? `${cliente.ticket_medio.toFixed(2)} €`
+                                  ? eur(cliente.ticket_medio)
                                   : '-'}
                               </p>
                             </div>

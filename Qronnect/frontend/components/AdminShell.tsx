@@ -54,11 +54,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex min-h-screen bg-background text-foreground">
             <AdminSidebar />
-            <main className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1">
                 <div className="mx-auto max-w-7xl px-4 pb-16 pt-20 sm:px-6 lg:px-10 lg:pt-10">
                     {children}
                 </div>
-            </main>
+            </div>
             <RegistrarVentaDialogMejorado
                 open={ventaOpen}
                 onOpenChange={setVentaOpen}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { getAdminTenantDomain } from "@/lib/tenant"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -40,12 +41,11 @@ export default function LandingConfigPage() {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
       const token = localStorage.getItem("admin_token")
 
-      const host = window.location.host
-      const domain = host.split(":")[0].split(".")[0]
+      const domain = getAdminTenantDomain()
 
       const response = await fetch(`${API_URL}/api/config/landing`, {
         headers: {
-          "X-Tenant-Domain": domain === "localhost" ? "visionplus" : domain,
+          "X-Tenant-Domain": domain,
           Authorization: `Bearer ${token}`,
         },
       })
@@ -78,14 +78,13 @@ export default function LandingConfigPage() {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
       const token = localStorage.getItem("admin_token")
 
-      const host = window.location.host
-      const domain = host.split(":")[0].split(".")[0]
+      const domain = getAdminTenantDomain()
 
       const response = await fetch(`${API_URL}/api/config/landing`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "X-Tenant-Domain": domain === "localhost" ? "visionplus" : domain,
+          "X-Tenant-Domain": domain,
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(config),

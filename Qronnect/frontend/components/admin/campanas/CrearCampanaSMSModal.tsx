@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { eur } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -186,7 +187,7 @@ export function CrearCampanaSMSModal({
 
       if (res.ok) {
         const data = await res.json()
-        setTotalDestinatarios(data.total || 0)
+        setTotalDestinatarios(data.total_destinatarios ?? data.total ?? 0)
       }
     } catch (err) {
       console.error('Error al obtener preview:', err)
@@ -401,7 +402,7 @@ export function CrearCampanaSMSModal({
 
             {/* Panel de IA */}
             {mostrarIA && (
-              <div className="border rounded-lg p-4 bg-gradient-to-br from-purple-50 to-blue-50 space-y-4">
+              <div className="border rounded-lg p-4 bg-muted/60 space-y-4">
                 <div className="flex items-center gap-2 text-purple-700 font-semibold">
                   <Sparkles className="h-5 w-5" />
                   Generador de SMS con IA
@@ -528,7 +529,7 @@ export function CrearCampanaSMSModal({
                   {costoEstimado > 0 && (
                     <Badge variant="secondary" className="gap-1">
                       <DollarSign className="h-3 w-3" />
-                      {costoEstimado.toFixed(2)}€
+                      {eur(costoEstimado)}
                     </Badge>
                   )}
                 </div>

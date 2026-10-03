@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { eur } from '@/lib/format'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Sparkles, Loader2, TrendingUp, Lightbulb, BarChart3, Calendar } from 'lucide-react'
@@ -175,7 +176,7 @@ export function AnalistaKPIs({ tenantDomain, adminToken, onCreateCampaign, onCre
           <Button
             onClick={generarAnalisis}
             disabled={loading}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {loading ? (
               <>
@@ -204,26 +205,26 @@ export function AnalistaKPIs({ tenantDomain, adminToken, onCreateCampaign, onCre
           <div className="space-y-4 animate-in fade-in duration-500">
             {/* KPIs numéricos */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg border border-blue-200">
+              <div className="bg-muted/60 p-3 rounded-lg border border-blue-200">
                 <div className="text-xs text-blue-600 font-medium">Ventas</div>
-                <div className="text-xl font-bold text-blue-900">{analysis.kpis.ventasTotales.toFixed(2)}€</div>
+                <div className="text-xl font-bold text-blue-900">{eur(analysis.kpis.ventasTotales)}</div>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 p-3 rounded-lg border border-green-200">
+              <div className="bg-muted/60 p-3 rounded-lg border border-green-200">
                 <div className="text-xs text-green-600 font-medium">Tickets</div>
                 <div className="text-xl font-bold text-green-900">{analysis.kpis.numeroTickets}</div>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 rounded-lg border border-purple-200">
+              <div className="bg-muted/60 p-3 rounded-lg border border-purple-200">
                 <div className="text-xs text-purple-600 font-medium">Ticket Medio</div>
-                <div className="text-xl font-bold text-purple-900">{analysis.kpis.ticketMedio.toFixed(2)}€</div>
+                <div className="text-xl font-bold text-purple-900">{eur(analysis.kpis.ticketMedio)}</div>
               </div>
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-3 rounded-lg border border-orange-200">
+              <div className="bg-muted/60 p-3 rounded-lg border border-orange-200">
                 <div className="text-xs text-orange-600 font-medium">Clientes Activos</div>
                 <div className="text-xl font-bold text-orange-900">{analysis.kpis.clientesActivos}</div>
               </div>
             </div>
 
             {/* Resumen ejecutivo */}
-            <div className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
+            <div className="bg-muted/60 p-4 rounded-lg border border-purple-200">
               <div className="flex items-start gap-3">
                 <BarChart3 className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
                 <div>
@@ -305,7 +306,7 @@ export function AnalistaKPIs({ tenantDomain, adminToken, onCreateCampaign, onCre
                                 <Button
                                   size="sm"
                                   onClick={() => abrirPlanAccion(recomendacion)}
-                                  className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-xs"
+                                  className="bg-primary text-primary-foreground hover:bg-primary/90 text-white text-xs"
                                 >
                                   <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                                   Ver Plan de Acción

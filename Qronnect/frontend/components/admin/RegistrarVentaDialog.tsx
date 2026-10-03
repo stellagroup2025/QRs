@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { eur } from '@/lib/format'
 import dynamic from 'next/dynamic'
 import {
   Dialog,
@@ -222,7 +223,7 @@ export function RegistrarVentaDialog({ open, onOpenChange, onSuccess }: Registra
                 {successData.cliente.nombre}
               </p>
               <p className="text-sm text-muted-foreground">
-                €{successData.importe.toFixed(2)}
+                {eur(successData.importe)}
               </p>
               <p className="text-lg font-bold mt-2" style={{ color: hexToRgb(branding.color_acento) }}>
                 +{successData.puntos_otorgados} puntos

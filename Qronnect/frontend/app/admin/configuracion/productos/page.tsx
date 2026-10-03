@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getAdminTenantDomain } from '@/lib/tenant'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -129,7 +130,7 @@ export default function ProductosPage() {
   const cargarProductos = async () => {
     setLoading(true)
     try {
-      const domain = window.location.hostname.split('.')[0]
+      const domain = getAdminTenantDomain()
       const token = localStorage.getItem(`admin_token_${domain}`) || localStorage.getItem('admin_token')
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
@@ -216,7 +217,7 @@ export default function ProductosPage() {
 
     setSaving(true)
     try {
-      const domain = window.location.hostname.split('.')[0]
+      const domain = getAdminTenantDomain()
       const token = localStorage.getItem(`admin_token_${domain}`) || localStorage.getItem('admin_token')
 
       // Construir detalles segun tipo
@@ -303,7 +304,7 @@ export default function ProductosPage() {
 
     setSaving(true)
     try {
-      const domain = window.location.hostname.split('.')[0]
+      const domain = getAdminTenantDomain()
       const token = localStorage.getItem(`admin_token_${domain}`) || localStorage.getItem('admin_token')
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'

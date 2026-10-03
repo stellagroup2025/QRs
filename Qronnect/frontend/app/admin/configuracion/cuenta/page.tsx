@@ -62,7 +62,7 @@ export default function CuentaPage() {
     }
 
     if (!pinNuevo || pinNuevo.length < 4 || pinNuevo.length > 6) {
-      setPinError('El nuevo PIN debe tener entre 4 y 6 digitos')
+      setPinError('El nuevo PIN debe tener entre 4 y 6 dígitos')
       return
     }
 
@@ -150,7 +150,7 @@ export default function CuentaPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Informacion Personal
+                Información personal
               </CardTitle>
               <CardDescription>
                 Tus datos de acceso al sistema
@@ -191,7 +191,7 @@ export default function CuentaPage() {
                 Cambiar PIN de Acceso
               </CardTitle>
               <CardDescription>
-                Actualiza tu PIN para mayor seguridad. El nuevo PIN se enviara a tu email.
+                Actualiza tu PIN para mayor seguridad. El nuevo PIN se enviará a tu email.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -230,7 +230,7 @@ export default function CuentaPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="pinNuevo">Nuevo PIN (4-6 digitos)</Label>
+                    <Label htmlFor="pinNuevo">Nuevo PIN (4-6 dígitos)</Label>
                     <Input
                       id="pinNuevo"
                       type={showPins ? 'text' : 'password'}

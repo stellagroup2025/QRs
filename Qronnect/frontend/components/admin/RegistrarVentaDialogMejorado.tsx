@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { eur } from '@/lib/format'
 import dynamic from 'next/dynamic'
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog'
 import { Button } from '@/components/ui/button'
@@ -58,6 +59,33 @@ interface Cupon {
   descripcion: string
   descuento_porcentaje?: number
   descuento_fijo?: number
+}
+
+/** El backend guarda el descuento como tipo + valor; aquí se usa descuento_porcentaje / descuento_fijo */
+function descuentoDe(item: any): Pick<Promocion, 'descuento_porcentaje' | 'descuento_fijo'> {
+  if (item?.descuento_porcentaje || item?.descuento_fijo) {
+    return { descuento_porcentaje: item.descuento_porcentaje, descuento_fijo: item.descuento_fijo }
+  }
+  if (item?.tipo === 'descuento_porcentaje') return { descuento_porcentaje: Number(item.valor) || 0 }
+  if (item?.tipo === 'descuento_fijo') return { descuento_fijo: Number(item.valor) || 0 }
+  return {}
+}
+
+function normalizarPromocion(p: any): Promocion {
+  return { ...p, ...descuentoDe(p) }
+}
+
+/** Cupón (fila de canjes) tal como llega de cupones-disponibles o de canjear-promocion */
+function normalizarCupon(c: any): Cupon {
+  const promo = c?.promociones ?? c?.promocion ?? {}
+  return {
+    id: c.id,
+    promocion_id: c.promocion_id ?? c.id_promocion ?? promo.id,
+    estado: c.estado,
+    titulo: c.titulo ?? promo.titulo ?? 'Cupón',
+    descripcion: c.descripcion ?? promo.descripcion ?? '',
+    ...descuentoDe(c.descuento_porcentaje || c.descuento_fijo ? c : promo),
+  }
 }
 
 interface RegistrarVentaDialogMejoradoProps {
@@ -410,7 +438,7 @@ export function RegistrarVentaDialogMejorado({
 
       if (promosResponse.ok) {
         const promosData = await promosResponse.json()
-        setPromociones(promosData || [])
+        setPromociones((promosData || []).map(normalizarPromocion))
       }
 
       // Cargar cupones disponibles del cliente
@@ -426,7 +454,7 @@ export function RegistrarVentaDialogMejorado({
 
       if (cuponesResponse.ok) {
         const cuponesData = await cuponesResponse.json()
-        setCupones(cuponesData || [])
+        setCupones((cuponesData || []).map(normalizarCupon))
       }
 
       // Cargar programas de sellos activos
@@ -492,21 +520,17 @@ export function RegistrarVentaDialogMejorado({
       })
 
       // Actualizar puntos del cliente
+      const promoCanjeada = promociones.find(p => p.id === promocionId)
       setClienteSeleccionado({
         ...clienteSeleccionado,
-        puntos_totales: data.puntos_restantes,
+        puntos_totales:
+          data.puntos_restantes ??
+          clienteSeleccionado.puntos_totales - (promoCanjeada?.puntos_requeridos ?? 0),
       })
 
       // Agregar el nuevo cupón a la lista y seleccionarlo automáticamente
-      const nuevoCupon: Cupon = {
-        id: data.cupon.id,
-        promocion_id: data.cupon.promocion_id,
-        estado: data.cupon.estado,
-        titulo: data.cupon.titulo,
-        descripcion: data.cupon.descripcion,
-        descuento_porcentaje: data.cupon.descuento_porcentaje,
-        descuento_fijo: data.cupon.descuento_fijo,
-      }
+      // La API devuelve el canje directamente (antes se leía data.cupon, que no existe)
+      const nuevoCupon = normalizarCupon({ ...(data.cupon ?? data), descripcion: promoCanjeada?.descripcion })
 
       setCupones([nuevoCupon, ...cupones])
       setCuponSeleccionado(nuevoCupon)
@@ -714,10 +738,10 @@ export function RegistrarVentaDialogMejorado({
             <div>
               <h3 className="text-xl font-bold">¡Venta Registrada!</h3>
               <p className="text-gray-600 mt-2">{successData.cliente.nombre}</p>
-              <p className="text-2xl font-bold mt-1">€{successData.importe.toFixed(2)}</p>
+              <p className="text-2xl font-bold mt-1">{eur(successData.importe)}</p>
               {successData.descuento_aplicado > 0 && (
                 <p className="text-sm text-green-600">
-                  Descuento: -€{successData.descuento_aplicado.toFixed(2)}
+                  Descuento: -{eur(successData.descuento_aplicado)}
                 </p>
               )}
               <div
@@ -1218,18 +1242,18 @@ export function RegistrarVentaDialogMejorado({
               >
                 <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
-                  <span className="font-medium">€{parseFloat(importe).toFixed(2)}</span>
+                  <span className="font-medium">{eur(parseFloat(importe))}</span>
                 </div>
                 {descuentoAplicado > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
                     <span>Descuento:</span>
-                    <span className="font-medium">-€{descuentoAplicado.toFixed(2)}</span>
+                    <span className="font-medium">-{eur(descuentoAplicado)}</span>
                   </div>
                 )}
                 <div className="border-t pt-2 flex justify-between font-bold">
                   <span>Total:</span>
                   <span style={{ color: hexToRgb(branding.color_primario) }}>
-                    €{importeFinal.toFixed(2)}
+                    {eur(importeFinal)}
                   </span>
                 </div>
                 <div

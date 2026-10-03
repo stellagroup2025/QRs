@@ -193,7 +193,7 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
           value={totalCanjes}
           icon={Ticket}
           gradient="from-purple-500/20 to-pink-500/20"
-          description="Lifetime value"
+          description="Desde el principio"
         />
       </div>
 

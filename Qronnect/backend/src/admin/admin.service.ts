@@ -986,7 +986,7 @@ export class AdminService {
 
     if (updateClienteError) {
       // Revertir creación del cupón si falla la actualización
-      await supabase.from('cupones').delete().eq('id', cupon.id);
+      await supabase.from('canjes').delete().eq('id', cupon.id);
       throw new BadRequestException('Error al descontar puntos');
     }
 
@@ -1003,6 +1003,7 @@ export class AdminService {
 
     return {
       ...cupon,
+      puntos_restantes: nuevosPuntos,
       promocion: {
         titulo: promocion.titulo,
         tipo: promocion.tipo,

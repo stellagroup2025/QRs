@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getAdminTenantDomain } from '@/lib/tenant';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -38,8 +39,7 @@ export default function ConfiguracionGachaPage() {
   const cargarDatos = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-      const domain = window.location.hostname.split('.')[0];
-      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
+      const tenant = getAdminTenantDomain();
 
       if (!token) return;
 
@@ -66,8 +66,7 @@ export default function ConfiguracionGachaPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const domain = window.location.hostname.split('.')[0];
-      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
+      const tenant = getAdminTenantDomain();
 
       if (!token) {
         throw new Error('No autenticado');

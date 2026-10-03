@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getAdminTenantDomain } from '@/lib/tenant'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,12 +32,12 @@ export default function ConfiguracionPuntosPage() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
       const token = localStorage.getItem('admin_token')
-      const domain = window.location.hostname.split('.')[0]
+      const domain = getAdminTenantDomain()
 
       const response = await fetch(`${API_URL}/api/tiendas/config/puntos`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-Tenant-Domain': domain === 'localhost' ? 'visionplus' : domain,
+          'X-Tenant-Domain': domain,
         },
       })
 
@@ -64,14 +65,14 @@ export default function ConfiguracionPuntosPage() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
       const token = localStorage.getItem('admin_token')
-      const domain = window.location.hostname.split('.')[0]
+      const domain = getAdminTenantDomain()
 
       const response = await fetch(`${API_URL}/api/tiendas/config/puntos`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
-          'X-Tenant-Domain': domain === 'localhost' ? 'visionplus' : domain,
+          'X-Tenant-Domain': domain,
         },
         body: JSON.stringify(config),
       })
@@ -214,7 +215,7 @@ export default function ConfiguracionPuntosPage() {
 
           {/* Ejemplos y Preview */}
           <div className="space-y-6">
-            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 dark:from-green-900/20 dark:to-emerald-900/20 dark:border-green-800">
+            <Card className="bg-muted/60 border-green-200 dark:from-green-900/20 dark:to-emerald-900/20 dark:border-green-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-900">
                   <TrendingUp className="h-5 w-5" />
@@ -286,7 +287,7 @@ export default function ConfiguracionPuntosPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 p-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg">
+                  <div className="mt-4 p-4 bg-primary text-primary-foreground hover:bg-primary/90 text-white rounded-lg">
                     <p className="text-xs font-medium opacity-90">Balance total acumulado:</p>
                     <p className="text-2xl font-bold">{config.puntos_bienvenida + (config.puntos_por_euro * 65)} puntos</p>
                     <p className="text-xs opacity-75 mt-1">En 3 interacciones</p>
