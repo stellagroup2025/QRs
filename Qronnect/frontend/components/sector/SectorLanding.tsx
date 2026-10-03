@@ -58,7 +58,12 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
     <div style={vars} className="min-h-screen overflow-x-clip bg-[var(--s-softer)] text-[var(--s-ink)]">
       {/* ───────── Hero oscuro con la foto de fondo ───────── */}
       <section aria-labelledby="sector-hero" className="relative isolate overflow-hidden bg-[var(--s-dark)] text-white">
-        <SectorPhoto src={sector.hero.photo} priority className="absolute inset-0 -z-20 h-full w-full object-[center_25%] opacity-70 lg:left-auto lg:w-[60%]" />
+        <SectorPhoto
+          src={sector.hero.photo}
+          priority
+          position={sector.hero.photoPosition ?? '50% 25%'}
+          className="absolute inset-0 -z-20 h-full w-full opacity-70 lg:left-auto lg:w-[60%]"
+        />
         <div
           aria-hidden="true"
           className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--s-dark)_70%,transparent),var(--s-dark)_75%)] lg:bg-[linear-gradient(90deg,var(--s-dark)_40%,color-mix(in_oklab,var(--s-dark)_55%,transparent)_70%,color-mix(in_oklab,var(--s-dark)_35%,transparent))]"

@@ -58,6 +58,8 @@ export interface SectorData {
     intro: string
     /** Línea pequeña bajo el botón */
     reassurance: string
+    /** Encuadre de la foto de fondo del hero (object-position) */
+    photoPosition?: string
     /** Texto del botón principal de captación */
     ctaLabel: string
     photo: string
@@ -141,7 +143,9 @@ const estetica: SectorData = {
       'Has construido un salón con buenas manos y buenas clientas. Qronnect hace que vuelvan: tarjeta de sellos, puntos y promociones con la imagen de tu salón, en el móvil de cada clienta.',
     reassurance: 'Sin apps para tus clientas · Con tu logo y tus colores',
     ctaLabel: 'Quiero que mis clientas vuelvan',
+    // Foto: Unsplash (licencia Unsplash). Encuadre a la derecha para ver las manos trabajando
     photo: '/sectores/estetica/hero.webp',
+    photoPosition: '100% 50%',
   },
   phone: {
     points: 320,

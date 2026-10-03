@@ -12,10 +12,13 @@ export function SectorPhoto({
   alt = '',
   className,
   priority = false,
+  position,
 }: {
   src: string
   alt?: string
   className?: string
+  /** Encuadre de la foto (object-position), ej. "100% 50%" */
+  position?: string
   priority?: boolean
 }) {
   const [failed, setFailed] = useState(false)
@@ -46,6 +49,7 @@ export function SectorPhoto({
       loading={priority ? 'eager' : 'lazy'}
       fetchPriority={priority ? 'high' : undefined}
       onError={() => setFailed(true)}
+      style={position ? { objectPosition: position } : undefined}
       className={cn('object-cover', className)}
     />
   )
