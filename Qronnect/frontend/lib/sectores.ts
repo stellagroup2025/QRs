@@ -9,7 +9,7 @@
 export type SectorIcon =
   | 'gift' | 'megaphone' | 'users' | 'chart' | 'gem' | 'tag' | 'share' | 'calendar'
   | 'mail' | 'phone' | 'stamp' | 'history' | 'heart' | 'star' | 'qr' | 'scan'
-  | 'coffee' | 'sparkles' | 'clock' | 'palette'
+  | 'coffee' | 'sparkles' | 'clock' | 'palette' | 'dumbbell'
 
 export interface SectorFeature {
   icon: SectorIcon
@@ -55,7 +55,16 @@ export interface SectorData {
    * Paleta: principal (botones y palabra destacada), tinta (texto en claro),
    * oscuro (secciones oscuras) y fondos suaves
    */
-  palette: { primary: string; primaryOn: string; ink: string; dark: string; soft: string; softer: string }
+  palette: {
+    primary: string
+    primaryOn: string
+    ink: string
+    dark: string
+    soft: string
+    softer: string
+    /** Acento para texto sobre las secciones oscuras, si el principal no se lee bien ahí */
+    accentOnDark?: string
+  }
   /** Nombre ficticio del negocio que aparece en el móvil */
   demoBusiness: { name: string; tagline: string }
   hero: {
@@ -464,9 +473,185 @@ const cafeterias: SectorData = {
   ],
 }
 
+const deporte: SectorData = {
+  slug: 'deporte',
+  nombre: 'Deporte y salud',
+  seo: {
+    title: 'Programa de fidelización para gimnasios, estudios de yoga y pilates y centros de fisioterapia',
+    description:
+      'Premia la constancia de tus clientes: sellos por clase o sesión, puntos, promociones y referidos con la imagen de tu gimnasio, estudio o centro de salud. Sin apps.',
+    keywords: [
+      'fidelización gimnasio',
+      'programa de puntos gimnasio',
+      'tarjeta de sellos clases yoga pilates',
+      'retención de socios gimnasio',
+      'fidelizar pacientes fisioterapia',
+    ],
+  },
+  palette: {
+    primary: '#15803D',
+    primaryOn: '#FFFFFF',
+    ink: '#0F1A14',
+    dark: '#0B140F',
+    soft: '#DCFCE7',
+    softer: '#F4FBF6',
+    accentOnDark: '#4ADE80',
+  },
+  demoBusiness: { name: 'Tu Centro', tagline: 'Entrena · Cuídate' },
+  hero: {
+    eyebrow: 'Para gimnasios, estudios y centros de salud',
+    titleStart: 'Que entrenar contigo se convierta en',
+    titleAccent: 'costumbre',
+    subtitleLead: 'Si no sabes por qué un socio deja de venir,',
+    subtitleStrong: 'te enteras cuando ya se ha dado de baja.',
+    intro:
+      'Tienes buenas clases y buenos profesionales. Qronnect premia la constancia: sellos por cada clase o sesión, puntos y promociones con la imagen de tu centro, en el móvil de cada cliente.',
+    reassurance: 'Sin apps para tus clientes · Con tu logo y tus colores',
+    // Fotos de este sector: Unsplash (licencia Unsplash), a la espera de fotos propias
+    photo: '/sectores/deporte/hero.webp',
+    photoPosition: '50% 30%',
+    ctaLabel: 'Quiero que mis clientes sigan viniendo',
+  },
+  phone: {
+    points: 450,
+    progressLabel: 'A 2 clases de tu clase gratis',
+    progress: 0.8,
+    items: [
+      { icon: 'stamp', label: 'Mi tarjeta de sellos' },
+      { icon: 'tag', label: 'Promociones exclusivas' },
+      { icon: 'history', label: 'Tu historial' },
+      { icon: 'users', label: 'Invita a un amigo' },
+    ],
+    reward: { title: 'Tu próxima clase gratis', photo: '/sectores/deporte/clase.webp' },
+  },
+  howItWorks: {
+    title: 'Así funciona en tu centro',
+    intro:
+      'Todo gira alrededor de un QR: tu cliente lo escanea una vez para unirse y, desde ahí, en cada clase o sesión tu equipo le suma el sello o los puntos escaneando el QR de su móvil.',
+    steps: [
+      { who: 'Tú', visual: 'setup', title: 'Configuras tu programa', text: 'En el asistente de alta eliges tu logo y colores, cuántos puntos da cada euro, el regalo de bienvenida y el premio por traer a un amigo.' },
+      { who: 'Tú', visual: 'qr', title: 'Pones tu QR en recepción', text: 'Descargas tu QR y lo colocas en recepción, en la sala o en los vestuarios.' },
+      { who: 'Tu cliente', visual: 'signup', title: 'Lo escanea y se une', text: 'Con la cámara del móvil, deja su nombre y su email en 30 segundos. Sin descargar ninguna app.' },
+      { who: 'Tu equipo', visual: 'scan', title: 'Suma en cada clase', text: 'Al llegar, tu equipo escanea el QR de su móvil y le suma el sello o los puntos de esa clase o sesión.' },
+      { who: 'Tu cliente', visual: 'reward', title: 'Recibe su premio', text: 'Al completar la tarjeta le llega su cupón, por ejemplo una clase o una sesión gratis, y lo canjea en recepción.' },
+      { who: 'Tú', visual: 'results', title: 'Ves quién se desengancha', text: 'Desde tu panel ves quién lleva días sin venir y le envías una promoción por email o SMS para que vuelva.' },
+    ],
+  },
+  problem: {
+    eyebrow: 'Captar no es retener',
+    title1: 'Tus clases pueden estar llenas en enero',
+    title2: 'y medio vacías en marzo.',
+    body: 'Cada temporada entran clientes nuevos. La pregunta es cuántos siguen viniendo a los tres meses y qué haces para que lo hagan.',
+    contrast1: 'Un socio nuevo cuesta.',
+    contrast2: 'Uno constante sostiene tu centro.',
+    tail1: 'La motivación del primer día no dura sola. Necesita un motivo para volver la semana siguiente.',
+    tail2: 'Y sin ese motivo, la cuota de hoy es la baja de mañana.',
+  },
+  method: {
+    eyebrow: 'El método Qronnect',
+    title: 'No te damos una tarjeta. Te damos clientes constantes.',
+    subtitle: 'Tres piezas trabajando juntas en tu centro, cada una en lo que mejor hace.',
+    equation: ['Sellos y puntos', 'Promociones', 'Referidos'],
+    result: 'clientes constantes',
+    pillars: [
+      {
+        icon: 'stamp',
+        title: 'Sellos y puntos',
+        subtitle: 'Premia la constancia.',
+        text: 'Cada clase o sesión suma. Tu cliente ve su progreso en el móvil y sabe cuánto le falta para su premio.',
+      },
+      {
+        icon: 'megaphone',
+        title: 'Promociones',
+        subtitle: 'Recupera a quien se desengancha.',
+        text: 'Envía una oferta por email o SMS a quien lleva días sin venir, o llena las horas flojas del mediodía.',
+      },
+      {
+        icon: 'users',
+        title: 'Referidos',
+        subtitle: 'Entrenar acompañado engancha.',
+        text: 'Cada cliente tiene su código. Cuando trae a un amigo, los dos ganan y tú sumas un socio nuevo.',
+      },
+    ],
+  },
+  ideas: {
+    label: 'Ideas que funcionan en centros deportivos',
+    items: [
+      { label: 'Tarjeta de sellos', title: '10ª clase gratis', text: 'Premia a quien no falla ni una semana.', photo: '/sectores/deporte/pilates.webp' },
+      { label: 'Cumpleaños', title: 'Una sesión de regalo', text: 'Un detalle en su mes que se recuerda.', photo: '/sectores/deporte/cumple.webp' },
+      { label: 'Referidos', title: 'Trae a un amigo', text: 'Y ganad puntos los dos.', photo: '/sectores/deporte/amigo.webp' },
+      { label: 'Horas flojas', title: 'Mediodías con premio', text: 'Una oferta para llenar la sala a mediodía.', photo: '/sectores/deporte/sala.webp' },
+    ],
+    ctaTitle: '¿Qué programa encaja en tu centro?',
+    ctaText: 'Cuéntanos cómo trabajas y te proponemos la tarjeta, las promociones y los premios que mejor encajan contigo.',
+  },
+  included: {
+    title: 'Lo que tienes desde el primer día',
+    items: [
+      { icon: 'palette', title: 'Tu marca', text: 'Tu logo y tus colores en la tarjeta, las promociones y los emails.' },
+      { icon: 'gift', title: 'Regalos de bienvenida y cumpleaños', text: 'Detalles automáticos que refuerzan el hábito.' },
+      { icon: 'mail', title: 'Campañas por email y SMS', text: 'Para animar a volver a quien lleva tiempo sin venir.' },
+      { icon: 'chart', title: 'Informes de tu centro', text: 'Quién viene, con qué frecuencia y qué funciona.' },
+    ],
+  },
+  fit: {
+    forWho: [
+      'Gimnasios, boxes, estudios de yoga, pilates y centros de entrenamiento.',
+      'Centros de fisioterapia y salud con pacientes que repiten sesiones.',
+      'Negocios que quieren clientes constantes, no solo nuevas altas.',
+    ],
+    notFor: [
+      'Quien busca reservas o control de accesos: Qronnect fideliza, no gestiona la agenda ni los tornos.',
+      'Quien busca cobrar las cuotas: Qronnect no gestiona pagos.',
+      'Quien no quiere comunicarse con sus clientes.',
+    ],
+  },
+  stats: [
+    { value: '+40%*', label: 'clientes recurrentes' },
+    { value: '+25%*', label: 'ticket medio' },
+    { value: '-60%*', label: 'tiempo de gestión manual' },
+  ],
+  statsFootnote: '*Resultados orientativos de negocios que usan Qronnect. Dependen de cada centro.',
+  // TODO: sustituir por un testimonio real de un centro deportivo antes de publicar
+  testimonial: {
+    quote: 'Desde que premiamos la constancia, nuestros clientes encadenan más semanas seguidas y nos recomiendan a sus amigos.',
+    author: 'Javier P.',
+    role: 'Propietario de centro de entrenamiento',
+    photo: '/sectores/deporte/testimonio.webp',
+  },
+  closing: {
+    title1: 'Los clientes no se dan de baja de golpe.',
+    title2: 'Dejan de venir un poco cada semana.',
+    rhythm: ['Una clase que se salta.', 'Una semana sin venir.', 'Un cumpleaños sin felicitar.', 'Un amigo al que nadie invitó.'],
+    line1: 'Nada parece lo bastante grave como para preocuparse.',
+    line2: 'Hasta que llega la baja.',
+    pre: 'No esperes a notarlo en las cuotas.',
+    highlight: 'Dale a cada cliente un motivo para volver la semana que viene.',
+  },
+  faq: [
+    {
+      q: '¿Mis clientes tienen que descargar una app?',
+      a: 'No. Se registran en 30 segundos desde el móvil escaneando tu QR y su tarjeta funciona en el navegador.',
+    },
+    {
+      q: '¿Puedo dar sellos por clase y puntos por compras?',
+      a: 'Sí. Puedes combinar tarjetas de sellos por clase o sesión con puntos por importe, por ejemplo en bebidas, suplementos o material.',
+    },
+    {
+      q: '¿Sirve para centros de fisioterapia?',
+      a: 'Sí. Puedes premiar los bonos de sesiones, los tratamientos de seguimiento o las recomendaciones de nuevos pacientes.',
+    },
+    {
+      q: '¿Qué pasa con los datos de mis clientes?',
+      a: 'Son tuyos. Se tratan conforme al RGPD y cada cliente puede darse de baja de las comunicaciones cuando quiera.',
+    },
+  ],
+}
+
 export const SECTORES: Record<string, SectorData> = {
   [estetica.slug]: estetica,
   [cafeterias.slug]: cafeterias,
+  [deporte.slug]: deporte,
 }
 
 export function getSector(slug: string): SectorData | undefined {

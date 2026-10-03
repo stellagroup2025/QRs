@@ -27,7 +27,7 @@ function CtaButton({ href, children, className }: { href: string; children: Reac
     <a
       href={href}
       className={cn(
-        'inline-flex h-14 items-center justify-center gap-3 rounded-full bg-[var(--s-primary)] px-8 text-base font-semibold text-[var(--s-primary-on)] shadow-[0_18px_40px_-18px_var(--s-primary)] transition-transform hover:-translate-y-0.5',
+        'inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[var(--s-primary)] px-8 py-3 text-center text-base font-semibold text-[var(--s-primary-on)] shadow-[0_18px_40px_-18px_var(--s-primary)] transition-transform hover:-translate-y-0.5',
         className,
       )}
     >
@@ -39,7 +39,7 @@ function CtaButton({ href, children, className }: { href: string; children: Reac
 
 /** Palabra destacada: serif en cursiva y color del sector */
 function Accent({ children }: { children: ReactNode }) {
-  return <em className="font-accent font-normal italic text-[var(--s-primary)]">{children}</em>
+  return <em className="font-accent font-normal italic text-[var(--s-on-dark)]">{children}</em>
 }
 
 export function SectorLanding({ sector }: { sector: SectorData }) {
@@ -49,6 +49,8 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
     '--s-primary-on': palette.primaryOn,
     '--s-ink': palette.ink,
     '--s-dark': palette.dark,
+    // Color de acento legible sobre las secciones oscuras
+    '--s-on-dark': palette.accentOnDark ?? palette.primary,
     '--s-soft': palette.soft,
     '--s-softer': palette.softer,
   } as CSSProperties
@@ -73,7 +75,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
         <header className="border-b border-white/10">
           <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
             <Link href="/" className="flex items-center gap-2.5" aria-label="Qronnect, ir al inicio">
-              <LotusMark className="h-7 w-8 text-[var(--s-primary)]" />
+              <LotusMark className="h-7 w-8 text-[var(--s-on-dark)]" />
               <span className="leading-none">
                 <span className="block font-display text-xl font-semibold tracking-tight">Qronnect</span>
                 <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.25em] text-white/60">
@@ -169,7 +171,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
               </span>
             ))}
             <span className="text-white/35" aria-label="igual a">=</span>
-            <span className="font-accent text-3xl font-normal italic text-[var(--s-primary)] sm:text-5xl">{sector.method.result}</span>
+            <span className="font-accent text-3xl font-normal italic text-[var(--s-on-dark)] sm:text-5xl">{sector.method.result}</span>
           </p>
 
           <ol className="mt-14 grid gap-10 md:grid-cols-3 md:gap-8">
@@ -177,7 +179,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
               const Icon = SECTOR_ICONS[p.icon]
               return (
                 <li key={p.title} className="border-t border-white/10 pt-8">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 text-[var(--s-primary)]">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 text-[var(--s-on-dark)]">
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <p className="mt-6 text-xs tracking-[0.2em] text-white/45">0{i + 1}</p>
@@ -301,7 +303,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
         <p className="mt-12 text-lg text-white/60">{sector.closing.line1}</p>
         <p className="mt-1 font-display text-2xl font-bold sm:text-3xl">{sector.closing.line2}</p>
         <p className="mt-12 text-white/60">{sector.closing.pre}</p>
-        <p className="mx-auto mt-2 max-w-2xl font-accent text-4xl italic leading-tight text-[var(--s-primary)] sm:text-5xl">
+        <p className="mx-auto mt-2 max-w-2xl font-accent text-4xl italic leading-tight text-[var(--s-on-dark)] sm:text-5xl">
           {sector.closing.highlight}
         </p>
         <div className="mt-10 flex flex-col items-center gap-3">
