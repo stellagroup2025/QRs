@@ -9,7 +9,7 @@
 export type SectorIcon =
   | 'gift' | 'megaphone' | 'users' | 'chart' | 'gem' | 'tag' | 'share' | 'calendar'
   | 'mail' | 'phone' | 'stamp' | 'history' | 'heart' | 'star' | 'qr' | 'scan'
-  | 'coffee' | 'sparkles' | 'clock' | 'palette' | 'dumbbell'
+  | 'coffee' | 'sparkles' | 'clock' | 'palette' | 'dumbbell' | 'bag'
 
 export interface SectorFeature {
   icon: SectorIcon
@@ -648,10 +648,186 @@ const deporte: SectorData = {
   ],
 }
 
+const tiendas: SectorData = {
+  slug: 'tiendas',
+  nombre: 'Comercio minorista',
+  seo: {
+    title: 'Programa de fidelización para tiendas: puntos, cupones y promociones para el comercio local',
+    description:
+      'Haz que tus clientes repitan: puntos por cada compra, cupones, promociones y referidos con la imagen de tu tienda de ropa, perfumería, librería o floristería. Sin apps.',
+    keywords: [
+      'fidelización comercio local',
+      'programa de puntos tienda de ropa',
+      'tarjeta de fidelización digital tienda',
+      'fidelizar clientes perfumería',
+      'marketing para pequeño comercio',
+    ],
+  },
+  palette: {
+    primary: '#4F46E5',
+    primaryOn: '#FFFFFF',
+    ink: '#14132B',
+    dark: '#0E0D1F',
+    soft: '#E0E7FF',
+    softer: '#F6F7FF',
+    accentOnDark: '#A5B4FC',
+  },
+  demoBusiness: { name: 'Tu Tienda', tagline: 'Moda · Regalos · Hogar' },
+  hero: {
+    eyebrow: 'Para tiendas y comercio de barrio',
+    titleStart: 'Que cada compra traiga',
+    titleAccent: 'la siguiente',
+    subtitleLead: 'Si no sabes quién compra en tu tienda,',
+    subtitleStrong: 'no puedes hacer que vuelva.',
+    intro:
+      'Tienes buen producto y un trato que no da ninguna gran superficie. Qronnect hace que tus clientes vuelvan: puntos por cada compra, cupones y promociones con la imagen de tu tienda, en su móvil.',
+    reassurance: 'Sin apps para tus clientes · Con tu logo y tus colores',
+    // Fotos de este sector: Unsplash (licencia Unsplash), a la espera de fotos propias
+    photo: '/sectores/tiendas/hero.webp',
+    photoPosition: '30% 50%',
+    ctaLabel: 'Quiero que mis clientes repitan',
+  },
+  phone: {
+    points: 860,
+    progressLabel: 'A 140 puntos de tu cupón de 10 €',
+    progress: 0.86,
+    items: [
+      { icon: 'stamp', label: 'Mis puntos y sellos' },
+      { icon: 'tag', label: 'Promociones exclusivas' },
+      { icon: 'history', label: 'Tus compras' },
+      { icon: 'users', label: 'Invita a un amigo' },
+    ],
+    reward: { title: 'Tu cupón de 10 € de descuento', photo: '/sectores/tiendas/bolsa.webp' },
+  },
+  howItWorks: {
+    title: 'Así funciona en tu tienda',
+    intro:
+      'Todo gira alrededor de un QR: tu cliente lo escanea una vez para unirse y, desde ahí, en cada compra tu equipo le suma los puntos escaneando el QR de su móvil.',
+    steps: [
+      { who: 'Tú', visual: 'setup', title: 'Configuras tu programa', text: 'En el asistente de alta eliges tu logo y colores, cuántos puntos da cada euro, el regalo de bienvenida y el premio por traer a un amigo.' },
+      { who: 'Tú', visual: 'qr', title: 'Pones tu QR en la caja', text: 'Descargas tu QR y lo colocas en la caja, el escaparate o los probadores.' },
+      { who: 'Tu cliente', visual: 'signup', title: 'Lo escanea y se une', text: 'Con la cámara del móvil, deja su nombre y su email en 30 segundos. Sin descargar ninguna app.' },
+      { who: 'Tu equipo', visual: 'scan', title: 'Suma en cada compra', text: 'Al cobrar, escanea el QR de su móvil e introduce el importe para sumarle los puntos de esa compra.' },
+      { who: 'Tu cliente', visual: 'reward', title: 'Recibe su premio', text: 'Al llegar a los puntos le llega su cupón, por ejemplo 10 € de descuento, y lo canjea en su próxima compra.' },
+      { who: 'Tú', visual: 'results', title: 'Ves quién compra y cuánto', text: 'Desde tu panel ves la frecuencia y el ticket medio de tus clientes, y les avisas de novedades y rebajas por email o SMS.' },
+    ],
+  },
+  problem: {
+    eyebrow: 'Vender no es fidelizar',
+    title1: 'Tu tienda puede vender mucho',
+    title2: 'y aun así no conocer a sus clientes.',
+    body: 'Cada día entra gente que compra y se va. La pregunta es quién vuelve, cada cuánto y qué haces para que lo haga.',
+    contrast1: 'Competir en precio con internet es imposible.',
+    contrast2: 'Competir en trato, no.',
+    tail1: 'Tus clientes te eligen por el trato y el consejo. Lo que falta es un motivo para volver antes que a otra tienda.',
+    tail2: 'Y sin ese motivo, la próxima compra se hace con un clic en otra parte.',
+  },
+  method: {
+    eyebrow: 'El método Qronnect',
+    title: 'No te damos una tarjeta. Te damos clientes que repiten.',
+    subtitle: 'Tres piezas trabajando juntas en tu tienda, cada una en lo que mejor hace.',
+    equation: ['Puntos y sellos', 'Promociones', 'Referidos'],
+    result: 'clientes que repiten',
+    pillars: [
+      {
+        icon: 'stamp',
+        title: 'Puntos y sellos',
+        subtitle: 'Premia cada compra.',
+        text: 'Cada euro suma. Tu cliente ve sus puntos en el móvil y sabe cuánto le falta para su cupón.',
+      },
+      {
+        icon: 'megaphone',
+        title: 'Promociones',
+        subtitle: 'Avisa de novedades y rebajas.',
+        text: 'Envía las novedades de temporada o una oferta solo para socios por email o SMS, a todos o solo a tus mejores clientes.',
+      },
+      {
+        icon: 'users',
+        title: 'Referidos',
+        subtitle: 'El boca a boca, con premio.',
+        text: 'Cada cliente tiene su código. Cuando trae a un amigo, los dos ganan y tú sumas un cliente nuevo.',
+      },
+    ],
+  },
+  ideas: {
+    label: 'Ideas que funcionan en tiendas',
+    items: [
+      { label: 'Puntos', title: 'Cupón de 10 €', text: 'Al llegar a los puntos que tú decidas.', photo: '/sectores/tiendas/boutique.webp' },
+      { label: 'Cumpleaños', title: 'Un regalo en su mes', text: 'Un detalle que trae una visita.', photo: '/sectores/tiendas/flores.webp' },
+      { label: 'Referidos', title: 'Trae a un amigo', text: 'Y ganad puntos los dos.', photo: '/sectores/tiendas/ropa.webp' },
+      { label: 'Solo socios', title: 'Novedades primero', text: 'Avisa antes a los de casa.', photo: '/sectores/tiendas/cosmetica.webp' },
+    ],
+    ctaTitle: '¿Qué programa encaja en tu tienda?',
+    ctaText: 'Cuéntanos cómo trabajas y te proponemos los puntos, las promociones y los premios que mejor encajan contigo.',
+  },
+  included: {
+    title: 'Lo que tienes desde el primer día',
+    items: [
+      { icon: 'palette', title: 'Tu marca', text: 'Tu logo y tus colores en la tarjeta, las promociones y los emails.' },
+      { icon: 'gift', title: 'Regalos de bienvenida y cumpleaños', text: 'Detalles automáticos que traen visitas.' },
+      { icon: 'mail', title: 'Campañas por email y SMS', text: 'Para avisar de novedades, rebajas y eventos en tienda.' },
+      { icon: 'chart', title: 'Informes de tu tienda', text: 'Frecuencia de compra, ticket medio y qué funciona.' },
+    ],
+  },
+  fit: {
+    forWho: [
+      'Tiendas de ropa y calzado, perfumerías, librerías, floristerías, tiendas de mascotas y de regalo.',
+      'Comercios con clientes habituales que quieren que compren más a menudo.',
+      'Quien quiere conocer a sus clientes sin depender de una gran plataforma.',
+    ],
+    notFor: [
+      'Quien busca un TPV o una tienda online: Qronnect fideliza, no cobra ni vende por internet.',
+      'Negocios de paso sin clientes que repitan.',
+      'Quien no quiere comunicarse con sus clientes.',
+    ],
+  },
+  stats: [
+    { value: '+40%*', label: 'clientes recurrentes' },
+    { value: '+25%*', label: 'ticket medio' },
+    { value: '-60%*', label: 'tiempo de gestión manual' },
+  ],
+  statsFootnote: '*Resultados orientativos de negocios que usan Qronnect. Dependen de cada tienda.',
+  // TODO: sustituir por un testimonio real de una tienda antes de publicar
+  testimonial: {
+    quote: 'Antes no sabíamos quién era cliente habitual. Ahora les avisamos de las novedades y vuelven en cuanto llega la temporada.',
+    author: 'Marta G.',
+    role: 'Propietaria de boutique',
+    photo: '/sectores/tiendas/testimonio.webp',
+  },
+  closing: {
+    title1: 'Los clientes no se pierden de golpe.',
+    title2: 'Se van una compra cada vez.',
+    rhythm: ['Una novedad que no vieron.', 'Unas rebajas que no les llegaron.', 'Un cumpleaños sin felicitar.', 'Un clic en otra tienda.'],
+    line1: 'Nada parece lo bastante grave como para preocuparse.',
+    line2: 'Hasta que dejan de entrar.',
+    pre: 'No esperes a notarlo en la caja.',
+    highlight: 'Dale a cada cliente un motivo para volver a tu tienda.',
+  },
+  faq: [
+    {
+      q: '¿Mis clientes tienen que descargar una app?',
+      a: 'No. Se registran en 30 segundos desde el móvil escaneando tu QR y su tarjeta funciona en el navegador.',
+    },
+    {
+      q: '¿Puedo dar puntos según lo que gasta cada cliente?',
+      a: 'Sí. Configuras cuántos puntos da cada euro y tu equipo introduce el importe al escanear el QR del cliente.',
+    },
+    {
+      q: '¿Puedo avisar de las rebajas solo a mis mejores clientes?',
+      a: 'Sí. Puedes segmentar las campañas por ticket medio, por puntos acumulados o por días desde la última visita.',
+    },
+    {
+      q: '¿Qué pasa con los datos de mis clientes?',
+      a: 'Son tuyos. Se tratan conforme al RGPD y cada cliente puede darse de baja de las comunicaciones cuando quiera.',
+    },
+  ],
+}
+
 export const SECTORES: Record<string, SectorData> = {
   [estetica.slug]: estetica,
   [cafeterias.slug]: cafeterias,
   [deporte.slug]: deporte,
+  [tiendas.slug]: tiendas,
 }
 
 export function getSector(slug: string): SectorData | undefined {

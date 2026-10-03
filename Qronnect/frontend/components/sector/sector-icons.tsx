@@ -1,6 +1,6 @@
 import {
   BarChart3, CalendarCheck, Clock, Coffee, Dumbbell, Gem, Gift, Heart, History, Mail, Megaphone,
-  Palette, QrCode, ScanLine, Share2, Smartphone, Sparkles, Stamp, Star, Tag, Users,
+  Palette, QrCode, ScanLine, Share2, ShoppingBag, Smartphone, Sparkles, Stamp, Star, Tag, Users,
 } from 'lucide-react'
 import type { SectorIcon } from '@/lib/sectores'
 
@@ -26,6 +26,7 @@ export const SECTOR_ICONS: Record<SectorIcon, typeof Gift> = {
   clock: Clock,
   palette: Palette,
   dumbbell: Dumbbell,
+  bag: ShoppingBag,
 }
 
 /** Loto de la línea de belleza: cinco pétalos en el color principal del sector */
