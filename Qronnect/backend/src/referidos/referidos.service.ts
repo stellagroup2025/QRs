@@ -375,6 +375,25 @@ export class ReferidosService {
       nombre: clienteData.nombre,
       nombre_tienda: tiendaData.nombre,
       total_referidos: clienteData.total_referidos || 0,
+      premios: await this.getPremiosPrograma(tiendaId),
+    };
+  }
+
+  /**
+   * Puntos que da el programa activo, para que la app del cliente explique el premio real.
+   * null si la tienda no tiene programa de referidos activo.
+   */
+  async getPremiosPrograma(tiendaId: string) {
+    const programa = await this.getProgramaActivo(tiendaId).catch(() => null);
+    if (!programa) return null;
+
+    const registroTu = programa.puntos_por_referido || 0;
+    return {
+      registro_tu: registroTu,
+      // Sin valor propio para el amigo, recibe lo mismo que quien invita (como en registrar_referido)
+      registro_amigo: programa.puntos_para_referido ?? registroTu,
+      primera_compra_tu: programa.puntos_primera_compra_referidor || 0,
+      primera_compra_amigo: programa.puntos_primera_compra_referido || 0,
     };
   }
 

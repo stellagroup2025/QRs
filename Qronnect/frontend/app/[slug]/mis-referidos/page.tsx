@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Award, Check, Copy, Download, Gift, Link2, Mail, MessageCircle, Share2, Users } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { filasPremioReferido, mensajeInvitacion, resumenPremioReferido, type PremiosReferido } from '@/lib/referidos-texto';
 import { cn } from '@/lib/utils';
 import { ClientCard, ClientPage, ClientSectionTitle, ClientSkeleton } from '@/components/cliente/ClientPage';
 
@@ -14,6 +15,7 @@ interface Codigo {
   nombre: string;
   nombre_tienda?: string;
   total_referidos: number;
+  premios?: PremiosReferido | null;
 }
 
 interface Referido {
@@ -204,7 +206,7 @@ export default function MisReferidosPage() {
 
   const compartirWhatsApp = () => {
     const nombreTienda = codigo?.nombre_tienda || codigo?.nombre || 'nuestra tienda';
-    const mensaje = `¡Únete a ${nombreTienda}! Regístrate con mi código ${codigo?.codigo} y llévate tu regalo de bienvenida: ${codigo?.url}`;
+    const mensaje = mensajeInvitacion(nombreTienda, codigo?.codigo || '', codigo?.url || '', codigo?.premios);
     const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
     window.open(url, '_blank');
   };
@@ -212,7 +214,7 @@ export default function MisReferidosPage() {
   const compartirEmail = () => {
     const nombreTienda = codigo?.nombre_tienda || codigo?.nombre || 'nuestra tienda';
     const asunto = `Invitación a ${nombreTienda}`;
-    const cuerpo = `¡Hola!\n\nTe invito a registrarte en ${nombreTienda}.\n\nUsa mi código: ${codigo?.codigo}\n\nRegístrate aquí: ${codigo?.url}\n\n¡Te esperamos!`;
+    const cuerpo = `¡Hola!\n\n${mensajeInvitacion(nombreTienda, codigo?.codigo || '', codigo?.url || '', codigo?.premios)}\n\n¡Te esperamos!`;
     const url = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
     window.open(url);
   };
@@ -295,7 +297,7 @@ export default function MisReferidosPage() {
       try {
         await navigator.share({
           title: `Únete a ${nombreTienda}`,
-          text: `Regístrate con mi código ${codigo?.codigo} y llévate tu regalo de bienvenida`,
+          text: mensajeInvitacion(nombreTienda, codigo?.codigo || '', '', codigo?.premios).replace(/: $/, ''),
           url: codigo?.url,
         });
       } catch (error) {
@@ -320,7 +322,7 @@ export default function MisReferidosPage() {
   return (
     <ClientPage
       title="Invita a tus amigos"
-      subtitle="Tú ganas puntos por cada amigo que se une, y tu amigo se lleva su regalo de bienvenida."
+      subtitle={resumenPremioReferido(codigo?.premios)}
     >
       {/* Código y QR para compartir */}
       {codigo && (
@@ -367,6 +369,32 @@ export default function MisReferidosPage() {
               </button>
             ))}
           </div>
+        </ClientCard>
+      )}
+
+      {/* Qué gana cada uno (lo que tiene configurado la tienda) */}
+      {filasPremioReferido(codigo?.premios).length > 0 && (
+        <ClientCard className="mt-4 p-0">
+          <table className="w-full text-sm">
+            <caption className="px-5 pt-4 text-left font-display text-base font-bold">Lo que ganáis</caption>
+            <thead>
+              <tr className="text-left text-xs text-ink/55">
+                <th scope="col" className="px-5 pb-2 pt-3 font-medium"><span className="sr-only">Cuándo</span></th>
+                <th scope="col" className="px-2 pb-2 pt-3 text-right font-medium">Tú</th>
+                <th scope="col" className="whitespace-nowrap px-5 pb-2 pt-3 text-right font-medium">Tu amigo</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ink/[0.07] border-t border-ink/[0.07]">
+              {filasPremioReferido(codigo?.premios).map((f) => (
+                <tr key={f.cuando}>
+                  <th scope="row" className="px-5 py-3 text-left font-normal text-ink/70">{f.cuando}</th>
+                  <td className="px-2 py-3 text-right font-semibold tabular-nums">{f.tu > 0 ? `+${f.tu}` : '—'}</td>
+                  <td className="px-5 py-3 text-right font-semibold tabular-nums">{f.amigo > 0 ? `+${f.amigo}` : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="px-5 pb-4 pt-2 text-xs text-ink/55">Puntos. El premio de la primera compra se da una sola vez por amigo.</p>
         </ClientCard>
       )}
 

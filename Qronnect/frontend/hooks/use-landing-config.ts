@@ -125,7 +125,7 @@ const defaultConfig: LandingConfig = {
   servicio_4_icono: 'ShoppingBag',
   servicio_4_activo: true,
   servicio_5_titulo: 'Invita y gana',
-  servicio_5_descripcion: 'Comparte tu código con amigos y ganad premios los dos.',
+  servicio_5_descripcion: 'Comparte tu código con tus amigos y ganad puntos los dos.',
   servicio_5_icono: 'Users',
   servicio_5_activo: true,
   servicio_6_titulo: 'Sin descargar nada',

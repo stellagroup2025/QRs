@@ -58,7 +58,7 @@ export const PORTADA_FEATURES: PortadaFeature[] = [
   { icon: 'stamp', title: 'Puntos y tarjeta de sellos', text: 'Tú decides cuántos puntos da cada euro o cada visita. Sin cartones que se pierden.' },
   { icon: 'gift', title: 'Premios y cupones', text: 'Regalo de bienvenida, premios por puntos y cupones con código único que tu equipo valida al momento.' },
   { icon: 'sparkles', title: 'Máquina de premios', text: 'Tus clientes cambian puntos por una tirada con premios sorpresa. Un juego que da ganas de volver.' },
-  { icon: 'share', title: 'Referidos', text: 'Cada cliente invita con su enlace: gana puntos por cada amigo que se une, y su amigo se lleva el regalo de bienvenida.' },
+  { icon: 'share', title: 'Referidos', text: 'Cada cliente invita con su enlace. Tú decides cuántos puntos ganan los dos cuando el amigo se une y en su primera compra.' },
   { icon: 'megaphone', title: 'Campañas por email y SMS', text: 'Envía ofertas a quien toca: por ticket medio, puntos, cumpleaños o días sin venir. Ahora o programadas.' },
   { icon: 'chart', title: 'Informe mensual con IA', text: 'Cada mes, tus números comparados con el anterior y un plan de acción para el siguiente, en tu email.' },
   { icon: 'scan', title: 'Escáner para tu equipo', text: 'Tu equipo suma puntos y canjea premios escaneando el QR del cliente desde su propio móvil.' },

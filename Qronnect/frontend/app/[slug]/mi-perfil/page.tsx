@@ -10,6 +10,7 @@ import { useBrandingContext } from "@/components/BrandingProvider"
 import { LoyaltyPass } from "@/components/brand/LoyaltyPass"
 import { TiendaInfoCard } from "@/components/TiendaInfoCard"
 import { clienteQrValue } from "@/lib/cliente-qr"
+import { mensajeInvitacion, resumenPremioReferido, type PremiosReferido } from "@/lib/referidos-texto"
 import { ClientCard, ClientPage, ClientSectionTitle, ClientSkeleton } from "@/components/cliente/ClientPage"
 import { ChevronRight, Copy, Dices, Gift, LogOut, Receipt, Share2, Stamp, Ticket, Users, type LucideIcon } from "lucide-react"
 
@@ -28,6 +29,7 @@ interface DatosReferidos {
   codigo: string
   url: string
   total_referidos: number
+  premios?: PremiosReferido | null
 }
 
 interface Compra {
@@ -146,7 +148,7 @@ export default function MiPerfilPage() {
   const handleCompartirCodigo = async () => {
     if (!datosReferidos) return
     const tienda = branding.nombre_comercial || "nuestro club de clientes"
-    const mensaje = `¡Únete a ${tienda}! Regístrate con mi código ${datosReferidos.codigo} y llévate tu regalo de bienvenida. ${datosReferidos.url}`
+    const mensaje = mensajeInvitacion(tienda, datosReferidos.codigo, datosReferidos.url, datosReferidos.premios)
 
     if (navigator.share) {
       try {
@@ -264,7 +266,7 @@ export default function MiPerfilPage() {
                 <p className="text-sm text-paper/60">
                   {datosReferidos.total_referidos > 0
                     ? `Ya se han unido ${datosReferidos.total_referidos} con tu código`
-                    : "Ganas puntos por cada amigo que se une"}
+                    : resumenPremioReferido(datosReferidos.premios)}
                 </p>
               </div>
             </div>
@@ -359,9 +361,9 @@ export default function MiPerfilPage() {
               <span className="mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand text-brand-on">
                 <Users className="h-7 w-7" aria-hidden="true" />
               </span>
-              <DialogTitle className="font-display text-2xl">Invita a tus amigos y gana puntos</DialogTitle>
+              <DialogTitle className="font-display text-2xl">Invita a tus amigos</DialogTitle>
               <DialogDescription>
-                Tú sumas puntos por cada amigo que se registre con tu código, y tu amigo se lleva su regalo de bienvenida.
+                {resumenPremioReferido(datosReferidos.premios)} Comparte tu código y empieza a sumar.
               </DialogDescription>
             </DialogHeader>
             <div className="flex items-center justify-between gap-3 rounded-2xl border border-dashed border-ink/20 px-4 py-3">
