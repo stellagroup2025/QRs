@@ -3,7 +3,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Inbox, Mail, Phone } from 'lucide-react'
+import { ArrowLeft, Inbox, Mail, Phone, UserCheck, UserPlus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -26,6 +35,15 @@ interface Solicitud {
   origen?: string | null
   estado: Estado
   created_at: string
+  asignada_en?: string | null
+  comercial?: { id: string; nombre: string; email: string } | null
+}
+
+interface Comercial {
+  id: string
+  nombre: string
+  email: string
+  activo: boolean
 }
 
 const ESTADOS: Record<Estado, string> = {
@@ -45,6 +63,10 @@ export default function SolicitudesPage() {
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<Estado | 'todas'>('todas')
+  const [comerciales, setComerciales] = useState<Comercial[]>([])
+  const [asignando, setAsignando] = useState<Solicitud | null>(null)
+  const [comercialElegido, setComercialElegido] = useState('')
+  const [enviando, setEnviando] = useState(false)
 
   const headers = () => ({ Authorization: `Bearer ${localStorage.getItem('superadmin_token')}` })
 
@@ -64,6 +86,11 @@ export default function SolicitudesPage() {
       })
       .catch(() => toast({ title: 'No se pudieron cargar las solicitudes', variant: 'destructive' }))
       .finally(() => setLoading(false))
+
+    fetch(`${API_URL}/api/comerciales`, { headers: headers() })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((lista: Comercial[]) => setComerciales(Array.isArray(lista) ? lista.filter((c) => c.activo) : []))
+      .catch(() => setComerciales([]))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -78,6 +105,27 @@ export default function SolicitudesPage() {
     if (!res?.ok) {
       setSolicitudes(anterior)
       toast({ title: 'No se pudo cambiar el estado', variant: 'destructive' })
+    }
+  }
+
+  async function asignar() {
+    if (!asignando || !comercialElegido) return
+    setEnviando(true)
+    try {
+      const res = await fetch(`${API_URL}/api/superadmin/solicitudes-contacto/${asignando.id}/asignar`, {
+        method: 'POST',
+        headers: { ...headers(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comercial_id: comercialElegido }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) throw new Error(data?.message || 'No se pudo pasar la solicitud')
+      setSolicitudes((lista) => lista.map((s) => (s.id === asignando.id ? { ...s, ...data } : s)))
+      toast({ title: 'Solicitud pasada', description: `Ya está en el CRM de ${data?.comercial?.nombre ?? 'el comercial'}.` })
+      setAsignando(null)
+    } catch (err) {
+      toast({ title: 'No se pudo pasar', description: err instanceof Error ? err.message : undefined, variant: 'destructive' })
+    } finally {
+      setEnviando(false)
     }
   }
 
@@ -158,7 +206,7 @@ export default function SolicitudesPage() {
                     </Select>
                   </div>
                   {s.mensaje && <p className="mt-4 whitespace-pre-wrap rounded-lg bg-muted/60 p-3 text-sm">{s.mensaje}</p>}
-                  <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                  <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
                     <a href={`mailto:${s.email}`} className="inline-flex items-center gap-1.5 font-medium hover:underline">
                       <Mail className="h-4 w-4" aria-hidden="true" />
                       {s.email}
@@ -169,6 +217,27 @@ export default function SolicitudesPage() {
                         {s.telefono}
                       </a>
                     )}
+                    <span className="sm:ml-auto">
+                      {s.comercial ? (
+                        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                          <UserCheck className="h-4 w-4" aria-hidden="true" />
+                          Pasada a <span className="font-medium text-foreground">{s.comercial.nombre}</span>
+                          {s.asignada_en && ` el ${new Date(s.asignada_en).toLocaleDateString('es-ES')}`}
+                        </span>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setComercialElegido('')
+                            setAsignando(s)
+                          }}
+                        >
+                          <UserPlus className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                          Pasar a un comercial
+                        </Button>
+                      )}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -176,6 +245,42 @@ export default function SolicitudesPage() {
           )}
         </div>
       </div>
+
+      <Dialog open={!!asignando} onOpenChange={(open) => !open && setAsignando(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pasar a un comercial</DialogTitle>
+            <DialogDescription>
+              {asignando?.nombre_negocio} aparecerá como prospecto nuevo en el CRM del comercial, con sus datos y su
+              mensaje. Le avisaremos por email.
+            </DialogDescription>
+          </DialogHeader>
+          {comerciales.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No hay comerciales activos. Créalos en Equipo comercial.</p>
+          ) : (
+            <Select value={comercialElegido} onValueChange={setComercialElegido}>
+              <SelectTrigger aria-label="Comercial">
+                <SelectValue placeholder="Elige un comercial" />
+              </SelectTrigger>
+              <SelectContent>
+                {comerciales.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.nombre} · {c.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAsignando(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={asignar} disabled={!comercialElegido || enviando}>
+              {enviando ? 'Pasando…' : 'Pasar solicitud'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

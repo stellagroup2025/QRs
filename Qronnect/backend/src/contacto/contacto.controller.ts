@@ -3,7 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { SuperAdminGuard } from '../superadmin/guards/superadmin.guard';
 import { ContactoService } from './contacto.service';
-import { ActualizarSolicitudDto, CrearSolicitudContactoDto } from './dto/crear-solicitud.dto';
+import { ActualizarSolicitudDto, AsignarSolicitudDto, CrearSolicitudContactoDto } from './dto/crear-solicitud.dto';
 
 @ApiTags('Contacto')
 @Controller()
@@ -30,5 +30,12 @@ export class ContactoController {
   @ApiOperation({ summary: 'Cambiar el estado de una solicitud (superadmin)' })
   actualizar(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ActualizarSolicitudDto) {
     return this.contactoService.actualizar(id, dto);
+  }
+
+  @Post('superadmin/solicitudes-contacto/:id/asignar')
+  @UseGuards(SuperAdminGuard)
+  @ApiOperation({ summary: 'Pasar la solicitud a un comercial: crea el prospecto en su CRM (superadmin)' })
+  asignar(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AsignarSolicitudDto) {
+    return this.contactoService.asignar(id, dto);
   }
 }

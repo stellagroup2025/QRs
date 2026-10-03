@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { Equals, IsBoolean, IsEmail, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { Equals, IsBoolean, IsEmail, IsIn, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 const recortar = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
@@ -79,4 +79,10 @@ export class ActualizarSolicitudDto {
   @ApiProperty({ enum: ESTADOS_SOLICITUD })
   @IsIn(ESTADOS_SOLICITUD as unknown as string[])
   estado: (typeof ESTADOS_SOLICITUD)[number];
+}
+
+export class AsignarSolicitudDto {
+  @ApiProperty({ description: 'Comercial que se encargará de la solicitud' })
+  @IsUUID()
+  comercial_id: string;
 }
