@@ -1,4 +1,5 @@
 import { Controller, Get, Put, Post, Body, UseGuards, Param, Query } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { ClientesService } from './clientes.service';
 import { TiendasService } from '../tiendas/tiendas.service';
@@ -34,6 +35,7 @@ export class ClientesController {
    * Registra un nuevo cliente en la tienda actual (pública)
    */
   @Post('auth/register')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Registrar nuevo cliente',
     description:
@@ -67,6 +69,7 @@ export class ClientesController {
    * Envía código OTP al email del cliente (pública)
    */
   @Post('auth/send-code')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Enviar código de login por email',
     description:
@@ -97,6 +100,7 @@ export class ClientesController {
    * Verifica el código OTP y devuelve token de acceso (pública)
    */
   @Post('auth/verify-code')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Verificar código y obtener token',
     description:
@@ -128,6 +132,7 @@ export class ClientesController {
    * Envía código de validación de email al cliente (pública)
    */
   @Post('auth/send-validation-code')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Enviar código de validación de email',
     description:
@@ -158,6 +163,7 @@ export class ClientesController {
    * Verifica el código de validación y marca el email como validado (pública)
    */
   @Post('auth/verify-validation-code')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Verificar código de validación de email',
     description:
@@ -222,6 +228,7 @@ export class ClientesController {
    * Reenvía el enlace de validación de email (pública)
    */
   @Post('auth/resend-validation-link')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Reenviar enlace de validación de email',
     description:

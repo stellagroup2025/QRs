@@ -7,6 +7,7 @@ import {
   IsArray,
   ValidateNested,
   IsDateString,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -53,6 +54,28 @@ export class CrearProgramaReferidosDto {
   @IsNumber()
   @IsNotEmpty()
   puntos_por_referido: number;
+
+  @ApiProperty({
+    description: 'Puntos para el amigo que se registra con el código. Si no se indica, recibe los mismos que quien invita',
+    example: 50,
+    required: false,
+  })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  puntos_para_referido?: number;
+
+  @ApiProperty({ description: 'Puntos para quien invita cuando su amigo hace la primera compra', example: 50, required: false })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  puntos_primera_compra_referidor?: number;
+
+  @ApiProperty({ description: 'Puntos para el amigo en su primera compra', example: 25, required: false })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  puntos_primera_compra_referido?: number;
 
   @ApiProperty({
     description: 'Array de recompensas por objetivos',

@@ -186,7 +186,7 @@ export default function ConfiguracionTiendaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="">
 
         <div className="flex items-center justify-center h-screen">
           <p>Cargando...</p>
@@ -196,14 +196,14 @@ export default function ConfiguracionTiendaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
+    <div className="">
 
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="max-w-6xl space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Store className="h-8 w-8" />
-              Información de la Tienda
+              Datos del negocio
             </h1>
             <p className="text-muted-foreground mt-1">
               Configura la información que verán tus clientes

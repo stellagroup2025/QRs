@@ -400,6 +400,28 @@ export class SmsService {
   }
 
   /**
+   * Devuelve el auth token de la cuenta Twilio indicada (global o propia de una tienda)
+   * Se usa para validar la firma de los webhooks entrantes
+   */
+  async getAuthTokenForAccount(accountSid?: string): Promise<string | null> {
+    if (!accountSid) return null;
+
+    if (accountSid === this.config.get('SMS_ACCOUNT_SID')) {
+      return this.config.get('SMS_AUTH_TOKEN') || null;
+    }
+
+    const { data: tienda } = await this.supabase
+      .getAdminClient()
+      .from('tiendas')
+      .select('configuracion')
+      .eq('configuracion->sms->credenciales->>account_sid', accountSid)
+      .limit(1)
+      .maybeSingle();
+
+    return tienda?.configuracion?.sms?.credenciales?.auth_token || null;
+  }
+
+  /**
    * Procesa respuestas STOP de SMS (webhook de Twilio)
    * Cuando un cliente responde STOP, se da de baja automáticamente
    */
@@ -408,9 +430,7 @@ export class SmsService {
     Body: string; // Mensaje recibido
     MessageSid?: string;
   }): Promise<{ mensaje: string; procesado: boolean }> {
-    console.log(`\n🛑 [SMS STOP] Respuesta recibida`);
-    console.log(`  - Desde: ${params.From}`);
-    console.log(`  - Mensaje: ${params.Body}`);
+    console.log(`\n🛑 [SMS STOP] Respuesta recibida (${params.MessageSid ?? 'sin MessageSid'})`);
 
     // Normalizar teléfono a formato E.164
     let telefono = params.From;
@@ -438,7 +458,7 @@ export class SmsService {
       .eq('telefono', telefono);
 
     if (error || !clientes || clientes.length === 0) {
-      console.log(`  ⚠️  Cliente no encontrado con teléfono ${telefono}`);
+      console.log(`  ⚠️  Cliente no encontrado con ese teléfono`);
       return { mensaje: 'Cliente no encontrado', procesado: false };
     }
 

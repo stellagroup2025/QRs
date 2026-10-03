@@ -94,7 +94,7 @@ export function Paso3Regalo({ datosIniciales, onChange }: Paso3RegaloProps) {
         </p>
       </div>
 
-      <RadioGroup value={tipoRegalo} onValueChange={setTipoRegalo}>
+      <RadioGroup value={tipoRegalo} onValueChange={(v) => setTipoRegalo(v as typeof tipoRegalo)}>
         <div className="space-y-3">
           {/* Opcion: Puntos */}
           <Card

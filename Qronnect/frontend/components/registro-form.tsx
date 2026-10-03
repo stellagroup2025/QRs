@@ -15,7 +15,7 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { useState, useEffect } from "react"
 import { useBrandingContext } from "@/components/BrandingProvider"
-import { hexToRgb } from "@/lib/brand-colors"
+import { hexToRgb, withAlpha } from "@/lib/brand-colors"
 import { FileText, UserCheck } from "lucide-react"
 
 const registroSchema = z.object({
@@ -80,7 +80,7 @@ export function RegistroForm() {
           telefono: data.telefono,
           codigo_postal: data.codigo_postal || undefined,
           fecha_nacimiento: data.fecha_nacimiento || undefined,
-          genero: data.genero && data.genero !== "" ? data.genero : undefined,
+          genero: data.genero || undefined,
           codigo_referido: codigoReferido || undefined, // Incluir código de referido si existe
         }),
       })
@@ -132,7 +132,7 @@ export function RegistroForm() {
           <div
             className="mb-4 p-3 rounded-lg border-2 flex items-center gap-2"
             style={{
-              backgroundColor: `${hexToRgb(branding.color_primario)}15`,
+              backgroundColor: withAlpha(branding.color_primario, 0.1),
               borderColor: hexToRgb(branding.color_primario)
             }}
           >

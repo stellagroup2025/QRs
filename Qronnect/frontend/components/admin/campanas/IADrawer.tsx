@@ -31,7 +31,7 @@ export function IADrawerCampanas({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
-          className="gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg"
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 text-white shadow-lg"
         >
           <Sparkles className="h-5 w-5" />
           Crear Campaña con IA

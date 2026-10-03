@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   ProgramaSellos,
   TipoPremioSello,
+  PremioDetalles,
   CrearProgramaSellosRequest,
   obtenerTextoTipoPremio,
 } from '@/types/sellos';
@@ -101,7 +102,7 @@ export function ProgramaSelloFormModal({ programa, programaDesdePlantilla, token
     });
   };
 
-  const getDefaultPremioDetalles = (tipo: TipoPremioSello) => {
+  const getDefaultPremioDetalles = (tipo: TipoPremioSello): PremioDetalles => {
     switch (tipo) {
       case TipoPremioSello.PRODUCTO:
         return { nombre: '', descripcion: '' };
@@ -114,7 +115,7 @@ export function ProgramaSelloFormModal({ programa, programaDesdePlantilla, token
       case TipoPremioSello.TEXTO:
         return { texto: '', instrucciones: '' };
       default:
-        return {};
+        return { texto: '' };
     }
   };
 

@@ -64,7 +64,7 @@ export function UsuariosTiendaManager({ tiendaId }: UsuariosTiendaManagerProps) 
     email: '',
     telefono: '',
     pin: '',
-    rol: 'empleado' as 'owner' | 'empleado',
+    rol: 'empleado' as UsuarioTienda['rol'],
     sms_2fa_activo: false,
     sms_2fa_telefono: '',
     activo: true,

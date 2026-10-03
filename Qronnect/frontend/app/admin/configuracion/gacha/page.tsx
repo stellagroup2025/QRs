@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getAdminTenantDomain } from '@/lib/tenant';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -38,8 +39,7 @@ export default function ConfiguracionGachaPage() {
   const cargarDatos = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-      const domain = window.location.hostname.split('.')[0];
-      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
+      const tenant = getAdminTenantDomain();
 
       if (!token) return;
 
@@ -66,8 +66,7 @@ export default function ConfiguracionGachaPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const domain = window.location.hostname.split('.')[0];
-      const tenant = domain === 'localhost' ? 'demo-omar-77' : domain;
+      const tenant = getAdminTenantDomain();
 
       if (!token) {
         throw new Error('No autenticado');
@@ -95,7 +94,7 @@ export default function ConfiguracionGachaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
+      <div className="">
 
         <div className="flex items-center justify-center h-screen">
           <p>Cargando...</p>
@@ -105,14 +104,14 @@ export default function ConfiguracionGachaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
+    <div className="">
 
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="max-w-6xl space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Dices className="h-8 w-8" />
-              Gacha - Máquina de Premios
+              Máquina de premios
             </h1>
             <p className="text-muted-foreground mt-1">
               Sistema de premios aleatorios para gamificar tu programa de fidelización
@@ -355,7 +354,7 @@ export default function ConfiguracionGachaPage() {
                 </CardContent>
               </Card>
 
-              <Card className="md:col-span-2 dark:bg-slate-900 dark:border-slate-800">
+              <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>Premios por Rareza</CardTitle>
                 </CardHeader>

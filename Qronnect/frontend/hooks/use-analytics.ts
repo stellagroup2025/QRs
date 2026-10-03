@@ -3,6 +3,17 @@
 import { useCallback } from 'react'
 import { track } from '@vercel/analytics'
 
+type TrackProperties = NonNullable<Parameters<typeof track>[1]>
+
+/**
+ * Vercel Analytics no admite valores undefined: se omiten esas propiedades
+ */
+function toTrackProperties(data: Record<string, unknown>): TrackProperties {
+  return Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined)
+  ) as TrackProperties
+}
+
 /**
  * Categorías de eventos de analytics
  */
@@ -71,7 +82,7 @@ export function useAnalytics() {
 
     // Enviar a Vercel Analytics
     try {
-      track(event.action, eventData)
+      track(event.action, toTrackProperties(eventData))
     } catch (error) {
       console.error('[Analytics] Error tracking event:', error)
     }
@@ -211,7 +222,7 @@ export function trackAnalyticsEvent(event: AnalyticsEvent) {
   }
 
   try {
-    track(event.action, eventData)
+    track(event.action, toTrackProperties(eventData))
   } catch (error) {
     console.error('[Analytics] Error tracking event:', error)
   }

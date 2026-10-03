@@ -1,3 +1,5 @@
+import * as React from 'react'
+
 /**
  * 🎯 UTILIDADES DE ACCESIBILIDAD
  * Helpers para mejorar la accesibilidad de la aplicación

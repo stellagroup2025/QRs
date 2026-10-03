@@ -95,96 +95,85 @@ export interface LandingConfig {
   cta_final_boton_secundario: string
 }
 
+// Textos por defecto pensados para los clientes de la tienda (cada tienda puede cambiarlos)
 const defaultConfig: LandingConfig = {
-  hero_titulo_principal: 'Impulsa tu negocio',
-  hero_titulo_destacado: 'al siguiente nivel',
+  hero_titulo_principal: 'Cada visita',
+  hero_titulo_destacado: 'tiene premio',
   hero_subtitulo:
-    'Sistema integral de fidelización y gestión de clientes para negocios modernos.',
-  hero_cta_principal: 'Solicitar Información',
-  hero_cta_secundario: 'Acceder',
-  hero_social_proof: '+10,000 negocios confían en nosotros',
+    'Únete gratis a nuestro club: suma puntos y sellos con cada compra y canjéalos por descuentos y regalos.',
+  hero_cta_principal: 'Unirme gratis',
+  hero_cta_secundario: 'Ya soy socio',
+  hero_social_proof: '',
 
-  servicios_titulo: 'Soluciones completas',
-  servicios_subtitulo:
-    'Todo lo que necesitas para gestionar y fidelizar a tus clientes en una sola plataforma',
+  servicios_titulo: 'Lo que tienes en el club',
+  servicios_subtitulo: 'Ventajas pensadas para quienes vuelven.',
 
-  servicio_1_titulo: 'Gestión de Clientes',
-  servicio_1_descripcion:
-    'Sistema completo para gestionar tu base de clientes de forma eficiente y personalizada.',
-  servicio_1_icono: 'Users',
+  servicio_1_titulo: 'Puntos en cada compra',
+  servicio_1_descripcion: 'Cada euro que gastas suma puntos que puedes canjear cuando quieras.',
+  servicio_1_icono: 'Star',
   servicio_1_activo: true,
-  servicio_2_titulo: 'Programa de Fidelización',
-  servicio_2_descripcion:
-    'Recompensa a tus clientes habituales y aumenta su lealtad con nuestro sistema de puntos.',
+  servicio_2_titulo: 'Regalo de bienvenida',
+  servicio_2_descripcion: 'Nada más registrarte tienes un detalle esperándote.',
   servicio_2_icono: 'Gift',
   servicio_2_activo: true,
-  servicio_3_titulo: 'Análisis y Métricas',
-  servicio_3_descripcion:
-    'Obtén insights valiosos sobre el comportamiento de tus clientes y optimiza tu negocio.',
-  servicio_3_icono: 'TrendingUp',
+  servicio_3_titulo: 'Tarjeta de sellos',
+  servicio_3_descripcion: 'Completa tu tarjeta y llévate un premio. Sin papel, siempre en tu móvil.',
+  servicio_3_icono: 'CreditCard',
   servicio_3_activo: true,
-  servicio_4_titulo: 'Tarjetas Digitales QR',
-  servicio_4_descripcion:
-    'Olvídate de las tarjetas físicas. Todo digital, fácil y accesible desde el móvil.',
-  servicio_4_icono: 'QrCode',
+  servicio_4_titulo: 'Promociones exclusivas',
+  servicio_4_descripcion: 'Ofertas solo para socios que no encontrarás en ningún otro sitio.',
+  servicio_4_icono: 'ShoppingBag',
   servicio_4_activo: true,
-  servicio_5_titulo: 'Seguridad Garantizada',
-  servicio_5_descripcion:
-    'Tus datos y los de tus clientes protegidos con los más altos estándares de seguridad.',
-  servicio_5_icono: 'Shield',
+  servicio_5_titulo: 'Invita y gana',
+  servicio_5_descripcion: 'Comparte tu código con tus amigos y ganad puntos los dos.',
+  servicio_5_icono: 'Users',
   servicio_5_activo: true,
-  servicio_6_titulo: 'Rápido y Eficiente',
-  servicio_6_descripcion:
-    'Implementación inmediata. Empieza a usar el sistema en minutos, no en semanas.',
-  servicio_6_icono: 'Zap',
+  servicio_6_titulo: 'Sin descargar nada',
+  servicio_6_descripcion: 'Tu tarjeta funciona desde el navegador: solo enseña tu QR en caja.',
+  servicio_6_icono: 'QrCode',
   servicio_6_activo: true,
 
-  beneficios_titulo: '¿Por qué elegirnos?',
-  beneficios_subtitulo:
-    'Beneficios reales que impactan directamente en tu negocio',
-  beneficio_1: 'Aumenta la retención de clientes hasta un 40%',
+  beneficios_titulo: 'Ser socio merece la pena',
+  beneficios_subtitulo: 'Es gratis, es rápido y tus datos están protegidos.',
+  beneficio_1: 'Registro gratis en 30 segundos',
   beneficio_1_activo: true,
-  beneficio_2: 'Reduce costos operativos eliminando tarjetas físicas',
+  beneficio_2: 'Sin apps ni tarjetas de plástico',
   beneficio_2_activo: true,
-  beneficio_3: 'Acceso a métricas en tiempo real',
+  beneficio_3: 'Consulta tus puntos cuando quieras',
   beneficio_3_activo: true,
-  beneficio_4: 'Integración sencilla con tu sistema actual',
+  beneficio_4: 'Te avisamos de las mejores ofertas',
   beneficio_4_activo: true,
-  beneficio_5: 'Soporte técnico incluido',
+  beneficio_5: 'Date de baja cuando quieras',
   beneficio_5_activo: true,
-  beneficio_6: 'Actualizaciones automáticas sin costo adicional',
-  beneficio_6_activo: true,
+  beneficio_6: '',
+  beneficio_6_activo: false,
 
-  estadistica_principal_numero: '40%',
-  estadistica_principal_texto: 'Incremento promedio en retención',
-  estadistica_1_numero: '10k+',
-  estadistica_1_texto: 'Negocios activos',
-  estadistica_2_numero: '500k+',
-  estadistica_2_texto: 'Usuarios registrados',
+  estadistica_principal_numero: '',
+  estadistica_principal_texto: '',
+  estadistica_1_numero: '',
+  estadistica_1_texto: '',
+  estadistica_2_numero: '',
+  estadistica_2_texto: '',
 
-  testimonios_titulo: 'Lo que dicen nuestros clientes',
-  testimonio_1_nombre: 'María García',
-  testimonio_1_cargo: 'Gerente, Boutique Fashion',
-  testimonio_1_contenido:
-    'Desde que implementamos este sistema, nuestros clientes están más comprometidos y las ventas han aumentado un 35%.',
+  testimonios_titulo: 'Lo que dicen nuestros socios',
+  testimonio_1_nombre: '',
+  testimonio_1_cargo: '',
+  testimonio_1_contenido: '',
   testimonio_1_rating: 5,
-  testimonio_2_nombre: 'Carlos Rodríguez',
-  testimonio_2_cargo: 'Propietario, Café Central',
-  testimonio_2_contenido:
-    'La mejor inversión que hemos hecho. Nuestros clientes adoran la comodidad de la tarjeta digital y nosotros ahorramos en impresiones.',
+  testimonio_2_nombre: '',
+  testimonio_2_cargo: '',
+  testimonio_2_contenido: '',
   testimonio_2_rating: 5,
-  testimonio_3_nombre: 'Ana Martínez',
-  testimonio_3_cargo: 'Directora, Spa Wellness',
-  testimonio_3_contenido:
-    'Excelente plataforma. Fácil de usar tanto para nosotros como para nuestros clientes. El soporte es excepcional.',
+  testimonio_3_nombre: '',
+  testimonio_3_cargo: '',
+  testimonio_3_contenido: '',
   testimonio_3_rating: 5,
 
-  cta_final_titulo_1: '¿Listo para transformar',
-  cta_final_titulo_2: 'tu negocio?',
-  cta_final_subtitulo:
-    'Únete a miles de negocios que ya están revolucionando la forma de gestionar sus clientes',
-  cta_final_boton_principal: 'Comenzar ahora',
-  cta_final_boton_secundario: 'Ya tengo cuenta',
+  cta_final_titulo_1: '¿Te unes?',
+  cta_final_titulo_2: 'Tu primer premio te espera.',
+  cta_final_subtitulo: 'Regístrate gratis y empieza a sumar desde tu próxima visita.',
+  cta_final_boton_principal: 'Unirme gratis',
+  cta_final_boton_secundario: 'Ya soy socio',
 }
 
 export function useLandingConfig() {
@@ -206,7 +195,11 @@ export function useLandingConfig() {
 
         if (response.ok) {
           const data = await response.json()
-          setConfig(data)
+          // Los campos que la tienda no ha rellenado (null/undefined) usan el texto por defecto
+          const filled = Object.fromEntries(
+            Object.entries(data ?? {}).filter(([, value]) => value !== null && value !== undefined),
+          )
+          setConfig({ ...defaultConfig, ...filled })
         } else {
           console.warn('No se pudo cargar configuración de landing, usando defaults')
           setConfig(defaultConfig)

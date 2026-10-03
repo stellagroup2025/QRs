@@ -1,10 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    // TEMPORAL: Ignorar errores para deployment inicial
-    // TODO: Corregir error en mis-referidos/page.tsx línea 298
-    ignoreBuildErrors: true,
-  },
   env: {
     NEXT_PUBLIC_APP_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || new Date().toISOString(),
   },

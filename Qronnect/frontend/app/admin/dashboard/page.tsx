@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { eur } from '@/lib/format'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import CountUp from 'react-countup'
@@ -10,6 +11,8 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { getQrUrl } from '@/lib/urls'
+import { QRCodeSVG } from 'qrcode.react'
+import QRCodeLib from 'qrcode'
 import {
   Table,
   TableBody,
@@ -42,7 +45,8 @@ import {
 import { BrandLogo } from '@/components/BrandLogo'
 import { useBrandingContext } from '@/components/BrandingProvider'
 import { hexToRgb } from '@/lib/brand-colors'
-import { RegistrarVentaDialogMejorado } from '@/components/admin/RegistrarVentaDialogMejorado'
+import { VENTA_REGISTRADA_EVENT } from '@/components/AdminShell'
+import { abrirRegistrarVenta } from '@/components/AdminSidebar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DashboardSkeleton, CardSkeleton } from '@/components/ui/skeleton'
 import { ErrorRetry } from '@/components/ui/error-retry'
@@ -256,8 +260,6 @@ export default function AdminDashboardPage() {
     // Verificar si hay un token de superadmin en la URL
     const urlParams = new URLSearchParams(window.location.search)
     const superadminToken = urlParams.get('superadmin_token')
-    const openSale = urlParams.get('open_sale')
-    const clienteId = urlParams.get('cliente_id')
 
     if (superadminToken) {
       // El superadmin está accediendo, guardar el token y limpiar la URL
@@ -290,17 +292,8 @@ export default function AdminDashboardPage() {
     // Generar URL del QR con subdominio del tenant
     const storedTienda = JSON.parse(tiendaData)
     const registroUrl = getQrUrl(storedTienda.dominio)
-    setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(registroUrl)}`)
+    setQrUrl(registroUrl)
 
-    // Si viene de quick-sale, abrir modal de venta con cliente preseleccionado
-    if (openSale === 'true' && clienteId) {
-      console.log('🎯 Abriendo modal de venta con cliente:', clienteId)
-      // Guardar el cliente_id para que el modal lo use
-      sessionStorage.setItem('preselected_cliente_id', clienteId)
-      setRegistrarVentaOpen(true)
-      // Limpiar la URL
-      window.history.replaceState({}, '', window.location.pathname)
-    }
   }, [router])
 
   // Cargar datos cuando cambia el tab activo
@@ -337,18 +330,27 @@ export default function AdminDashboardPage() {
     }
   }, [debouncedSearchCompras])
 
+  // La venta se registra desde AdminShell: aquí solo se recargan los datos (con el estado actual)
+  const onVentaRegistrada = useRef<() => void>(() => {})
+  onVentaRegistrada.current = () => {
+    fetchDashboard()
+    fetchAnalytics(analyticsPeriodo)
+    if (activeTab === 'ventas') fetchCompras(comprasPage, searchCompras)
+    if (activeTab === 'clientes') fetchClientes(clientesPage, searchClientes)
+  }
+
   // 🚀 Listeners para eventos del CommandMenu (Cmd+K)
   useEffect(() => {
-    const handleOpenSaleModal = () => setRegistrarVentaOpen(true)
+    const handleVentaRegistrada = () => onVentaRegistrada.current()
     const handleOpenPromoModal = () => setActiveTab('promociones')
     const handleOpenCampaignModal = () => setActiveTab('campanas')
 
-    window.addEventListener('open-sale-modal', handleOpenSaleModal)
+    window.addEventListener(VENTA_REGISTRADA_EVENT, handleVentaRegistrada)
     window.addEventListener('open-promo-modal', handleOpenPromoModal)
     window.addEventListener('open-campaign-modal', handleOpenCampaignModal)
 
     return () => {
-      window.removeEventListener('open-sale-modal', handleOpenSaleModal)
+      window.removeEventListener(VENTA_REGISTRADA_EVENT, handleVentaRegistrada)
       window.removeEventListener('open-promo-modal', handleOpenPromoModal)
       window.removeEventListener('open-campaign-modal', handleOpenCampaignModal)
     }
@@ -400,7 +402,7 @@ export default function AdminDashboardPage() {
 
       // Generar URL del QR usando el dominio real de la tienda
       const registroUrl = getQrUrl(tiendaData.dominio)
-      setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(registroUrl)}`)
+      setQrUrl(registroUrl)
 
       // Cargar dashboard
       fetchDashboard(token)
@@ -619,36 +621,49 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header Info Mobile/Desktop */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-            {(() => {
-              const hour = new Date().getHours()
-              if (hour < 12) return 'Buenos días'
-              if (hour < 20) return 'Buenas tardes'
-              return 'Buenas noches'
-            })()}, {adminUser?.nombre.split(' ')[0] || 'Admin'}
-          </h1>
-          <p className="text-base text-muted-foreground mt-1">
-            Aquí tienes el resumen de {branding.nombre_comercial} hoy.
-          </p>
-        </div>
-
-        {adminUser && (
-          <div className="hidden sm:flex items-center space-x-3 text-right bg-white/50 backdrop-blur-sm border border-gray-100 dark:bg-slate-800/50 p-2 pr-4 rounded-full shadow-sm">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-primary/60 flex items-center justify-center text-white font-bold text-lg shadow-md">
-              {adminUser.nombre.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex flex-col items-start">
-              <span className="text-sm font-semibold">{adminUser.nombre}</span>
-              <span className="text-xs text-muted-foreground capitalize">{adminUser.rol}</span>
-            </div>
+      {/* Cabecera: solo en el resumen; el resto de secciones llevan su propio título */}
+      {activeTab === 'analytics' && (
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight">
+              {(() => {
+                const hour = new Date().getHours()
+                if (hour < 12) return 'Buenos días'
+                if (hour < 20) return 'Buenas tardes'
+                return 'Buenas noches'
+              })()}
+              {adminUser?.nombre ? `, ${adminUser.nombre.split(' ')[0]}` : ''}
+            </h1>
+            <p className="mt-1 text-muted-foreground">Así va {branding.nombre_comercial || 'tu negocio'}.</p>
           </div>
-        )}
-      </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setActiveTab('qr')} className="rounded-xl">
+              <QrCode className="mr-2 h-4 w-4" aria-hidden="true" />
+              QR de registro
+            </Button>
+            <Button onClick={abrirRegistrarVenta} className="rounded-xl">
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+              Registrar venta
+            </Button>
+          </div>
+        </div>
+      )}
 
-
+      {/* Título de las secciones que no lo traen de su propio panel */}
+      {(() => {
+        const titulos: Record<string, [string, string]> = {
+          clientes: ['Clientes', 'Quién se ha unido a tu club y cómo compra.'],
+          ventas: ['Ventas', 'Todas las compras registradas con puntos.'],
+          campanas: ['Campañas', 'Emails y SMS para que tus clientes vuelvan.'],
+        }
+        const t = titulos[activeTab]
+        return t ? (
+          <div>
+            <h1>{t[0]}</h1>
+            <p className="mt-1 text-muted-foreground">{t[1]}</p>
+          </div>
+        ) : null
+      })()}
 
       {/* Tabs Content Wrapper */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -656,116 +671,87 @@ export default function AdminDashboardPage() {
 
         {/* QR Tab */}
         <TabsContent value="qr" className="space-y-6">
-          <Card className="dark:bg-slate-900 dark:border-slate-800">
-            <CardHeader>
-              <CardTitle>QR de Registro de Clientes</CardTitle>
-              <CardDescription>
-                Comparte este QR para que tus clientes se registren en tu programa de fidelización
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex flex-col items-center space-y-6">
-                {/* QR Code */}
-                <div className="p-8 bg-white dark:bg-slate-800 rounded-xl border-4 border-dashed" style={{ borderColor: `${hexToRgb(branding.color_primario).replace('rgb(', 'rgba(').replace(')', ', 0.3)')}` }}>
-                  <img
-                    src={qrUrl}
-                    alt="QR de registro"
-                    className="w-80 h-80"
-                  />
-                </div>
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight">QR de registro</h1>
+            <p className="mt-1 text-muted-foreground">Ponlo a la vista: tus clientes lo escanean y se unen a tu club en 30 segundos.</p>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
+            {/* Cartel con los colores de la tienda */}
+            <div className="overflow-hidden rounded-3xl bg-brand p-6 text-center text-brand-on shadow-sm">
+              <p className="font-display text-xl font-bold">{branding.nombre_comercial}</p>
+              <p className="text-sm opacity-80">Únete a nuestro club y gana premios</p>
+              <div className="mx-auto mt-5 max-w-[280px] rounded-2xl bg-white p-4">
+                {qrUrl ? (
+                  <QRCodeSVG id="qr-registro" value={qrUrl} size={512} level="M" className="h-auto w-full" />
+                ) : (
+                  <div className="aspect-square w-full animate-pulse rounded-xl bg-muted" />
+                )}
+              </div>
+              <p className="mt-4 text-sm font-medium">Escanéame con la cámara del móvil</p>
+            </div>
 
-                {/* Info */}
-                <div className="w-full max-w-2xl space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">URL de registro</label>
-                    <div className="flex items-center space-x-2">
-                      <code className="flex-1 text-sm bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded">
-                        {tienda?.dominio && getQrUrl(tienda.dominio)}
-                      </code>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => tienda?.dominio && window.open(getQrUrl(tienda.dominio), '_blank')}
-                      >
+            <div className="space-y-4">
+              <Card className="rounded-2xl">
+                <CardContent className="space-y-4 p-5">
+                  <div>
+                    <p className="text-sm font-medium">Enlace de registro</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <code className="min-w-0 flex-1 truncate rounded-lg bg-muted px-3 py-2 text-sm">{qrUrl}</code>
+                      <Button size="icon" variant="outline" onClick={() => qrUrl && window.open(qrUrl, '_blank')} aria-label="Abrir enlace">
                         <ExternalLink className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-wrap gap-3 justify-center">
+                  <div className="flex flex-wrap gap-2">
                     <Button
-                      size="lg"
-                      className="text-white"
-                      style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                       onClick={async () => {
-                        try {
-                          const response = await fetch(qrUrl);
-                          const blob = await response.blob();
-                          const url = window.URL.createObjectURL(blob);
-                          const link = document.createElement('a');
-                          link.href = url;
-                          link.download = `qr-registro-${tienda?.dominio}.png`;
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                          window.URL.revokeObjectURL(url);
-                        } catch (error) {
-                          console.error('Error downloading QR:', error);
-                          // Fallback to direct link if fetch fails
-                          window.open(qrUrl, '_blank');
-                        }
+                        if (!qrUrl) return
+                        const dataUrl = await QRCodeLib.toDataURL(qrUrl, { width: 1200, margin: 2 })
+                        const link = document.createElement('a')
+                        link.href = dataUrl
+                        link.download = `qr-registro-${tienda?.dominio || 'tienda'}.png`
+                        link.click()
                       }}
                     >
-                      <Download className="h-5 w-5 mr-2" />
+                      <Download className="mr-2 h-4 w-4" aria-hidden="true" />
                       Descargar QR
                     </Button>
                     <Button
-                      size="lg"
                       variant="outline"
-                      style={{
-                        borderColor: hexToRgb(branding.color_primario),
-                        color: hexToRgb(branding.color_primario)
+                      onClick={async () => {
+                        if (!qrUrl) return
+                        await navigator.clipboard.writeText(qrUrl)
+                        toast({ title: 'Enlace copiado' })
                       }}
-                      onClick={() => window.print()}
                     >
-                      Imprimir
+                      Copiar enlace
                     </Button>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
 
-                {/* Instructions */}
-                <div className="w-full max-w-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-                  <h4 className="font-semibold mb-3 flex items-center text-blue-900 dark:text-blue-100">
-                    <QrCode className="h-5 w-5 mr-2" />
-                    Cómo usar este QR
-                  </h4>
-                  <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-                    <li className="flex items-start">
-                      <span className="font-bold mr-2">1.</span>
-                      <span>Descarga o imprime el código QR</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="font-bold mr-2">2.</span>
-                      <span>Colócalo en un lugar visible de tu establecimiento (mostrador, entrada, mesas)</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="font-bold mr-2">3.</span>
-                      <span>Los clientes lo escanean con la cámara de su móvil</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="font-bold mr-2">4.</span>
-                      <span>Se abre automáticamente el formulario de registro</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="font-bold mr-2">5.</span>
-                      <span>¡Listo! Ya pueden acumular puntos con cada compra</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="rounded-2xl">
+                <CardContent className="p-5">
+                  <p className="font-medium">Cómo usarlo</p>
+                  <ol className="mt-3 space-y-3 text-sm text-muted-foreground">
+                    {[
+                      'Descarga el QR e imprímelo (o enséñalo en una pantalla).',
+                      'Colócalo en el mostrador, la entrada o las mesas.',
+                      'Tus clientes lo escanean y se registran desde el móvil, sin app.',
+                      'En cada compra, escanea el QR de su móvil con “Registrar venta” para sumarle puntos.',
+                    ].map((paso, i) => (
+                      <li key={paso} className="flex gap-3">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">
+                          {i + 1}
+                        </span>
+                        {paso}
+                      </li>
+                    ))}
+                  </ol>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
         {/* Clientes Tab */}
@@ -774,7 +760,7 @@ export default function AdminDashboardPage() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <CardTitle>Gestión de Clientes</CardTitle>
+                  <CardTitle>Listado</CardTitle>
                   <CardDescription>
                     {data?.total_clientes || 0} clientes registrados
                   </CardDescription>
@@ -806,7 +792,6 @@ export default function AdminDashboardPage() {
                   </div>
                   <Button
                     onClick={() => fetchClientes(1, searchClientes)}
-                    style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                     className="text-white"
                     size="sm"
                     disabled={clientesLoading}
@@ -870,7 +855,7 @@ export default function AdminDashboardPage() {
                             <TableCell className="text-right">{cliente.total_compras || 0}</TableCell>
                             <TableCell className="text-right text-sm">
                               {cliente.ticket_medio !== undefined
-                                ? `${cliente.ticket_medio.toFixed(2)} €`
+                                ? eur(cliente.ticket_medio)
                                 : '-'}
                             </TableCell>
                             <TableCell className="text-right text-sm text-muted-foreground">
@@ -920,7 +905,7 @@ export default function AdminDashboardPage() {
                               <span className="text-muted-foreground">Ticket medio:</span>
                               <p className="font-medium">
                                 {cliente.ticket_medio !== undefined
-                                  ? `${cliente.ticket_medio.toFixed(2)} €`
+                                  ? eur(cliente.ticket_medio)
                                   : '-'}
                               </p>
                             </div>
@@ -986,7 +971,7 @@ export default function AdminDashboardPage() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <CardTitle>Registro de Ventas</CardTitle>
+                  <CardTitle>Historial</CardTitle>
                   <CardDescription>
                     {data?.total_compras || 0} compras registradas
                   </CardDescription>
@@ -1019,7 +1004,6 @@ export default function AdminDashboardPage() {
                   <div className="flex gap-2">
                     <Button
                       onClick={() => fetchCompras(1, searchCompras)}
-                      style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                       className="text-white flex-1 sm:flex-initial"
                       size="sm"
                       disabled={comprasLoading}
@@ -1168,9 +1152,9 @@ export default function AdminDashboardPage() {
         {/* Promociones Tab */}
         <TabsContent value="promociones" className="space-y-6">
           <div className="mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Promociones</h2>
-            <p className="text-sm text-muted-foreground">
-              Gestiona las promociones y recompensas para tus clientes
+            <h1>Premios por puntos</h1>
+            <p className="mt-1 text-muted-foreground">
+              Lo que tus clientes pueden conseguir canjeando sus puntos.
             </p>
           </div>
 
@@ -1213,95 +1197,66 @@ export default function AdminDashboardPage() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
-          {/* Stats Grid - Psychology Polish (Apple Style + Dopamine) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10" role="region" aria-label="Estadísticas principales">
-            <Card
-              className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl"
-              role="button"
-              tabIndex={0}
-              onClick={() => setActiveTab('clientes')}
-            >
-              <div className="absolute top-0 right-0 p-4 opacity-10 dark:opacity-20 group-hover:opacity-20 transition-opacity">
-                <Users className="w-24 h-24 text-primary" />
-              </div>
-
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Clientes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline space-x-2">
-                  <div className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight">
-                    <CountUp end={data?.total_clientes || 0} duration={2.5} separator="." />
+          {/* Cifras principales (los cambios se comparan con el periodo anterior, cuando hay datos) */}
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" role="region" aria-label="Cifras principales">
+            {[
+              {
+                label: 'Clientes',
+                value: (data?.total_clientes ?? 0).toLocaleString('es-ES'),
+                detail: `${(data?.clientes_activos_ultimos_30_dias ?? 0).toLocaleString('es-ES')} activos en 30 días`,
+                change: analytics?.cambio_clientes_pct,
+                icon: Users,
+                onClick: () => setActiveTab('clientes'),
+              },
+              {
+                label: 'Facturación',
+                value: formatCurrency(data?.ventas_totales ?? 0),
+                detail: 'Total registrado con Qronnect',
+                change: analytics?.cambio_facturacion_pct,
+                icon: Euro,
+                onClick: () => setActiveTab('ventas'),
+              },
+              {
+                label: 'Ventas',
+                value: (data?.total_compras ?? 0).toLocaleString('es-ES'),
+                detail: 'Compras con puntos',
+                icon: ShoppingCart,
+                onClick: () => setActiveTab('ventas'),
+              },
+              {
+                label: 'Ticket medio',
+                value: formatCurrency(data?.ticket_medio ?? 0),
+                detail: `${(data?.puntos_otorgados_totales ?? 0).toLocaleString('es-ES')} puntos dados`,
+                change: analytics?.cambio_ticket_medio_pct,
+                icon: TrendingUp,
+              },
+            ].map(({ label, value, detail, change, icon: Icon, onClick }) => {
+              const Tag = onClick ? 'button' : 'div'
+              return (
+                <Tag
+                  key={label}
+                  {...(onClick ? { type: 'button' as const, onClick } : {})}
+                  className="group rounded-2xl border bg-card p-5 text-left transition-colors hover:border-foreground/20"
+                >
+                  <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
+                    <span>{label}</span>
+                    <Icon className="h-4 w-4" aria-hidden="true" />
                   </div>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    +12%
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-primary transition-colors flex items-center">
-                  Gestionar clientes <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </p>
-              </CardContent>
-            </Card>
+                  <p className="mt-3 font-display text-2xl font-bold tracking-tight tabular-nums sm:text-3xl">{value}</p>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+                    {typeof change === 'number' && Number.isFinite(change) && (
+                      <span className={change >= 0 ? 'font-semibold text-emerald-600' : 'font-semibold text-red-600'}>
+                        {change >= 0 ? '+' : ''}
+                        {change.toLocaleString('es-ES', { maximumFractionDigits: 1 })}%
+                      </span>
+                    )}
+                    <span>{detail}</span>
+                  </p>
+                </Tag>
+              )
+            })}
+          </div>
 
-            <Card
-              className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl"
-              role="button"
-              tabIndex={0}
-              onClick={() => setActiveTab('ventas')}
-            >
-              <div className="absolute top-0 right-0 p-4 opacity-10 dark:opacity-20 group-hover:opacity-20 transition-opacity">
-                <ShoppingCart className="w-24 h-24 text-blue-500" />
-              </div>
-
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Compras Totales</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline space-x-2">
-                  <div className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight">
-                    <CountUp end={data?.total_compras || 0} duration={2.5} separator="." delay={0.2} />
-                  </div>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    +5.4%
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-primary transition-colors flex items-center">
-                  Ver historial de ventas <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card
-              className="group relative overflow-hidden border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20"
-              role="button"
-              tabIndex={0}
-              onClick={() => setActiveTab('analytics')}
-            >
-              <div className="absolute top-0 right-0 p-4 opacity-10 dark:opacity-20 group-hover:opacity-20 transition-opacity">
-                <Euro className="w-24 h-24 text-indigo-500" />
-              </div>
-
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Ingresos Totales</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline space-x-2">
-                  <div className="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 tracking-tight">
-                    €<CountUp end={data?.ventas_totales || 0} duration={3} separator="." decimals={0} delay={0.4} />
-                  </div>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 animate-in fade-in slide-in-from-bottom-2 duration-700">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    Récord
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-4 font-medium group-hover:text-indigo-600 transition-colors flex items-center">
-                  Analizar rendimiento <ChevronRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </p>
-              </CardContent>
-            </Card>
-          </div >
           {/* Analista de KPIs con IA */}
           <AnalistaKPIs
             tenantDomain={tienda?.dominio || ''}
@@ -1310,29 +1265,23 @@ export default function AdminDashboardPage() {
             onCreatePromotion={handleCreatePromotionFromIA}
           />
 
-          {/* Selector de Periodo */}
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <CardTitle>Analytics y Métricas</CardTitle>
-                  <CardDescription>
-                    Rendimiento del negocio
-                  </CardDescription>
-                </div>
-                <Select value={analyticsPeriodo} onValueChange={(value: '7d' | '30d' | '90d') => setAnalyticsPeriodo(value)}>
-                  <SelectTrigger className="w-full sm:w-[160px]">
-                    <SelectValue placeholder="Periodo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7d">Últimos 7 días</SelectItem>
-                    <SelectItem value="30d">Últimos 30 días</SelectItem>
-                    <SelectItem value="90d">Últimos 90 días</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardHeader>
-          </Card>
+          {/* Selector de periodo */}
+          <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-display text-xl font-bold tracking-tight">Evolución</h2>
+              <p className="text-sm text-muted-foreground">Clientes, facturación y fidelidad en el periodo elegido.</p>
+            </div>
+            <Select value={analyticsPeriodo} onValueChange={(value: '7d' | '30d' | '90d') => setAnalyticsPeriodo(value)}>
+              <SelectTrigger className="w-full rounded-xl sm:w-[180px]">
+                <SelectValue placeholder="Periodo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">Últimos 7 días</SelectItem>
+                <SelectItem value="30d">Últimos 30 días</SelectItem>
+                <SelectItem value="90d">Últimos 90 días</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Gráficos */}
           <AnalyticsCharts data={analytics} loading={analyticsLoading} />
@@ -1348,52 +1297,6 @@ export default function AdminDashboardPage() {
       </Tabs >
 
 
-      {/* Botones flotantes (Stack) */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
-        {/* QR Code FAB */}
-        <Button
-          size="icon"
-          className="h-12 w-12 rounded-full shadow-lg bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 hover:scale-110 transition-transform"
-          onClick={() => setActiveTab('qr')}
-          aria-label="Ver código QR de registro"
-          title="Ver QR"
-        >
-          <QrCode className="h-5 w-5" />
-        </Button>
-
-        {/* Registrar Venta FAB */}
-        <Button
-          size="lg"
-          className="h-14 w-14 rounded-full shadow-lg text-white hover:scale-110 transition-transform"
-          style={{ backgroundColor: hexToRgb(branding.color_primario) }}
-          onClick={() => setRegistrarVentaOpen(true)}
-          aria-label="Abrir formulario para registrar nueva venta"
-          title="Registrar venta"
-        >
-          <Plus className="h-6 w-6" aria-hidden="true" />
-          <span className="sr-only">Registrar nueva venta</span>
-        </Button>
-      </div>
-
-      {/* Diálogo de registrar venta */}
-      < RegistrarVentaDialogMejorado
-        open={registrarVentaOpen}
-        onOpenChange={setRegistrarVentaOpen}
-        onSuccess={() => {
-          // Recargar todas las métricas del dashboard
-          fetchDashboard()
-
-          // Recargar los listados según el tab activo
-          if (activeTab === 'ventas') {
-            fetchCompras(comprasPage, searchCompras)
-          } else if (activeTab === 'clientes') {
-            fetchClientes(clientesPage, searchClientes)
-          }
-        }
-        }
-      />
-
-      {/* Diálogo de validar canje */}
     </div >
   )
 }

@@ -25,14 +25,13 @@ export function StatsCard({
     gradient = "from-blue-500/10 to-indigo-500/10"
 }: StatsCardProps) {
     return (
-        <Card className={`relative overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 ${className}`}>
-            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-50`} />
+        <Card className={`relative overflow-hidden rounded-2xl shadow-none ${className ?? ''}`}>
 
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                     {title}
                 </CardTitle>
-                <div className="p-2 bg-white/50 dark:bg-black/20 rounded-full backdrop-blur-sm">
+                <div className="rounded-full bg-muted p-2">
                     <Icon className="h-4 w-4 text-primary" />
                 </div>
             </CardHeader>

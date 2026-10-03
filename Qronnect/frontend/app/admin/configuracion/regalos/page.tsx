@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getAdminTenantDomain } from '@/lib/tenant';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -69,26 +70,7 @@ export default function RegalosPage() {
   const cargarDatos = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-      let tenant = localStorage.getItem('tenant_domain');
-
-      // Fallback: Si no hay tenant en localStorage, extraerlo del dominio actual
-      if (!tenant) {
-        const host = window.location.host;
-        const parts = host.split('.');
-
-        // Si es subdominio.qronnect.es -> usar subdominio
-        if (parts.length >= 2 && !host.startsWith('localhost')) {
-          tenant = parts[0];
-        }
-        // Si es localhost -> usar default
-        else {
-          tenant = 'lokeyokiera'; // fallback para desarrollo
-        }
-
-        console.log('⚠️ tenant_domain no encontrado en localStorage, usando:', tenant);
-        // Guardar para futuras peticiones
-        localStorage.setItem('tenant_domain', tenant);
-      }
+      const tenant = getAdminTenantDomain();
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -117,7 +99,12 @@ export default function RegalosPage() {
 
       if (statsRes.ok) {
         const stats = await statsRes.json();
-        setEstadisticas(stats);
+        // El backend devuelve total_regalos / ultimo_mes
+        setEstadisticas({
+          ...stats,
+          total_otorgados: stats?.total_otorgados ?? stats?.total_regalos ?? 0,
+          ultimos_30_dias: stats?.ultimos_30_dias ?? stats?.ultimo_mes ?? 0,
+        });
       }
 
       // Cargar historial
@@ -130,7 +117,14 @@ export default function RegalosPage() {
 
       if (historialRes.ok) {
         const data = await historialRes.json();
-        setHistorial(data.regalos || []);
+        // El backend devuelve tipo / valor
+        setHistorial(
+          (data.regalos || []).map((r: any) => ({
+            ...r,
+            tipo_regalo: r.tipo_regalo ?? r.tipo,
+            valor_regalo: r.valor_regalo ?? r.valor,
+          })),
+        );
       }
     } catch (error) {
       console.error('Error cargando datos:', error);
@@ -143,26 +137,7 @@ export default function RegalosPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('admin_token');
-      let tenant = localStorage.getItem('tenant_domain');
-
-      // Fallback: Si no hay tenant en localStorage, extraerlo del dominio actual
-      if (!tenant) {
-        const host = window.location.host;
-        const parts = host.split('.');
-
-        // Si es subdominio.qronnect.es -> usar subdominio
-        if (parts.length >= 2 && !host.startsWith('localhost')) {
-          tenant = parts[0];
-        }
-        // Si es localhost -> usar default
-        else {
-          tenant = 'lokeyokiera'; // fallback para desarrollo
-        }
-
-        console.log('⚠️ tenant_domain no encontrado en localStorage, usando:', tenant);
-        // Guardar para futuras peticiones
-        localStorage.setItem('tenant_domain', tenant);
-      }
+      const tenant = getAdminTenantDomain();
 
       console.log('🔧 [GUARDAR CONFIG REGALOS]', {
         tenant,
@@ -213,7 +188,7 @@ export default function RegalosPage() {
 
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto"></div>
             <p className="mt-4 text-gray-600">Cargando configuración...</p>
           </div>
         </div>
@@ -224,11 +199,11 @@ export default function RegalosPage() {
   return (
     <>
 
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Regalos de Bienvenida</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Regalos</h1>
           <p className="text-gray-600 mt-2">
-            Configura regalos automáticos para nuevos clientes al registrarse
+            Regalos automáticos para tus clientes: de bienvenida, por invitar amigos y por objetivos
           </p>
         </div>
 
@@ -269,7 +244,7 @@ export default function RegalosPage() {
         </div>
 
         {/* Configuración */}
-        <Card className="mb-8 dark:bg-slate-900 dark:border-slate-800">
+        <Card className="mb-8">
           <CardHeader>
             <CardTitle>Configuración de Regalos</CardTitle>
             <CardDescription>Define qué regalar a los nuevos clientes</CardDescription>

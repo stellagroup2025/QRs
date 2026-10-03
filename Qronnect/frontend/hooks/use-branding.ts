@@ -10,6 +10,8 @@ export interface BrandingConfig {
   color_secundario: string
   color_acento: string
   nombre_comercial: string
+  email_contacto?: string | null
+  telefono_contacto?: string | null
 }
 
 const defaultBranding: BrandingConfig = {

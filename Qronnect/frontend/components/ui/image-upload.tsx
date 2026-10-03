@@ -149,8 +149,8 @@ export function ImageUpload({
                         <span className="text-sm">Subiendo...</span>
                     </div>
                 ) : value && value.trim() !== '' ? (
-                    <div className="relative w-full h-full flex items-center justify-center min-h-[200px]">
-                        <div className="relative w-full h-full">
+                    <div className="relative flex w-full min-h-[200px] flex-1 items-center justify-center self-stretch">
+                        <div className="absolute inset-0">
                             <ImagePreviewWithFallback src={value} />
                         </div>
                         <div className="absolute top-2 right-2 flex gap-2 z-10">

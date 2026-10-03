@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { eur } from '@/lib/format'
 import {
   Dialog,
   DialogContent,
@@ -263,7 +264,7 @@ export function CrearCampanaDialog({
       resetForm()
     } catch (error) {
       console.error(`Error ${isEditMode ? 'editando' : 'creando'} campaña:`, error)
-      alert(`Error: ${error.message}`)
+      alert(`Error: ${error instanceof Error ? error.message : String(error)}`)
     } finally {
       setLoading(false)
     }
@@ -466,7 +467,7 @@ export function CrearCampanaDialog({
                           <div className="text-right text-sm">
                             <p>{cliente.puntos_totales} pts</p>
                             <p className="text-muted-foreground">
-                              {cliente.num_compras} compras · €{cliente.ticket_medio}
+                              {cliente.num_compras} compras · {eur(cliente.ticket_medio)}
                             </p>
                           </div>
                         </div>
@@ -509,7 +510,6 @@ export function CrearCampanaDialog({
             <Button
               onClick={handleNextStep}
               disabled={!puedeAvanzar}
-              style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               className="text-white"
             >
               Siguiente
@@ -518,7 +518,6 @@ export function CrearCampanaDialog({
             <Button
               onClick={handleCrearCampana}
               disabled={loading}
-              style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               className="text-white"
             >
               {loading ? (

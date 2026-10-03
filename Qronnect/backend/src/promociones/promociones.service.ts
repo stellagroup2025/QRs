@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreatePromocionDto, TipoPromocion } from './dto/create-promocion.dto';
 import { UpdatePromocionDto } from './dto/update-promocion.dto';
@@ -434,7 +435,7 @@ export class PromocionesService {
       if (i > 0 && i % 4 === 0) {
         codigo += '-';
       }
-      codigo += chars.charAt(Math.floor(Math.random() * chars.length));
+      codigo += chars.charAt(crypto.randomInt(chars.length));
     }
 
     // Verificar que no exista (muy improbable, pero por seguridad)

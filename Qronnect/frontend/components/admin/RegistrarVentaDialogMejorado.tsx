@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { eur } from '@/lib/format'
 import dynamic from 'next/dynamic'
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog'
 import { Button } from '@/components/ui/button'
@@ -27,7 +28,7 @@ import {
   Keyboard
 } from 'lucide-react'
 import { useBrandingContext } from '@/components/BrandingProvider'
-import { hexToRgb } from '@/lib/brand-colors'
+import { hexToRgb, withAlpha } from '@/lib/brand-colors'
 import { useToast } from '@/hooks/use-toast'
 import { useMediaQuery } from '@/hooks/use-media-query'
 
@@ -58,6 +59,33 @@ interface Cupon {
   descripcion: string
   descuento_porcentaje?: number
   descuento_fijo?: number
+}
+
+/** El backend guarda el descuento como tipo + valor; aquí se usa descuento_porcentaje / descuento_fijo */
+function descuentoDe(item: any): Pick<Promocion, 'descuento_porcentaje' | 'descuento_fijo'> {
+  if (item?.descuento_porcentaje || item?.descuento_fijo) {
+    return { descuento_porcentaje: item.descuento_porcentaje, descuento_fijo: item.descuento_fijo }
+  }
+  if (item?.tipo === 'descuento_porcentaje') return { descuento_porcentaje: Number(item.valor) || 0 }
+  if (item?.tipo === 'descuento_fijo') return { descuento_fijo: Number(item.valor) || 0 }
+  return {}
+}
+
+function normalizarPromocion(p: any): Promocion {
+  return { ...p, ...descuentoDe(p) }
+}
+
+/** Cupón (fila de canjes) tal como llega de cupones-disponibles o de canjear-promocion */
+function normalizarCupon(c: any): Cupon {
+  const promo = c?.promociones ?? c?.promocion ?? {}
+  return {
+    id: c.id,
+    promocion_id: c.promocion_id ?? c.id_promocion ?? promo.id,
+    estado: c.estado,
+    titulo: c.titulo ?? promo.titulo ?? 'Cupón',
+    descripcion: c.descripcion ?? promo.descripcion ?? '',
+    ...descuentoDe(c.descuento_porcentaje || c.descuento_fijo ? c : promo),
+  }
 }
 
 interface RegistrarVentaDialogMejoradoProps {
@@ -150,7 +178,7 @@ export function RegistrarVentaDialogMejorado({
                     qrbox: { width: 250, height: 250 },
                     aspectRatio: 1.0,
                   },
-                  (decodedText, decodedResult) => {
+                  (decodedText: string) => {
                     // Éxito al escanear
                     console.log('✅ QR escaneado:', decodedText)
                     setCodigoQr(decodedText)
@@ -166,7 +194,7 @@ export function RegistrarVentaDialogMejorado({
                       }).catch(console.error)
                     }
                   },
-                  (errorMessage) => {
+                  () => {
                     // Errores normales durante escaneo (cuando no hay QR en vista)
                     // No hacer nada, es normal
                   }
@@ -312,7 +340,15 @@ export function RegistrarVentaDialogMejorado({
     }
   }
 
-  async function buscarClientePorQr(qrCode: string) {
+  async function buscarClientePorQr(qrLeido: string) {
+    // El QR del cliente puede ser su ID o el enlace .../admin/dashboard?open_sale=true&cliente_id=<ID>
+    let qrCode = qrLeido.trim()
+    try {
+      const idEnEnlace = new URL(qrCode).searchParams.get('cliente_id')
+      if (idEnEnlace) qrCode = idEnEnlace
+    } catch {
+      // No es un enlace: se usa tal cual
+    }
     setSearching(true)
     try {
       const token = localStorage.getItem('admin_token')
@@ -402,7 +438,7 @@ export function RegistrarVentaDialogMejorado({
 
       if (promosResponse.ok) {
         const promosData = await promosResponse.json()
-        setPromociones(promosData || [])
+        setPromociones((promosData || []).map(normalizarPromocion))
       }
 
       // Cargar cupones disponibles del cliente
@@ -418,7 +454,7 @@ export function RegistrarVentaDialogMejorado({
 
       if (cuponesResponse.ok) {
         const cuponesData = await cuponesResponse.json()
-        setCupones(cuponesData || [])
+        setCupones((cuponesData || []).map(normalizarCupon))
       }
 
       // Cargar programas de sellos activos
@@ -484,21 +520,17 @@ export function RegistrarVentaDialogMejorado({
       })
 
       // Actualizar puntos del cliente
+      const promoCanjeada = promociones.find(p => p.id === promocionId)
       setClienteSeleccionado({
         ...clienteSeleccionado,
-        puntos_totales: data.puntos_restantes,
+        puntos_totales:
+          data.puntos_restantes ??
+          clienteSeleccionado.puntos_totales - (promoCanjeada?.puntos_requeridos ?? 0),
       })
 
       // Agregar el nuevo cupón a la lista y seleccionarlo automáticamente
-      const nuevoCupon: Cupon = {
-        id: data.cupon.id,
-        promocion_id: data.cupon.promocion_id,
-        estado: data.cupon.estado,
-        titulo: data.cupon.titulo,
-        descripcion: data.cupon.descripcion,
-        descuento_porcentaje: data.cupon.descuento_porcentaje,
-        descuento_fijo: data.cupon.descuento_fijo,
-      }
+      // La API devuelve el canje directamente (antes se leía data.cupon, que no existe)
+      const nuevoCupon = normalizarCupon({ ...(data.cupon ?? data), descripcion: promoCanjeada?.descripcion })
 
       setCupones([nuevoCupon, ...cupones])
       setCuponSeleccionado(nuevoCupon)
@@ -696,7 +728,7 @@ export function RegistrarVentaDialogMejorado({
           <div className="py-8 text-center space-y-4 animate-in fade-in zoom-in duration-300">
             <div
               className="h-16 w-16 mx-auto rounded-full flex items-center justify-center"
-              style={{ backgroundColor: `${hexToRgb(branding.color_acento)}20` }}
+              style={{ backgroundColor: withAlpha(branding.color_acento, 0.12) }}
             >
               <CheckCircle2
                 className="h-10 w-10"
@@ -706,15 +738,15 @@ export function RegistrarVentaDialogMejorado({
             <div>
               <h3 className="text-xl font-bold">¡Venta Registrada!</h3>
               <p className="text-gray-600 mt-2">{successData.cliente.nombre}</p>
-              <p className="text-2xl font-bold mt-1">€{successData.importe.toFixed(2)}</p>
+              <p className="text-2xl font-bold mt-1">{eur(successData.importe)}</p>
               {successData.descuento_aplicado > 0 && (
                 <p className="text-sm text-green-600">
-                  Descuento: -€{successData.descuento_aplicado.toFixed(2)}
+                  Descuento: -{eur(successData.descuento_aplicado)}
                 </p>
               )}
               <div
                 className="mt-4 p-3 rounded-lg"
-                style={{ backgroundColor: `${hexToRgb(branding.color_acento)}10` }}
+                style={{ backgroundColor: withAlpha(branding.color_acento, 0.08) }}
               >
                 <p
                   className="text-2xl font-bold"
@@ -875,7 +907,6 @@ export function RegistrarVentaDialogMejorado({
                         type="button"
                         onClick={buscarClientePorQrManual}
                         disabled={searching || !codigoQr.trim()}
-                        style={{ backgroundColor: hexToRgb(branding.color_primario) }}
                         className="text-white"
                       >
                         {searching ? (
@@ -952,8 +983,8 @@ export function RegistrarVentaDialogMejorado({
                           <div className="flex items-center justify-between gap-2">
                             <Badge variant="secondary" className="text-xs">
                               {cupon.descuento_porcentaje
-                                ? `${cupon.descuento_porcentaje}% OFF`
-                                : `€${cupon.descuento_fijo} OFF`
+                                ? `-${cupon.descuento_porcentaje}%`
+                                : `-${eur(cupon.descuento_fijo)}`
                               }
                             </Badge>
                             <Button
@@ -1026,12 +1057,12 @@ export function RegistrarVentaDialogMejorado({
                                 </Badge>
                                 {promo.descuento_porcentaje && (
                                   <Badge className="text-xs bg-purple-100 text-purple-700">
-                                    {promo.descuento_porcentaje}% OFF
+                                    -{promo.descuento_porcentaje}%
                                   </Badge>
                                 )}
                                 {promo.descuento_fijo && (
                                   <Badge className="text-xs bg-purple-100 text-purple-700">
-                                    €{promo.descuento_fijo} OFF
+                                    -{eur(promo.descuento_fijo)}
                                   </Badge>
                                 )}
                               </div>
@@ -1139,7 +1170,6 @@ export function RegistrarVentaDialogMejorado({
                 type="button"
                 onClick={() => setPaso(3)}
                 className="text-white"
-                style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               >
                 Continuar
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -1152,7 +1182,7 @@ export function RegistrarVentaDialogMejorado({
             {/* Resumen del cliente */}
             <div
               className="p-3 rounded-lg"
-              style={{ backgroundColor: `${hexToRgb(branding.color_primario)}10` }}
+              style={{ backgroundColor: withAlpha(branding.color_primario, 0.08) }}
             >
               <p className="text-sm font-medium">{clienteSeleccionado?.nombre}</p>
               <p className="text-xs text-gray-600">{clienteSeleccionado?.email}</p>
@@ -1172,7 +1202,7 @@ export function RegistrarVentaDialogMejorado({
                     <Badge variant="secondary" className="text-xs mt-2">
                       {cuponSeleccionado.descuento_porcentaje
                         ? `${cuponSeleccionado.descuento_porcentaje}% de descuento`
-                        : `€${cuponSeleccionado.descuento_fijo} de descuento`
+                        : `${eur(cuponSeleccionado.descuento_fijo)} de descuento`
                       }
                     </Badge>
                   </div>
@@ -1208,22 +1238,22 @@ export function RegistrarVentaDialogMejorado({
             {importe && parseFloat(importe) > 0 && (
               <div
                 className="p-4 rounded-lg space-y-2"
-                style={{ backgroundColor: `${hexToRgb(branding.color_acento)}10` }}
+                style={{ backgroundColor: withAlpha(branding.color_acento, 0.08) }}
               >
                 <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
-                  <span className="font-medium">€{parseFloat(importe).toFixed(2)}</span>
+                  <span className="font-medium">{eur(parseFloat(importe))}</span>
                 </div>
                 {descuentoAplicado > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
                     <span>Descuento:</span>
-                    <span className="font-medium">-€{descuentoAplicado.toFixed(2)}</span>
+                    <span className="font-medium">-{eur(descuentoAplicado)}</span>
                   </div>
                 )}
                 <div className="border-t pt-2 flex justify-between font-bold">
                   <span>Total:</span>
                   <span style={{ color: hexToRgb(branding.color_primario) }}>
-                    €{importeFinal.toFixed(2)}
+                    {eur(importeFinal)}
                   </span>
                 </div>
                 <div

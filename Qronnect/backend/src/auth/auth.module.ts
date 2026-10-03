@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SupabaseAuthGuard } from './guards/supabase-auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 import { JwtTokenService } from './jwt-token.service';
+import { LoginAttemptsService } from './login-attempts.service';
 
 /**
  * Módulo de autenticación
@@ -17,16 +18,27 @@ import { JwtTokenService } from './jwt-token.service';
   imports: [
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET', 'qronnect-dev-secret-change-in-production'),
-        signOptions: {
-          issuer: 'qronnect',
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        // Sin valor por defecto: un secreto conocido permitiría falsificar tokens de cualquier rol
+        const secret = configService.get<string>('JWT_SECRET');
+        if (!secret || secret.length < 32) {
+          throw new Error(
+            'JWT_SECRET no está configurado o tiene menos de 32 caracteres. ' +
+              'Genera uno con: openssl rand -base64 48',
+          );
+        }
+
+        return {
+          secret,
+          signOptions: {
+            issuer: 'qronnect',
+          },
+        };
+      },
       inject: [ConfigService],
     }),
   ],
-  providers: [SupabaseAuthGuard, AdminGuard, JwtTokenService],
-  exports: [SupabaseAuthGuard, AdminGuard, JwtTokenService, JwtModule],
+  providers: [SupabaseAuthGuard, AdminGuard, JwtTokenService, LoginAttemptsService],
+  exports: [SupabaseAuthGuard, AdminGuard, JwtTokenService, LoginAttemptsService, JwtModule],
 })
 export class AuthModule { }

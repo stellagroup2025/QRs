@@ -62,7 +62,7 @@ export default function CuentaPage() {
     }
 
     if (!pinNuevo || pinNuevo.length < 4 || pinNuevo.length > 6) {
-      setPinError('El nuevo PIN debe tener entre 4 y 6 digitos')
+      setPinError('El nuevo PIN debe tener entre 4 y 6 dígitos')
       return
     }
 
@@ -123,9 +123,9 @@ export default function CuentaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <div className="">
 
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="max-w-4xl">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
@@ -135,13 +135,13 @@ export default function CuentaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="">
 
 
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mi Cuenta</h1>
-          <p className="text-muted-foreground">Gestiona tu informacion personal y seguridad</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mi cuenta</h1>
+          <p className="text-muted-foreground">Gestiona tu información personal y tu contraseña</p>
         </div>
 
         <div className="grid gap-6">
@@ -150,7 +150,7 @@ export default function CuentaPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Informacion Personal
+                Información personal
               </CardTitle>
               <CardDescription>
                 Tus datos de acceso al sistema
@@ -191,7 +191,7 @@ export default function CuentaPage() {
                 Cambiar PIN de Acceso
               </CardTitle>
               <CardDescription>
-                Actualiza tu PIN para mayor seguridad. El nuevo PIN se enviara a tu email.
+                Actualiza tu PIN para mayor seguridad. El nuevo PIN se enviará a tu email.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -230,7 +230,7 @@ export default function CuentaPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="pinNuevo">Nuevo PIN (4-6 digitos)</Label>
+                    <Label htmlFor="pinNuevo">Nuevo PIN (4-6 dígitos)</Label>
                     <Input
                       id="pinNuevo"
                       type={showPins ? 'text' : 'password'}

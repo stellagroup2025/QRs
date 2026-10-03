@@ -14,6 +14,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { RegalosService } from './regalos.service';
 import { ClientAuthGuard } from '../auth/guards/client-auth.guard';
 import { AdminAuthGuard } from '../auth/guards/admin-auth.guard';
+import { Tenant } from '../tenant/decorators/tenant.decorator';
 
 /**
  * Controlador de regalos y cupones
@@ -39,6 +40,16 @@ export class RegalosController {
   ) {
     const activos = soloActivos === 'false' ? false : true;
     return this.regalosService.getCatalogo(tiendaId, activos);
+  }
+
+  /**
+   * Obtiene los milestones de referidos de la tienda actual (según el dominio)
+   * La app del cliente solo conoce el slug, no el ID de la tienda
+   */
+  @Get('milestones')
+  @ApiOperation({ summary: 'Obtener milestones de referidos de la tienda actual' })
+  async getMilestonesTiendaActual(@Tenant('id') tenantId: string) {
+    return this.regalosService.getMilestones(tenantId);
   }
 
   /**

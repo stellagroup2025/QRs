@@ -50,7 +50,7 @@ export function TarjetaPremioGanado({ premio, onVerDetalle }: TarjetaPremioGanad
   };
 
   return (
-    <Card className="p-6 relative overflow-hidden">
+    <Card className="relative overflow-hidden rounded-3xl border-ink/[0.07] p-5 shadow-none">
       {/* Barra de color superior según rareza */}
       <div
         className="absolute top-0 left-0 right-0 h-1"
@@ -72,7 +72,7 @@ export function TarjetaPremioGanado({ premio, onVerDetalle }: TarjetaPremioGanad
               {getRarezaLabel(premio.gacha_premios.rareza)}
             </Badge>
           </div>
-          <h3 className="text-lg font-bold">{premio.gacha_premios.nombre}</h3>
+          <h3 className="font-display text-lg font-bold">{premio.gacha_premios.nombre}</h3>
           {premio.gacha_premios.descripcion && (
             <p className="text-sm text-muted-foreground mt-1">
               {premio.gacha_premios.descripcion}
@@ -84,7 +84,7 @@ export function TarjetaPremioGanado({ premio, onVerDetalle }: TarjetaPremioGanad
 
       {/* Premio */}
       <div
-        className="rounded-lg p-4 mb-4 border-2"
+        className="mb-4 rounded-2xl border p-4"
         style={{
           backgroundColor: `${premio.gacha_premios.color_rareza}10`,
           borderColor: `${premio.gacha_premios.color_rareza}30`,
@@ -108,7 +108,7 @@ export function TarjetaPremioGanado({ premio, onVerDetalle }: TarjetaPremioGanad
 
       {/* Código de Canje */}
       {premio.estado === EstadoPremioGacha.PENDIENTE && (
-        <div className="bg-muted/50 rounded-lg p-4 mb-4">
+        <div className="mb-4 rounded-2xl bg-ink/[0.04] p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold">Tu código de canje:</span>
             {diasRestantes !== null && (
@@ -120,27 +120,27 @@ export function TarjetaPremioGanado({ premio, onVerDetalle }: TarjetaPremioGanad
               </Badge>
             )}
           </div>
-          <div className="bg-background p-3 rounded border-2 border-dashed border-primary/50">
-            <code className="text-2xl font-bold tracking-wider block text-center">
+          <div className="rounded-xl border-2 border-dashed border-ink/20 bg-white p-3">
+            <code className="block text-center font-mono text-2xl font-bold tracking-[0.15em]">
               {premio.codigo_canje}
             </code>
           </div>
           <p className="text-xs text-muted-foreground text-center mt-2">
-            Presenta este código en el establecimiento para canjear tu premio
+            Enséñalo en caja para recoger tu premio
           </p>
         </div>
       )}
 
       {/* Condiciones */}
       {premio.gacha_premios.condiciones && premio.estado === EstadoPremioGacha.PENDIENTE && (
-        <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-3 mb-4 border border-blue-200 dark:border-blue-800">
+        <div className="mb-4 rounded-2xl border border-ink/10 p-3">
           <div className="flex items-start gap-2">
-            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-ink/50" />
             <div className="flex-1">
-              <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 uppercase tracking-wide mb-1">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink/55">
                 Condiciones
               </p>
-              <p className="text-sm text-blue-800 dark:text-blue-200">
+              <p className="text-sm text-ink/75">
                 {premio.gacha_premios.condiciones}
               </p>
             </div>
@@ -159,9 +159,9 @@ export function TarjetaPremioGanado({ premio, onVerDetalle }: TarjetaPremioGanad
 
       {/* Mensaje según estado */}
       {premio.estado === EstadoPremioGacha.CANJEADO && premio.fecha_canjeado && (
-        <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-          <p className="text-sm text-green-800 dark:text-green-200 text-center">
-            ✅ Canjeado el {new Date(premio.fecha_canjeado).toLocaleDateString('es-ES')}
+        <div className="rounded-2xl bg-ink/[0.04] p-3">
+          <p className="text-center text-sm text-ink/60">
+            Canjeado el {new Date(premio.fecha_canjeado).toLocaleDateString('es-ES')}
           </p>
         </div>
       )}
@@ -174,13 +174,6 @@ export function TarjetaPremioGanado({ premio, onVerDetalle }: TarjetaPremioGanad
         </div>
       )}
 
-      {premio.estado === EstadoPremioGacha.PENDIENTE && !expirado && (
-        <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-          <p className="text-sm text-green-800 dark:text-green-200 text-center font-medium">
-            🎉 ¡Listo para canjear! Muestra el código al personal
-          </p>
-        </div>
-      )}
     </Card>
   );
 }

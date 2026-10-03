@@ -80,8 +80,8 @@ export class CampanasController {
     description: 'Sugerencias obtenidas exitosamente',
     type: SugerenciasFiltrosDto,
   })
-  async getSugerenciasFiltros(): Promise<SugerenciasFiltrosDto> {
-    return this.campanasService.getSugerenciasFiltros();
+  async getSugerenciasFiltros(@CurrentTienda() tiendaId: string): Promise<SugerenciasFiltrosDto> {
+    return this.campanasService.getSugerenciasFiltros(tiendaId);
   }
 
   /**
