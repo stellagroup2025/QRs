@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { SECTORES } from '@/lib/sectores'
+import { SectorGrid } from '@/components/sector/SectorGrid'
 import {
   QrCode,
   Zap,
@@ -172,6 +174,9 @@ export function ProductLandingPage() {
             <div className='hidden md:flex items-center gap-6'>
               <a href='#demo' className='text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors'>
                 Cómo Funciona
+              </a>
+              <a href='#sectores' className='text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors'>
+                Sectores
               </a>
               <a href='#pricing' className='text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors'>
                 Precios
@@ -475,19 +480,8 @@ export function ProductLandingPage() {
         </div>
       </section>
 
-      {/* Logos Bar - Trust */}
-      <section className='py-8 bg-gray-50 border-y border-gray-200'>
-        <div className='container mx-auto px-4'>
-          <p className='text-center text-sm text-gray-600 mb-6'>Confiado por comercios líderes en España</p>
-          <div className='flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-60'>
-            {['Retail', 'Restaurantes', 'Salones', 'Cafeterías', 'Servicios'].map((type) => (
-              <div key={type} className='text-2xl font-bold text-gray-400'>
-                {type}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Landings por sector */}
+      <SectorGrid />
 
       {/* Cómo Funciona */}
       <section id="demo" className='py-20 bg-white'>
@@ -2019,6 +2013,12 @@ export function ProductLandingPage() {
                   <li><Link href='#pricing' className='hover:text-white transition-colors'>Precios</Link></li>
                   <li><Link href='#demo' className='hover:text-white transition-colors'>Demo</Link></li>
                   <li><Link href='/get-qr' className='hover:text-white transition-colors'>Empezar</Link></li>
+                </ul>
+                <h3 className='font-semibold mt-8 mb-4 text-white'>Sectores</h3>
+                <ul className='space-y-3 text-gray-400 text-sm'>
+                  {Object.values(SECTORES).map((s) => (
+                    <li key={s.slug}><Link href={`/para/${s.slug}`} className='hover:text-white transition-colors'>{s.nombre}</Link></li>
+                  ))}
                 </ul>
               </div>
 
