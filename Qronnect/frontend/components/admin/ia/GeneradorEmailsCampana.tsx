@@ -253,7 +253,7 @@ export function GeneradorEmailsCampana({
       <CardContent className="space-y-4">
         {/* Sugerencias de Segmentos basadas en DB */}
         {!loadingSegmentos && (
-          <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+          <Card className="border-2 border-purple-200 bg-muted/60">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Lightbulb className="h-4 w-4 text-purple-600" />
@@ -304,7 +304,7 @@ export function GeneradorEmailsCampana({
         )}
 
         {loadingSegmentos && (
-          <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+          <Card className="border-2 border-purple-200 bg-muted/60">
             <CardContent className="py-8">
               <div className="flex items-center justify-center gap-3 text-gray-500">
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -365,7 +365,7 @@ export function GeneradorEmailsCampana({
           <Button
             onClick={generarCampana}
             disabled={loading}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {loading ? (
               <>
@@ -423,7 +423,7 @@ export function GeneradorEmailsCampana({
               <div className="space-y-3">
                 <h4 className="font-semibold text-gray-900">Variantes de email (A/B Testing)</h4>
                 {campana.cuerpos.map((variante, idx) => (
-                  <Card key={idx} className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50">
+                  <Card key={idx} className="border-2 border-indigo-200 bg-muted/60">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base">Variante {variante.variante}</CardTitle>
@@ -461,7 +461,7 @@ export function GeneradorEmailsCampana({
                       <Button
                         onClick={() => crearBorradorCampana(variante, 0, idx)}
                         disabled={creatingDraft !== null}
-                        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         {creatingDraft === idx ? (
                           <>

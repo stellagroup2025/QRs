@@ -7,8 +7,10 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { JwtTokenService } from '../auth/jwt-token.service';
+import { LoginAttemptsService } from '../auth/login-attempts.service';
 import { LoginComercialDto, CreateComercialDto } from './dto/comerciales.dto';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { EmailService } from '../email/email.service';
 import { QrCodesService } from '../qr-codes/qr-codes.service';
 import { PartnersService } from '../partners/partners.service';
@@ -21,6 +23,7 @@ export class ComercialesService {
         private emailService: EmailService,
         private qrCodesService: QrCodesService,
         private partnersService: PartnersService,
+        private loginAttemptsService: LoginAttemptsService,
     ) { }
 
     /**
@@ -28,6 +31,9 @@ export class ComercialesService {
      */
     async login(loginDto: LoginComercialDto) {
         const supabase = this.supabaseService.getAdminClient();
+
+        const attemptsKey = `comercial:${loginDto.email.toLowerCase()}`;
+        this.loginAttemptsService.assertNotLocked(attemptsKey);
 
         const { data: comercial, error } = await supabase
             .from('comerciales')
@@ -37,13 +43,17 @@ export class ComercialesService {
             .single();
 
         if (error || !comercial) {
+            this.loginAttemptsService.registerFailure(attemptsKey);
             throw new UnauthorizedException('Credenciales inválidas');
         }
 
         const isMatch = await bcrypt.compare(loginDto.password, comercial.password_hash);
         if (!isMatch) {
+            this.loginAttemptsService.registerFailure(attemptsKey);
             throw new UnauthorizedException('Credenciales inválidas');
         }
+
+        this.loginAttemptsService.reset(attemptsKey);
 
         // Actualizar último acceso
         await supabase
@@ -205,7 +215,7 @@ export class ComercialesService {
         }
 
         // 3. Crear Usuario Admin
-        const pinGenerado = Math.floor(100000 + Math.random() * 900000).toString();
+        const pinGenerado = crypto.randomInt(100000, 1000000).toString();
         const pin_hash = await bcrypt.hash(pinGenerado, 10);
 
         const { error: userError } = await supabase

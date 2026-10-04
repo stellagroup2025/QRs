@@ -38,7 +38,7 @@ export function PanelIA({ tenantDomain, adminToken }: { tenantDomain: string; ad
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-2 rounded-lg">
+        <div className="bg-primary text-primary-foreground hover:bg-primary/90 p-2 rounded-lg">
           <Sparkles className="h-6 w-6 text-white" />
         </div>
         <div>

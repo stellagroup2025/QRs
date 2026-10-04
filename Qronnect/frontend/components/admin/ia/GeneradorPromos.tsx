@@ -208,7 +208,7 @@ export function GeneradorPromos({
           <Button
             onClick={generarIdeas}
             disabled={loading}
-            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {loading ? (
               <>
@@ -234,7 +234,7 @@ export function GeneradorPromos({
         {ideas.length > 0 && (
           <div className="space-y-4 animate-in fade-in duration-500">
             {ideas.map((idea, idx) => (
-              <Card key={idx} className="border-2 border-pink-200 bg-gradient-to-br from-pink-50 to-purple-50">
+              <Card key={idx} className="border-2 border-pink-200 bg-muted/60">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg text-pink-900">{idea.titulo}</CardTitle>
                   <CardDescription className="text-sm">{idea.descripcion}</CardDescription>
@@ -296,7 +296,7 @@ export function GeneradorPromos({
                   <Button
                     onClick={() => crearBorradorPromocion(idea, idx)}
                     disabled={creatingDraft !== null}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     {creatingDraft === idx ? (
                       <>

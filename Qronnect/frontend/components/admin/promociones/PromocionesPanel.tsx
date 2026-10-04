@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { eur } from '@/lib/format'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -147,7 +148,7 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
 
   const getValorLabel = (tipo: string, valor: number) => {
     switch (tipo) {
-      case 'descuento_fijo': return `€${valor.toFixed(0)}`
+      case 'descuento_fijo': return `${valor.toLocaleString('es-ES')} €`
       case 'descuento_porcentaje': return `${valor}%`
       case 'producto_gratis': return 'Gratis'
       default: return valor.toString()
@@ -193,7 +194,7 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
           value={totalCanjes}
           icon={Ticket}
           gradient="from-purple-500/20 to-pink-500/20"
-          description="Lifetime value"
+          description="Desde el principio"
         />
       </div>
 
@@ -243,7 +244,6 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
               setDialogOpen(true)
             }}
             className="gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-all"
-            style={{ backgroundColor: hexToRgb(branding.color_primario) }}
           >
             <Plus className="h-4 w-4" />
             Nueva Promoción
@@ -286,7 +286,7 @@ export function PromocionesPanel({ tiendaId, adminToken, tenantDomain }: Promoci
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
-                <Card className={`h-full group hover:shadow-lg transition-all duration-300 overflow-hidden border-l-4 dark:bg-slate-900 dark:border-slate-800 ${!promo.activo ? 'opacity-70 border-l-slate-300' : 'border-l-primary'}`}
+                <Card className={`h-full group hover:shadow-lg transition-all duration-300 overflow-hidden border-l-4 ${!promo.activo ? 'opacity-70 border-l-slate-300' : 'border-l-primary'}`}
                   style={{ borderLeftColor: promo.activo ? hexToRgb(branding.color_primario) : undefined }}
                 >
                   <CardContent className="p-0">

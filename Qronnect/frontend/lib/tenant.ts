@@ -53,3 +53,22 @@ export function getTenantDomain(): string | null {
 
   return domain
 }
+
+/**
+ * Tienda del panel de administración: la de la sesión iniciada (admin_tienda / tenant_domain),
+ * que es fiable también en localhost y en las vistas previas de Vercel. Si no hay sesión,
+ * se usa la de la URL.
+ */
+export function getAdminTenantDomain(): string {
+  if (typeof window !== 'undefined') {
+    try {
+      const tienda = JSON.parse(localStorage.getItem('admin_tienda') || 'null')
+      if (tienda?.dominio) return tienda.dominio
+    } catch {
+      // admin_tienda corrupto: seguimos con el resto de opciones
+    }
+    const guardado = localStorage.getItem('tenant_domain')
+    if (guardado) return guardado
+  }
+  return getTenantDomain() || 'lokeyokiera'
+}

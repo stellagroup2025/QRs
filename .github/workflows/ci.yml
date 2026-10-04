@@ -1,0 +1,76 @@
+name: CI - Qronnect
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  backend-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Qronnect/backend
+
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './Qronnect/backend/package-lock.json'
+
+    - name: Install Dependencies
+      run: npm ci
+
+    - name: Typecheck & Build
+      run: npm run build
+
+    - name: Run Tests
+      run: npm test
+
+    # El código arrastra miles de errores de formato (finales de línea CRLF, prettier).
+    # Se informa del resultado sin bloquear hasta que se haga una pasada de limpieza.
+    - name: Lint (informativo)
+      continue-on-error: true
+      run: npx eslint "{src,apps,libs,test}/**/*.ts"
+
+  frontend-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Qronnect/frontend
+
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './Qronnect/frontend/package-lock.json'
+
+    - name: Install Dependencies
+      run: npm ci --legacy-peer-deps
+
+    - name: Typecheck
+      run: npx tsc --noEmit
+
+    # El frontend aún no tiene configuración de ESLint (`next lint` pide configurarla de forma
+    # interactiva), así que no hay paso de lint hasta que se añada.
+    - name: Build
+      run: npm run build
+      env:
+        NEXT_TELEMETRY_DISABLED: 1

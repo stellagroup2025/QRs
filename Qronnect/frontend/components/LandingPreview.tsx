@@ -150,7 +150,7 @@ export function LandingPreview({ config, deviceType = 'desktop' }: LandingPrevie
                 <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium border bg-white/50 backdrop-blur-sm"
                   style={{ borderColor: `${branding.color_primario}30`, color: branding.color_primario }}
                 >
-                  <span>{branding.nombre_marca || 'Marca'}</span>
+                  <span>{branding.nombre_comercial || 'Marca'}</span>
                 </div>
 
                 <h1 className="text-4xl font-extrabold tracking-tight leading-tight">

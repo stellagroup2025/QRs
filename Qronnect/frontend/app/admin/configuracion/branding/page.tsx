@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { getAdminTenantDomain } from '@/lib/tenant'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -69,12 +70,12 @@ export default function ConfiguracionBrandingPage() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
       const token = localStorage.getItem('admin_token')
-      const domain = window.location.hostname.split('.')[0]
+      const domain = getAdminTenantDomain()
 
       const response = await fetch(`${API_URL}/api/tiendas/branding`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-Tenant-Domain': domain === 'localhost' ? 'visionplus' : domain,
+          'X-Tenant-Domain': domain,
         },
       })
 
@@ -108,7 +109,7 @@ export default function ConfiguracionBrandingPage() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
       const token = localStorage.getItem('admin_token')
-      const domain = window.location.hostname.split('.')[0]
+      const domain = getAdminTenantDomain()
 
       const formData = new FormData()
       formData.append('file', file)
@@ -118,7 +119,7 @@ export default function ConfiguracionBrandingPage() {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-Tenant-Domain': domain === 'localhost' ? 'visionplus' : domain,
+          'X-Tenant-Domain': domain,
           // Note: Do NOT set Content-Type header manually for FormData, the browser sets it with boundary
         },
         body: formData,
@@ -157,14 +158,14 @@ export default function ConfiguracionBrandingPage() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
       const token = localStorage.getItem('admin_token')
-      const domain = window.location.hostname.split('.')[0]
+      const domain = getAdminTenantDomain()
 
       const response = await fetch(`${API_URL}/api/tiendas/config/branding`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
-          'X-Tenant-Domain': domain === 'localhost' ? 'visionplus' : domain,
+          'X-Tenant-Domain': domain,
         },
         body: JSON.stringify(config),
       })
@@ -193,7 +194,7 @@ export default function ConfiguracionBrandingPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4 md:p-6 lg:p-8">
+      <div className="">
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
         </div>
@@ -202,11 +203,11 @@ export default function ConfiguracionBrandingPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Configuración de Branding</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Imagen de marca</h1>
           <p className="text-muted-foreground text-sm">
             Personaliza la identidad visual de tu marca
           </p>

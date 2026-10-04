@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { JwtTokenService } from '../auth/jwt-token.service';
+import { LoginAttemptsService } from '../auth/login-attempts.service';
 import { SmsService } from '../sms/sms.service';
 import { EmailService } from '../email/email.service';
 import { CreateTiendaDto } from './dto/create-tienda.dto';
@@ -18,6 +19,7 @@ import { ConfigureIaDto } from './dto/configure-ia.dto';
 import { InformesService } from '../informes/informes.service';
 import { FormatoInforme } from '../informes/dto/generar-informe.dto';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class SuperAdminService {
@@ -28,6 +30,7 @@ export class SuperAdminService {
     private readonly emailService: EmailService,
     @Inject(forwardRef(() => InformesService))
     private readonly informesService: InformesService,
+    private readonly loginAttemptsService: LoginAttemptsService,
   ) { }
 
   /**
@@ -54,7 +57,7 @@ export class SuperAdminService {
     }
 
     // Generar código aleatorio de 6 dígitos
-    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    const codigo = crypto.randomInt(100000, 1000000).toString();
 
     // Guardar código en la base de datos
     const { error: insertError } = await supabase.from('dev_otp_codes').insert({
@@ -68,14 +71,10 @@ export class SuperAdminService {
       throw new BadRequestException('Error al generar código');
     }
 
-    // En desarrollo, mostrar el código en la consola
-    console.log('\n========================================');
-    console.log('🔐 CÓDIGO OTP DE SUPERADMIN');
-    console.log('========================================');
-    console.log(`Email: ${email}`);
-    console.log(`Código: ${codigo}`);
-    console.log(`Expira en: 10 minutos`);
-    console.log('========================================\n');
+    // El código solo se muestra en consola en desarrollo; nunca en los logs de producción
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔐 CÓDIGO OTP DE SUPERADMIN para ${email}: ${codigo} (expira en 10 minutos)`);
+    }
 
     // Enviar email con el código OTP
     const emailHtml = `
@@ -184,6 +183,9 @@ export class SuperAdminService {
   }> {
     const supabase = this.supabaseService.getAdminClient();
 
+    const attemptsKey = `superadmin-otp:${email.toLowerCase()}`;
+    this.loginAttemptsService.assertNotLocked(attemptsKey);
+
     // Buscar el código en la base de datos
     const { data: otpRecord, error: otpError } = await supabase
       .from('dev_otp_codes')
@@ -197,8 +199,11 @@ export class SuperAdminService {
       .single();
 
     if (otpError || !otpRecord) {
+      this.loginAttemptsService.registerFailure(attemptsKey);
       throw new BadRequestException('Código inválido o expirado');
     }
+
+    this.loginAttemptsService.reset(attemptsKey);
 
     // Marcar código como usado
     await supabase.from('dev_otp_codes').update({ usado: true }).eq('id', otpRecord.id);
@@ -371,7 +376,7 @@ export class SuperAdminService {
       console.log(`   - Rol: ${createDto.admin_rol}`);
 
       // Generar PIN aleatorio de 6 dígitos
-      pinGenerado = Math.floor(100000 + Math.random() * 900000).toString();
+      pinGenerado = crypto.randomInt(100000, 1000000).toString();
       const pin_hash = await bcrypt.hash(pinGenerado, 10);
 
       // Crear usuario admin para la tienda con los datos del responsable

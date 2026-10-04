@@ -11,6 +11,7 @@ import {
   Request,
   Query,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiTags,
   ApiOperation,
@@ -39,6 +40,7 @@ export class SuperAdminController {
   // ========================================
 
   @Post('auth/send-email')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Enviar código de verificación por email (GRATIS)',
     description:
@@ -51,6 +53,7 @@ export class SuperAdminController {
   }
 
   @Post('auth/verify-email')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Verificar código de email y obtener token de sesión',
     description: 'Verifica el código recibido por email y devuelve tokens de autenticación',

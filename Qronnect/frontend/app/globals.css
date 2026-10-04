@@ -43,6 +43,14 @@
   --brand-primary: 0 0 0;
   --brand-secondary: 102 102 102;
   --brand-accent: 0 102 204;
+  /* Color de texto legible sobre cada color de marca (blanco o tinta) */
+  --brand-primary-on: 255 255 255;
+  --brand-secondary-on: 255 255 255;
+  --brand-accent-on: 255 255 255;
+
+  /* Neutros de la landing y la app del cliente */
+  --ink: 22 19 17;
+  --paper: 248 245 240;
 }
 
 .dark {
@@ -83,6 +91,18 @@
 @theme inline {
   --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-display: var(--font-bricolage), "Geist", system-ui, sans-serif;
+  --font-accent: var(--font-instrument), Georgia, serif;
+
+  /* Colores de marca de la tienda: bg-brand, text-brand-on, bg-brand/10... */
+  --color-brand: rgb(var(--brand-primary));
+  --color-brand-on: rgb(var(--brand-primary-on));
+  --color-brand-2: rgb(var(--brand-secondary));
+  --color-brand-2-on: rgb(var(--brand-secondary-on));
+  --color-brand-3: rgb(var(--brand-accent));
+  --color-brand-3-on: rgb(var(--brand-accent-on));
+  --color-ink: rgb(var(--ink));
+  --color-paper: rgb(var(--paper));
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -120,6 +140,64 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+}
+
+/*
+ * Tema del panel de administración: neutros cálidos (los de la app del cliente)
+ * y el color de la tienda solo como acento. Se aplica con la clase .admin-theme.
+ */
+.admin-theme {
+  --background: oklch(0.975 0.005 75);
+  --foreground: oklch(0.2 0.01 60);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.01 60);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.01 60);
+  --primary: oklch(0.22 0.012 60);
+  --primary-foreground: oklch(0.985 0.004 75);
+  --secondary: oklch(0.955 0.006 75);
+  --secondary-foreground: oklch(0.22 0.012 60);
+  --muted: oklch(0.955 0.006 75);
+  --muted-foreground: oklch(0.5 0.012 60);
+  --accent: oklch(0.945 0.008 75);
+  --accent-foreground: oklch(0.22 0.012 60);
+  --border: oklch(0.91 0.007 75);
+  --input: oklch(0.89 0.008 75);
+  --ring: oklch(0.55 0.01 60);
+  --radius: 0.75rem;
+}
+
+.dark .admin-theme {
+  --background: oklch(0.17 0.006 60);
+  --foreground: oklch(0.96 0.004 75);
+  --card: oklch(0.21 0.007 60);
+  --card-foreground: oklch(0.96 0.004 75);
+  --popover: oklch(0.21 0.007 60);
+  --popover-foreground: oklch(0.96 0.004 75);
+  --primary: oklch(0.96 0.004 75);
+  --primary-foreground: oklch(0.2 0.01 60);
+  --secondary: oklch(0.26 0.007 60);
+  --secondary-foreground: oklch(0.96 0.004 75);
+  --muted: oklch(0.26 0.007 60);
+  --muted-foreground: oklch(0.7 0.008 60);
+  --accent: oklch(0.28 0.008 60);
+  --accent-foreground: oklch(0.96 0.004 75);
+  --border: oklch(0.3 0.007 60);
+  --input: oklch(0.32 0.008 60);
+  --ring: oklch(0.6 0.01 60);
+}
+
+/* Títulos de pantalla del panel: mismo estilo en todas, sin icono (el menú ya lo lleva) */
+.admin-theme main h1 {
+  font-family: var(--font-display);
+  font-size: 1.875rem;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+.admin-theme main h1 > svg {
+  display: none;
 }
 
 @layer base {

@@ -168,7 +168,7 @@ export function Paso4Regalo({ datosIniciales, onChange }: Paso4RegaloProps) {
 
         {/* TAB: Regalo de Bienvenida */}
         <TabsContent value="bienvenida" className="space-y-4 mt-4">
-          <RadioGroup value={tipoRegalo} onValueChange={setTipoRegalo}>
+          <RadioGroup value={tipoRegalo} onValueChange={(v) => setTipoRegalo(v as typeof tipoRegalo)}>
             <div className="space-y-3">
               {/* Opcion: Puntos */}
               <Card

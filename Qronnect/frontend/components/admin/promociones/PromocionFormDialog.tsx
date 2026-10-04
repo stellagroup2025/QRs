@@ -340,7 +340,6 @@ export function PromocionFormDialog({
             <Button
               type="submit"
               disabled={loading}
-              style={{ backgroundColor: hexToRgb(branding.color_primario) }}
               className="text-white"
             >
               {loading ? 'Guardando...' : promocion ? 'Actualizar' : 'Crear Promoción'}

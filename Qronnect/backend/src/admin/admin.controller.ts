@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Put, Delete, Body, UseGuards, Query, Param, Req } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { ComprasService } from '../compras/compras.service';
@@ -35,6 +36,7 @@ export class AdminController {
    * Este endpoint NO requiere autenticación previa
    */
   @Post('auth/login')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Login de administrador de tienda',
     description: 'Autentica al administrador de la tienda usando email y PIN de 4 dígitos',
@@ -86,6 +88,7 @@ export class AdminController {
    * Envia email con el nuevo PIN
    */
   @Post('auth/cambiar-pin')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @UseGuards(AdminAuthGuard)
   @ApiBearerAuth('JWT')
   @ApiOperation({

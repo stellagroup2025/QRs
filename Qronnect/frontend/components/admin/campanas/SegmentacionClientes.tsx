@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Filter, Loader2, Lightbulb, Sparkles } from 'lucide-react'
+import { Users, Filter, Loader2, Sparkles } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -44,6 +44,54 @@ interface FiltrosSegmentacion {
   solo_sin_campanas?: boolean
 }
 
+interface Sugerencia {
+  nombre: string
+  descripcion?: string
+  filtros: FiltrosSegmentacion
+}
+
+interface RangoSugerencia {
+  label: string
+  min?: number
+  max?: number
+  descripcion?: string
+}
+
+/**
+ * Cómo se traduce cada grupo de rangos de /sugerencias-filtros a los filtros de esta pantalla.
+ * El historial de campañas no se incluye: estos filtros se aplican aquí sobre los clientes
+ * y ese dato no viene en el listado.
+ */
+const CAMPOS_RANGO: Record<string, [keyof FiltrosSegmentacion, keyof FiltrosSegmentacion]> = {
+  dias_ultima_visita: ['dias_desde_ultima_visita_min', 'dias_desde_ultima_visita_max'],
+  num_visitas: ['num_visitas_min', 'num_visitas_max'],
+  ticket_medio: ['ticket_medio_min', 'ticket_medio_max'],
+  puntos: ['puntos_min', 'puntos_max'],
+  edad: ['edad_min', 'edad_max'],
+}
+
+/** Convierte la respuesta de la API ({ edad: [...], ticket_medio: [...], ... }) en botones de segmentación */
+function sugerenciasDesdeRangos(data: any): Sugerencia[] {
+  // Formato antiguo, por si el backend ya devuelve las sugerencias montadas
+  if (Array.isArray(data?.sugerencias)) return data.sugerencias
+
+  const lista: Sugerencia[] = []
+  for (const [grupo, [campoMin, campoMax]] of Object.entries(CAMPOS_RANGO)) {
+    const rangos: RangoSugerencia[] = Array.isArray(data?.[grupo]) ? data[grupo] : []
+    for (const rango of rangos) {
+      // Sin límites (p. ej. "A punto de canjear") no se puede filtrar aquí
+      if (rango.min === undefined && rango.max === undefined) continue
+      // "Todas las edades" no filtra nada y además dejaría fuera a quien no tiene fecha de nacimiento
+      if (grupo === 'edad' && (rango.min ?? 0) <= 18 && (rango.max ?? 0) >= 100) continue
+      const filtros: FiltrosSegmentacion = {}
+      if (rango.min !== undefined) (filtros as any)[campoMin] = rango.min
+      if (rango.max !== undefined) (filtros as any)[campoMax] = rango.max
+      lista.push({ nombre: rango.label, descripcion: rango.descripcion, filtros })
+    }
+  }
+  return lista
+}
+
 interface SegmentacionClientesProps {
   adminToken: string
   tenantDomain: string
@@ -62,7 +110,7 @@ export function SegmentacionClientes({
   const [clientesSeleccionados, setClientesSeleccionados] = useState<Set<string>>(new Set())
   const [filtros, setFiltros] = useState<FiltrosSegmentacion>(initialFiltros || {})
   const [loadingSugerencias, setLoadingSugerencias] = useState(false)
-  const [sugerencias, setSugerencias] = useState<any[]>([])
+  const [sugerencias, setSugerencias] = useState<Sugerencia[]>([])
 
   useEffect(() => {
     cargarClientes()
@@ -88,7 +136,7 @@ export function SegmentacionClientes({
         const data = await response.json()
         setClientes(data.data || [])
         // Seleccionar todos por defecto
-        const todosIds = new Set(data.data.map((c: Cliente) => c.id))
+        const todosIds = new Set<string>(data.data.map((c: Cliente) => c.id))
         setClientesSeleccionados(todosIds)
         onClientesSeleccionados(Array.from(todosIds))
       }
@@ -111,7 +159,7 @@ export function SegmentacionClientes({
 
       if (response.ok) {
         const data = await response.json()
-        setSugerencias(data.sugerencias || [])
+        setSugerencias(sugerenciasDesdeRangos(data))
       }
     } catch (error) {
       console.error('Error cargando sugerencias:', error)
@@ -120,8 +168,16 @@ export function SegmentacionClientes({
     }
   }
 
-  function aplicarSugerencia(sugerencia: any) {
-    setFiltros(sugerencia.filtros)
+  /** La sugerencia está activa si los filtros actuales son exactamente los suyos */
+  function esActiva(sugerencia: Sugerencia) {
+    const definidos = (f: FiltrosSegmentacion) =>
+      Object.entries(f).filter(([, v]) => v !== undefined && v !== '').sort(([a], [b]) => a.localeCompare(b))
+    return JSON.stringify(definidos(filtros)) === JSON.stringify(definidos(sugerencia.filtros))
+  }
+
+  function aplicarSugerencia(sugerencia: Sugerencia) {
+    // Pulsar la sugerencia activa la quita
+    setFiltros(esActiva(sugerencia) ? {} : sugerencia.filtros)
   }
 
   function aplicarFiltrosAutomaticamente() {
@@ -239,29 +295,34 @@ export function SegmentacionClientes({
 
   return (
     <div className="space-y-3">
-      {/* Sugerencias de Filtros - Compacto */}
+      {/* Segmentación rápida: un toque aplica el rango; otro toque lo quita */}
       {sugerencias.length > 0 && (
-        <Card className="border border-blue-200 bg-blue-50/50">
+        <Card className="shadow-none">
           <CardHeader className="py-2 px-3">
-            <CardTitle className="flex items-center gap-2 text-blue-900 text-sm">
-              <Sparkles className="h-4 w-4" />
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Sparkles className="h-4 w-4 text-muted-foreground" />
               Segmentación rápida
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-3 pb-2">
+          <CardContent className="px-3 pb-3">
             <div className="flex flex-wrap gap-1.5">
-              {sugerencias.slice(0, 4).map((sugerencia, idx) => (
-                <Button
-                  key={idx}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs h-7 bg-white"
-                  onClick={() => aplicarSugerencia(sugerencia)}
-                >
-                  <Lightbulb className="h-3 w-3 mr-1 text-amber-500" />
-                  {sugerencia.nombre}
-                </Button>
-              ))}
+              {sugerencias.map((sugerencia) => {
+                const activa = esActiva(sugerencia)
+                return (
+                  <Button
+                    key={sugerencia.nombre}
+                    type="button"
+                    variant={activa ? 'default' : 'outline'}
+                    size="sm"
+                    className="h-7 rounded-full text-xs"
+                    title={sugerencia.descripcion}
+                    aria-pressed={activa}
+                    onClick={() => aplicarSugerencia(sugerencia)}
+                  >
+                    {sugerencia.nombre}
+                  </Button>
+                )
+              })}
             </div>
           </CardContent>
         </Card>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getAdminTenantDomain } from '@/lib/tenant';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -49,7 +50,7 @@ interface ProgramaReferidos {
       referidor: Recompensa;
       referido: Recompensa;
     };
-    por_primera_compra?: {
+    por_primera_compra: {
       referidor: Recompensa;
       referido: Recompensa;
     };
@@ -57,17 +58,17 @@ interface ProgramaReferidos {
   milestones: Milestone[];
 }
 
+/** Lo que devuelve la función estadisticas_referidos de la base de datos */
 interface Estadisticas {
   total_referidos: number;
-  este_mes: number;
+  referidos_este_mes: number;
+  puntos_otorgados: number;
   top_referidores: Array<{
-    cliente: string;
+    cliente_id: string;
+    nombre: string;
     codigo: string;
     total_referidos: number;
-    puntos_ganados: number;
   }>;
-  conversion_rate: number;
-  recompensas_otorgadas: number;
 }
 
 export default function ReferidosPage() {
@@ -84,18 +85,17 @@ export default function ReferidosPage() {
         referido: { tipo: 'puntos', valor: 30 },
       },
       por_primera_compra: {
-        referidor: { tipo: 'puntos', valor: 100 },
-        referido: { tipo: 'cupon', valor: 10 },
+        referidor: { tipo: 'puntos', valor: 0 },
+        referido: { tipo: 'puntos', valor: 0 },
       },
     },
     milestones: [],
   });
   const [estadisticas, setEstadisticas] = useState<Estadisticas>({
     total_referidos: 0,
-    este_mes: 0,
+    referidos_este_mes: 0,
+    puntos_otorgados: 0,
     top_referidores: [],
-    conversion_rate: 0,
-    recompensas_otorgadas: 0,
   });
   const [referidos, setReferidos] = useState<any[]>([]);
   const [dialogMilestone, setDialogMilestone] = useState(false);
@@ -113,30 +113,7 @@ export default function ReferidosPage() {
   const cargarDatos = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-      let tenant = localStorage.getItem('tenant_domain');
-
-      // Fallback: Si no hay tenant en localStorage, extraerlo del dominio actual
-      if (!tenant) {
-        const host = window.location.host;
-        const parts = host.split('.');
-
-        // Si es subdominio.qronnect.es -> usar subdominio
-        if (parts.length >= 2 && !host.startsWith('localhost')) {
-          tenant = parts[0];
-        }
-        // Si es subdominio.localhost:3000 -> usar subdominio
-        else if (parts.length > 1 && parts[1].startsWith('localhost')) {
-          tenant = parts[0];
-        }
-        // Si es localhost -> usar default
-        else {
-          tenant = 'lokeyokiera'; // fallback para desarrollo
-        }
-
-        console.log('⚠️ tenant_domain no encontrado en localStorage, usando:', tenant);
-        // Guardar para futuras peticiones
-        localStorage.setItem('tenant_domain', tenant);
-      }
+      const tenant = getAdminTenantDomain();
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -160,7 +137,12 @@ export default function ReferidosPage() {
             recompensas: {
               por_registro: {
                 referidor: { tipo: 'puntos', valor: data.puntos_por_referido || 0 },
-                referido: { tipo: 'puntos', valor: 0 },
+                // Sin valor propio, el amigo recibe lo mismo que quien invita
+                referido: { tipo: 'puntos', valor: data.puntos_para_referido ?? data.puntos_por_referido ?? 0 },
+              },
+              por_primera_compra: {
+                referidor: { tipo: 'puntos', valor: data.puntos_primera_compra_referidor ?? 0 },
+                referido: { tipo: 'puntos', valor: data.puntos_primera_compra_referido ?? 0 },
               },
             },
             milestones: data.recompensas || [],
@@ -179,7 +161,12 @@ export default function ReferidosPage() {
 
       if (statsRes.ok) {
         const stats = await statsRes.json();
-        setEstadisticas(stats);
+        setEstadisticas({
+          total_referidos: stats?.total_referidos ?? 0,
+          referidos_este_mes: stats?.referidos_este_mes ?? 0,
+          puntos_otorgados: stats?.puntos_otorgados ?? 0,
+          top_referidores: Array.isArray(stats?.top_referidores) ? stats.top_referidores : [],
+        });
       }
 
       // Cargar lista de referidos
@@ -205,30 +192,7 @@ export default function ReferidosPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('admin_token');
-      let tenant = localStorage.getItem('tenant_domain');
-
-      // Fallback: Si no hay tenant en localStorage, extraerlo del dominio actual
-      if (!tenant) {
-        const host = window.location.host;
-        const parts = host.split('.');
-
-        // Si es subdominio.qronnect.es -> usar subdominio
-        if (parts.length >= 2 && !host.startsWith('localhost')) {
-          tenant = parts[0];
-        }
-        // Si es subdominio.localhost:3000 -> usar subdominio
-        else if (parts.length > 1 && parts[1].startsWith('localhost')) {
-          tenant = parts[0];
-        }
-        // Si es localhost -> usar default
-        else {
-          tenant = 'lokeyokiera'; // fallback para desarrollo
-        }
-
-        console.log('⚠️ tenant_domain no encontrado en localStorage, usando:', tenant);
-        // Guardar para futuras peticiones
-        localStorage.setItem('tenant_domain', tenant);
-      }
+      const tenant = getAdminTenantDomain();
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -245,6 +209,9 @@ export default function ReferidosPage() {
         activo: programa.activo ?? false,
         // El backend espera puntos_por_referido (número)
         puntos_por_referido: programa.recompensas?.por_registro?.referidor?.valor ?? 0,
+        puntos_para_referido: programa.recompensas?.por_registro?.referido?.valor ?? 0,
+        puntos_primera_compra_referidor: programa.recompensas?.por_primera_compra?.referidor?.valor ?? 0,
+        puntos_primera_compra_referido: programa.recompensas?.por_primera_compra?.referido?.valor ?? 0,
         // El backend espera recompensas (array de objetivos/milestones)
         recompensas: Array.isArray(programa.milestones) ? programa.milestones : [],
       };
@@ -324,7 +291,7 @@ export default function ReferidosPage() {
 
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto"></div>
             <p className="mt-4 text-gray-600">Cargando...</p>
           </div>
         </div>
@@ -335,9 +302,9 @@ export default function ReferidosPage() {
   return (
     <>
 
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Sistema de Referidos</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Referidos</h1>
           <p className="text-gray-600 mt-2">Gestiona el programa de referidos de tu tienda</p>
         </div>
 
@@ -395,47 +362,20 @@ export default function ReferidosPage() {
 
             <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader>
-                <CardTitle>Recompensas por Registro</CardTitle>
-                <CardDescription>Cuando un amigo se registra</CardDescription>
+                <CardTitle>Premio al registrarse</CardTitle>
+                <CardDescription>Cuando un amigo se une con un código</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Referidor */}
                   <div className="space-y-4 p-4 border rounded-lg">
-                    <h4 className="font-medium">Para quien refiere</h4>
+                    <h4 className="font-medium">Para quien invita</h4>
+                    <p className="text-sm text-muted-foreground">Puntos por cada amigo que se registra con su código.</p>
                     <div className="space-y-2">
-                      <Label>Tipo</Label>
-                      <Select
-                        value={programa.recompensas.por_registro.referidor.tipo}
-                        onValueChange={(value: any) =>
-                          setPrograma({
-                            ...programa,
-                            recompensas: {
-                              ...programa.recompensas,
-                              por_registro: {
-                                ...programa.recompensas.por_registro,
-                                referidor: {
-                                  ...programa.recompensas.por_registro.referidor,
-                                  tipo: value,
-                                },
-                              },
-                            },
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="puntos">Puntos</SelectItem>
-                          <SelectItem value="cupon">Cupón (%)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Valor</Label>
+                      <Label>Puntos</Label>
                       <Input
                         type="number"
+                        min={0}
                         value={programa.recompensas.por_registro.referidor.valor}
                         onChange={(e) =>
                           setPrograma({
@@ -446,7 +386,7 @@ export default function ReferidosPage() {
                                 ...programa.recompensas.por_registro,
                                 referidor: {
                                   ...programa.recompensas.por_registro.referidor,
-                                  valor: parseInt(e.target.value),
+                                  valor: Math.max(0, parseInt(e.target.value) || 0),
                                 },
                               },
                             },
@@ -458,40 +398,13 @@ export default function ReferidosPage() {
 
                   {/* Referido */}
                   <div className="space-y-4 p-4 border rounded-lg">
-                    <h4 className="font-medium">Para el nuevo cliente</h4>
+                    <h4 className="font-medium">Para el amigo</h4>
+                    <p className="text-sm text-muted-foreground">Puntos de regalo al registrarse, además del regalo de bienvenida.</p>
                     <div className="space-y-2">
-                      <Label>Tipo</Label>
-                      <Select
-                        value={programa.recompensas.por_registro.referido.tipo}
-                        onValueChange={(value: any) =>
-                          setPrograma({
-                            ...programa,
-                            recompensas: {
-                              ...programa.recompensas,
-                              por_registro: {
-                                ...programa.recompensas.por_registro,
-                                referido: {
-                                  ...programa.recompensas.por_registro.referido,
-                                  tipo: value,
-                                },
-                              },
-                            },
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="puntos">Puntos</SelectItem>
-                          <SelectItem value="cupon">Cupón (%)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Valor</Label>
+                      <Label>Puntos</Label>
                       <Input
                         type="number"
+                        min={0}
                         value={programa.recompensas.por_registro.referido.valor}
                         onChange={(e) =>
                           setPrograma({
@@ -502,7 +415,7 @@ export default function ReferidosPage() {
                                 ...programa.recompensas.por_registro,
                                 referido: {
                                   ...programa.recompensas.por_registro.referido,
-                                  valor: parseInt(e.target.value),
+                                  valor: Math.max(0, parseInt(e.target.value) || 0),
                                 },
                               },
                             },
@@ -515,10 +428,53 @@ export default function ReferidosPage() {
               </CardContent>
             </Card>
 
+            <Card>
+              <CardHeader>
+                <CardTitle>Premio en su primera compra</CardTitle>
+                <CardDescription>
+                  Cuando el amigo compra por primera vez. Se da una sola vez por amigo; déjalo en 0 si no quieres este premio.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {([
+                    ['referidor', 'Para quien invita', 'Puntos extra cuando su amigo hace la primera compra.'],
+                    ['referido', 'Para el amigo', 'Puntos extra en su primera compra, además de los de la compra.'],
+                  ] as const).map(([quien, titulo, texto]) => (
+                    <div key={quien} className="space-y-4 rounded-lg border p-4">
+                      <h4 className="font-medium">{titulo}</h4>
+                      <p className="text-sm text-muted-foreground">{texto}</p>
+                      <div className="space-y-2">
+                        <Label htmlFor={`primera-compra-${quien}`}>Puntos</Label>
+                        <Input
+                          id={`primera-compra-${quien}`}
+                          type="number"
+                          min={0}
+                          value={programa.recompensas.por_primera_compra[quien].valor}
+                          onChange={(e) =>
+                            setPrograma({
+                              ...programa,
+                              recompensas: {
+                                ...programa.recompensas,
+                                por_primera_compra: {
+                                  ...programa.recompensas.por_primera_compra,
+                                  [quien]: { tipo: 'puntos', valor: Math.max(0, parseInt(e.target.value) || 0) },
+                                },
+                              },
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="dark:bg-slate-900 dark:border-slate-800">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Milestones (Objetivos)</CardTitle>
+                  <CardTitle>Objetivos con regalo</CardTitle>
                   <CardDescription>Recompensas especiales por alcanzar objetivos</CardDescription>
                 </div>
                 <Dialog open={dialogMilestone} onOpenChange={setDialogMilestone}>
@@ -565,14 +521,14 @@ export default function ReferidosPage() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label>Valor</Label>
+                        <Label>Puntos</Label>
                         <Input
                           type="number"
                           value={nuevoMilestone.valor}
                           onChange={(e) =>
                             setNuevoMilestone({
                               ...nuevoMilestone,
-                              valor: parseInt(e.target.value),
+                              valor: Math.max(0, parseInt(e.target.value) || 0),
                             })
                           }
                         />
@@ -637,7 +593,7 @@ export default function ReferidosPage() {
 
           {/* TAB: Estadísticas */}
           <TabsContent value="estadisticas" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="dark:bg-slate-900 dark:border-slate-800">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Total Referidos</CardTitle>
@@ -652,27 +608,16 @@ export default function ReferidosPage() {
                   <CardTitle className="text-sm font-medium">Este Mes</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{estadisticas.este_mes}</div>
+                  <div className="text-2xl font-bold">{estadisticas.referidos_este_mes}</div>
                 </CardContent>
               </Card>
 
               <Card className="dark:bg-slate-900 dark:border-slate-800">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Tasa de Conversión</CardTitle>
+                  <CardTitle className="text-sm font-medium">Puntos otorgados</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {(estadisticas.conversion_rate * 100).toFixed(1)}%
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="dark:bg-slate-900 dark:border-slate-800">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Recompensas Otorgadas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{estadisticas.recompensas_otorgadas}</div>
+                  <div className="text-2xl font-bold">{estadisticas.puntos_otorgados.toLocaleString('es-ES')}</div>
                 </CardContent>
               </Card>
             </div>
@@ -697,13 +642,12 @@ export default function ReferidosPage() {
                             {idx + 1}
                           </div>
                           <div>
-                            <p className="font-medium">{ref.cliente}</p>
+                            <p className="font-medium">{ref.nombre}</p>
                             <p className="text-sm text-gray-500">Código: {ref.codigo}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold">{ref.total_referidos} referidos</p>
-                          <p className="text-sm text-gray-500">{ref.puntos_ganados} puntos ganados</p>
+                          <p className="font-bold">{ref.total_referidos} {ref.total_referidos === 1 ? 'referido' : 'referidos'}</p>
                         </div>
                       </div>
                     ))}
@@ -737,9 +681,10 @@ export default function ReferidosPage() {
                           </p>
                         </div>
                         <div className="text-right text-sm text-gray-500">
-                          <p>{new Date(ref.fecha_registro).toLocaleDateString()}</p>
+                          <p>{new Date(ref.creado_en ?? ref.fecha_registro).toLocaleDateString('es-ES')}</p>
                           <p className="text-xs">
-                            {ref.primera_compra ? '✓ Primera compra' : 'Sin compra'}
+                            {ref.estado === 'completado' ? 'Completado' : 'Pendiente'}
+                            {ref.puntos_otorgados_referidor ? ` · +${ref.puntos_otorgados_referidor} pts` : ''}
                           </p>
                         </div>
                       </div>

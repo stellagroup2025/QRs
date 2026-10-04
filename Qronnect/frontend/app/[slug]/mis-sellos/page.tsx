@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { ClientNav } from '@/components/ClientNav'
 import { MisTarjetasSellos } from '@/components/cliente/sellos/MisTarjetasSellos'
-import { Loader2 } from 'lucide-react'
+import { ClientPage, ClientSkeleton } from '@/components/cliente/ClientPage'
 
 export default function MisSellosPage() {
   const params = useParams()
@@ -65,12 +64,9 @@ export default function MisSellosPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen">
-        <ClientNav slug={slug} />
-        <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </div>
+      <ClientPage>
+        <ClientSkeleton blocks={2} />
+      </ClientPage>
     )
   }
 
@@ -79,11 +75,8 @@ export default function MisSellosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <ClientNav slug={slug} />
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <MisTarjetasSellos idCliente={clienteId} token={token} slug={slug} />
-      </div>
-    </div>
+    <ClientPage title="Sellos" subtitle="Un sello en cada visita. Completa la tarjeta y llévate el premio.">
+      <MisTarjetasSellos idCliente={clienteId} token={token} slug={slug} />
+    </ClientPage>
   )
 }

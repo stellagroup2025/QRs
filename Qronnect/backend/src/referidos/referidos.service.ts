@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 import { SupabaseService } from '../supabase/supabase.service';
 import { EmailService } from '../email/email.service';
 import { RegalosService } from './regalos.service';
@@ -30,6 +31,9 @@ export class ReferidosService {
         descripcion: dto.descripcion,
         activo: dto.activo !== false,
         puntos_por_referido: dto.puntos_por_referido,
+        puntos_para_referido: dto.puntos_para_referido,
+        puntos_primera_compra_referidor: dto.puntos_primera_compra_referidor,
+        puntos_primera_compra_referido: dto.puntos_primera_compra_referido,
         recompensas: dto.recompensas || [],
         vigencia_desde: dto.vigencia_desde || new Date().toISOString(),
         vigencia_hasta: dto.vigencia_hasta,
@@ -80,6 +84,9 @@ export class ReferidosService {
         descripcion: dto.descripcion,
         activo: dto.activo,
         puntos_por_referido: dto.puntos_por_referido,
+        puntos_para_referido: dto.puntos_para_referido,
+        puntos_primera_compra_referidor: dto.puntos_primera_compra_referidor,
+        puntos_primera_compra_referido: dto.puntos_primera_compra_referido,
         recompensas: dto.recompensas,
         vigencia_hasta: dto.vigencia_hasta,
       })
@@ -283,7 +290,7 @@ export class ReferidosService {
     const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let sufijo = '';
     for (let i = 0; i < 4; i++) {
-      sufijo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+      sufijo += caracteres.charAt(crypto.randomInt(caracteres.length));
     }
 
     return `${prefijo}-${sufijo}`;
@@ -368,6 +375,25 @@ export class ReferidosService {
       nombre: clienteData.nombre,
       nombre_tienda: tiendaData.nombre,
       total_referidos: clienteData.total_referidos || 0,
+      premios: await this.getPremiosPrograma(tiendaId),
+    };
+  }
+
+  /**
+   * Puntos que da el programa activo, para que la app del cliente explique el premio real.
+   * null si la tienda no tiene programa de referidos activo.
+   */
+  async getPremiosPrograma(tiendaId: string) {
+    const programa = await this.getProgramaActivo(tiendaId).catch(() => null);
+    if (!programa) return null;
+
+    const registroTu = programa.puntos_por_referido || 0;
+    return {
+      registro_tu: registroTu,
+      // Sin valor propio para el amigo, recibe lo mismo que quien invita (como en registrar_referido)
+      registro_amigo: programa.puntos_para_referido ?? registroTu,
+      primera_compra_tu: programa.puntos_primera_compra_referidor || 0,
+      primera_compra_amigo: programa.puntos_primera_compra_referido || 0,
     };
   }
 
@@ -389,7 +415,16 @@ export class ReferidosService {
       throw new BadRequestException('Error al obtener referidos');
     }
 
-    return data || [];
+    // Campos que lee "Mis amigos" en la app del cliente (la vista usa referido_nombre, etc.)
+    return (data || []).map((r: any) => {
+      const puntos = (r.puntos_otorgados_referidor || 0) + (r.puntos_primera_compra_referidor || 0);
+      return {
+        ...r,
+        nombre: r.referido_nombre || 'Amigo',
+        primera_compra: !!r.fecha_primera_compra,
+        recompensa_obtenida: puntos > 0 ? `+${puntos} puntos` : '',
+      };
+    });
   }
 
   /**
