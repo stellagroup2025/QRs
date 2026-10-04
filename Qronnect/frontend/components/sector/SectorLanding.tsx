@@ -7,6 +7,11 @@ import { LotusMark, SECTOR_ICONS } from './sector-icons'
 import { SectorPhoto } from './SectorPhoto'
 import { PhoneMockup } from './PhoneMockup'
 import { HowItWorks } from './HowItWorks'
+import { LandingHeader } from '@/components/landing/LandingHeader'
+import { ScrollFx } from '@/components/landing/ScrollFx'
+import { MobileCtaBar } from '@/components/landing/MobileCtaBar'
+import { ContactoDrawer } from '@/components/landing/ContactoDrawer'
+import { DemoSection } from '@/components/landing/DemoSection'
 
 /** Destino de los botones de captación: el formulario de contacto, con el sector ya elegido */
 function contactHref(sector: SectorData) {
@@ -23,12 +28,12 @@ function CtaButton({ href, children, className }: { href: string; children: Reac
     <a
       href={href}
       className={cn(
-        'inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[var(--s-primary)] px-8 py-3 text-center text-base font-semibold text-[var(--s-primary-on)] shadow-[0_18px_40px_-18px_var(--s-primary)] transition-transform hover:-translate-y-0.5',
+        'group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[var(--s-primary)] px-8 py-3 text-center text-base font-semibold text-[var(--s-primary-on)] shadow-[0_18px_40px_-18px_var(--s-primary)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-16px_var(--s-primary)]',
         className,
       )}
     >
       {children}
-      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
     </a>
   )
 }
@@ -52,46 +57,44 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
   } as CSSProperties
   const cta = contactHref(sector)
   const ctaLabel = sector.hero.ctaLabel
+  const nav = [
+    { href: '#como-funciona', label: 'Cómo funciona' },
+    { href: '#pruebalo', label: 'Pruébalo' },
+    { href: '#metodo', label: 'El método' },
+    { href: '#preguntas', label: 'Preguntas' },
+  ]
 
   return (
     <div style={vars} className="min-h-screen overflow-x-clip bg-[var(--s-softer)] text-[var(--s-ink)]">
+      <ScrollFx />
+      <LandingHeader
+        nav={nav}
+        brand={
+          <Link href="/" className="flex min-w-0 items-center gap-2.5" aria-label="Qronnect, ir al inicio">
+            <LotusMark className="h-7 w-8 text-[var(--s-on-dark)]" />
+            <span className="leading-none">
+              <span className="block font-display text-xl font-semibold tracking-tight">Qronnect</span>
+              <span className="mt-1 block whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.2em] text-white/60">{sector.nombre}</span>
+            </span>
+          </Link>
+        }
+      />
       {/* ───────── Hero oscuro con la foto de fondo ───────── */}
-      <section aria-labelledby="sector-hero" className="relative isolate overflow-hidden bg-[var(--s-dark)] text-white">
+      <section aria-labelledby="sector-hero" className="relative isolate overflow-hidden bg-[var(--s-dark)] pt-16 text-white sm:pt-20">
         <SectorPhoto
           src={sector.hero.photo}
           priority
           position={sector.hero.photoPosition ?? '50% 25%'}
-          className="absolute inset-0 -z-20 h-full w-full opacity-70 lg:left-auto lg:w-[60%]"
+          className="hero-zoom absolute inset-0 -z-20 h-full w-full opacity-70 lg:left-auto lg:w-[60%]"
         />
         <div
           aria-hidden="true"
           className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--s-dark)_70%,transparent),var(--s-dark)_75%)] lg:bg-[linear-gradient(90deg,var(--s-dark)_40%,color-mix(in_oklab,var(--s-dark)_55%,transparent)_70%,color-mix(in_oklab,var(--s-dark)_35%,transparent))]"
         />
 
-        <header className="border-b border-white/10">
-          <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
-            <Link href="/" className="flex items-center gap-2.5" aria-label="Qronnect, ir al inicio">
-              <LotusMark className="h-7 w-8 text-[var(--s-on-dark)]" />
-              <span className="leading-none">
-                <span className="block font-display text-xl font-semibold tracking-tight">Qronnect</span>
-                <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.25em] text-white/60">
-                  {sector.nombre}
-                </span>
-              </span>
-            </Link>
-            <Link
-              href="/admin/login"
-              className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[var(--s-dark)]"
-            >
-              <span className="sm:hidden">Mi panel</span>
-              <span className="hidden sm:inline">Acceder a mi panel</span>
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-          </div>
-        </header>
 
         <div className="mx-auto grid max-w-7xl gap-12 px-5 pb-16 pt-14 sm:px-8 lg:grid-cols-[1.25fr_0.75fr] lg:pb-20 lg:pt-20">
-          <div>
+          <div className="hero-rise">
             <p className="flex items-center gap-4 text-white/75">
               <span className="h-px w-14 bg-[var(--s-primary)]" aria-hidden="true" />
               {sector.hero.eyebrow}
@@ -107,34 +110,38 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
             </p>
           </div>
 
-          <div className="relative hidden justify-end lg:flex">
+          <div className="float-slow relative hidden justify-end lg:flex">
             <PhoneMockup sector={sector} className="rotate-[4deg]" />
           </div>
         </div>
 
-        <div className="mx-auto grid max-w-7xl gap-10 border-t border-white/10 px-5 py-10 sm:px-8 lg:grid-cols-2 lg:items-end">
+        <div data-reveal className="mx-auto grid max-w-7xl gap-10 border-t border-white/10 px-5 py-10 sm:px-8 lg:grid-cols-2 lg:items-end">
           <p className="max-w-lg text-lg leading-relaxed text-white/75">{sector.hero.intro}</p>
           <div className="flex flex-col items-start gap-3 lg:items-end">
             <CtaButton href={cta}>{ctaLabel}</CtaButton>
             <p className="text-sm text-white/55">{sector.hero.reassurance}</p>
-            <a href="#como-funciona" className="inline-flex items-center gap-2 text-sm font-medium text-white/85 hover:text-white">
-              Cómo funciona
-              <ArrowDown className="h-4 w-4" aria-hidden="true" />
+            <a href="#pruebalo" className="group inline-flex items-center gap-2 text-sm font-medium text-white/85 hover:text-white">
+              Pruébalo como {sector.slug === 'estetica' ? 'clienta' : 'cliente'}
+              <ArrowDown className="h-4 w-4 transition-transform group-hover:translate-y-0.5" aria-hidden="true" />
             </a>
           </div>
         </div>
 
         {/* En móvil el teléfono va debajo del texto */}
         <div className="flex justify-center pb-14 lg:hidden">
-          <PhoneMockup sector={sector} className="scale-90" />
+          <PhoneMockup sector={sector} className="float-slow scale-90" />
         </div>
       </section>
 
       {/* ───────── Cómo funciona, paso a paso ───────── */}
       <HowItWorks sector={sector} />
 
+      {/* ───────── Demo interactiva ───────── */}
+      <DemoSection sector={sector} cliente={sector.slug === 'estetica' ? 'clienta' : 'cliente'} />
+
       {/* ───────── Problema ───────── */}
       <section aria-labelledby="problema-title" className="px-5 py-24 text-center sm:px-8 md:py-32">
+        <div data-reveal>
         <Label className="text-[var(--s-ink)]">{sector.problem.eyebrow}</Label>
         <h2 id="problema-title" className="mx-auto mt-5 max-w-3xl font-display text-4xl font-bold leading-[1.08] tracking-tight text-balance sm:text-5xl">
           {sector.problem.title1}
@@ -142,24 +149,29 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
           {sector.problem.title2}
         </h2>
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[var(--s-ink)]/65">{sector.problem.body}</p>
-        <p className="mt-14 font-display text-3xl font-bold tracking-tight sm:text-4xl">{sector.problem.contrast1}</p>
-        <p className="font-accent text-4xl italic text-[var(--s-primary)] sm:text-5xl">{sector.problem.contrast2}</p>
-        <p className="mx-auto mt-14 max-w-xl text-[var(--s-ink)]/65">{sector.problem.tail1}</p>
-        <p className="mx-auto mt-3 max-w-2xl font-display text-2xl font-bold leading-snug tracking-tight text-balance">
+        </div>
+        <div data-reveal>
+          <p className="mt-14 font-display text-3xl font-bold tracking-tight sm:text-4xl">{sector.problem.contrast1}</p>
+          <p className="font-accent text-4xl italic text-[var(--s-primary)] sm:text-5xl">{sector.problem.contrast2}</p>
+        </div>
+        <p data-reveal className="mx-auto mt-14 max-w-xl text-[var(--s-ink)]/65">{sector.problem.tail1}</p>
+        <p data-reveal className="mx-auto mt-3 max-w-2xl font-display text-2xl font-bold leading-snug tracking-tight text-balance">
           {sector.problem.tail2}
         </p>
       </section>
 
       {/* ───────── Método (oscuro) ───────── */}
-      <section id="metodo" aria-labelledby="metodo-title" className="scroll-mt-4 bg-[var(--s-dark)] px-5 py-24 text-white sm:px-8 md:py-32">
+      <section id="metodo" aria-labelledby="metodo-title" className="scroll-mt-20 bg-[var(--s-dark)] px-5 py-24 text-white sm:px-8 md:py-32">
         <div className="mx-auto max-w-6xl">
+          <div data-reveal>
           <Label>{sector.method.eyebrow}</Label>
           <h2 id="metodo-title" className="mt-4 max-w-3xl font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
             {sector.method.title}
           </h2>
           <p className="mt-5 max-w-xl text-lg text-white/65">{sector.method.subtitle}</p>
+          </div>
 
-          <p className="mt-14 flex flex-wrap items-baseline gap-x-4 gap-y-2 font-display text-2xl font-semibold tracking-tight sm:text-4xl">
+          <p data-reveal className="mt-14 flex flex-wrap items-baseline gap-x-4 gap-y-2 font-display text-2xl font-semibold tracking-tight sm:text-4xl">
             {sector.method.equation.map((term, i) => (
               <span key={term} className="inline-flex items-baseline gap-4">
                 {i > 0 && <Plus className="h-5 w-5 self-center text-white/35" aria-label="más" />}
@@ -174,8 +186,8 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
             {sector.method.pillars.map((p, i) => {
               const Icon = SECTOR_ICONS[p.icon]
               return (
-                <li key={p.title} className="border-t border-white/10 pt-8">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 text-[var(--s-on-dark)]">
+                <li key={p.title} data-reveal className="group border-t border-white/10 pt-8">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 text-[var(--s-on-dark)] transition-all duration-300 group-hover:scale-110 group-hover:border-[var(--s-on-dark)] group-hover:bg-[var(--s-on-dark)] group-hover:text-[var(--s-dark)]">
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <p className="mt-6 text-xs tracking-[0.2em] text-white/45">0{i + 1}</p>
@@ -191,8 +203,10 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
             <Label>{sector.ideas.label}</Label>
             <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {sector.ideas.items.map((idea) => (
-                <li key={idea.title}>
-                  <SectorPhoto src={idea.photo} className="aspect-[4/3] w-full rounded-2xl" />
+                <li key={idea.title} data-reveal className="group">
+                  <div className="overflow-hidden rounded-2xl">
+                    <SectorPhoto src={idea.photo} className="aspect-[4/3] w-full transition-transform duration-500 group-hover:scale-105" />
+                  </div>
                   <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/45">{idea.label}</p>
                   <h3 className="mt-1 font-display text-xl font-bold uppercase tracking-tight">{idea.title}</h3>
                   <p className="mt-1 text-sm text-white/60">{idea.text}</p>
@@ -201,7 +215,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
             </ul>
           </div>
 
-          <div className="mt-20 flex flex-col gap-8 border-t border-white/10 pt-12 md:flex-row md:items-center md:justify-between">
+          <div data-reveal className="mt-20 flex flex-col gap-8 border-t border-white/10 pt-12 md:flex-row md:items-center md:justify-between">
             <div className="max-w-xl">
               <h2 className="font-display text-3xl font-bold tracking-tight">{sector.ideas.ctaTitle}</h2>
               <p className="mt-3 text-white/65">{sector.ideas.ctaText}</p>
@@ -218,7 +232,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
           <h2 id="incluye-title" className="sr-only">{sector.included.title}</h2>
           <ul className="mt-6 grid gap-4 sm:grid-cols-2">
             {sector.included.items.map((item, i) => (
-              <li key={item.title} className="rounded-2xl border border-[var(--s-ink)]/10 bg-white p-7">
+              <li key={item.title} data-reveal className="rounded-2xl border border-[var(--s-ink)]/10 bg-white p-7 transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-30px_rgba(0,0,0,0.3)]">
                 <p className="text-xs font-semibold tracking-[0.2em] text-[var(--s-primary)]">
                   0{i + 1} — {item.title.toUpperCase()}
                 </p>
@@ -228,7 +242,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
           </ul>
 
           {/* Para quién es / para quién no es */}
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div data-reveal className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-[var(--s-ink)]/10 bg-white p-7">
               <p className="flex items-center gap-2 font-semibold">
                 <Check className="h-5 w-5 text-emerald-600" aria-hidden="true" />
@@ -253,7 +267,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
 
       {/* ───────── Testimonio y resultados ───────── */}
       <section aria-label="Lo que dicen los negocios que usan Qronnect" className="border-t border-[var(--s-ink)]/10 px-5 py-24 sm:px-8 md:py-28">
-        <figure className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-[auto_1fr]">
+        <figure data-reveal className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-[auto_1fr]">
           <SectorPhoto src={sector.testimonial.photo} className="mx-auto h-48 w-48 rounded-full md:h-60 md:w-60" />
           <div>
             <div className="flex gap-1 text-amber-500" aria-label="5 de 5 estrellas">
@@ -272,7 +286,9 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
               {sector.stats.map((s) => (
                 <div key={s.label} className="flex flex-col">
                   <dt className="order-2 mt-1 text-sm text-[var(--s-ink)]/60">{s.label}</dt>
-                  <dd className="order-1 font-display text-3xl font-bold tracking-tight sm:text-4xl">{s.value}</dd>
+                  <dd data-count={s.value} className="order-1 font-display text-3xl font-bold tabular-nums tracking-tight sm:text-4xl">
+                    {s.value}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -283,12 +299,12 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
 
       {/* ───────── Cierre (oscuro) ───────── */}
       <section aria-labelledby="cierre-title" className="bg-[var(--s-dark)] px-5 py-24 text-center text-white sm:px-8 md:py-32">
-        <h2 id="cierre-title" className="mx-auto max-w-3xl font-display text-4xl font-bold leading-[1.08] tracking-tight text-balance sm:text-6xl">
+        <h2 id="cierre-title" data-reveal className="mx-auto max-w-3xl font-display text-4xl font-bold leading-[1.08] tracking-tight text-balance sm:text-6xl">
           {sector.closing.title1}
           <br />
           <span className="text-white/45">{sector.closing.title2}</span>
         </h2>
-        <p className="mx-auto mt-12 flex max-w-2xl flex-wrap justify-center gap-x-3 gap-y-2 text-xl text-white/85 sm:text-2xl">
+        <p data-reveal className="mx-auto mt-12 flex max-w-2xl flex-wrap justify-center gap-x-3 gap-y-2 text-xl text-white/85 sm:text-2xl">
           {sector.closing.rhythm.map((r, i) => (
             <span key={r} className="inline-flex items-center gap-3">
               {i > 0 && <Minus className="h-3 w-3 text-white/30" aria-hidden="true" />}
@@ -299,7 +315,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
         <p className="mt-12 text-lg text-white/60">{sector.closing.line1}</p>
         <p className="mt-1 font-display text-2xl font-bold sm:text-3xl">{sector.closing.line2}</p>
         <p className="mt-12 text-white/60">{sector.closing.pre}</p>
-        <p className="mx-auto mt-2 max-w-2xl font-accent text-4xl italic leading-tight text-[var(--s-on-dark)] sm:text-5xl">
+        <p data-reveal className="mx-auto mt-2 max-w-2xl font-accent text-4xl italic leading-tight text-[var(--s-on-dark)] sm:text-5xl">
           {sector.closing.highlight}
         </p>
         <div className="mt-10 flex flex-col items-center gap-3">
@@ -312,7 +328,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
       <section
         id="preguntas"
         aria-labelledby="faq-title"
-        className="mx-auto grid max-w-6xl scroll-mt-4 gap-10 px-5 py-24 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16"
+        className="mx-auto grid max-w-6xl scroll-mt-20 gap-10 px-5 py-24 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16"
       >
         <div>
           <Label>Preguntas frecuentes</Label>
@@ -322,7 +338,7 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </a>
         </div>
-        <div className="divide-y divide-[var(--s-ink)]/10 border-y border-[var(--s-ink)]/10">
+        <div data-reveal className="divide-y divide-[var(--s-ink)]/10 border-y border-[var(--s-ink)]/10">
           {sector.faq.map((item) => (
             <details key={item.q} className="group py-5">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold">
@@ -346,6 +362,9 @@ export function SectorLanding({ sector }: { sector: SectorData }) {
           <Link href="/terminos" className="hover:text-[var(--s-ink)]">Términos</Link>
         </nav>
       </footer>
+
+      <MobileCtaBar href={cta} label={ctaLabel} />
+      <ContactoDrawer />
     </div>
   )
 }

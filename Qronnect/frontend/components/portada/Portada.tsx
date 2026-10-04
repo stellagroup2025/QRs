@@ -8,12 +8,19 @@ import { SECTOR_ICONS } from '@/components/sector/sector-icons'
 import { PhoneMockup } from '@/components/sector/PhoneMockup'
 import { HowItWorks } from '@/components/sector/HowItWorks'
 import { SectorGrid } from '@/components/sector/SectorGrid'
+import { LandingHeader } from '@/components/landing/LandingHeader'
+import { ScrollFx } from '@/components/landing/ScrollFx'
+import { MobileCtaBar } from '@/components/landing/MobileCtaBar'
+import { ContactoDrawer } from '@/components/landing/ContactoDrawer'
+import { DemoSection } from '@/components/landing/DemoSection'
+import { Marquee } from '@/components/landing/Marquee'
 
 /** Destino de los botones de captación: el formulario de contacto */
 const CONTACT_HREF = '/contacto?origen=/'
 const CTA_LABEL = 'Quiero Qronnect en mi negocio'
 
 const NAV = [
+  { href: '#pruebalo', label: 'Pruébalo' },
   { href: '#como-funciona', label: 'Cómo funciona' },
   { href: '#sectores', label: 'Sectores' },
   { href: '#incluye', label: 'Qué incluye' },
@@ -37,12 +44,12 @@ function CtaButton({ className, children = CTA_LABEL }: { className?: string; ch
     <a
       href={CONTACT_HREF}
       className={cn(
-        'inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[var(--s-primary)] px-8 py-3 text-center text-base font-semibold text-[var(--s-primary-on)] shadow-[0_18px_40px_-18px_var(--s-primary)] transition-transform hover:-translate-y-0.5',
+        'group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[var(--s-primary)] px-8 py-3 text-center text-base font-semibold text-[var(--s-primary-on)] shadow-[0_18px_40px_-18px_var(--s-primary)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-16px_var(--s-primary)]',
         className,
       )}
     >
       {children}
-      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
     </a>
   )
 }
@@ -68,6 +75,12 @@ function sectorVars(slug: string): CSSProperties {
   const p = SECTORES[slug].palette
   return { '--s-primary': p.primary, '--s-primary-on': p.primaryOn } as CSSProperties
 }
+
+/** Tipos de negocio para la cinta animada bajo el hero */
+const NEGOCIOS = [
+  'Cafeterías', 'Peluquerías', 'Centros de estética', 'Gimnasios', 'Panaderías', 'Heladerías', 'Tiendas de moda',
+  'Floristerías', 'Restaurantes', 'Barberías', 'Estudios de yoga', 'Librerías', 'Ópticas', 'Jugueterías',
+]
 
 const PROOF = [
   { icon: Smartphone, title: 'Sin app', text: 'Escanean tu QR y se unen desde el navegador.' },
@@ -128,12 +141,14 @@ export function Portada() {
   return (
     <div style={vars} className="min-h-screen overflow-x-clip bg-[var(--s-softer)] text-[var(--s-ink)]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <a href="#como-funciona" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold">
+      <ScrollFx />
+      <LandingHeader brand={<Logo />} nav={NAV} />
+      <a href="#pruebalo" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold">
         Saltar al contenido
       </a>
 
       {/* ───────── Hero ───────── */}
-      <section aria-labelledby="portada-hero" className="relative isolate overflow-hidden bg-[var(--s-dark)] text-white">
+      <section aria-labelledby="portada-hero" className="relative isolate overflow-hidden bg-[var(--s-dark)] pt-16 text-white sm:pt-20">
         <div
           aria-hidden="true"
           className="absolute -right-40 -top-40 -z-10 h-[640px] w-[640px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--s-on-dark)_28%,transparent),transparent_65%)]"
@@ -143,29 +158,9 @@ export function Portada() {
           className="absolute -bottom-60 -left-40 -z-10 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--s-primary)_35%,transparent),transparent_65%)]"
         />
 
-        <header className="border-b border-white/10">
-          <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-5 sm:px-8">
-            <Logo />
-            <nav aria-label="Secciones" className="hidden items-center gap-7 text-sm text-white/70 lg:flex">
-              {NAV.map((n) => (
-                <a key={n.href} href={n.href} className="transition-colors hover:text-white">
-                  {n.label}
-                </a>
-              ))}
-            </nav>
-            <Link
-              href="/admin/login"
-              className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[var(--s-dark)]"
-            >
-              <span className="sm:hidden">Mi panel</span>
-              <span className="hidden sm:inline">Acceder a mi panel</span>
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-          </div>
-        </header>
 
         <div className="mx-auto grid max-w-7xl gap-12 px-5 pb-16 pt-14 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:pb-20 lg:pt-20">
-          <div>
+          <div className="hero-rise">
             <p className="flex items-center gap-4 text-white/75">
               <span className="h-px w-14 bg-[var(--s-on-dark)]" aria-hidden="true" />
               Fidelización con QR para negocios locales
@@ -182,24 +177,24 @@ export function Portada() {
             </p>
             <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <CtaButton />
-              <a href="#como-funciona" className="inline-flex items-center gap-2 px-2 text-sm font-medium text-white/85 hover:text-white">
-                Cómo funciona
-                <ArrowDown className="h-4 w-4" aria-hidden="true" />
+              <a href="#pruebalo" className="group inline-flex items-center gap-2 px-2 text-sm font-medium text-white/85 hover:text-white">
+                Pruébalo como cliente
+                <ArrowDown className="h-4 w-4 transition-transform group-hover:translate-y-0.5" aria-hidden="true" />
               </a>
             </div>
           </div>
 
           {/* Dos móviles: el mismo producto con la marca de dos negocios distintos */}
           <div className="relative mx-auto h-[600px] w-full max-w-[340px] sm:max-w-[500px]">
-            <div style={sectorVars('estetica')} className="absolute left-0 top-10 hidden sm:block">
+            <div style={sectorVars('estetica')} className="float-slower absolute left-0 top-10 hidden sm:block">
               <PhoneMockup sector={SECTORES.estetica} className="-rotate-[7deg] scale-[0.88] opacity-90" />
             </div>
-            <div className="absolute right-0 top-0 sm:right-2">
+            <div className="float-slow absolute right-0 top-0 sm:right-2">
               <div style={sectorVars('cafeterias')}>
                 <PhoneMockup sector={SECTORES.cafeterias} className="rotate-[4deg]" />
               </div>
             </div>
-            <div className="absolute bottom-6 left-0 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-[var(--s-ink)] shadow-2xl sm:bottom-10 sm:left-24">
+            <div className="pop-loop absolute bottom-6 left-0 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-[var(--s-ink)] shadow-2xl sm:bottom-10 sm:left-24">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--s-soft)] text-[var(--s-primary)]">
                 <QrCode className="h-5 w-5" aria-hidden="true" />
               </span>
@@ -213,7 +208,7 @@ export function Portada() {
 
         <ul className="mx-auto grid max-w-7xl gap-px border-t border-white/10 sm:grid-cols-2 lg:grid-cols-4">
           {PROOF.map(({ icon: Icon, title, text }) => (
-            <li key={title} className="flex gap-4 px-5 py-4 first:pt-8 last:pb-8 sm:px-8 sm:py-8">
+            <li key={title} data-reveal className="flex gap-4 px-5 py-4 first:pt-8 last:pb-8 sm:px-8 sm:py-8">
               <Icon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--s-on-dark)]" aria-hidden="true" />
               <p className="text-sm leading-relaxed text-white/60">
                 <span className="block font-semibold text-white">{title}</span>
@@ -222,10 +217,12 @@ export function Portada() {
             </li>
           ))}
         </ul>
+        <Marquee items={NEGOCIOS} className="border-t border-white/10 text-white" />
       </section>
 
       {/* ───────── Problema ───────── */}
       <section aria-labelledby="problema-title" className="px-5 py-24 text-center sm:px-8 md:py-32">
+        <div data-reveal>
         <Label>Captar no es fidelizar</Label>
         <h2 id="problema-title" className="mx-auto mt-5 max-w-3xl font-display text-4xl font-bold leading-[1.08] tracking-tight text-balance sm:text-5xl">
           Conseguir un cliente nuevo cuesta.
@@ -235,12 +232,18 @@ export function Portada() {
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[var(--s-ink)]/65">
           Cada día entra gente a tu negocio que no vuelve. No porque no le gustara, sino porque nada le recordó que existías.
         </p>
-        <p className="mt-14 font-display text-3xl font-bold tracking-tight sm:text-4xl">Una tarjeta de cartón se pierde.</p>
-        <p className="font-accent text-4xl italic text-[var(--s-primary)] sm:text-5xl">El móvil siempre está a mano.</p>
-        <p className="mx-auto mt-14 max-w-2xl font-display text-2xl font-bold leading-snug tracking-tight text-balance">
+        </div>
+        <div data-reveal>
+          <p className="mt-14 font-display text-3xl font-bold tracking-tight sm:text-4xl">Una tarjeta de cartón se pierde.</p>
+          <p className="font-accent text-4xl italic text-[var(--s-primary)] sm:text-5xl">El móvil siempre está a mano.</p>
+        </div>
+        <p data-reveal className="mx-auto mt-14 max-w-2xl font-display text-2xl font-bold leading-snug tracking-tight text-balance">
           Qronnect convierte cada visita en una relación: sabes quién viene, le premias por volver y le avisas cuando tienes algo para él.
         </p>
       </section>
+
+      {/* ───────── Demo interactiva ───────── */}
+      <DemoSection sector={PORTADA_SHOWCASE} />
 
       {/* ───────── Cómo funciona ───────── */}
       <div className="border-t border-[var(--s-ink)]/10">
@@ -248,8 +251,9 @@ export function Portada() {
       </div>
 
       {/* ───────── Qué incluye (oscuro) ───────── */}
-      <section id="incluye" aria-labelledby="incluye-title" className="scroll-mt-4 bg-[var(--s-dark)] px-5 py-24 text-white sm:px-8 md:py-32">
+      <section id="incluye" aria-labelledby="incluye-title" className="scroll-mt-20 bg-[var(--s-dark)] px-5 py-24 text-white sm:px-8 md:py-32">
         <div className="mx-auto max-w-6xl">
+          <div data-reveal>
           <Label>Qué incluye</Label>
           <h2 id="incluye-title" className="mt-4 max-w-3xl font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
             Todo para que <Accent>vuelvan</Accent>, en un solo panel
@@ -257,13 +261,14 @@ export function Portada() {
           <p className="mt-5 max-w-xl text-lg text-white/65">
             Sin integraciones ni instalaciones: lo configuras una vez y tu equipo lo usa desde el móvil.
           </p>
+          </div>
 
           <ul className="mt-16 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
             {PORTADA_FEATURES.map((f, i) => {
               const Icon = SECTOR_ICONS[f.icon]
               return (
-                <li key={f.title} className="border-t border-white/10 pt-8">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 text-[var(--s-on-dark)]">
+                <li key={f.title} data-reveal className="group border-t border-white/10 pt-8">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 text-[var(--s-on-dark)] transition-all duration-300 group-hover:scale-110 group-hover:border-[var(--s-on-dark)] group-hover:bg-[var(--s-on-dark)] group-hover:text-[var(--s-dark)]">
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <p className="mt-6 text-xs tracking-[0.2em] text-white/45">{String(i + 1).padStart(2, '0')}</p>
@@ -274,7 +279,7 @@ export function Portada() {
             })}
           </ul>
 
-          <div className="mt-20 flex flex-col gap-8 border-t border-white/10 pt-12 md:flex-row md:items-center md:justify-between">
+          <div data-reveal className="mt-20 flex flex-col gap-8 border-t border-white/10 pt-12 md:flex-row md:items-center md:justify-between">
             <div className="max-w-xl">
               <h3 className="font-display text-3xl font-bold tracking-tight">¿Te lo enseñamos con tu negocio?</h3>
               <p className="mt-3 text-white/65">Cuéntanos qué tienes y te mostramos cómo quedaría tu programa.</p>
@@ -288,9 +293,9 @@ export function Portada() {
       <SectorGrid />
 
       {/* ───────── Precios ───────── */}
-      <section id="precios" aria-labelledby="precios-title" className="scroll-mt-4 border-t border-[var(--s-ink)]/10 bg-white px-5 py-24 sm:px-8 md:py-32">
+      <section id="precios" aria-labelledby="precios-title" className="scroll-mt-20 border-t border-[var(--s-ink)]/10 bg-white px-5 py-24 sm:px-8 md:py-32">
         <div className="mx-auto max-w-6xl">
-          <div className="max-w-3xl">
+          <div className="max-w-3xl" data-reveal>
             <Label>Precios</Label>
             <h2 id="precios-title" className="mt-4 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl">
               Un plan según tu tamaño
@@ -304,8 +309,9 @@ export function Portada() {
             {PORTADA_PLANES.map((plan) => (
               <li
                 key={plan.nombre}
+                data-reveal
                 className={cn(
-                  'relative flex flex-col rounded-3xl border p-7',
+                  'relative flex flex-col rounded-3xl border p-7 transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-30px_rgba(0,0,0,0.35)]',
                   plan.destacado
                     ? 'border-transparent bg-[var(--s-dark)] text-white'
                     : 'border-[var(--s-ink)]/10 bg-[var(--s-softer)]',
@@ -352,12 +358,12 @@ export function Portada() {
 
       {/* ───────── Cierre (oscuro) ───────── */}
       <section aria-labelledby="cierre-title" className="bg-[var(--s-dark)] px-5 py-24 text-center text-white sm:px-8 md:py-32">
-        <h2 id="cierre-title" className="mx-auto max-w-3xl font-display text-4xl font-bold leading-[1.08] tracking-tight text-balance sm:text-6xl">
+        <h2 id="cierre-title" data-reveal className="mx-auto max-w-3xl font-display text-4xl font-bold leading-[1.08] tracking-tight text-balance sm:text-6xl">
           Tus clientes ya te eligieron una vez.
           <br />
           <span className="text-white/45">Dales motivos para repetir.</span>
         </h2>
-        <p className="mx-auto mt-12 flex max-w-2xl flex-wrap justify-center gap-x-3 gap-y-2 text-xl text-white/85 sm:text-2xl">
+        <p data-reveal className="mx-auto mt-12 flex max-w-2xl flex-wrap justify-center gap-x-3 gap-y-2 text-xl text-white/85 sm:text-2xl">
           {['Escanean', 'Suman', 'Ganan', 'Vuelven'].map((r, i) => (
             <span key={r} className="inline-flex items-center gap-3">
               {i > 0 && <Minus className="h-3 w-3 text-white/30" aria-hidden="true" />}
@@ -365,7 +371,7 @@ export function Portada() {
             </span>
           ))}
         </p>
-        <p className="mx-auto mt-10 max-w-2xl font-accent text-4xl italic leading-tight text-[var(--s-on-dark)] sm:text-5xl">
+        <p data-reveal className="mx-auto mt-10 max-w-2xl font-accent text-4xl italic leading-tight text-[var(--s-on-dark)] sm:text-5xl">
           Fideliza. Sorprende. Haz que vuelvan.
         </p>
         <div className="mt-10 flex flex-col items-center gap-3">
@@ -378,7 +384,7 @@ export function Portada() {
       <section
         id="preguntas"
         aria-labelledby="faq-title"
-        className="mx-auto grid max-w-6xl scroll-mt-4 gap-10 px-5 py-24 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16"
+        className="mx-auto grid max-w-6xl scroll-mt-20 gap-10 px-5 py-24 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16"
       >
         <div>
           <Label>Preguntas frecuentes</Label>
@@ -388,7 +394,7 @@ export function Portada() {
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </a>
         </div>
-        <div className="divide-y divide-[var(--s-ink)]/10 border-y border-[var(--s-ink)]/10">
+        <div data-reveal className="divide-y divide-[var(--s-ink)]/10 border-y border-[var(--s-ink)]/10">
           {PORTADA_FAQ.map((item) => (
             <details key={item.q} className="group py-5">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold">
@@ -451,6 +457,9 @@ export function Portada() {
           </nav>
         </div>
       </footer>
+
+      <MobileCtaBar href={CONTACT_HREF} label={CTA_LABEL} />
+      <ContactoDrawer />
     </div>
   )
 }

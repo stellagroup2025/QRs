@@ -36,6 +36,20 @@ export interface SectorIdea {
   photo: string
 }
 
+/** Datos de la demo interactiva: lo que vive un cliente en el móvil */
+export interface SectorDemo {
+  /** Lo que hace el cliente en caja, en infinitivo: "Pedir un café" */
+  accion: string
+  /** Puntos que suma cada vez */
+  puntos: number
+  /** Sellos que hay que juntar para el premio */
+  sellos: number
+  /** Premios que pueden salir en la máquina de premios */
+  maquina: string[]
+  /** Promoción de ejemplo que manda el negocio */
+  promo: { titulo: string; texto: string }
+}
+
 /** Ilustración en HTML de cada paso de "Cómo funciona" */
 export type HowVisual = 'setup' | 'qr' | 'signup' | 'scan' | 'reward' | 'results'
 
@@ -83,6 +97,8 @@ export interface SectorData {
     ctaLabel: string
     photo: string
   }
+  /** Demo interactiva del móvil */
+  demo: SectorDemo
   /** Lo que ve el cliente en el móvil */
   phone: {
     points: number
@@ -130,7 +146,7 @@ export interface SectorData {
 }
 
 /** Lo mínimo para pintar el móvil de ejemplo y el "Cómo funciona" (también lo usa la portada) */
-export type SectorShowcase = Pick<SectorData, 'slug' | 'palette' | 'demoBusiness' | 'phone' | 'howItWorks'>
+export type SectorShowcase = Pick<SectorData, 'slug' | 'palette' | 'demoBusiness' | 'phone' | 'howItWorks' | 'demo'>
 
 const estetica: SectorData = {
   slug: 'estetica',
@@ -169,6 +185,13 @@ const estetica: SectorData = {
     // Foto: Unsplash (licencia Unsplash). Encuadre a la derecha para ver las manos trabajando
     photo: '/sectores/estetica/hero.webp',
     photoPosition: '100% 50%',
+  },
+  demo: {
+    accion: 'Pagar tu manicura',
+    puntos: 25,
+    sellos: 6,
+    maquina: ['Esmaltado gratis', '10 % en tu próxima cita', 'Mascarilla de regalo', 'Doble de puntos'],
+    promo: { titulo: 'Martes de mimos', texto: '20 % en tratamientos faciales esta semana' },
   },
   phone: {
     points: 320,
@@ -340,6 +363,13 @@ const cafeterias: SectorData = {
     reassurance: 'Sin apps para tus clientes · Con tu logo y tus colores',
     ctaLabel: 'Quiero que mis clientes vuelvan',
     photo: '/sectores/cafeterias/hero.webp',
+  },
+  demo: {
+    accion: 'Pedir un café',
+    puntos: 10,
+    sellos: 10,
+    maquina: ['Croissant gratis', 'Café doble por uno', 'Galleta de regalo', 'Doble de puntos'],
+    promo: { titulo: '2x1 esta tarde', texto: 'En cafés de 16:00 a 18:00, solo para socios' },
   },
   phone: {
     points: 120,
@@ -515,6 +545,13 @@ const deporte: SectorData = {
     photoPosition: '50% 30%',
     ctaLabel: 'Quiero que mis clientes sigan viniendo',
   },
+  demo: {
+    accion: 'Ir a clase',
+    puntos: 20,
+    sellos: 8,
+    maquina: ['Batido de proteínas', 'Clase para un amigo', 'Toalla de regalo', 'Doble de puntos'],
+    promo: { titulo: 'Reto de octubre', texto: 'Ven 12 veces este mes y llévate una sesión extra' },
+  },
   phone: {
     points: 450,
     progressLabel: 'A 2 clases de tu clase gratis',
@@ -689,6 +726,13 @@ const tiendas: SectorData = {
     photo: '/sectores/tiendas/hero.webp',
     photoPosition: '30% 50%',
     ctaLabel: 'Quiero que mis clientes repitan',
+  },
+  demo: {
+    accion: 'Hacer una compra',
+    puntos: 30,
+    sellos: 5,
+    maquina: ['5 € de descuento', 'Envoltorio de regalo', 'Bolsa de tela', 'Doble de puntos'],
+    promo: { titulo: 'Preventa para socios', texto: 'Entra antes que nadie: 30 % el jueves' },
   },
   phone: {
     points: 860,

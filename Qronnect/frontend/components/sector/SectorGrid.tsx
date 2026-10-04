@@ -8,9 +8,9 @@ export function SectorGrid() {
   const sectores = Object.values(SECTORES)
 
   return (
-    <section id="sectores" aria-labelledby="sectores-title" className="scroll-mt-4 px-5 py-24 sm:px-8 md:py-32">
+    <section id="sectores" aria-labelledby="sectores-title" className="scroll-mt-20 px-5 py-24 sm:px-8 md:py-32">
       <div className="mx-auto max-w-6xl">
-        <div className="max-w-3xl">
+        <div className="max-w-3xl" data-reveal>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] opacity-60">Para tu sector</p>
           <h2 id="sectores-title" className="mt-4 font-display text-4xl font-bold leading-[1.05] tracking-tight text-balance sm:text-5xl">
             Mira cómo funciona en un negocio como el tuyo
@@ -22,11 +22,11 @@ export function SectorGrid() {
 
         <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {sectores.map((s) => (
-            <li key={s.slug}>
+            <li key={s.slug} data-reveal>
               <Link
                 href={`/para/${s.slug}`}
                 style={{ '--s-soft': s.palette.soft, '--s-softer': s.palette.softer } as React.CSSProperties}
-                className="group relative flex h-96 flex-col justify-end overflow-hidden rounded-3xl text-white shadow-sm transition-shadow hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--s-primary)]"
+                className="group relative flex h-96 flex-col justify-end overflow-hidden rounded-3xl text-white shadow-sm transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--s-primary)]"
               >
                 <SectorPhoto
                   src={s.hero.photo}
