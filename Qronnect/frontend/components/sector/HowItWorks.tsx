@@ -59,7 +59,7 @@ function Visual({ kind, sector }: { kind: HowVisual; sector: SectorShowcase }) {
         <div className="w-full max-w-[220px] rounded-2xl bg-[#16121A] p-3 text-white shadow-sm">
           <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-lg border-2 border-white/30">
             <ScanLine className="h-10 w-10 text-white/70" />
-            <span className="absolute inset-x-1 top-1/2 h-0.5 bg-[var(--s-primary)]" />
+            <span className="scan-line absolute inset-x-1 top-1/2 h-0.5 bg-[var(--s-primary)] shadow-[0_0_10px_1px_var(--s-primary)]" />
           </div>
           <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/15 px-2 py-1.5 text-[11px] text-emerald-300">
             <Check className="h-3.5 w-3.5" strokeWidth={3} />
@@ -89,7 +89,7 @@ function Visual({ kind, sector }: { kind: HowVisual; sector: SectorShowcase }) {
           </div>
           <div className="mt-2 flex h-14 items-end gap-1.5">
             {bars.map((h, i) => (
-              <span key={i} className="flex-1 rounded-t bg-[var(--s-primary)]" style={{ height: `${h}%`, opacity: 0.45 + i * 0.1 }} />
+              <span key={i} className="grow-bar flex-1 rounded-t bg-[var(--s-primary)]" style={{ height: `${h}%`, opacity: 0.45 + i * 0.1 }} />
             ))}
           </div>
           <div className="mt-2 flex items-center gap-1.5 rounded-md bg-black/[0.04] px-2 py-1.5 text-black/65">
@@ -110,9 +110,9 @@ export function HowItWorks({ sector }: { sector: SectorShowcase }) {
   const { howItWorks } = sector
 
   return (
-    <section id="como-funciona" aria-labelledby="como-funciona-title" className="scroll-mt-4 bg-[var(--s-softer)] px-5 py-24 sm:px-8 md:py-28">
+    <section id="como-funciona" aria-labelledby="como-funciona-title" className="scroll-mt-20 bg-[var(--s-softer)] px-5 py-24 sm:px-8 md:py-28">
       <div className="mx-auto max-w-6xl">
-        <div className="max-w-3xl">
+        <div className="max-w-3xl" data-reveal>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] opacity-60">Cómo funciona</p>
           <h2 id="como-funciona-title" className="mt-4 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl">
             {howItWorks.title}
@@ -122,9 +122,15 @@ export function HowItWorks({ sector }: { sector: SectorShowcase }) {
 
         <ol className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {howItWorks.steps.map((step, i) => (
-            <li key={step.title} className="flex flex-col overflow-hidden rounded-3xl border border-[var(--s-ink)]/10 bg-white">
-              <div className="flex h-48 items-center justify-center bg-[var(--s-soft)]/60 p-5" aria-hidden="true">
-                <Visual kind={step.visual} sector={sector} />
+            <li
+              key={step.title}
+              data-reveal
+              className="group flex flex-col overflow-hidden rounded-3xl border border-[var(--s-ink)]/10 bg-white transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-34px_rgba(0,0,0,0.35)]"
+            >
+              <div className="flex h-48 items-center justify-center bg-[var(--s-soft)]/60 p-5 transition-colors duration-300 group-hover:bg-[var(--s-soft)]" aria-hidden="true">
+                <div className="transition-transform duration-500 group-hover:scale-105">
+                  <Visual kind={step.visual} sector={sector} />
+                </div>
               </div>
               <div className="flex flex-1 flex-col p-6">
                 <div className="flex items-center justify-between">
@@ -138,7 +144,7 @@ export function HowItWorks({ sector }: { sector: SectorShowcase }) {
           ))}
         </ol>
 
-        <p className="mt-10 flex flex-wrap items-center gap-2 text-[var(--s-ink)]/70">
+        <p data-reveal className="mt-10 flex flex-wrap items-center gap-2 text-[var(--s-ink)]/70">
           <span className="font-semibold text-[var(--s-ink)]">En resumen:</span>
           {['Configuras', 'Pones tu QR', 'Se unen', 'Suman en cada visita', 'Canjean su premio', 'Vuelven'].map((t, i) => (
             <span key={t} className="inline-flex items-center gap-2">

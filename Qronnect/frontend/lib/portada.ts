@@ -21,6 +21,13 @@ export const PORTADA_SHOWCASE: SectorShowcase = {
   slug: '',
   palette: PORTADA_PALETTE,
   demoBusiness: { name: 'Tu Negocio', tagline: 'Gracias por volver' },
+  demo: {
+    accion: 'Hacer una compra',
+    puntos: 25,
+    sellos: 8,
+    maquina: ['Regalo sorpresa', '10 % de descuento', 'Doble de puntos', 'Producto gratis'],
+    promo: { titulo: 'Solo para socios', texto: 'Esta semana, 2x1 para ti' },
+  },
   phone: {
     points: 320,
     progressLabel: 'Te faltan 80 puntos para tu premio',

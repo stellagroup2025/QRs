@@ -7,8 +7,7 @@ import { ArrowRight, Check, Loader2 } from 'lucide-react'
 import { SECTORES } from '@/lib/sectores'
 import { PORTADA_PLANES } from '@/lib/portada'
 import { cn } from '@/lib/utils'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+import { EMAIL_VALIDO, enviarSolicitudContacto, origenActual } from '@/lib/contacto'
 
 function Campo({
   id,
@@ -63,7 +62,7 @@ export function FormularioContacto() {
     const nuevos: Record<string, string> = {}
     if (valor('nombre_negocio').length < 2) nuevos.nombre_negocio = 'Escribe el nombre de tu negocio'
     if (valor('nombre_contacto').length < 2) nuevos.nombre_contacto = 'Escribe tu nombre'
-    if (!/^\S+@\S+\.\S+$/.test(valor('email'))) nuevos.email = 'Escribe un email válido'
+    if (!EMAIL_VALIDO.test(valor('email'))) nuevos.email = 'Escribe un email válido'
     if (!form.get('acepta_privacidad')) nuevos.acepta_privacidad = 'Necesitamos tu permiso para contestarte'
     setErrores(nuevos)
     setErrorGeneral(null)
@@ -75,24 +74,17 @@ export function FormularioContacto() {
     setEstado('enviando')
     try {
       const opcional = (k: string) => valor(k) || undefined
-      const res = await fetch(`${API_URL}/api/contacto`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre_negocio: valor('nombre_negocio'),
-          nombre_contacto: valor('nombre_contacto'),
-          email: valor('email'),
-          telefono: opcional('telefono'),
-          sector: opcional('sector'),
-          plan_interes: opcional('plan_interes'),
-          mensaje: opcional('mensaje'),
-          origen: params.get('origen') || (document.referrer ? new URL(document.referrer).pathname : undefined),
-          acepta_privacidad: true,
-          web: opcional('web'),
-        }),
+      await enviarSolicitudContacto({
+        nombre_negocio: valor('nombre_negocio'),
+        nombre_contacto: valor('nombre_contacto'),
+        email: valor('email'),
+        telefono: opcional('telefono'),
+        sector: opcional('sector'),
+        plan_interes: opcional('plan_interes'),
+        mensaje: opcional('mensaje'),
+        origen: origenActual(params.get('origen')),
+        web: opcional('web'),
       })
-      if (res.status === 429) throw new Error('Has enviado varias solicitudes seguidas. Espera un poco y vuelve a intentarlo.')
-      if (!res.ok) throw new Error('No se ha podido enviar. Revisa los datos o escríbenos a sales@qronnect.com.')
       setEstado('enviado')
     } catch (err) {
       setErrorGeneral(err instanceof Error ? err.message : 'No se ha podido enviar.')
