@@ -7,7 +7,7 @@ import { PORTADA_PALETTE } from '@/lib/portada'
 import { FormularioContacto } from '@/components/contacto/FormularioContacto'
 
 export const metadata: Metadata = {
-  title: 'Quiero Qronnect en mi negocio | Qronnect',
+  title: 'Quiero Qronnect en mi negocio',
   description: 'Cuéntanos tu negocio y te enseñamos cómo quedaría tu programa de fidelización con QR.',
   alternates: { canonical: 'https://www.qronnect.es/contacto' },
 }
