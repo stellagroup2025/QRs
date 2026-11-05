@@ -41,6 +41,7 @@ import { PlanesModule } from './planes/planes.module';
 import { ProspectosModule } from './prospectos/prospectos.module';
 import { PartnersModule } from './partners/partners.module';
 import { ContactoModule } from './contacto/contacto.module';
+import { CartaModule } from './carta/carta.module';
 
 @Module({
   imports: [
@@ -143,6 +144,7 @@ import { ContactoModule } from './contacto/contacto.module';
     ProspectosModule,
     PartnersModule,
     ContactoModule,
+    CartaModule,
   ],
   controllers: [AppController],
   providers: [
