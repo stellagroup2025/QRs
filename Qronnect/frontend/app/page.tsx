@@ -14,6 +14,8 @@ import {
   UserPlus, ScanLine,
 } from 'lucide-react'
 import { VisuallyHidden } from '@/components/ui/visually-hidden'
+import { PaginaTresVias } from '@/components/tres-vias/PaginaTresVias'
+import { obtenerPaginaTresVias, type PaginaTresVias as DatosTresVias } from '@/lib/api/carta'
 
 export default function HomePage() {
   const [isRoot, setIsRoot] = useState(false)
@@ -28,8 +30,39 @@ export default function HomePage() {
     return <Portada />
   }
 
-  // Si no, es un tenant - mostrar landing personalizada
-  return <TenantLandingPage />
+  // Si no, es un tenant: página de 3 vías (restaurantes) o landing completa
+  return <TenantHome />
+}
+
+/** Decide qué portada enseña la tienda según su configuración (pagina_inicio) */
+function TenantHome() {
+  const [tresVias, setTresVias] = useState<DatosTresVias | null>(null)
+  const [decidido, setDecidido] = useState(false)
+
+  useEffect(() => {
+    let vivo = true
+    obtenerPaginaTresVias()
+      .then((datos) => {
+        if (vivo && datos.pagina_inicio === 'tres_vias') setTresVias(datos)
+      })
+      // Si falla, enseñamos la landing de siempre
+      .catch(() => {})
+      .finally(() => vivo && setDecidido(true))
+    return () => {
+      vivo = false
+    }
+  }, [])
+
+  if (!decidido) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-paper" role="status" aria-live="polite">
+        <span className="h-10 w-10 animate-spin rounded-full border-4 border-ink/10 border-t-brand" aria-hidden="true" />
+        <VisuallyHidden>Cargando…</VisuallyHidden>
+      </div>
+    )
+  }
+
+  return tresVias ? <PaginaTresVias datos={tresVias} /> : <TenantLandingPage />
 }
 
 const iconMap: Record<string, typeof Users> = {

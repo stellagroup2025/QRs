@@ -26,6 +26,7 @@ import {
     UserPlus,
     Wand2,
     Users,
+    UtensilsCrossed,
     X,
     type LucideIcon,
 } from 'lucide-react'
@@ -50,6 +51,7 @@ const MENU: SidebarGroup[] = [
         label: 'Día a día',
         items: [
             { title: 'Resumen', href: '/admin/dashboard', icon: LayoutDashboard },
+            { title: 'Página QR y carta', href: '/admin/carta', icon: UtensilsCrossed },
             { title: 'Clientes', href: '/admin/dashboard?tab=clientes', icon: Users },
             { title: 'Ventas', href: '/admin/dashboard?tab=ventas', icon: ShoppingCart },
             { title: 'QR de registro', href: '/admin/dashboard?tab=qr', icon: QrCode },
