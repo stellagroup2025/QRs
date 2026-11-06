@@ -1,0 +1,17 @@
+{
+  "name": "qronnect-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servidor MCP para gestionar Qronnect (tiendas, carta, página QR y toda la API) desde Claude Code",
+  "type": "module",
+  "bin": { "qronnect-mcp": "src/index.js" },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "3.25.76"
+  }
+}
