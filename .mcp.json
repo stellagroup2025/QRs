@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "qronnect": {
+      "command": "sh",
+      "args": [
+        "-c",
+        "cd Qronnect/mcp && { [ -d node_modules ] || npm ci --no-audit --no-fund --silent >&2; } && exec node src/index.js"
+      ],
+      "env": {
+        "QRONNECT_API_URL": "https://api.qronnect.es"
+      }
+    }
+  }
+}
