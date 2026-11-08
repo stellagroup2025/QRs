@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ArrowUpRight, ChevronRight, Stamp, Star, UtensilsCrossed, type LucideIcon } from 'lucide-react'
 import { getTenantDomain } from '@/lib/tenant'
 import type { PaginaTresVias as DatosPagina } from '@/lib/api/carta'
@@ -24,13 +25,17 @@ interface Via {
  */
 export function PaginaTresVias({ datos }: { datos: DatosPagina }) {
   const { nombre, logo, portada } = useMarca()
+  const router = useRouter()
   const [rutaSellos, setRutaSellos] = useState('/registro')
+  // Hasta saber si hay sesión no sabemos a dónde lleva la tarjeta de sellos
+  const [rutaLista, setRutaLista] = useState(false)
 
   // Con sesión iniciada va directo a su tarjeta; si no, a apuntarse
   useEffect(() => {
     const slug = getTenantDomain()
     const token = localStorage.getItem(`client_token_${slug}`) || localStorage.getItem('client_token')
     if (token && slug) setRutaSellos(`/${slug}/mis-sellos`)
+    setRutaLista(true)
   }, [])
 
   const vias: Via[] = []
@@ -62,6 +67,23 @@ export function PaginaTresVias({ datos }: { datos: DatosPagina }) {
       texto: '¿Te ha gustado? Cuéntalo en Google, nos ayuda muchísimo.',
       tono: 'bg-brand-2 text-brand-2-on',
     })
+  }
+
+  // Con una sola opción, el QR va directo a ella sin pasar por esta pantalla
+  const unica = vias.length === 1 ? vias[0] : null
+  useEffect(() => {
+    if (!unica || !rutaLista) return
+    if (unica.externo) window.location.replace(unica.href)
+    else router.replace(unica.href)
+  }, [unica?.href, unica?.externo, rutaLista, router]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (unica) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-paper" role="status" aria-live="polite">
+        <span className="h-10 w-10 animate-spin rounded-full border-4 border-ink/10 border-t-brand" aria-hidden="true" />
+        <span className="sr-only">Abriendo {unica.titulo.toLowerCase()}…</span>
+      </div>
+    )
   }
 
   return (
